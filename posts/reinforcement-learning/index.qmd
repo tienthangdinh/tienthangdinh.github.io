@@ -1,0 +1,84 @@
+---
+title: "Reinforcement Learning"
+author: Dinh Tien Thang
+date: 2025-06-25
+categories: [machine-learning, RL]
+image: thumbnail.jpg  # optional
+format:
+  html:
+    toc: true
+    code-fold: true
+---
+
+Reinforcement Learning (RL) is a subfield of machine learning concerned with how agents ought to take actions in an environment in order to maximize cumulative reward.
+
+## RL Environment Setup
+
+In a typical RL setting, there are two main components:
+
+* **Agent**: The learner or decision maker.
+* **Environment**: The world the agent interacts with.
+
+The interaction looks like this:
+
+```
+Agent -------- action --------> Environment  
+       <------ state ---------  
+       <------ reward --------
+```
+
+## Markov Decision Process (MDP)
+
+An agent’s interaction with the environment is usually modeled as a **Markov Decision Process (MDP)**:
+
+```
+s₀, a₀, r₀, s₁, a₁, r₁, s₂, a₂, r₂, ...
+```
+
+This sequence is called an **episode**, and it may or may not terminate depending on the task.
+
+### Markov Property
+
+> The probability of the next state depends **only** on the current state and action — not the full history.
+
+Formally:
+
+$$
+P(s_{t+1} \mid s_t, a_t) = P(s_{t+1} \mid s_1, a_1, ..., s_t, a_t)
+$$
+
+### When the Markov Property Breaks
+
+* **n-step MDPs** and **Partially Observable MDPs (POMDPs)** can violate this assumption.
+* Time-scale variance, structured or vector-valued rewards, and hidden state dynamics are active areas of research.
+
+## Goal of Reinforcement Learning
+
+The goal is to learn a **policy** $\pi$ that tells the agent which action to take in each state in order to **maximize cumulative reward**.
+
+This is often visualized as:
+
+```
+s₀, a₀, r₀ → (s₁, a₁, r₁) → s₂, a₂, r₂ → ...
+```
+
+We define the **return** $G_t$ as the total discounted reward:
+
+$$
+G_t = r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \gamma^3 r_{t+3} + \dots
+$$
+
+Where:
+
+* $\gamma \in [0, 1]$ is the **discount factor**
+* $\gamma$ close to 0: focus on immediate reward
+* $\gamma$ close to 1: care about long-term reward
+
+## Policy $\pi$
+
+A **policy** maps states to actions:
+
+* **Deterministic**: $\pi(s) = a$
+* **Stochastic**: $\pi(a \mid s)$ = probability of taking action $a$ in state $s$
+
+The RL agent tries to **find an optimal policy $\pi^*$** that maximizes expected return $G_t$.
