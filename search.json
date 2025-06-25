@@ -4,14 +4,42 @@
     "href": "index.html",
     "title": "haha",
     "section": "",
-    "text": "Post With Code\n\n\n\nnews\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nJun 25, 2025\n\n\nHarlow Malloc\n\n\n\n\n\n\n\n\n\n\n\n\nWelcome To My Blog\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nJun 22, 2025\n\n\nTristan O’Malley\n\n\n\n\n\nNo matching items"
+    "text": "Post With Code\n\n\n\nnews\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nJun 25, 2025\n\n\nHarlow Malloc\n\n\n\n\n\n\n\n\n\n\n\n\nReinforcement Learning\n\n\n\nmachine-learning\n\nRL\n\n\n\n\n\n\n\n\n\nJun 25, 2025\n\n\nDinh Tien Thang\n\n\n\n\n\n\n\n\n\n\n\n\nWelcome To My Blog\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nJun 22, 2025\n\n\nTristan O’Malley\n\n\n\n\n\nNo matching items"
   },
   {
-    "objectID": "posts/welcome/index.html",
-    "href": "posts/welcome/index.html",
-    "title": "Welcome To My Blog",
+    "objectID": "posts/reinforcement-learning/index.html",
+    "href": "posts/reinforcement-learning/index.html",
+    "title": "Reinforcement Learning",
     "section": "",
-    "text": "This is the first post in a Quarto blog. Welcome!\n\nSince this post doesn’t specify an explicit image, the first image in the post will be used in the listing page of posts."
+    "text": "Reinforcement Learning (RL) is a subfield of machine learning concerned with how agents ought to take actions in an environment in order to maximize cumulative reward."
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#rl-environment-setup",
+    "href": "posts/reinforcement-learning/index.html#rl-environment-setup",
+    "title": "Reinforcement Learning",
+    "section": "RL Environment Setup",
+    "text": "RL Environment Setup\nIn a typical RL setting, there are two main components:\n\nAgent: The learner or decision maker.\nEnvironment: The world the agent interacts with.\n\nThe interaction looks like this:\nAgent -------- action --------&gt; Environment  \n       &lt;------ state ---------  \n       &lt;------ reward --------"
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#markov-decision-process-mdp",
+    "href": "posts/reinforcement-learning/index.html#markov-decision-process-mdp",
+    "title": "Reinforcement Learning",
+    "section": "Markov Decision Process (MDP)",
+    "text": "Markov Decision Process (MDP)\nAn agent’s interaction with the environment is usually modeled as a Markov Decision Process (MDP):\ns₀, a₀, r₀, s₁, a₁, r₁, s₂, a₂, r₂, ...\nThis sequence is called an episode, and it may or may not terminate depending on the task.\n\nMarkov Property\n\nThe probability of the next state depends only on the current state and action — not the full history.\n\nFormally:\n\\[\nP(s_{t+1} \\mid s_t, a_t) = P(s_{t+1} \\mid s_1, a_1, ..., s_t, a_t)\n\\]\n\n\nWhen the Markov Property Breaks\n\nn-step MDPs and Partially Observable MDPs (POMDPs) can violate this assumption.\nTime-scale variance, structured or vector-valued rewards, and hidden state dynamics are active areas of research."
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#goal-of-reinforcement-learning",
+    "href": "posts/reinforcement-learning/index.html#goal-of-reinforcement-learning",
+    "title": "Reinforcement Learning",
+    "section": "Goal of Reinforcement Learning",
+    "text": "Goal of Reinforcement Learning\nThe goal is to learn a policy \\(\\pi\\) that tells the agent which action to take in each state in order to maximize cumulative reward.\nThis is often visualized as:\ns₀, a₀, r₀ → (s₁, a₁, r₁) → s₂, a₂, r₂ → ...\nWe define the return \\(G_t\\) as the total discounted reward:\n\\[\nG_t = r_t + \\gamma r_{t+1} + \\gamma^2 r_{t+2} + \\gamma^3 r_{t+3} + \\dots\n\\]\nWhere:\n\n\\(\\gamma \\in [0, 1]\\) is the discount factor\n\\(\\gamma\\) close to 0: focus on immediate reward\n\\(\\gamma\\) close to 1: care about long-term reward"
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#policy-pi",
+    "href": "posts/reinforcement-learning/index.html#policy-pi",
+    "title": "Reinforcement Learning",
+    "section": "Policy \\(\\pi\\)",
+    "text": "Policy \\(\\pi\\)\nA policy maps states to actions:\n\nDeterministic: \\(\\pi(s) = a\\)\nStochastic: \\(\\pi(a \\mid s)\\) = probability of taking action \\(a\\) in state \\(s\\)\n\nThe RL agent tries to find an optimal policy \\(\\pi^*\\) that maximizes expected return \\(G_t\\)."
   },
   {
     "objectID": "posts/post-with-code/index.html",
@@ -19,6 +47,13 @@
     "title": "Post With Code",
     "section": "",
     "text": "This is a post with executable code."
+  },
+  {
+    "objectID": "posts/welcome/index.html",
+    "href": "posts/welcome/index.html",
+    "title": "Welcome To My Blog",
+    "section": "",
+    "text": "This is the first post in a Quarto blog. Welcome!\n\nSince this post doesn’t specify an explicit image, the first image in the post will be used in the listing page of posts."
   },
   {
     "objectID": "about.html",
