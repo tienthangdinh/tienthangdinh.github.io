@@ -14,18 +14,11 @@
     "text": "Reinforcement Learning (RL) is a subfield of machine learning concerned with how agents ought to take actions in an environment in order to maximize cumulative reward."
   },
   {
-    "objectID": "posts/reinforcement-learning/index.html#rl-environment-setup",
-    "href": "posts/reinforcement-learning/index.html#rl-environment-setup",
-    "title": "Reinforcement Learning",
-    "section": "RL Environment Setup",
-    "text": "RL Environment Setup\nIn a typical RL setting, there are two main components:\n\nAgent: The learner or decision maker.\nEnvironment: The world the agent interacts with.\n\nThe interaction looks like this:\nAgent -------- action --------&gt; Environment  \n       &lt;------ state ---------  \n       &lt;------ reward --------"
-  },
-  {
     "objectID": "posts/reinforcement-learning/index.html#markov-decision-process-mdp",
     "href": "posts/reinforcement-learning/index.html#markov-decision-process-mdp",
     "title": "Reinforcement Learning",
     "section": "Markov Decision Process (MDP)",
-    "text": "Markov Decision Process (MDP)\nAn agent’s interaction with the environment is usually modeled as a Markov Decision Process (MDP):\ns₀, a₀, r₀, s₁, a₁, r₁, s₂, a₂, r₂, ...\nThis sequence is called an episode, and it may or may not terminate depending on the task.\n\nMarkov Property\n\nThe probability of the next state depends only on the current state and action — not the full history.\n\nFormally:\n\\[\nP(s_{t+1} \\mid s_t, a_t) = P(s_{t+1} \\mid s_1, a_1, ..., s_t, a_t)\n\\]\n\n\nWhen the Markov Property Breaks\n\nn-step MDPs and Partially Observable MDPs (POMDPs) can violate this assumption.\nTime-scale variance, structured or vector-valued rewards, and hidden state dynamics are active areas of research."
+    "text": "Markov Decision Process (MDP)\nAn agent’s interaction with the environment is usually modeled as a Markov Decision Process (MDP):\ns₀, a₀, r₀, s₁, a₁, r₁, s₂, a₂, r₂, ...\nThis sequence is called an episode, and it may or may not terminate depending on the task.\n\nMarkov Property\n\nThe probability of the next state depends only on the current state and action — not the full history.\n\nFormally:\n\\[\nP(s_{t+1} \\mid s_t, a_t) = P(s_{t+1} \\mid s_1, a_1, ..., s_t, a_t)\n\\]\n\n\nWhen the Markov Property Breaks\n\nn-step MDPs and Partially Observable MDPs (POMDPs) are variants.\nTime-scale variance, structured or vector-valued rewards are in research."
   },
   {
     "objectID": "posts/reinforcement-learning/index.html#goal-of-reinforcement-learning",
@@ -40,6 +33,41 @@
     "title": "Reinforcement Learning",
     "section": "Policy \\(\\pi\\)",
     "text": "Policy \\(\\pi\\)\nA policy maps states to actions:\n\nDeterministic: \\(\\pi(s) = a\\)\nStochastic: \\(\\pi(a \\mid s)\\) = probability of taking action \\(a\\) in state \\(s\\)\n\nThe RL agent tries to find an optimal policy \\(\\pi^*\\) that maximizes expected return \\(G_t\\)."
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#value-function",
+    "href": "posts/reinforcement-learning/index.html#value-function",
+    "title": "Reinforcement Learning",
+    "section": "Value Function",
+    "text": "Value Function\nkeep track of the average return Gt expected when following a certain policy pi at a state (s) or (state, action) (s,a) - state value: V_pi(s) - action value: Q_pi(s,a) - actually V_pi(s) = Expected[Q_pi(a,s)]\nGoal: best case scenario (optimal) V(s), Q(s,a)"
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#sarsa-on-policy",
+    "href": "posts/reinforcement-learning/index.html#sarsa-on-policy",
+    "title": "Reinforcement Learning",
+    "section": "SARSA (On-policy)",
+    "text": "SARSA (On-policy)\nGiven a (state, action), how much better or worse is my return Gt relative to the new state and the SPECIFIC action that I ended up taking?\n\\[\nQ(s_t, a_t) \\leftarrow Q(s_t, a_t) + \\alpha \\left[ r_t + \\gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \\right]\n\\] BUT: there are many actions, not just one action a+1 so what action to take? We do not have access to p(s’,a’|s,a) so we do not know But we can calculate what we can expect in the next state after we take an action a ## Expected SARSA Given a (state, action), how much better or worse is my return Gt relative to the new state withh ALL actions AVERAGED OUT acording to policy probability pi? - we can calculate all the possible action at the next state and take the expected average with the policy probability (expected SARSA) \\[\nQ(s_t, a_t) \\leftarrow Q(s_t, a_t) + \\alpha \\left[ r_t + \\gamma \\sum_a \\pi(a \\mid s_{t+1}) Q(s_{t+1}, a) - Q(s_t, a_t) \\right]\n\\]"
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#q-learning-off-policy",
+    "href": "posts/reinforcement-learning/index.html#q-learning-off-policy",
+    "title": "Reinforcement Learning",
+    "section": "Q-Learning (Off-policy)",
+    "text": "Q-Learning (Off-policy)\nGiven a (state, action), how much better or worse is my return Gt relative to the new state with the best action? \\[\nQ(s_t, a_t) \\leftarrow Q(s_t, a_t) + \\alpha \\left[ r_t + \\gamma \\max_a Q(s_{t+1}, a) - Q(s_t, a_t) \\right]\n\\]"
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#credit-assignment-problem",
+    "href": "posts/reinforcement-learning/index.html#credit-assignment-problem",
+    "title": "Reinforcement Learning",
+    "section": "Credit assignment problem",
+    "text": "Credit assignment problem\nwithin an episode, figure out what subpath made the episode bad or good a.k.a individual action impact on the episode =&gt;"
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#q-learning",
+    "href": "posts/reinforcement-learning/index.html#q-learning",
+    "title": "Reinforcement Learning",
+    "section": "Q-Learning",
+    "text": "Q-Learning\nDevelop a function ( Q ) to approximate ( Q_* ), by updating:\n\\[\nQ(s_t, a_t) \\rightarrow r_t + \\gamma \\max_a Q(s_{t+1}, a)\n\\]\nRemember, the environment is random (many possible next states/rewards).\nAccording to the world model:\n\\[\np(s', r \\mid s, a)\n\\]\n(You don’t have access to this model directly.)\nTherefore, We do Q-learning with enough sample trajectories, we can average them out Equation that describes what ( Q_* ) is actually supposed to be: Result of samples averaging out \\[\nQ_*(s_t, a_t) = \\mathbb{E} \\left[ r_t + \\gamma \\max_a Q_*(s_{t+1}, a) \\right]\n\\]\n\nNote: ( [] ) = expected value = weighted average according to probabilities\n\n=&gt; That means, eventhough we do not have world model, when we do sampling, we still can gather enough information near to it"
   },
   {
     "objectID": "posts/post-with-code/index.html",

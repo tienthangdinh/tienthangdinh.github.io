@@ -182,7 +182,8 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#rl-environment-setup" id="toc-rl-environment-setup" class="nav-link active" data-scroll-target="#rl-environment-setup">RL Environment Setup</a></li>
+  <li><a href="#rl-environment-setup" id="toc-rl-environment-setup" class="nav-link active" data-scroll-target="#rl-environment-setup">RL Environment Setup</a>
+  <ul class="collapse">
   <li><a href="#markov-decision-process-mdp" id="toc-markov-decision-process-mdp" class="nav-link" data-scroll-target="#markov-decision-process-mdp">Markov Decision Process (MDP)</a>
   <ul class="collapse">
   <li><a href="#markov-property" id="toc-markov-property" class="nav-link" data-scroll-target="#markov-property">Markov Property</a></li>
@@ -190,6 +191,31 @@ window.Quarto = {
   </ul></li>
   <li><a href="#goal-of-reinforcement-learning" id="toc-goal-of-reinforcement-learning" class="nav-link" data-scroll-target="#goal-of-reinforcement-learning">Goal of Reinforcement Learning</a></li>
   <li><a href="#policy-pi" id="toc-policy-pi" class="nav-link" data-scroll-target="#policy-pi">Policy <span class="math inline">\(\pi\)</span></a></li>
+  </ul></li>
+  <li><a href="#key-concepts" id="toc-key-concepts" class="nav-link" data-scroll-target="#key-concepts">Key Concepts</a></li>
+  <li><a href="#value-functions" id="toc-value-functions" class="nav-link" data-scroll-target="#value-functions">Value Functions</a></li>
+  <li><a href="#world-models-vs.-model-free-learning" id="toc-world-models-vs.-model-free-learning" class="nav-link" data-scroll-target="#world-models-vs.-model-free-learning">World Models vs.&nbsp;Model-Free Learning</a></li>
+  <li><a href="#monte-carlo-vs.-temporal-difference" id="toc-monte-carlo-vs.-temporal-difference" class="nav-link" data-scroll-target="#monte-carlo-vs.-temporal-difference">Monte Carlo vs.&nbsp;Temporal Difference</a>
+  <ul class="collapse">
+  <li><a href="#value-function" id="toc-value-function" class="nav-link" data-scroll-target="#value-function">Value Function</a></li>
+  </ul></li>
+  <li><a href="#policy-gradient-methods" id="toc-policy-gradient-methods" class="nav-link" data-scroll-target="#policy-gradient-methods">Policy Gradient Methods</a></li>
+  <li><a href="#q-learning-variants" id="toc-q-learning-variants" class="nav-link" data-scroll-target="#q-learning-variants">Q-Learning Variants</a>
+  <ul class="collapse">
+  <li><a href="#sarsa-on-policy" id="toc-sarsa-on-policy" class="nav-link" data-scroll-target="#sarsa-on-policy">SARSA (On-policy)</a></li>
+  <li><a href="#q-learning-off-policy" id="toc-q-learning-off-policy" class="nav-link" data-scroll-target="#q-learning-off-policy">Q-Learning (Off-policy)</a></li>
+  </ul></li>
+  <li><a href="#bellman-optimality-equation" id="toc-bellman-optimality-equation" class="nav-link" data-scroll-target="#bellman-optimality-equation">Bellman Optimality Equation</a></li>
+  <li><a href="#exploration-vs.-exploitation" id="toc-exploration-vs.-exploitation" class="nav-link" data-scroll-target="#exploration-vs.-exploitation">Exploration vs.&nbsp;Exploitation</a></li>
+  <li><a href="#sample-efficiency" id="toc-sample-efficiency" class="nav-link" data-scroll-target="#sample-efficiency">Sample Efficiency</a>
+  <ul class="collapse">
+  <li><a href="#credit-assignment-problem" id="toc-credit-assignment-problem" class="nav-link" data-scroll-target="#credit-assignment-problem">Credit assignment problem</a></li>
+  </ul></li>
+  <li><a href="#summary-of-value-updates" id="toc-summary-of-value-updates" class="nav-link" data-scroll-target="#summary-of-value-updates">Summary of Value Updates</a></li>
+  <li><a href="#on-policy-vs.-off-policy" id="toc-on-policy-vs.-off-policy" class="nav-link" data-scroll-target="#on-policy-vs.-off-policy">On-Policy vs.&nbsp;Off-Policy</a>
+  <ul class="collapse">
+  <li><a href="#q-learning" id="toc-q-learning" class="nav-link" data-scroll-target="#q-learning">Q-Learning</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -201,18 +227,14 @@ window.Quarto = {
 
 
 <p>Reinforcement Learning (RL) is a subfield of machine learning concerned with how agents ought to take actions in an environment in order to maximize cumulative reward.</p>
-<section id="rl-environment-setup" class="level2">
-<h2 class="anchored" data-anchor-id="rl-environment-setup">RL Environment Setup</h2>
+<section id="rl-environment-setup" class="level1">
+<h1>RL Environment Setup</h1>
 <p>In a typical RL setting, there are two main components:</p>
 <ul>
 <li><strong>Agent</strong>: The learner or decision maker.</li>
 <li><strong>Environment</strong>: The world the agent interacts with.</li>
+<li>They interact with each other through <strong>rewards, action, state</strong></li>
 </ul>
-<p>The interaction looks like this:</p>
-<pre><code>Agent -------- action --------&gt; Environment  
-       &lt;------ state ---------  
-       &lt;------ reward --------</code></pre>
-</section>
 <section id="markov-decision-process-mdp" class="level2">
 <h2 class="anchored" data-anchor-id="markov-decision-process-mdp">Markov Decision Process (MDP)</h2>
 <p>An agent’s interaction with the environment is usually modeled as a <strong>Markov Decision Process (MDP)</strong>:</p>
@@ -231,8 +253,8 @@ P(s_{t+1} \mid s_t, a_t) = P(s_{t+1} \mid s_1, a_1, ..., s_t, a_t)
 <section id="when-the-markov-property-breaks" class="level3">
 <h3 class="anchored" data-anchor-id="when-the-markov-property-breaks">When the Markov Property Breaks</h3>
 <ul>
-<li><strong>n-step MDPs</strong> and <strong>Partially Observable MDPs (POMDPs)</strong> can violate this assumption.</li>
-<li>Time-scale variance, structured or vector-valued rewards, and hidden state dynamics are active areas of research.</li>
+<li><strong>n-step MDPs</strong> and <strong>Partially Observable MDPs (POMDPs)</strong> are variants.</li>
+<li>Time-scale variance, structured or vector-valued rewards are in research.</li>
 </ul>
 </section>
 </section>
@@ -260,8 +282,174 @@ G_t = r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \gamma^3 r_{t+3} + \dots
 <li><strong>Stochastic</strong>: <span class="math inline">\(\pi(a \mid s)\)</span> = probability of taking action <span class="math inline">\(a\)</span> in state <span class="math inline">\(s\)</span></li>
 </ul>
 <p>The RL agent tries to <strong>find an optimal policy <span class="math inline">\(\pi^*\)</span></strong> that maximizes expected return <span class="math inline">\(G_t\)</span>.</p>
+</section>
+</section>
+<section id="key-concepts" class="level1">
+<h1>Key Concepts</h1>
+<ul>
+<li>Exploration vs.&nbsp;Exploitation</li>
+<li>Temporal Difference Learning</li>
+<li>Credit Assignment Problem</li>
+<li>Value and Policy Functions</li>
+<li>Sample Efficiency</li>
+</ul>
+</section>
+<section id="value-functions" class="level1">
+<h1>Value Functions</h1>
+<p>Used to estimate expected returns:</p>
+<ul>
+<li><strong>State-value function</strong>: <span class="math inline">\(V_\pi(s) = \mathbb{E}_\pi[G_t \mid s_t = s]\)</span></li>
+<li><strong>Action-value function</strong>: <span class="math inline">\(Q_\pi(s, a) = \mathbb{E}_\pi[G_t \mid s_t = s, a_t = a]\)</span></li>
+</ul>
+<p>Relationship: <span class="math inline">\(V_\pi(s) = \sum_a \pi(a \mid s) Q_\pi(s, a)\)</span></p>
+</section>
+<section id="world-models-vs.-model-free-learning" class="level1">
+<h1>World Models vs.&nbsp;Model-Free Learning</h1>
+<p>A <strong>world model</strong> gives access to <span class="math inline">\(p(s', r \mid s, a)\)</span> — but in practice we often don’t have it. Instead:</p>
+<ol type="1">
+<li>Start with a random policy: <span class="math inline">\(\pi(a \mid s) = \frac{1}{|A|}\)</span></li>
+<li>Collect trajectories and estimate returns <span class="math inline">\(G_t\)</span></li>
+<li>Use <strong>Monte Carlo</strong> methods to update estimates: calculate all return Gt backward from an episode Within a specific trajectory: <span class="math display">\[
+G_t = r_t + \gamma G_{t+1}
+\]</span></li>
+</ol>
+<p>FOr <strong>every</strong> episode (trjectory) update the return Gt <strong>BACKWARD</strong> <span class="math display">\[
+G_t = r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \gamma^3 r_{t+3} + \dots
+\]</span></p>
+</section>
+<section id="monte-carlo-vs.-temporal-difference" class="level1">
+<h1>Monte Carlo vs.&nbsp;Temporal Difference</h1>
+<p><strong>Monte Carlo</strong>:</p>
+<ul>
+<li>Updates happen after entire episodes</li>
+<li>Can’t assign credit to individual steps within an episode</li>
+<li><strong>Given a (state, action), What is my return Gt?</strong></li>
+<li>we get good episodes and bad episodes</li>
+<li>good episode: all actions evaluated better</li>
+<li>bad episode: all actions evaluated worse</li>
+<li>have to wait for episode to end to wait for the return to adjust evaluation for actions</li>
+<li>within an episode, we dont know what subpath made the episode bad or good</li>
+</ul>
+<p>=&gt; can only rely on large number of samplings</p>
+<p><strong>Temporal Difference (TD)</strong>:</p>
+<ul>
+<li>Updates happen at each time step</li>
+<li>More efficient and faster convergence</li>
+<li>action by action based (instead of episode by episode based)</li>
+<li>For each (state,action) compare rewards difference with (state+1, action+1)</li>
+</ul>
+<section id="value-function" class="level2">
+<h2 class="anchored" data-anchor-id="value-function">Value Function</h2>
+<p>keep track of the average return Gt expected when following a certain policy pi at a state (s) or (state, action) (s,a) - state value: V_pi(s) - action value: Q_pi(s,a) - actually V_pi(s) = Expected[Q_pi(a,s)]</p>
+<p>Goal: best case scenario (optimal) V<em>(s), Q</em>(s,a)</p>
+</section>
+</section>
+<section id="policy-gradient-methods" class="level1">
+<h1>Policy Gradient Methods</h1>
+<p>Learn policy directly, optionally with a value function baseline:</p>
+<ul>
+<li>Without baseline → high variance (different average like a state with average return G1 of 100 and change +-5 are not the same with another state with average return G2 of 10 that also +-5)</li>
+<li>With baseline (e.g., <span class="math inline">\(V_\pi(s)\)</span>) → reduced variance</li>
+</ul>
+</section>
+<section id="q-learning-variants" class="level1">
+<h1>Q-Learning Variants</h1>
+<ul>
+<li>not have to worry about policy function, just update Q(s,a) from the table and trajectory and we are fine!</li>
+</ul>
+<p>for each trajectory: for each state instance: Q(s,a) = Q(s,a) + learning rate * return G(t)</p>
+<section id="sarsa-on-policy" class="level2">
+<h2 class="anchored" data-anchor-id="sarsa-on-policy">SARSA (On-policy)</h2>
+<p><strong>Given a (state, action), how much better or worse is my return Gt relative to the new state and the SPECIFIC action that I ended up taking?</strong></p>
+<p><span class="math display">\[
+Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \right]
+\]</span> BUT: there are many actions, not just one action a+1 so what action to take? We do not have access to p(s’,a’|s,a) so we do not know But we can calculate what we can expect in the next state after we take an action a ## Expected SARSA <strong>Given a (state, action), how much better or worse is my return Gt relative to the new state withh ALL actions AVERAGED OUT acording to policy probability pi?</strong> - we can calculate all the possible action at the next state and take the expected average with the policy probability (expected SARSA) <span class="math display">\[
+Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \sum_a \pi(a \mid s_{t+1}) Q(s_{t+1}, a) - Q(s_t, a_t) \right]
+\]</span></p>
+</section>
+<section id="q-learning-off-policy" class="level2">
+<h2 class="anchored" data-anchor-id="q-learning-off-policy">Q-Learning (Off-policy)</h2>
+<p><strong>Given a (state, action), how much better or worse is my return Gt relative to the new state with the best action?</strong> <span class="math display">\[
+Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \max_a Q(s_{t+1}, a) - Q(s_t, a_t) \right]
+\]</span></p>
+</section>
+</section>
+<section id="bellman-optimality-equation" class="level1">
+<h1>Bellman Optimality Equation</h1>
+<p>Describes optimal Q-value function:</p>
+<p><span class="math display">\[
+Q_*(s_t, a_t) = \mathbb{E} \left[ r_t + \gamma \max_a Q_*(s_{t+1}, a) \right]
+\]</span></p>
+<p>if a whole sequence is optimal, every subsequence must also be optimal, thats why Bellman add the max of the subsequence <em>a Q</em>*(s_{t+1}, a) to ensure this suboptimality</p>
+</section>
+<section id="exploration-vs.-exploitation" class="level1">
+<h1>Exploration vs.&nbsp;Exploitation</h1>
+<ul>
+<li><strong>Exploration</strong>: Random actions (e.g., <span class="math inline">\(\epsilon\)</span>-greedy with <span class="math inline">\(\epsilon &gt; 0\)</span>)</li>
+<li><strong>Exploitation</strong>: Choose action that maximizes <span class="math inline">\(Q(s, a)\)</span></li>
+</ul>
+<p>Balance is essential during training.</p>
+</section>
+<section id="sample-efficiency" class="level1">
+<h1>Sample Efficiency</h1>
+<p>Refers to how quickly a method converges given the number of samples (episodes or steps).</p>
+<section id="credit-assignment-problem" class="level2">
+<h2 class="anchored" data-anchor-id="credit-assignment-problem">Credit assignment problem</h2>
+<p>within an episode, figure out what subpath made the episode bad or good a.k.a individual action impact on the episode =&gt;</p>
+</section>
+</section>
+<section id="summary-of-value-updates" class="level1">
+<h1>Summary of Value Updates</h1>
+<p>Learning action-value (Q) function, notice that we only need one time step!!! no need to add up the whole trajectory: <strong>Learning Q-values</strong>:</p>
+<ul>
+<li><p>SARSA:</p>
+<p><span class="math display">\[
+Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \right]
+\]</span></p></li>
+<li><p>Expected SARSA:</p>
+<p><span class="math display">\[
+Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \sum_a \pi(a \mid s_{t+1}) Q(s_{t+1}, a) - Q(s_t, a_t) \right]
+\]</span></p></li>
+<li><p>Q-Learning:</p>
+<p><span class="math display">\[
+Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \max_a Q(s_{t+1}, a) - Q(s_t, a_t) \right]
+\]</span></p></li>
+</ul>
+<p><strong>Learning V-values</strong>:</p>
+<p><span class="math display">\[
+V(s_t) \leftarrow V(s_t) + \alpha \left[ r_t + \gamma V(s_{t+1}) - V(s_t) \right]
+\]</span></p>
+<p>Where <span class="math inline">\(\alpha\)</span> is the learning rate.</p>
+</section>
+<section id="on-policy-vs.-off-policy" class="level1">
+<h1>On-Policy vs.&nbsp;Off-Policy</h1>
+<ul>
+<li><strong>On-policy</strong>: Behavior and target policy are the same (SARSA), because they actually regarding what action they will be taking next, and use that to improve the pi, and the cycle again Qpi-&gt;Q*</li>
+<li><strong>Off-policy</strong>: Behavior and target policy differ (Q-Learning). Q-Learning just evaluate based on the best possible action could be taking =&gt; no longer dependent on policy. It still use pi for policy and gather experiences, but it does not evaluate pi, it instead evaluate optimal policy directly</li>
+</ul>
+<p>Q-Learning learns the optimal policy <span class="math inline">\(\pi^*\)</span>, regardless of current behavior policy.</p>
+<section id="q-learning" class="level2">
+<h2 class="anchored" data-anchor-id="q-learning">Q-Learning</h2>
+<p>Develop a function ( Q ) to approximate ( Q_* ), by updating:</p>
+<p><span class="math display">\[
+Q(s_t, a_t) \rightarrow r_t + \gamma \max_a Q(s_{t+1}, a)
+\]</span></p>
+<p>Remember, the environment is <strong>random</strong> (many possible next states/rewards).<br>
+According to the <strong>world model</strong>:</p>
+<p><span class="math display">\[
+p(s', r \mid s, a)
+\]</span></p>
+<p><em>(You don’t have access to this model directly.)</em></p>
+<p>Therefore, We do Q-learning with enough sample trajectories, we can average them out Equation that describes what ( Q_* ) is actually supposed to be: Result of samples averaging out <span class="math display">\[
+Q_*(s_t, a_t) = \mathbb{E} \left[ r_t + \gamma \max_a Q_*(s_{t+1}, a) \right]
+\]</span></p>
+<blockquote class="blockquote">
+<p><em>Note:</em> ( [] ) = expected value = weighted average according to probabilities</p>
+</blockquote>
+<p>=&gt; That means, eventhough we do not have world model, when we do sampling, we still can gather enough information near to it</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
