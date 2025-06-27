@@ -187,9 +187,6 @@ window.Quarto = {
   <li><a href="#markov-decision-process-mdp" id="toc-markov-decision-process-mdp" class="nav-link" data-scroll-target="#markov-decision-process-mdp">Markov Decision Process (MDP)</a>
   <ul class="collapse">
   <li><a href="#markov-property" id="toc-markov-property" class="nav-link" data-scroll-target="#markov-property">Markov Property</a></li>
-  </ul></li>
-  <li><a href="#goal-of-reinforcement-learning" id="toc-goal-of-reinforcement-learning" class="nav-link" data-scroll-target="#goal-of-reinforcement-learning">Goal of Reinforcement Learning</a>
-  <ul class="collapse">
   <li><a href="#policy" id="toc-policy" class="nav-link" data-scroll-target="#policy">Policy</a></li>
   <li><a href="#return" id="toc-return" class="nav-link" data-scroll-target="#return">Return</a></li>
   <li><a href="#goal" id="toc-goal" class="nav-link" data-scroll-target="#goal">Goal</a></li>
@@ -233,23 +230,8 @@ window.Quarto = {
 <section id="markov-decision-process-mdp" class="level2">
 <h2 class="anchored" data-anchor-id="markov-decision-process-mdp">Markov Decision Process (MDP)</h2>
 <p>An agent’s interaction with the environment is usually modeled as a <strong>Markov Decision Process (MDP)</strong>:</p>
-<pre><code>s₀, a₀, r₀, s₁, a₁, r₁, s₂, a₂, r₂, ...</code></pre>
+<pre><code>s₀, a₀, r₀ → (s₁, a₁, **R₁**) → s₂, a₂, **R₂** → ...</code></pre>
 <p>This sequence is called an <strong>episode</strong>, and it may or may not terminate depending on the task.</p>
-<section id="markov-property" class="level3">
-<h3 class="anchored" data-anchor-id="markov-property">Markov Property</h3>
-<blockquote class="blockquote">
-<p>The probability of the next state depends <strong>only</strong> on the current state and action — not the full history: <span class="math display">\[
-P(s_{t+1} \mid s_t, a_t) = P(s_{t+1} \mid s_1, a_1, ..., s_t, a_t)
-\]</span></p>
-</blockquote>
-</section>
-</section>
-<section id="goal-of-reinforcement-learning" class="level2">
-<h2 class="anchored" data-anchor-id="goal-of-reinforcement-learning">Goal of Reinforcement Learning</h2>
-<p>The goal is to learn a <strong>policy</strong> <span class="math inline">\(\pi\)</span> that tells the agent which action to take in each state in order to <strong>maximize cumulative reward</strong>.</p>
-<p>This is often visualized as:</p>
-<pre><code>s₀, a₀, r₀ → (s₁, a₁, r₁) → s₂, a₂, r₂ → ...</code></pre>
-<p>We define the <strong>return</strong> <span class="math inline">\(G_t\)</span> as the total discounted reward:</p>
 <p>Let:</p>
 <ul>
 <li><span class="math inline">\(t \in \{0, 1, 2, \dots\}\)</span></li>
@@ -261,7 +243,15 @@ P(s_{t+1} \mid s_t, a_t) = P(s_{t+1} \mid s_1, a_1, ..., s_t, a_t)
 <p><span class="math display">\[
 p(s', r \mid s, a) = \text{Prob}(S_{t+1} = s',\ R_{t+1} = r \mid S_t = s,\ A_t = a)
 \]</span></p>
+<section id="markov-property" class="level3">
+<h3 class="anchored" data-anchor-id="markov-property">Markov Property</h3>
+<blockquote class="blockquote">
+<p>The probability of the next state depends <strong>only</strong> on the current state and action — not the full history: <span class="math display">\[
+P(s_{t+1} \mid s_t, a_t) = P(s_{t+1} \mid s_1, a_1, ..., s_t, a_t)
+\]</span></p>
+</blockquote>
 <hr>
+</section>
 <section id="policy" class="level3">
 <h3 class="anchored" data-anchor-id="policy">Policy</h3>
 <ul>
@@ -272,7 +262,7 @@ p(s', r \mid s, a) = \text{Prob}(S_{t+1} = s',\ R_{t+1} = r \mid S_t = s,\ A_t =
 </section>
 <section id="return" class="level3">
 <h3 class="anchored" data-anchor-id="return">Return</h3>
-<p>The return <span class="math display">\[ G_t \]</span> is the total discounted reward from time $ t+1 $ to final time $ T $:</p>
+<p>The return <span class="math inline">\(G_t\)</span> is the total discounted reward from time <span class="math inline">\(t+1\)</span> to final time <span class="math inline">\(T\)</span>:</p>
 <p><span class="math display">\[
 G_t = \sum_{k = t+1}^{T} \gamma^{k - t - 1} R_k
 \]</span></p>
@@ -286,8 +276,7 @@ G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots + \gamma^{T - t - 1} R
 <p><span class="math display">\[
 \max_\pi \, \mathbb{E}_\pi \left[ G_t \right]
 \]</span></p>
-<p>How to determine a policy that will accumulate a lot of rewards? # Value Functions</p>
-<p>Used to estimate expected returns:</p>
+<p>How to determine a policy that will accumulate a lot of rewards? # Value Functions Very similar to return <span class="math inline">\(\max_\pi \, \mathbb{E}_\pi \left[ G_t \right]\)</span> Value functions used to estimate expected returns:</p>
 <ul>
 <li><strong>State-value function</strong>: <span class="math inline">\(V_\pi(s) = \mathbb{E}_\pi[G_t \mid s_t = s]\)</span></li>
 <li><strong>Action-value function</strong>: <span class="math inline">\(Q_\pi(s, a) = \mathbb{E}_\pi[G_t \mid s_t = s, a_t = a]\)</span></li>
