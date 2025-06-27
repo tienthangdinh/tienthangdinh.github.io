@@ -252,10 +252,10 @@ P(s_{t+1} \mid s_t, a_t) = P(s_{t+1} \mid s_1, a_1, ..., s_t, a_t)
 <p>We define the <strong>return</strong> <span class="math inline">\(G_t\)</span> as the total discounted reward:</p>
 <p>Let:</p>
 <ul>
-<li><span class="math display">\[ t \in \{0, 1, 2, \dots\} \]</span></li>
-<li><span class="math display">\[ s \in \mathcal{S} \]</span>: a state</li>
-<li><span class="math display">\[ a \in \mathcal{A}(s) \]</span>: an action available in state <span class="math display">\[ s \]</span></li>
-<li><span class="math display">\[ r \in \mathcal{R} \subseteq \mathbb{R} \]</span>: a scalar reward</li>
+<li>$ t {0, 1, 2, } $</li>
+<li>$ s $: a state</li>
+<li>$ a (s) $: an action available in state $ s $</li>
+<li>$ r $: a scalar reward</li>
 </ul>
 <p>The <strong>environment dynamics</strong> (transition model) are given by:</p>
 <p><span class="math display">\[
@@ -265,14 +265,14 @@ p(s', r \mid s, a) = \text{Prob}(S_{t+1} = s',\ R_{t+1} = r \mid S_t = s,\ A_t =
 <section id="policy" class="level3">
 <h3 class="anchored" data-anchor-id="policy">Policy</h3>
 <ul>
-<li>Stochastic: <span class="math display">\[ \pi(a \mid s) \]</span></li>
-<li>Deterministic: <span class="math display">\[ a = \pi(s) \]</span></li>
+<li>Stochastic: $ (a s) $</li>
+<li>Deterministic: $ a = (s) $</li>
 </ul>
 <hr>
 </section>
 <section id="return" class="level3">
 <h3 class="anchored" data-anchor-id="return">Return</h3>
-<p>The return <span class="math display">\[ G_t \]</span> is the total discounted reward from time <span class="math display">\[ t+1 \]</span> to final time <span class="math display">\[ T \]</span>:</p>
+<p>The return <span class="math display">\[ G_t \]</span> is the total discounted reward from time $ t+1 $ to final time $ T $:</p>
 <p><span class="math display">\[
 G_t = \sum_{k = t+1}^{T} \gamma^{k - t - 1} R_k
 \]</span></p>
