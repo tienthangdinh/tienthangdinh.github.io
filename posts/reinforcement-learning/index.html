@@ -252,10 +252,10 @@ P(s_{t+1} \mid s_t, a_t) = P(s_{t+1} \mid s_1, a_1, ..., s_t, a_t)
 <p>We define the <strong>return</strong> <span class="math inline">\(G_t\)</span> as the total discounted reward:</p>
 <p>Let:</p>
 <ul>
-<li>( t {0, 1, 2, } )</li>
-<li>( s ): a state</li>
-<li>( a (s) ): an action available in state ( s )</li>
-<li>( r ): a scalar reward</li>
+<li><span class="math display">\[ t \in \{0, 1, 2, \dots\} \]</span></li>
+<li><span class="math display">\[ s \in \mathcal{S} \]</span>: a state</li>
+<li><span class="math display">\[ a \in \mathcal{A}(s) \]</span>: an action available in state <span class="math display">\[ s \]</span></li>
+<li><span class="math display">\[ r \in \mathcal{R} \subseteq \mathbb{R} \]</span>: a scalar reward</li>
 </ul>
 <p>The <strong>environment dynamics</strong> (transition model) are given by:</p>
 <p><span class="math display">\[
@@ -265,14 +265,14 @@ p(s', r \mid s, a) = \text{Prob}(S_{t+1} = s',\ R_{t+1} = r \mid S_t = s,\ A_t =
 <section id="policy" class="level3">
 <h3 class="anchored" data-anchor-id="policy">Policy</h3>
 <ul>
-<li>Stochastic: ( (a s) )</li>
-<li>Deterministic: ( a = (s) )</li>
+<li>Stochastic: <span class="math display">\[ \pi(a \mid s) \]</span></li>
+<li>Deterministic: <span class="math display">\[ a = \pi(s) \]</span></li>
 </ul>
 <hr>
 </section>
 <section id="return" class="level3">
 <h3 class="anchored" data-anchor-id="return">Return</h3>
-<p>The return ( G_t ) is the total discounted reward from time ( t+1 ) to final time ( T ):</p>
+<p>The return <span class="math display">\[ G_t \]</span> is the total discounted reward from time <span class="math display">\[ t+1 \]</span> to final time <span class="math display">\[ T \]</span>:</p>
 <p><span class="math display">\[
 G_t = \sum_{k = t+1}^{T} \gamma^{k - t - 1} R_k
 \]</span></p>
@@ -423,7 +423,7 @@ V(s_t) \leftarrow V(s_t) + \alpha \left[ r_t + \gamma V(s_{t+1}) - V(s_t) \right
 <p>Q-Learning learns the optimal policy <span class="math inline">\(\pi^*\)</span>, regardless of current behavior policy.</p>
 <section id="q-learning" class="level2">
 <h2 class="anchored" data-anchor-id="q-learning">Q-Learning</h2>
-<p>Develop a function ( Q ) to approximate ( Q_* ), by updating:</p>
+<p>Develop a function <span class="math display">\[ Q \]</span> to approximate <span class="math display">\[ Q_* \]</span>, by updating:</p>
 <p><span class="math display">\[
 Q(s_t, a_t) \rightarrow r_t + \gamma \max_a Q(s_{t+1}, a)
 \]</span></p>
@@ -433,11 +433,11 @@ According to the <strong>world model</strong>:</p>
 p(s', r \mid s, a)
 \]</span></p>
 <p><em>(You don’t have access to this model directly.)</em></p>
-<p>Therefore, We do Q-learning with enough sample trajectories, we can average them out Equation that describes what ( Q_* ) is actually supposed to be: Result of samples averaging out <span class="math display">\[
+<p>Therefore, We do Q-learning with enough sample trajectories, we can average them out Equation that describes what <span class="math display">\[ Q_* \]</span> is actually supposed to be: Result of samples averaging out <span class="math display">\[
 Q_*(s_t, a_t) = \mathbb{E} \left[ r_t + \gamma \max_a Q_*(s_{t+1}, a) \right]
 \]</span></p>
 <blockquote class="blockquote">
-<p><em>Note:</em> ( [] ) = expected value = weighted average according to probabilities</p>
+<p><em>Note:</em> <span class="math display">\[ \mathbb{E}[\cdot] \]</span> = expected value = weighted average according to probabilities</p>
 </blockquote>
 <p>=&gt; That means, eventhough we do not have world model, when we do sampling, we still can gather enough information near to it</p>
 
