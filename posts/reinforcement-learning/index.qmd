@@ -12,73 +12,335 @@ format:
 
 Reinforcement Learning (RL) is a subfield of machine learning concerned with how agents ought to take actions in an environment in order to maximize cumulative reward.
 
-## RL Environment Setup
-
-In a typical RL setting, there are two main components:
-
-* **Agent**: The learner or decision maker.
-* **Environment**: The world the agent interacts with.
-
-The interaction looks like this:
-
-```
-Agent -------- action --------> Environment  
-       <------ state ---------  
-       <------ reward --------
-```
+# RL Environment Setup
 
 ## Markov Decision Process (MDP)
 
 An agent’s interaction with the environment is usually modeled as a **Markov Decision Process (MDP)**:
 
-```
-s₀, a₀, r₀, s₁, a₁, r₁, s₂, a₂, r₂, ...
-```
+s₀, a₀, r₀ → (s₁, a₁, **R₁**) → s₂, a₂, **R₂** → ...
 
 This sequence is called an **episode**, and it may or may not terminate depending on the task.
 
+Let:
+
+* $t \in \{0, 1, 2, \dots\}$
+* $s \in \mathcal{S}$: a state
+* $a \in \mathcal{A}(s)$: an action available in state $s$
+* $r \in \mathcal{R} \subseteq \mathbb{R}$: a scalar reward
+
+The **environment dynamics** (transition model) are given by:
+
+$$
+p(s', r \mid s, a) = \text{Prob}(S_{t+1} = s',\ R_{t+1} = r \mid S_t = s,\ A_t = a)
+$$
+
 ### Markov Property
 
-> The probability of the next state depends **only** on the current state and action — not the full history.
-
-Formally:
-
+> The probability of the next state depends **only** on the current state and action — not the full history:
 $$
 P(s_{t+1} \mid s_t, a_t) = P(s_{t+1} \mid s_1, a_1, ..., s_t, a_t)
 $$
 
-### When the Markov Property Breaks
+---
 
-* **n-step MDPs** and **Partially Observable MDPs (POMDPs)** can violate this assumption.
-* Time-scale variance, structured or vector-valued rewards, and hidden state dynamics are active areas of research.
+### Policy
 
-## Goal of Reinforcement Learning
+* Stochastic: $\pi(a \mid s)$
+* Deterministic: $a = \pi(s)$
 
-The goal is to learn a **policy** $\pi$ that tells the agent which action to take in each state in order to **maximize cumulative reward**.
+---
 
-This is often visualized as:
+### Return
 
-```
-s₀, a₀, r₀ → (s₁, a₁, r₁) → s₂, a₂, r₂ → ...
-```
-
-We define the **return** $G_t$ as the total discounted reward:
+The return $G_t$ is the total discounted reward from time $t+1$ to final time $T$:
 
 $$
-G_t = r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \gamma^3 r_{t+3} + \dots
+G_t = \sum_{k = t+1}^{T} \gamma^{k - t - 1} R_k
+$$
+
+Expanded:
+
+$$
+G_t = R_{t+1} + \gamma G_{t+1}
+$$
+
+$$
+G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots + \gamma^{T - t - 1} R_T
+$$
+
+### Goal 
+$$
+\max_\pi \, \mathbb{E}_\pi \left[ G_t \right]
+$$
+
+---
+
+How can we determine a policy that accumulates a high reward?
+
+# Value Functions
+
+Very similar to return $\max_\pi \, \mathbb{E}_\pi \left[ G_t \right]$.
+
+Value functions are used to estimate expected returns:
+
+* **State-value function**: $V_\pi(s_t) = \mathbb{E}_\pi[G_t \mid s_t = s]$
+* **Action-value function**: $Q_\pi(s_t, a_t) = \mathbb{E}_\pi[G_t \mid s_t = s, a_t = a]$
+
+Relationship: $V_\pi(s) = \sum_a \pi(a \mid s) Q_\pi(s, a)$ and $V^*(s) = \arg\max_a Q^*(s, a)$
+
+Derivation of this relationship:
+
+$V_\pi(s) = \sum_a \pi(a \mid s) Q_\pi(s, a)$ (semantically true because)
+
+$V_\pi(s) = \sum_a \pi(a \mid s) \mathbb{E}_\pi[G_t \mid s_t = s, a_t = a]$
+
+$V_\pi(s) = \sum_a \pi(a \mid s) \mathbb{E}_\pi[R_{t+1} + \gamma G_{t+1} \mid s_t = s, a_t = a]$ (because $ \mathbb{E}[G_{t+1} \mid s, a] = \mathbb{E}[V_\pi(S_{t+1}) \mid s, a]$)
+
+$V_\pi(s) = \sum_a \pi(a \mid s) \mathbb{E}_\pi[R_{t+1} + \gamma V_\pi(S_{t+1}) \mid s_t = s, a_t = a]$
+
+$V_\pi(s) = \sum_a \pi(a \mid s) \sum_{s',r} p(s',r \mid s,a)[r + \gamma V_\pi(s')]$
+
+## The Bellman Equations
+
+For *any* policy \( \pi \), all \( s \in \mathcal{S} \), and all \( a \in \mathcal{A}(s) \):
+
+**State-value function:**
+
+$$
+v_\pi(s) = \sum_{a \in \mathcal{A}(s)} \pi(a \mid s) \, q_\pi(s, a) \tag{1}
+$$
+
+**Action-value function:**
+
+$$
+q_\pi(s, a) = \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma v_\pi(s') \right] \tag{2}
+$$
+
+After substitution as derived above:
+
+### Bellman Equation for \( v_\pi(s) \)
+
+$$
+v_\pi(s) = \sum_{a \in \mathcal{A}(s)} \pi(a \mid s) \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma v_\pi(s') \right]
+$$
+
+### Bellman Equation for \( q_\pi(s, a) \)
+
+$$
+q_\pi(s, a) = \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma \sum_{a' \in \mathcal{A}(s')} \pi(a' \mid s') q_\pi(s', a') \right]
+$$
+
+---
+
+### Optimal Bellman
+
+$V^*(s) = \arg\max_a Q^*(s, a)$
+
+---
+
+## Policy Evaluation & Policy Improvement
+
+Using the Bellman Equation above and an initial estimate (e.g. all states are randomly initialized or uniformly negative, except the terminal state which is 0), we iteratively update:
+
+We apply the Bellman equations above for every single state (for V), or (state, action) pair (for Q, which forms a finer table). Over many runs, it will slowly converge.
+$$
+\pi'(s) = \arg\max_a q_\pi(s, a)
 $$
 
 Where:
 
-* $\gamma \in [0, 1]$ is the **discount factor**
-* $\gamma$ close to 0: focus on immediate reward
-* $\gamma$ close to 1: care about long-term reward
+$$
+q_\pi(s, a) = \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma v_\pi(s') \right]
+$$
 
-## Policy $\pi$
 
-A **policy** maps states to actions:
 
-* **Deterministic**: $\pi(s) = a$
-* **Stochastic**: $\pi(a \mid s)$ = probability of taking action $a$ in state $s$
 
-The RL agent tries to **find an optimal policy $\pi^*$** that maximizes expected return $G_t$.
+
+
+
+# World Models vs. Model-Free Learning
+
+A **world model** gives access to $p(s', r \mid s, a)$ — but in practice we often don’t have it. Instead:
+
+1. Start with a random policy: $\pi(a \mid s) = \frac{1}{|A|}$
+2. Collect trajectories and estimate returns $G_t$
+3. Use **Monte Carlo** methods to update estimates:
+calculate all return Gt backward from an episode
+Within a specific trajectory:
+$$
+G_t = r_t + \gamma G_{t+1}
+$$
+
+FOr **every** episode (trjectory)
+update the return Gt **BACKWARD**
+$$
+G_t = r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \gamma^3 r_{t+3} + \dots
+$$
+
+
+# Monte Carlo vs. Temporal Difference
+
+**Monte Carlo**:
+
+* Updates happen after entire episodes
+* Can’t assign credit to individual steps within an episode
+* **Given a (state, action), What is my return Gt?**
+* we get good episodes and bad episodes
+- good episode: all actions evaluated better
+- bad episode: all actions evaluated worse
+- have to wait for episode to end to wait for the return to adjust evaluation for actions
+- within an episode, we dont know what subpath made the episode bad or good
+  
+=> can only rely on large number of samplings
+
+**Temporal Difference (TD)**:
+
+* Updates happen at each time step
+* More efficient and faster convergence
+* action by action based (instead of episode by episode based)
+* For each (state,action) compare rewards difference with (state+1, action+1)
+
+## Value Function
+keep track of the average return Gt expected when following a certain policy pi at a state (s) or (state, action) (s,a)
+- state value: V_pi(s)
+- action value: Q_pi(s,a)
+- actually V_pi(s) = Expected[Q_pi(a,s)]
+
+Goal: best case scenario (optimal)
+V*(s), Q*(s,a)
+
+# Policy Gradient Methods
+
+Learn policy directly, optionally with a value function baseline:
+
+* Without baseline → high variance (different average like a state with average return G1 of 100 and change +-5 are not the same with another state with average return G2 of 10 that also +-5)
+* With baseline (e.g., $V_\pi(s)$) → reduced variance
+
+
+# Q-Learning Variants
+- not have to worry about policy function, just update Q(s,a) from the table and trajectory and we are fine!
+
+for each trajectory:
+  for each state instance:
+    Q(s,a) = Q(s,a) + learning rate * return G(t)
+
+
+## SARSA (On-policy)
+**Given a (state, action), how much better or worse is my return Gt relative to the new state and the SPECIFIC action that I ended up taking?**
+
+$$
+Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \right]
+$$
+BUT: there are many actions, not just one action a+1
+so what action to take?
+We do not have access to p(s',a'|s,a) so we do not know
+But we can calculate what we can expect in the next state after we take an action a
+## Expected SARSA
+**Given a (state, action), how much better or worse is my return Gt relative to the new state withh ALL actions AVERAGED OUT acording to policy probability pi?**
+- we can calculate all the possible action at the next state and take the expected average with the policy probability (expected SARSA)
+$$
+Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \sum_a \pi(a \mid s_{t+1}) Q(s_{t+1}, a) - Q(s_t, a_t) \right]
+$$
+
+## Q-Learning (Off-policy)
+**Given a (state, action), how much better or worse is my return Gt relative to the new state with the best action?**
+$$
+Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \max_a Q(s_{t+1}, a) - Q(s_t, a_t) \right]
+$$
+
+
+# Bellman Optimality Equation
+
+Describes optimal Q-value function:
+
+$$
+Q_*(s_t, a_t) = \mathbb{E} \left[ r_t + \gamma \max_a Q_*(s_{t+1}, a) \right]
+$$
+
+if a whole sequence is optimal, every subsequence must also be optimal, thats why Bellman add the max of the subsequence \max_a Q_*(s_{t+1}, a) to ensure this suboptimality
+
+# Exploration vs. Exploitation
+
+* **Exploration**: Random actions (e.g., $\epsilon$-greedy with $\epsilon > 0$)
+* **Exploitation**: Choose action that maximizes $Q(s, a)$
+
+Balance is essential during training.
+
+# Sample Efficiency
+
+Refers to how quickly a method converges given the number of samples (episodes or steps).
+
+
+## Credit assignment problem
+within an episode, figure out what subpath made the episode bad or good a.k.a individual action impact on the episode
+=>
+
+# Summary of Value Updates
+ Learning action-value (Q) function, notice that we only need one time step!!! no need to add up the whole trajectory:
+**Learning Q-values**:
+
+* SARSA:
+
+  $$
+  Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \right]
+  $$
+
+* Expected SARSA:
+
+  $$
+  Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \sum_a \pi(a \mid s_{t+1}) Q(s_{t+1}, a) - Q(s_t, a_t) \right]
+  $$
+
+* Q-Learning:
+
+  $$
+  Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \max_a Q(s_{t+1}, a) - Q(s_t, a_t) \right]
+  $$
+
+**Learning V-values**:
+
+$$
+V(s_t) \leftarrow V(s_t) + \alpha \left[ r_t + \gamma V(s_{t+1}) - V(s_t) \right]
+$$
+
+Where $\alpha$ is the learning rate.
+
+# On-Policy vs. Off-Policy
+
+* **On-policy**: Behavior and target policy are the same (SARSA), because they actually regarding what action they will be taking next, and use that to improve the pi, and the cycle again 
+Qpi->Q*
+* **Off-policy**: Behavior and target policy differ (Q-Learning). Q-Learning just evaluate based on the best possible action could be taking => no longer dependent on policy. It still use pi for policy and gather experiences, but it does not evaluate pi, it instead evaluate optimal policy directly
+
+Q-Learning learns the optimal policy $\pi^*$, regardless of current behavior policy.
+
+
+## Q-Learning
+
+Develop a function $$ Q $$ to approximate $$ Q_* $$, by updating:
+
+$$
+Q(s_t, a_t) \rightarrow r_t + \gamma \max_a Q(s_{t+1}, a)
+$$
+
+Remember, the environment is **random** (many possible next states/rewards).  
+According to the **world model**:
+
+$$
+p(s', r \mid s, a)
+$$
+
+*(You don't have access to this model directly.)*
+
+Therefore, We do Q-learning with enough sample trajectories, we can average them out
+Equation that describes what $$ Q_* $$ is actually supposed to be:
+Result of samples averaging out
+$$
+Q_*(s_t, a_t) = \mathbb{E} \left[ r_t + \gamma \max_a Q_*(s_{t+1}, a) \right]
+$$
+
+> *Note:* $$ \mathbb{E}[\cdot] $$ = expected value = weighted average according to probabilities
+
+=> That means, eventhough we do not have world model, when we do sampling, we still can gather enough information near to it
+
