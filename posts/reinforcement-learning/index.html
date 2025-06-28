@@ -41,7 +41,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-db03927a41f77a8af5287a812d7101f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -196,8 +196,8 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#the-bellman-equations" id="toc-the-bellman-equations" class="nav-link" data-scroll-target="#the-bellman-equations">The Bellman Equations</a>
   <ul class="collapse">
-  <li><a href="#bellman-equation-for-v_s" id="toc-bellman-equation-for-v_s" class="nav-link" data-scroll-target="#bellman-equation-for-v_s">Bellman Equation for ( v_(s) )</a></li>
-  <li><a href="#bellman-equation-for-q_s-a" id="toc-bellman-equation-for-q_s-a" class="nav-link" data-scroll-target="#bellman-equation-for-q_s-a">Bellman Equation for ( q_(s, a) )</a></li>
+  <li><a href="#bellman-equation-for-v_pis" id="toc-bellman-equation-for-v_pis" class="nav-link" data-scroll-target="#bellman-equation-for-v_pis">Bellman Equation for <span class="math inline">\(v_\pi(s)\)</span></a></li>
+  <li><a href="#bellman-equation-for-q_pis-a" id="toc-bellman-equation-for-q_pis-a" class="nav-link" data-scroll-target="#bellman-equation-for-q_pis-a">Bellman Equation for <span class="math inline">\(q_\pi(s, a)\)</span></a></li>
   <li><a href="#optimal-bellman" id="toc-optimal-bellman" class="nav-link" data-scroll-target="#optimal-bellman">Optimal Bellman</a></li>
   </ul></li>
   <li><a href="#policy-evaluation-policy-improvement" id="toc-policy-evaluation-policy-improvement" class="nav-link" data-scroll-target="#policy-evaluation-policy-improvement">Policy Evaluation &amp; Policy Improvement</a></li>
@@ -321,14 +321,14 @@ v_\pi(s) = \sum_{a \in \mathcal{A}(s)} \pi(a \mid s) \, q_\pi(s, a) \tag{1}
 q_\pi(s, a) = \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma v_\pi(s') \right] \tag{2}
 \]</span></p>
 <p>After substitution as derived above:</p>
-<section id="bellman-equation-for-v_s" class="level3">
-<h3 class="anchored" data-anchor-id="bellman-equation-for-v_s">Bellman Equation for ( v_(s) )</h3>
+<section id="bellman-equation-for-v_pis" class="level3">
+<h3 class="anchored" data-anchor-id="bellman-equation-for-v_pis">Bellman Equation for <span class="math inline">\(v_\pi(s)\)</span></h3>
 <p><span class="math display">\[
 v_\pi(s) = \sum_{a \in \mathcal{A}(s)} \pi(a \mid s) \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma v_\pi(s') \right]
 \]</span></p>
 </section>
-<section id="bellman-equation-for-q_s-a" class="level3">
-<h3 class="anchored" data-anchor-id="bellman-equation-for-q_s-a">Bellman Equation for ( q_(s, a) )</h3>
+<section id="bellman-equation-for-q_pis-a" class="level3">
+<h3 class="anchored" data-anchor-id="bellman-equation-for-q_pis-a">Bellman Equation for <span class="math inline">\(q_\pi(s, a)\)</span></h3>
 <p><span class="math display">\[
 q_\pi(s, a) = \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma \sum_{a' \in \mathcal{A}(s')} \pi(a' \mid s') q_\pi(s', a') \right]
 \]</span></p>

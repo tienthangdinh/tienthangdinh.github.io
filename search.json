@@ -1,10 +1,10 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "haha",
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
     "section": "",
-    "text": "Post With Code\n\n\n\nnews\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nJun 25, 2025\n\n\nHarlow Malloc\n\n\n\n\n\n\n\n\n\n\n\n\nReinforcement Learning\n\n\n\nmachine-learning\n\nRL\n\n\n\n\n\n\n\n\n\nJun 25, 2025\n\n\nDinh Tien Thang\n\n\n\n\n\n\n\n\n\n\n\n\nWelcome To My Blog\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nJun 22, 2025\n\n\nTristan O’Malley\n\n\n\n\n\nNo matching items"
+    "text": "About this blog"
   },
   {
     "objectID": "posts/reinforcement-learning/index.html",
@@ -25,7 +25,7 @@
     "href": "posts/reinforcement-learning/index.html#the-bellman-equations",
     "title": "Reinforcement Learning",
     "section": "The Bellman Equations",
-    "text": "The Bellman Equations\nFor any policy ( ), all ( s ), and all ( a (s) ):\nState-value function:\n\\[\nv_\\pi(s) = \\sum_{a \\in \\mathcal{A}(s)} \\pi(a \\mid s) \\, q_\\pi(s, a) \\tag{1}\n\\]\nAction-value function:\n\\[\nq_\\pi(s, a) = \\sum_{s' \\in \\mathcal{S}} \\sum_{r \\in \\mathcal{R}} p(s', r \\mid s, a) \\left[ r + \\gamma v_\\pi(s') \\right] \\tag{2}\n\\]\nAfter substitution as derived above:\n\nBellman Equation for ( v_(s) )\n\\[\nv_\\pi(s) = \\sum_{a \\in \\mathcal{A}(s)} \\pi(a \\mid s) \\sum_{s' \\in \\mathcal{S}} \\sum_{r \\in \\mathcal{R}} p(s', r \\mid s, a) \\left[ r + \\gamma v_\\pi(s') \\right]\n\\]\n\n\nBellman Equation for ( q_(s, a) )\n\\[\nq_\\pi(s, a) = \\sum_{s' \\in \\mathcal{S}} \\sum_{r \\in \\mathcal{R}} p(s', r \\mid s, a) \\left[ r + \\gamma \\sum_{a' \\in \\mathcal{A}(s')} \\pi(a' \\mid s') q_\\pi(s', a') \\right]\n\\]\n\n\n\nOptimal Bellman\n\\(V^*(s) = \\arg\\max_a Q^*(s, a)\\)"
+    "text": "The Bellman Equations\nFor any policy ( ), all ( s ), and all ( a (s) ):\nState-value function:\n\\[\nv_\\pi(s) = \\sum_{a \\in \\mathcal{A}(s)} \\pi(a \\mid s) \\, q_\\pi(s, a) \\tag{1}\n\\]\nAction-value function:\n\\[\nq_\\pi(s, a) = \\sum_{s' \\in \\mathcal{S}} \\sum_{r \\in \\mathcal{R}} p(s', r \\mid s, a) \\left[ r + \\gamma v_\\pi(s') \\right] \\tag{2}\n\\]\nAfter substitution as derived above:\n\nBellman Equation for \\(v_\\pi(s)\\)\n\\[\nv_\\pi(s) = \\sum_{a \\in \\mathcal{A}(s)} \\pi(a \\mid s) \\sum_{s' \\in \\mathcal{S}} \\sum_{r \\in \\mathcal{R}} p(s', r \\mid s, a) \\left[ r + \\gamma v_\\pi(s') \\right]\n\\]\n\n\nBellman Equation for \\(q_\\pi(s, a)\\)\n\\[\nq_\\pi(s, a) = \\sum_{s' \\in \\mathcal{S}} \\sum_{r \\in \\mathcal{R}} p(s', r \\mid s, a) \\left[ r + \\gamma \\sum_{a' \\in \\mathcal{A}(s')} \\pi(a' \\mid s') q_\\pi(s', a') \\right]\n\\]\n\n\n\nOptimal Bellman\n\\(V^*(s) = \\arg\\max_a Q^*(s, a)\\)"
   },
   {
     "objectID": "posts/reinforcement-learning/index.html#policy-evaluation-policy-improvement",
@@ -84,10 +84,10 @@
     "text": "This is the first post in a Quarto blog. Welcome!\n\nSince this post doesn’t specify an explicit image, the first image in the post will be used in the listing page of posts."
   },
   {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "haha",
     "section": "",
-    "text": "About this blog"
+    "text": "Post With Code\n\n\n\nnews\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nJun 25, 2025\n\n\nHarlow Malloc\n\n\n\n\n\n\n\n\n\n\n\n\nReinforcement Learning\n\n\n\nmachine-learning\n\nRL\n\n\n\n\n\n\n\n\n\nJun 25, 2025\n\n\nDinh Tien Thang\n\n\n\n\n\n\n\n\n\n\n\n\nWelcome To My Blog\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nJun 22, 2025\n\n\nTristan O’Malley\n\n\n\n\n\nNo matching items"
   }
 ]
