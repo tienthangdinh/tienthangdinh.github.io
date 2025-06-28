@@ -182,27 +182,36 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#rl-environment-setup" id="toc-rl-environment-setup" class="nav-link active" data-scroll-target="#rl-environment-setup">RL Environment Setup</a>
-  <ul class="collapse">
-  <li><a href="#markov-decision-process-mdp" id="toc-markov-decision-process-mdp" class="nav-link" data-scroll-target="#markov-decision-process-mdp">Markov Decision Process (MDP)</a>
+  <li><a href="#markov-decision-process-mdp" id="toc-markov-decision-process-mdp" class="nav-link active" data-scroll-target="#markov-decision-process-mdp">Markov Decision Process (MDP)</a>
   <ul class="collapse">
   <li><a href="#markov-property" id="toc-markov-property" class="nav-link" data-scroll-target="#markov-property">Markov Property</a></li>
   <li><a href="#policy" id="toc-policy" class="nav-link" data-scroll-target="#policy">Policy</a></li>
   <li><a href="#return" id="toc-return" class="nav-link" data-scroll-target="#return">Return</a></li>
   <li><a href="#goal" id="toc-goal" class="nav-link" data-scroll-target="#goal">Goal</a></li>
   </ul></li>
-  </ul></li>
-  <li><a href="#value-functions" id="toc-value-functions" class="nav-link" data-scroll-target="#value-functions">Value Functions</a>
+  <li><a href="#model-based-learning" id="toc-model-based-learning" class="nav-link" data-scroll-target="#model-based-learning">Model-based Learning</a>
   <ul class="collapse">
+  <li><a href="#value-functions" id="toc-value-functions" class="nav-link" data-scroll-target="#value-functions">Value Functions</a></li>
   <li><a href="#the-bellman-equations" id="toc-the-bellman-equations" class="nav-link" data-scroll-target="#the-bellman-equations">The Bellman Equations</a>
   <ul class="collapse">
   <li><a href="#bellman-equation-for-v_pis" id="toc-bellman-equation-for-v_pis" class="nav-link" data-scroll-target="#bellman-equation-for-v_pis">Bellman Equation for <span class="math inline">\(v_\pi(s)\)</span></a></li>
   <li><a href="#bellman-equation-for-q_pis-a" id="toc-bellman-equation-for-q_pis-a" class="nav-link" data-scroll-target="#bellman-equation-for-q_pis-a">Bellman Equation for <span class="math inline">\(q_\pi(s, a)\)</span></a></li>
   <li><a href="#optimal-bellman" id="toc-optimal-bellman" class="nav-link" data-scroll-target="#optimal-bellman">Optimal Bellman</a></li>
   </ul></li>
-  <li><a href="#policy-evaluation-policy-improvement" id="toc-policy-evaluation-policy-improvement" class="nav-link" data-scroll-target="#policy-evaluation-policy-improvement">Policy Evaluation &amp; Policy Improvement</a></li>
+  <li><a href="#generalized-policy-iteration-gpi-policy-evaluation-policy-improvement" id="toc-generalized-policy-iteration-gpi-policy-evaluation-policy-improvement" class="nav-link" data-scroll-target="#generalized-policy-iteration-gpi-policy-evaluation-policy-improvement">Generalized Policy Iteration (GPI): Policy Evaluation &amp; Policy Improvement</a></li>
   </ul></li>
-  <li><a href="#world-models-vs.-model-free-learning" id="toc-world-models-vs.-model-free-learning" class="nav-link" data-scroll-target="#world-models-vs.-model-free-learning">World Models vs.&nbsp;Model-Free Learning</a></li>
+  <li><a href="#model-free-learning" id="toc-model-free-learning" class="nav-link" data-scroll-target="#model-free-learning">Model-Free Learning</a>
+  <ul class="collapse">
+  <li><a href="#monte-carlo-state-value" id="toc-monte-carlo-state-value" class="nav-link" data-scroll-target="#monte-carlo-state-value">Monte Carlo (State Value)</a></li>
+  <li><a href="#monte-carlo-action-value" id="toc-monte-carlo-action-value" class="nav-link" data-scroll-target="#monte-carlo-action-value">Monte Carlo (Action Value)</a></li>
+  <li><a href="#sum-up-constant-α-mc-algorithm-pi-approx-pi" id="toc-sum-up-constant-α-mc-algorithm-pi-approx-pi" class="nav-link" data-scroll-target="#sum-up-constant-α-mc-algorithm-pi-approx-pi">Sum up: Constant-α MC Algorithm <span class="math inline">\(\pi \approx \pi^*\)</span></a></li>
+  <li><a href="#off-policy" id="toc-off-policy" class="nav-link" data-scroll-target="#off-policy">Off-Policy</a>
+  <ul class="collapse">
+  <li><a href="#relationship-between-sampling-policy-b-vs-main-behavior-policy-pi" id="toc-relationship-between-sampling-policy-b-vs-main-behavior-policy-pi" class="nav-link" data-scroll-target="#relationship-between-sampling-policy-b-vs-main-behavior-policy-pi">Relationship between sampling policy <span class="math inline">\(b\)</span> vs main behavior policy <span class="math inline">\(\pi\)</span>?</a></li>
+  </ul></li>
+  <li><a href="#sum-up-off-policy-constant-alpha-mc-for-pi-approx-pi" id="toc-sum-up-off-policy-constant-alpha-mc-for-pi-approx-pi" class="nav-link" data-scroll-target="#sum-up-off-policy-constant-alpha-mc-for-pi-approx-pi">Sum up: Off-Policy Constant-<span class="math inline">\(\alpha\)</span> MC for <span class="math inline">\(\pi \approx \pi^*\)</span></a></li>
+  </ul></li>
+  <li><a href="#compare-model-based-vs-model-free" id="toc-compare-model-based-vs-model-free" class="nav-link" data-scroll-target="#compare-model-based-vs-model-free">Compare: Model-Based vs Model-Free</a></li>
   <li><a href="#monte-carlo-vs.-temporal-difference" id="toc-monte-carlo-vs.-temporal-difference" class="nav-link" data-scroll-target="#monte-carlo-vs.-temporal-difference">Monte Carlo vs.&nbsp;Temporal Difference</a>
   <ul class="collapse">
   <li><a href="#value-function" id="toc-value-function" class="nav-link" data-scroll-target="#value-function">Value Function</a></li>
@@ -235,10 +244,8 @@ window.Quarto = {
 
 
 <p>Reinforcement Learning (RL) is a subfield of machine learning concerned with how agents ought to take actions in an environment in order to maximize cumulative reward.</p>
-<section id="rl-environment-setup" class="level1">
-<h1>RL Environment Setup</h1>
-<section id="markov-decision-process-mdp" class="level2">
-<h2 class="anchored" data-anchor-id="markov-decision-process-mdp">Markov Decision Process (MDP)</h2>
+<section id="markov-decision-process-mdp" class="level1">
+<h1>Markov Decision Process (MDP)</h1>
 <p>An agent’s interaction with the environment is usually modeled as a <strong>Markov Decision Process (MDP)</strong>:</p>
 <p>s₀, a₀, r₀ → (s₁, a₁, <strong>R₁</strong>) → s₂, a₂, <strong>R₂</strong> → …</p>
 <p>This sequence is called an <strong>episode</strong>, and it may or may not terminate depending on the task.</p>
@@ -260,7 +267,6 @@ p(s', r \mid s, a) = \text{Prob}(S_{t+1} = s',\ R_{t+1} = r \mid S_t = s,\ A_t =
 P(s_{t+1} \mid s_t, a_t) = P(s_{t+1} \mid s_1, a_1, ..., s_t, a_t)
 \]</span></p>
 </blockquote>
-<hr>
 </section>
 <section id="policy" class="level3">
 <h3 class="anchored" data-anchor-id="policy">Policy</h3>
@@ -268,7 +274,6 @@ P(s_{t+1} \mid s_t, a_t) = P(s_{t+1} \mid s_1, a_1, ..., s_t, a_t)
 <li>Stochastic: <span class="math inline">\(\pi(a \mid s)\)</span></li>
 <li>Deterministic: <span class="math inline">\(a = \pi(s)\)</span></li>
 </ul>
-<hr>
 </section>
 <section id="return" class="level3">
 <h3 class="anchored" data-anchor-id="return">Return</h3>
@@ -289,13 +294,14 @@ G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots + \gamma^{T - t - 1} R
 <p><span class="math display">\[
 \max_\pi \, \mathbb{E}_\pi \left[ G_t \right]
 \]</span></p>
-<hr>
 <p>How can we determine a policy that accumulates a high reward?</p>
 </section>
 </section>
-</section>
-<section id="value-functions" class="level1">
-<h1>Value Functions</h1>
+<section id="model-based-learning" class="level1">
+<h1>Model-based Learning</h1>
+<p><strong>world model</strong> gives access to <span class="math inline">\(p(s', r \mid s, a)\)</span>, so we will use them for the estimation below</p>
+<section id="value-functions" class="level2">
+<h2 class="anchored" data-anchor-id="value-functions">Value Functions</h2>
 <p>Very similar to return <span class="math inline">\(\max_\pi \, \mathbb{E}_\pi \left[ G_t \right]\)</span>.</p>
 <p>Value functions are used to estimate expected returns:</p>
 <ul>
@@ -309,6 +315,7 @@ G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots + \gamma^{T - t - 1} R
 <p><span class="math inline">\(V_\pi(s) = \sum_a \pi(a \mid s) \mathbb{E}_\pi[R_{t+1} + \gamma G_{t+1} \mid s_t = s, a_t = a]\)</span> (because <span class="math inline">\(\mathbb{E}[G_{t+1} \mid s, a] = \mathbb{E}[V_\pi(S_{t+1}) \mid s, a]\)</span>)</p>
 <p><span class="math inline">\(V_\pi(s) = \sum_a \pi(a \mid s) \mathbb{E}_\pi[R_{t+1} + \gamma V_\pi(S_{t+1}) \mid s_t = s, a_t = a]\)</span></p>
 <p><span class="math inline">\(V_\pi(s) = \sum_a \pi(a \mid s) \sum_{s',r} p(s',r \mid s,a)[r + \gamma V_\pi(s')]\)</span></p>
+</section>
 <section id="the-bellman-equations" class="level2">
 <h2 class="anchored" data-anchor-id="the-bellman-equations">The Bellman Equations</h2>
 <p>For <em>any</em> policy <span class="math inline">\(\pi\)</span>, all <span class="math inline">\(s \in \mathcal{S}\)</span>, and all <span class="math inline">\(a \in \mathcal{A}(s)\)</span>:</p>
@@ -332,39 +339,178 @@ v_\pi(s) = \sum_{a \in \mathcal{A}(s)} \pi(a \mid s) \sum_{s' \in \mathcal{S}} \
 <p><span class="math display">\[
 q_\pi(s, a) = \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma \sum_{a' \in \mathcal{A}(s')} \pi(a' \mid s') q_\pi(s', a') \right]
 \]</span></p>
-<hr>
 </section>
 <section id="optimal-bellman" class="level3">
 <h3 class="anchored" data-anchor-id="optimal-bellman">Optimal Bellman</h3>
 <p><span class="math inline">\(V^*(s) = \arg\max_a Q^*(s, a)\)</span></p>
-<hr>
 </section>
 </section>
-<section id="policy-evaluation-policy-improvement" class="level2">
-<h2 class="anchored" data-anchor-id="policy-evaluation-policy-improvement">Policy Evaluation &amp; Policy Improvement</h2>
+<section id="generalized-policy-iteration-gpi-policy-evaluation-policy-improvement" class="level2">
+<h2 class="anchored" data-anchor-id="generalized-policy-iteration-gpi-policy-evaluation-policy-improvement">Generalized Policy Iteration (GPI): Policy Evaluation &amp; Policy Improvement</h2>
 <p>Using the Bellman Equation above and an initial estimate (e.g.&nbsp;all states are randomly initialized or uniformly negative, except the terminal state which is 0), we iteratively update:</p>
 <p>We apply the Bellman equations above for every single state (for V), or (state, action) pair (for Q, which forms a finer table). Over many runs, it will slowly converge. <span class="math display">\[
 \pi'(s) = \arg\max_a q_\pi(s, a)
-\]</span></p>
-<p>Where:</p>
-<p><span class="math display">\[
+\]</span> Where: <span class="math display">\[
 q_\pi(s, a) = \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma v_\pi(s') \right]
 \]</span></p>
 </section>
 </section>
-<section id="world-models-vs.-model-free-learning" class="level1">
-<h1>World Models vs.&nbsp;Model-Free Learning</h1>
-<p>A <strong>world model</strong> gives access to <span class="math inline">\(p(s', r \mid s, a)\)</span> — but in practice we often don’t have it. Instead:</p>
-<ol type="1">
-<li>Start with a random policy: <span class="math inline">\(\pi(a \mid s) = \frac{1}{|A|}\)</span></li>
-<li>Collect trajectories and estimate returns <span class="math inline">\(G_t\)</span></li>
-<li>Use <strong>Monte Carlo</strong> methods to update estimates: calculate all return Gt backward from an episode Within a specific trajectory: <span class="math display">\[
-G_t = r_t + \gamma G_{t+1}
-\]</span></li>
-</ol>
-<p>FOr <strong>every</strong> episode (trjectory) update the return Gt <strong>BACKWARD</strong> <span class="math display">\[
-G_t = r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \gamma^3 r_{t+3} + \dots
+<section id="model-free-learning" class="level1">
+<h1>Model-Free Learning</h1>
+<p>Until now, you can see we have been using <span class="math inline">\(p(s', r \mid s, a)\)</span> to update our policy, because a <strong>world model</strong> gives access to this — but in practice - we often don’t have it. So instead we use <strong>Monte Carlo</strong> to update <span class="math inline">\(q_\pi(s, a)\)</span> instead of <span class="math inline">\(v_\pi(s)\)</span>, because in the end we still have to choose action policy, in which we still have to calculate <span class="math inline">\(q_\pi(s,a)\)</span>, which is equivalent to this one from above, just that we <strong>dont calculate this this way</strong>, we have to estimate it stochastically somehow: <span class="math display">\[
+q_\pi(s, a) = \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma v_\pi(s') \right]
 \]</span></p>
+<p>The only difference is that, we have to construct <span class="math inline">\(p(s', r \mid s, a)\)</span> ourselves from experience from sampling.</p>
+<p>The next question is, how to do it?</p>
+<section id="monte-carlo-state-value" class="level2">
+<h2 class="anchored" data-anchor-id="monte-carlo-state-value">Monte Carlo (State Value)</h2>
+<p><strong>Goal</strong>: Given samples under <span class="math inline">\(\pi\)</span>, estimate <span class="math inline">\(q_\pi\)</span>.</p>
+<blockquote class="blockquote">
+<p><strong>We can express <span class="math inline">\(q_\pi\)</span>-estimation as <span class="math inline">\(v_\pi\)</span>-estimation.</strong> Imagine a new problem where: <span class="math display">\[
+S_t^{\text{new}} = (S_t, A_t)
+\]</span></p>
+</blockquote>
+<p>Any evaluation algorithm estimating <span class="math inline">\(v(s^{\text{new}})\)</span> would be estimating <span class="math inline">\(q_\pi(s, a)\)</span>.</p>
+<p>So basically what happening is that we do not have a policy anymore, instead, policy is now a part of the environment. But why do we want to do that? Because: - This is a generalization anyway, something applied to state value function V, also applied for action value function Q. - It simplifies our analysis, <strong>reduces</strong> the problem to a <strong>simpler problem</strong> Markov Reward Process (MRP), which is MDP without actions (s1,r1,s2,r2,s3,r3,…)</p>
+<p>OK, but still, how to do it?</p>
+<p><strong>Start</strong> with a random value function: <span class="math inline">\(V(s) = \frac{1}{|S|}\)</span></p>
+<p><strong>Collect sampling trajectories</strong> <span class="math inline">\(M\)</span> trajectory samples: <span class="math display">\[
+s_0^m \quad r_1^m \quad s_1^m \quad \cdots \quad s_{T_m}^m \qquad m = 1, \ldots, M
+\]</span></p>
+<p><strong>The Goal</strong>: Use <em>averages</em> to approximate <span class="math inline">\(v_\pi(s)\)</span>: <span class="math display">\[
+v_\pi(s) = \mathbb{E}_\pi[G_t \mid S_t = s] \approx \frac{1}{C(s)} \sum_{m=1}^M \sum_{\tau=0}^{T_m - 1} \mathbb{I}[s_\tau^m = s] \, g_\tau^m
+\]</span> where: <span class="math display">\[
+\mathbb{I}[s_\tau^m = s] =
+\begin{cases}
+1 &amp; \text{if } s_\tau^m = s \\
+0 &amp; \text{otherwise}
+\end{cases}
+\]</span> <span class="math display">\[
+g_\tau^m = R_{t+1}^m + \gamma R_{t+2}^m + \gamma^2 R_{t+3}^m + \dots + \gamma^{T - t - 1} R_T^m
+\]</span></p>
+<p>For every sample trajectory <span class="math inline">\(m\)</span>, at any step <span class="math inline">\(\tau\)</span> in that trajectory, check if the state <span class="math inline">\(g_\tau^m\)</span> of that step is the <span class="math inline">\(s\)</span> we are interested in, then include its return <span class="math inline">\(g_\tau^m\)</span> in the sum, then normalize by <span class="math inline">\(C(s)\)</span>, the total number of times state <span class="math inline">\(s\)</span> was visited.</p>
+<p>At this moment I just realized that: the state will get <strong>higher return, if its nearer to the beginning of a trajectory</strong>, if u dont believe, have a look at <span class="math inline">\(g_\tau^m\)</span> again ^^.</p>
+<p>Btw, to calculate return <span class="math inline">\(g_\tau^m\)</span>, maybe you already know, we have to calculate from the terminate state first <span class="math inline">\(R_T^m\)</span>, where we know if the reward <span class="math inline">\(R_T^m\)</span> is 0 or 1 (reached the goal or not), then slowly trace backward with addding <span class="math inline">\(\gamma\)</span></p>
+<p>And to make sure you understand it, <span class="math inline">\(v_\pi(s)\)</span> is just like <span class="math inline">\(G\)</span>, but <span class="math inline">\(G\)</span> is mostly binded to the trajectory and a policy, therefore the function <span class="math inline">\(v_\pi(s)\)</span> is actually <span class="math inline">\(G\)</span>!!!</p>
+<p><strong>How to get to that Goal?</strong> to apply after the <span class="math inline">\(m\)</span>-th sample: <span class="math display">\[
+V(s_t^m) \leftarrow V(s_t^m) + \alpha \left( g_t^m - V(s_t^m) \right)
+\]</span></p>
+<p>… then it will slowly converge to <strong>the Goal above</strong> …</p>
+<p>BUT, how do we extend this to update our <strong>action</strong> ?</p>
+</section>
+<section id="monte-carlo-action-value" class="level2">
+<h2 class="anchored" data-anchor-id="monte-carlo-action-value">Monte Carlo (Action Value)</h2>
+<p>Since we also have a deterministic set of action <span class="math inline">\(a \in \mathcal{A}(s)\)</span>, therefore we can extend the <strong>state value</strong> above to <strong>action value</strong> like this, it is equivalent:</p>
+<p><strong>Start</strong> also with <span class="math inline">\(Q(s,a) = \frac{1}{|SxA|}\)</span> or just simply 0</p>
+<p>Basically it just create a finer Q-table.</p>
+<p><strong>The Goal</strong> <span class="math display">\[
+Q_\pi(s,a) = \mathbb{E}_\pi[G_t \mid S_t = s, A_t = a] \approx \frac{1}{C(s, a)} \sum_{m=1}^M \sum_{\tau=0}^{T_m - 1} \mathbb{I}[(s,a)_\tau^m = (s,a)] \, g_\tau^m
+\]</span></p>
+<p><strong>How to get to that goal?</strong> <span class="math display">\[
+Q(s_t^m, a_t^m) \leftarrow Q(s_t^m, a_t^m) + \alpha \left( g_t^m - Q(s_t^m, a_t^m) \right)
+\]</span></p>
+<p>… Then it will slowly converge <strong>the Goal above</strong> …</p>
+<p>Then we just argmax over action at each state, thats how we get optimal action.</p>
+</section>
+<section id="sum-up-constant-α-mc-algorithm-pi-approx-pi" class="level2">
+<h2 class="anchored" data-anchor-id="sum-up-constant-α-mc-algorithm-pi-approx-pi">Sum up: Constant-α MC Algorithm <span class="math inline">\(\pi \approx \pi^*\)</span></h2>
+<p><strong>Algorithm inputs</strong>: <span class="math inline">\(\epsilon &gt; 0\)</span>, <span class="math inline">\(\alpha \in (0, 1]\)</span>, <span class="math inline">\(M \in \mathbb{N}\)</span></p>
+<p><strong>Initialize arbitrarily</strong>:</p>
+<ul>
+<li><span class="math inline">\(\pi \leftarrow\)</span> some <span class="math inline">\(\epsilon\)</span>-soft policy<br>
+</li>
+<li><span class="math inline">\(Q(s,a) \leftarrow\)</span> some value for <span class="math inline">\(s \in \mathcal{S},\ a \in \mathcal{A}(s)\)</span> (like a random Q-Table hehe)</li>
+</ul>
+<p><strong>For</strong> <span class="math inline">\(m = 1, \dots, M\)</span>:</p>
+<ul>
+<li><p>Sample a trajectory under policy <span class="math inline">\(\pi\)</span>:<br>
+<span class="math inline">\(s_0^m, a_0^m, r_1^m, \dots, a_{T_m - 1}^m, r_{T_m}^m\)</span></p></li>
+<li><p><strong>For (literally EACH - EVERY SINGLE)</strong> <span class="math inline">\(t = 0, \dots, T_m - 1\)</span>:</p>
+<ul>
+<li><p>Compute return (the best way is just to calculate backwards then slowly add <span class="math inline">\(\gamma\)</span> like Gonkee ^^):<br>
+<span class="math inline">\(g_t^m \leftarrow r_{t+1}^m + \gamma r_{t+2}^m + \dots\)</span></p></li>
+<li><p>Update Q-value:<br>
+<span class="math display">\[
+Q(s_t^m, a_t^m) \leftarrow Q(s_t^m, a_t^m) + \alpha(g_t^m - Q(s_t^m, a_t^m))
+\]</span></p></li>
+</ul></li>
+<li><p>Update policy:<br>
+<span class="math inline">\(\pi \leftarrow \epsilon\text{-greedy}(Q)\)</span></p></li>
+</ul>
+<p>Where <span class="math inline">\(\pi \leftarrow \epsilon\text{-greedy}(Q)\)</span> is specified as follows: <span class="math display">\[
+a^* \leftarrow \operatorname{argmax}_a Q(s_t^m, a) \quad \text{(ties broken arbitrarily)}
+\]</span></p>
+<p>For all <span class="math inline">\(a \in \mathcal{A}(s_t^m)\)</span>: (this means to balance the policy to avoid a local optimal) <span class="math display">\[
+\pi(a|s_t^m) \leftarrow
+\begin{cases}
+1 - \epsilon + \frac{\epsilon}{|\mathcal{A}(s_t^m)|} &amp; \text{if } a = a^* \\
+\frac{\epsilon}{|\mathcal{A}(s_t^m)|} &amp; \text{if } a \neq a^*
+\end{cases}
+\]</span></p>
+<p>(<span class="math inline">\(|\mathcal{A}(s_t^m)| = \text{number of actions in } \mathcal{A}(s_t^m)\)</span>)</p>
+<p>then back to the loop <strong>For</strong> <span class="math inline">\(m = 1, \dots, M\)</span> again and again …</p>
+</section>
+<section id="off-policy" class="level2">
+<h2 class="anchored" data-anchor-id="off-policy">Off-Policy</h2>
+<p>The problem is, as seen in the Blackjack example, lack of sample leads to local-optimal bias model</p>
+<p>=&gt; <strong>Goal: more variance</strong></p>
+<p>Sample a trajectory under a different policy <span class="math inline">\(b\)</span>: <span class="math inline">\(s_0^m, a_0^m, r_1^m, \dots, a_{T_m - 1}^m, r_{T_m}^m\)</span>. But the rest of the algorithm stays the same.</p>
+<p>OK, but how to make sampling policy <span class="math inline">\(b\)</span> effect the main behavior policy <span class="math inline">\(\pi\)</span>?</p>
+<section id="relationship-between-sampling-policy-b-vs-main-behavior-policy-pi" class="level3">
+<h3 class="anchored" data-anchor-id="relationship-between-sampling-policy-b-vs-main-behavior-policy-pi">Relationship between sampling policy <span class="math inline">\(b\)</span> vs main behavior policy <span class="math inline">\(\pi\)</span>?</h3>
+<p>We want: <span class="math display">\[
+q_\pi(s, a) = \mathbb{E}_\pi[G_t|S_t = s, A_t = a]
+\]</span></p>
+<p>Sampled data under <span class="math inline">\(b\)</span> means this is what we actually estimated: <span class="math display">\[
+\mathbb{E}_b[G_t|S_t = s, A_t = a]
+\]</span></p>
+<p>Therefore we use Importance Sampling to bring them to <span class="math inline">\(\pi\)</span>: <span class="math display">\[
+q_\pi(s, a) = \mathbb{E}_b\left[\frac{p_\pi(G_t)}{p_b(G_t)}G_t|S_t = s, A_t = a\right]
+\]</span> where <span class="math inline">\(\rho\)</span> is the importance sampling ratio: <span class="math display">\[
+\frac{p_\pi(G_t)}{p_b(G_t)} = \rho = \prod_{\tau=t+1}^{T-1} \frac{\pi(A_\tau|S_\tau)}{b(A_\tau|S_\tau)}
+\]</span></p>
+</section>
+</section>
+<section id="sum-up-off-policy-constant-alpha-mc-for-pi-approx-pi" class="level2">
+<h2 class="anchored" data-anchor-id="sum-up-off-policy-constant-alpha-mc-for-pi-approx-pi">Sum up: Off-Policy Constant-<span class="math inline">\(\alpha\)</span> MC for <span class="math inline">\(\pi \approx \pi^*\)</span></h2>
+<p><strong>Algorithm inputs</strong>: <span class="math inline">\(b\)</span> (behavior policy), <span class="math inline">\(\alpha \in (0, 1]\)</span>, <span class="math inline">\(M \in \mathbb{N}\)</span></p>
+<p><strong>Initialize arbitrarily</strong>:</p>
+<ul>
+<li><span class="math inline">\(\pi \leftarrow\)</span> some policy</li>
+<li><span class="math inline">\(Q(s, a) \leftarrow\)</span> some value for <span class="math inline">\(s \in \mathcal{S}, a \in \mathcal{A}(s)\)</span> (also the random Q-Table above hehe)</li>
+</ul>
+<p><strong>For</strong> <span class="math inline">\(m = 1, \dots, M\)</span>:</p>
+<p>Under <span class="math inline">\(b\)</span> sample: <span class="math inline">\(s_0^m, a_0^m, r_1^m, \dots, a_{T_m-1}^m, r_{T_m}^m\)</span></p>
+<ul>
+<li><p><strong>For</strong> <span class="math inline">\(t = 0, \dots, T_m - 1\)</span>:</p>
+<ul>
+<li><p><span class="math inline">\(\rho_t^m \leftarrow \prod_{\tau=t+1}^{T_m-1} \frac{\pi(a_\tau^m|s_\tau^m)}{b(a_\tau^m|s_\tau^m)}\)</span> (or 1 if <span class="math inline">\(t+1 &gt; T_m-1\)</span>)</p></li>
+<li><p>Compute return: <span class="math inline">\(g_t^m \leftarrow \rho_t^m(r_{t+1}^m + \gamma r_{t+2}^m + \dots)\)</span></p></li>
+<li><p>Update Q-Value: <span class="math inline">\(Q(s_t^m, a_t^m) \leftarrow Q(s_t^m, a_t^m) + \alpha(g_t^m - Q(s_t^m, a_t^m))\)</span></p></li>
+<li><p>Update policy: <span class="math inline">\(\pi(s_t^m) \leftarrow \operatorname{argmax}_a Q(s_t^m, a)\)</span> (ties broken arbitrarily)</p></li>
+</ul>
+<p>Note that at Update Policy: we do not need the <span class="math inline">\(\pi\)</span>-greedy as above, because now using behavior-policy <span class="math inline">\(b\)</span>, we could already diverse out for a more global view</p></li>
+</ul>
+<p><strong>BUT</strong>, off policy MC has too much variance, therefore the next technique … Temporal Difference</p>
+<p>Before we continue, let’s see where is exactly the point of model-free MC learning:</p>
+</section>
+</section>
+<section id="compare-model-based-vs-model-free" class="level1">
+<h1>Compare: Model-Based vs Model-Free</h1>
+<p><strong>Similarity:</strong> they actually does update the same thing: state value V, or action value Q</p>
+<p><strong>Difference:</strong> <strong>Model-based</strong> approaches assume knowledge of, or explicitly learn, a model of the environment <span class="math inline">\(p(s', r \mid s, a)\)</span>. =&gt; can update value functions by <strong>bootstrapping</strong> from all possible successor states and rewards. =&gt; Updates based on <em>predictions</em> from the model, even without direct experience of every transition.</p>
+<p>Model-based update one state from its neighboring transition, therefore it updates this way, from its neighbors: <span class="math display">\[
+v_\pi(s) = \sum_{a \in \mathcal{A}(s)} \pi(a \mid s) \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma v_\pi(s') \right]
+\]</span> <span class="math display">\[
+q_\pi(s, a) = \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma \sum_{a' \in \mathcal{A}(s')} \pi(a' \mid s') q_\pi(s', a') \right]
+\]</span></p>
+<p><strong>Model-free</strong> approaches do not require or learn an explicit model of the environment. Instead, they learn value functions directly from <strong>experience sampled through interactions with the environment</strong>. Updates are performed based on actual observed transitions and returns within a single trajectory (or a small batch of trajectories). This means that updates are driven by the specific sequence of states, actions, and rewards encountered. Model-free methods effectively update “within their trajectory” rather than relying on a global model.</p>
+<p>But Model-free updates within its trajectory: <span class="math display">\[
+V(s_t^m) \leftarrow V(s_t^m) + \alpha \left( g_t^m - V(s_t^m) \right)
+\]</span> <span class="math display">\[
+Q(s_t^m, a_t^m) \leftarrow Q(s_t^m, a_t^m) + \alpha \left( g_t^m - Q(s_t^m, a_t^m) \right)
+\]</span></p>
+<p>so model-free does not have access to p(s′,r∣s,a), why does it not try to learn it - like learning the interaction with neighboring states? instead of having to learn from within a full trajectory? (start with DeepSeek tmr)</p>
 </section>
 <section id="monte-carlo-vs.-temporal-difference" class="level1">
 <h1>Monte Carlo vs.&nbsp;Temporal Difference</h1>
@@ -496,6 +642,7 @@ Q_*(s_t, a_t) = \mathbb{E} \left[ r_t + \gamma \max_a Q_*(s_{t+1}, a) \right]
 <p><em>Note:</em> <span class="math display">\[ \mathbb{E}[\cdot] \]</span> = expected value = weighted average according to probabilities</p>
 </blockquote>
 <p>=&gt; That means, eventhough we do not have world model, when we do sampling, we still can gather enough information near to it</p>
+
 
 
 </section>
