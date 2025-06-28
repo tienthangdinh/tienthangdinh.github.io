@@ -306,12 +306,12 @@ G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots + \gamma^{T - t - 1} R
 <p>Derivation of this relationship:</p>
 <p><span class="math inline">\(V_\pi(s) = \sum_a \pi(a \mid s) Q_\pi(s, a)\)</span> (semantically true because)</p>
 <p><span class="math inline">\(V_\pi(s) = \sum_a \pi(a \mid s) \mathbb{E}_\pi[G_t \mid s_t = s, a_t = a]\)</span></p>
-<p><span class="math inline">\(V_\pi(s) = \sum_a \pi(a \mid s) \mathbb{E}_\pi[R_{t+1} + \gamma G_{t+1} \mid s_t = s, a_t = a]\)</span> (because $ [G_{t+1} s, a] = [V_(S_{t+1}) s, a]$)</p>
+<p><span class="math inline">\(V_\pi(s) = \sum_a \pi(a \mid s) \mathbb{E}_\pi[R_{t+1} + \gamma G_{t+1} \mid s_t = s, a_t = a]\)</span> (because <span class="math inline">\(\mathbb{E}[G_{t+1} \mid s, a] = \mathbb{E}[V_\pi(S_{t+1}) \mid s, a]\)</span>)</p>
 <p><span class="math inline">\(V_\pi(s) = \sum_a \pi(a \mid s) \mathbb{E}_\pi[R_{t+1} + \gamma V_\pi(S_{t+1}) \mid s_t = s, a_t = a]\)</span></p>
 <p><span class="math inline">\(V_\pi(s) = \sum_a \pi(a \mid s) \sum_{s',r} p(s',r \mid s,a)[r + \gamma V_\pi(s')]\)</span></p>
 <section id="the-bellman-equations" class="level2">
 <h2 class="anchored" data-anchor-id="the-bellman-equations">The Bellman Equations</h2>
-<p>For <em>any</em> policy ( ), all ( s ), and all ( a (s) ):</p>
+<p>For <em>any</em> policy <span class="math inline">\(\pi\)</span>, all <span class="math inline">\(s \in \mathcal{S}\)</span>, and all <span class="math inline">\(a \in \mathcal{A}(s)\)</span>:</p>
 <p><strong>State-value function:</strong></p>
 <p><span class="math display">\[
 v_\pi(s) = \sum_{a \in \mathcal{A}(s)} \pi(a \mid s) \, q_\pi(s, a) \tag{1}
