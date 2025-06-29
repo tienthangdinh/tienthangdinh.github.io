@@ -215,9 +215,10 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#q-why-do-model-free-methods-not-learn-the-environments-transition-probabilities-psrsa-why-do-they-learn-within-a-trajectory-instead-of-interacting-with-neighboring-states" id="toc-q-why-do-model-free-methods-not-learn-the-environments-transition-probabilities-psrsa-why-do-they-learn-within-a-trajectory-instead-of-interacting-with-neighboring-states" class="nav-link" data-scroll-target="#q-why-do-model-free-methods-not-learn-the-environments-transition-probabilities-psrsa-why-do-they-learn-within-a-trajectory-instead-of-interacting-with-neighboring-states">Q: Why do model-free methods not learn the environment’s transition probabilities <span class="math inline">\(p(s',r|s,a)\)</span>? Why do they learn “within a trajectory” instead of interacting with neighboring states?</a></li>
   </ul></li>
-  <li><a href="#monte-carlo-vs.-temporal-difference" id="toc-monte-carlo-vs.-temporal-difference" class="nav-link" data-scroll-target="#monte-carlo-vs.-temporal-difference">Monte Carlo vs.&nbsp;Temporal Difference</a>
+  <li><a href="#temporal-difference" id="toc-temporal-difference" class="nav-link" data-scroll-target="#temporal-difference">Temporal Difference</a>
   <ul class="collapse">
-  <li><a href="#value-function" id="toc-value-function" class="nav-link" data-scroll-target="#value-function">Value Function</a></li>
+  <li><a href="#n-step-temporal-difference-learning" id="toc-n-step-temporal-difference-learning" class="nav-link" data-scroll-target="#n-step-temporal-difference-learning">n-step Temporal Difference Learning</a></li>
+  <li><a href="#why-is-td-better" id="toc-why-is-td-better" class="nav-link" data-scroll-target="#why-is-td-better">Why is TD better?</a></li>
   </ul></li>
   <li><a href="#policy-gradient-methods" id="toc-policy-gradient-methods" class="nav-link" data-scroll-target="#policy-gradient-methods">Policy Gradient Methods</a></li>
   <li><a href="#q-learning-variants" id="toc-q-learning-variants" class="nav-link" data-scroll-target="#q-learning-variants">Q-Learning Variants</a>
@@ -225,9 +226,7 @@ window.Quarto = {
   <li><a href="#sarsa-on-policy" id="toc-sarsa-on-policy" class="nav-link" data-scroll-target="#sarsa-on-policy">SARSA (On-policy)</a></li>
   <li><a href="#q-learning-off-policy" id="toc-q-learning-off-policy" class="nav-link" data-scroll-target="#q-learning-off-policy">Q-Learning (Off-policy)</a></li>
   </ul></li>
-  <li><a href="#bellman-optimality-equation" id="toc-bellman-optimality-equation" class="nav-link" data-scroll-target="#bellman-optimality-equation">Bellman Optimality Equation</a></li>
-  <li><a href="#exploration-vs.-exploitation" id="toc-exploration-vs.-exploitation" class="nav-link" data-scroll-target="#exploration-vs.-exploitation">Exploration vs.&nbsp;Exploitation</a></li>
-  <li><a href="#sample-efficiency" id="toc-sample-efficiency" class="nav-link" data-scroll-target="#sample-efficiency">Sample Efficiency</a>
+  <li><a href="#bellman-optimality-equation" id="toc-bellman-optimality-equation" class="nav-link" data-scroll-target="#bellman-optimality-equation">Bellman Optimality Equation</a>
   <ul class="collapse">
   <li><a href="#credit-assignment-problem" id="toc-credit-assignment-problem" class="nav-link" data-scroll-target="#credit-assignment-problem">Credit assignment problem</a></li>
   </ul></li>
@@ -516,36 +515,38 @@ Q(s_t^m, a_t^m) \leftarrow Q(s_t^m, a_t^m) + \alpha \left( g_t^m - Q(s_t^m, a_t^
 <section id="q-why-do-model-free-methods-not-learn-the-environments-transition-probabilities-psrsa-why-do-they-learn-within-a-trajectory-instead-of-interacting-with-neighboring-states" class="level3">
 <h3 class="anchored" data-anchor-id="q-why-do-model-free-methods-not-learn-the-environments-transition-probabilities-psrsa-why-do-they-learn-within-a-trajectory-instead-of-interacting-with-neighboring-states">Q: Why do model-free methods not learn the environment’s transition probabilities <span class="math inline">\(p(s',r|s,a)\)</span>? Why do they learn “within a trajectory” instead of interacting with neighboring states?</h3>
 <ol type="1">
-<li><p><strong>Complexity of Learning the Model:</strong> Learning model of the environment (<span class="math inline">\(p(s',r|s,a)\)</span>) can be extremely challenging in complex, high-dimensional environments (e.g., video games, robotic control). The number of possible states, actions, and transitions can be astronomically large. Even then, the result learned model would only be an <em>estimate</em>, that is not perfectly correct.</p></li>
-<li><p><strong>Directness vs.&nbsp;Indirectness:</strong> Ultimate Goal: to find an optimal policy <span class="math inline">\(\pi\)</span> or value function <span class="math inline">\(V_\pi\)</span>. =&gt; direct route: they learn the value functions or the policy <em>directly from real-world experience</em>. Instead of first learning a model <span class="math inline">\(p(s',r|s,a)\)</span>, then using that model to derive value functions <span class="math inline">\(V_\pi\)</span>, and finally using value functions to determine the policy <span class="math inline">\(\pi\)</span>. This direct approach can be more computationally efficient and, in some cases, more sample-efficient (in terms of real-world interactions).</p></li>
+<li><p><strong>Complexity of Learning the Model:</strong> Learning model of the environment (<span class="math inline">\(p(s',r|s,a)\)</span>) can be extremely challenging in complex, high-dimensional environments (e.g., video games, robotic control). gridworld with 100 states and 4 actions already requires estimating 100×4×100 = 40,000 transition probabilities.</p></li>
+<li><p><strong>Trajectory has direct ground truth to the problem</strong> Ultimate Goal: to find an optimal policy <span class="math inline">\(\pi\)</span> or value function <span class="math inline">\(V_\pi\)</span>. =&gt; direct route: they learn the value functions or the policy <em>directly from real-world experience</em>. Instead of first learning a model <span class="math inline">\(p(s',r|s,a)\)</span>, then using that model to derive value functions <span class="math inline">\(V_\pi\)</span>, and finally using value functions to determine the policy <span class="math inline">\(\pi\)</span>.</p></li>
 </ol>
 </section>
 </section>
-<section id="monte-carlo-vs.-temporal-difference" class="level1">
-<h1>Monte Carlo vs.&nbsp;Temporal Difference</h1>
-<p><strong>Monte Carlo</strong>:</p>
-<ul>
-<li>Updates happen after entire episodes</li>
-<li>Can’t assign credit to individual steps within an episode</li>
-<li><strong>Given a (state, action), What is my return Gt?</strong></li>
-<li>we get good episodes and bad episodes</li>
-<li>good episode: all actions evaluated better</li>
-<li>bad episode: all actions evaluated worse</li>
-<li>have to wait for episode to end to wait for the return to adjust evaluation for actions</li>
-<li>within an episode, we dont know what subpath made the episode bad or good</li>
-</ul>
-<p>=&gt; can only rely on large number of samplings</p>
-<p><strong>Temporal Difference (TD)</strong>:</p>
-<ul>
-<li>Updates happen at each time step</li>
-<li>More efficient and faster convergence</li>
-<li>action by action based (instead of episode by episode based)</li>
-<li>For each (state,action) compare rewards difference with (state+1, action+1)</li>
-</ul>
-<section id="value-function" class="level2">
-<h2 class="anchored" data-anchor-id="value-function">Value Function</h2>
-<p>keep track of the average return Gt expected when following a certain policy pi at a state (s) or (state, action) (s,a) - state value: V_pi(s) - action value: Q_pi(s,a) - actually V_pi(s) = Expected[Q_pi(a,s)]</p>
-<p>Goal: best case scenario (optimal) V<em>(s), Q</em>(s,a)</p>
+<section id="temporal-difference" class="level1">
+<h1>Temporal Difference</h1>
+<section id="n-step-temporal-difference-learning" class="level2">
+<h2 class="anchored" data-anchor-id="n-step-temporal-difference-learning">n-step Temporal Difference Learning</h2>
+<p>Recall from the MC approach: <span class="math display">\[
+V(s_t^m) \leftarrow V(s_t^m) + \alpha(g_t^m - V(s_t^m))
+\]</span></p>
+<p>where: <span class="math inline">\(g_t^m \leftarrow r_{t+1}^m + \gamma r_{t+2}^m + \dots\)</span></p>
+<p><strong>n-STEP TD</strong>: Replace the target, <span class="math inline">\(g_t^m\)</span>, with: <span class="math display">\[
+g_{t:t+n}^m = r_{t+1}^m + \gamma r_{t+2}^m + \dots + \gamma^{n-1}r_{t+n}^m + \gamma^n V(s_{t+n}^m)
+\]</span></p>
+<p>where <span class="math inline">\(V(s_{t+n}^m)\)</span> is actually no different than <span class="math inline">\(g_{t+n}^m\)</span>, but instead of waiting for the trajectory to finish the episode then calculate backward, we just need to wait for <span class="math inline">\(n\)</span> steps to <strong>BOOTSTRAPPING</strong> the existing <span class="math inline">\(V(s_{t+n})\)</span> calculated from older trajectories, think a little bit, it means the same thing with <span class="math inline">\(g_{t+n}\)</span> (accumulated return). If <span class="math inline">\(n = \infty\)</span>: TD is identical to MC.</p>
+</section>
+<section id="why-is-td-better" class="level2">
+<h2 class="anchored" data-anchor-id="why-is-td-better">Why is TD better?</h2>
+<ol type="1">
+<li><strong>Markov property:</strong> The RL environment has Markov property, that means the future depends only on the current state, not the history. And TD works based on that design, the update is just between neighboring states. Not like waiting for the whole trajectory like MC, <span class="math inline">\(g_t^m\)</span> needs backward calculation for the whole trajectory =&gt; strongly history based. <span class="math display">\[
+V(s_t^m) \leftarrow V(s_t^m) + \alpha(g_t^m - V(s_t^m))
+\]</span></li>
+</ol>
+<p>For example in TD(0) the use of <span class="math inline">\(V(s_{t+1}^m)\)</span> is very <strong>Markov property</strong>: <span class="math display">\[
+V(s_t^m) \leftarrow V(s_t^m) + \alpha(r_{t+1}^m + \gamma V(s_{t+1}^m) - V(s_t^m))
+\]</span></p>
+<ol start="2" type="1">
+<li><p><strong>Reduced Variance:</strong> The effect of MC is calculating accumulated result at each single trajectory, then averaging then in the end, this makes the result very specific to the sampled trajectories. But TD directly add the already smoothed <span class="math inline">\(+ \gamma^n V(s_{t+n}^m)\)</span></p></li>
+<li><p><strong>Online-learning</strong> we all know what that means</p></li>
+</ol>
 </section>
 </section>
 <section id="policy-gradient-methods" class="level1">
@@ -585,18 +586,6 @@ Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \max_a Q(s_{t+1}
 Q_*(s_t, a_t) = \mathbb{E} \left[ r_t + \gamma \max_a Q_*(s_{t+1}, a) \right]
 \]</span></p>
 <p>if a whole sequence is optimal, every subsequence must also be optimal, thats why Bellman add the max of the subsequence <em>a Q</em>*(s_{t+1}, a) to ensure this suboptimality</p>
-</section>
-<section id="exploration-vs.-exploitation" class="level1">
-<h1>Exploration vs.&nbsp;Exploitation</h1>
-<ul>
-<li><strong>Exploration</strong>: Random actions (e.g., <span class="math inline">\(\epsilon\)</span>-greedy with <span class="math inline">\(\epsilon &gt; 0\)</span>)</li>
-<li><strong>Exploitation</strong>: Choose action that maximizes <span class="math inline">\(Q(s, a)\)</span></li>
-</ul>
-<p>Balance is essential during training.</p>
-</section>
-<section id="sample-efficiency" class="level1">
-<h1>Sample Efficiency</h1>
-<p>Refers to how quickly a method converges given the number of samples (episodes or steps).</p>
 <section id="credit-assignment-problem" class="level2">
 <h2 class="anchored" data-anchor-id="credit-assignment-problem">Credit assignment problem</h2>
 <p>within an episode, figure out what subpath made the episode bad or good a.k.a individual action impact on the episode =&gt;</p>

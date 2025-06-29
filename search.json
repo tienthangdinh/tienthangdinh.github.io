@@ -70,11 +70,18 @@
     "text": "Sum up: Off-Policy Constant-\\(\\alpha\\) MC for \\(\\pi \\approx \\pi^*\\)\nAlgorithm inputs: \\(b\\) (behavior policy), \\(\\alpha \\in (0, 1]\\), \\(M \\in \\mathbb{N}\\)\nInitialize arbitrarily:\n\n\\(\\pi \\leftarrow\\) some policy\n\\(Q(s, a) \\leftarrow\\) some value for \\(s \\in \\mathcal{S}, a \\in \\mathcal{A}(s)\\) (also the random Q-Table above hehe)\n\nFor \\(m = 1, \\dots, M\\):\nUnder \\(b\\) sample: \\(s_0^m, a_0^m, r_1^m, \\dots, a_{T_m-1}^m, r_{T_m}^m\\)\n\nFor \\(t = 0, \\dots, T_m - 1\\):\n\n\\(\\rho_t^m \\leftarrow \\prod_{\\tau=t+1}^{T_m-1} \\frac{\\pi(a_\\tau^m|s_\\tau^m)}{b(a_\\tau^m|s_\\tau^m)}\\) (or 1 if \\(t+1 &gt; T_m-1\\))\nCompute return: \\(g_t^m \\leftarrow \\rho_t^m(r_{t+1}^m + \\gamma r_{t+2}^m + \\dots)\\)\nUpdate Q-Value: \\(Q(s_t^m, a_t^m) \\leftarrow Q(s_t^m, a_t^m) + \\alpha(g_t^m - Q(s_t^m, a_t^m))\\)\nUpdate policy: \\(\\pi(s_t^m) \\leftarrow \\operatorname{argmax}_a Q(s_t^m, a)\\) (ties broken arbitrarily)\n\nNote that at Update Policy: we do not need the \\(\\pi\\)-greedy as above, because now using behavior-policy \\(b\\), we could already diverse out for a more global view\n\nBUT, off policy MC has too much variance, therefore the next technique … Temporal Difference\nBefore we continue, let’s see where is exactly the point of model-free MC learning:"
   },
   {
-    "objectID": "posts/reinforcement-learning/index.html#value-function",
-    "href": "posts/reinforcement-learning/index.html#value-function",
+    "objectID": "posts/reinforcement-learning/index.html#n-step-temporal-difference-learning",
+    "href": "posts/reinforcement-learning/index.html#n-step-temporal-difference-learning",
     "title": "Reinforcement Learning",
-    "section": "Value Function",
-    "text": "Value Function\nkeep track of the average return Gt expected when following a certain policy pi at a state (s) or (state, action) (s,a) - state value: V_pi(s) - action value: Q_pi(s,a) - actually V_pi(s) = Expected[Q_pi(a,s)]\nGoal: best case scenario (optimal) V(s), Q(s,a)"
+    "section": "n-step Temporal Difference Learning",
+    "text": "n-step Temporal Difference Learning\nRecall from the MC approach: \\[\nV(s_t^m) \\leftarrow V(s_t^m) + \\alpha(g_t^m - V(s_t^m))\n\\]\nwhere: \\(g_t^m \\leftarrow r_{t+1}^m + \\gamma r_{t+2}^m + \\dots\\)\nn-STEP TD: Replace the target, \\(g_t^m\\), with: \\[\ng_{t:t+n}^m = r_{t+1}^m + \\gamma r_{t+2}^m + \\dots + \\gamma^{n-1}r_{t+n}^m + \\gamma^n V(s_{t+n}^m)\n\\]\nwhere \\(V(s_{t+n}^m)\\) is actually no different than \\(g_{t+n}^m\\), but instead of waiting for the trajectory to finish the episode then calculate backward, we just need to wait for \\(n\\) steps to BOOTSTRAPPING the existing \\(V(s_{t+n})\\) calculated from older trajectories, think a little bit, it means the same thing with \\(g_{t+n}\\) (accumulated return). If \\(n = \\infty\\): TD is identical to MC."
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#why-is-td-better",
+    "href": "posts/reinforcement-learning/index.html#why-is-td-better",
+    "title": "Reinforcement Learning",
+    "section": "Why is TD better?",
+    "text": "Why is TD better?\n\nMarkov property: The RL environment has Markov property, that means the future depends only on the current state, not the history. And TD works based on that design, the update is just between neighboring states. Not like waiting for the whole trajectory like MC, \\(g_t^m\\) needs backward calculation for the whole trajectory =&gt; strongly history based. \\[\nV(s_t^m) \\leftarrow V(s_t^m) + \\alpha(g_t^m - V(s_t^m))\n\\]\n\nFor example in TD(0) the use of \\(V(s_{t+1}^m)\\) is very Markov property: \\[\nV(s_t^m) \\leftarrow V(s_t^m) + \\alpha(r_{t+1}^m + \\gamma V(s_{t+1}^m) - V(s_t^m))\n\\]\n\nReduced Variance: The effect of MC is calculating accumulated result at each single trajectory, then averaging then in the end, this makes the result very specific to the sampled trajectories. But TD directly add the already smoothed \\(+ \\gamma^n V(s_{t+n}^m)\\)\nOnline-learning we all know what that means"
   },
   {
     "objectID": "posts/reinforcement-learning/index.html#sarsa-on-policy",
