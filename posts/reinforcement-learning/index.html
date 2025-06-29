@@ -211,7 +211,10 @@ window.Quarto = {
   </ul></li>
   <li><a href="#sum-up-off-policy-constant-alpha-mc-for-pi-approx-pi" id="toc-sum-up-off-policy-constant-alpha-mc-for-pi-approx-pi" class="nav-link" data-scroll-target="#sum-up-off-policy-constant-alpha-mc-for-pi-approx-pi">Sum up: Off-Policy Constant-<span class="math inline">\(\alpha\)</span> MC for <span class="math inline">\(\pi \approx \pi^*\)</span></a></li>
   </ul></li>
-  <li><a href="#compare-model-based-vs-model-free" id="toc-compare-model-based-vs-model-free" class="nav-link" data-scroll-target="#compare-model-based-vs-model-free">Compare: Model-Based vs Model-Free</a></li>
+  <li><a href="#compare-model-based-vs-model-free" id="toc-compare-model-based-vs-model-free" class="nav-link" data-scroll-target="#compare-model-based-vs-model-free">Compare: Model-Based vs Model-Free</a>
+  <ul class="collapse">
+  <li><a href="#q-why-do-model-free-methods-not-learn-the-environments-transition-probabilities-psrsa-why-do-they-learn-within-a-trajectory-instead-of-interacting-with-neighboring-states" id="toc-q-why-do-model-free-methods-not-learn-the-environments-transition-probabilities-psrsa-why-do-they-learn-within-a-trajectory-instead-of-interacting-with-neighboring-states" class="nav-link" data-scroll-target="#q-why-do-model-free-methods-not-learn-the-environments-transition-probabilities-psrsa-why-do-they-learn-within-a-trajectory-instead-of-interacting-with-neighboring-states">Q: Why do model-free methods not learn the environment’s transition probabilities <span class="math inline">\(p(s',r|s,a)\)</span>? Why do they learn “within a trajectory” instead of interacting with neighboring states?</a></li>
+  </ul></li>
   <li><a href="#monte-carlo-vs.-temporal-difference" id="toc-monte-carlo-vs.-temporal-difference" class="nav-link" data-scroll-target="#monte-carlo-vs.-temporal-difference">Monte Carlo vs.&nbsp;Temporal Difference</a>
   <ul class="collapse">
   <li><a href="#value-function" id="toc-value-function" class="nav-link" data-scroll-target="#value-function">Value Function</a></li>
@@ -498,19 +501,30 @@ q_\pi(s, a) = \mathbb{E}_b\left[\frac{p_\pi(G_t)}{p_b(G_t)}G_t|S_t = s, A_t = a\
 <section id="compare-model-based-vs-model-free" class="level1">
 <h1>Compare: Model-Based vs Model-Free</h1>
 <p><strong>Similarity:</strong> they actually does update the same thing: state value V, or action value Q</p>
-<p><strong>Difference:</strong> <strong>Model-based</strong> approaches assume knowledge of, or explicitly learn, a model of the environment <span class="math inline">\(p(s', r \mid s, a)\)</span>. =&gt; can update value functions by <strong>bootstrapping</strong> from all possible successor states and rewards. =&gt; Updates based on <em>predictions</em> from the model, even without direct experience of every transition.</p>
+<p><strong>Difference:</strong> <strong>Model-based (Breadth Approach)</strong> approaches assume knowledge of, or explicitly learn, a model of the environment <span class="math inline">\(p(s', r \mid s, a)\)</span>. =&gt; can update value functions by <strong>bootstrapping</strong> from all possible successor states and rewards. =&gt; Updates based on <em>predictions</em> from the model, even without direct experience of every transition.</p>
 <p>Model-based update one state from its neighboring transition, therefore it updates this way, from its neighbors: <span class="math display">\[
 v_\pi(s) = \sum_{a \in \mathcal{A}(s)} \pi(a \mid s) \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma v_\pi(s') \right]
 \]</span> <span class="math display">\[
 q_\pi(s, a) = \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma \sum_{a' \in \mathcal{A}(s')} \pi(a' \mid s') q_\pi(s', a') \right]
 \]</span></p>
-<p><strong>Model-free</strong> approaches do not require or learn an explicit model of the environment. Instead, they learn value functions directly from <strong>experience sampled through interactions with the environment</strong>. Updates are performed based on actual observed transitions and returns within a single trajectory (or a small batch of trajectories). This means that updates are driven by the specific sequence of states, actions, and rewards encountered. Model-free methods effectively update “within their trajectory” rather than relying on a global model.</p>
+<p><strong>Model-free (Depth Approach)</strong> approaches do not require or learn an explicit model of the environment. Instead, they learn value functions directly from <strong>experience sampled through interactions with the environment</strong>. Updates are performed based on actual observed transitions and returns within a single trajectory (or a small batch of trajectories). This means that updates are driven by the specific sequence of states, actions, and rewards encountered. Model-free methods effectively update “within their trajectory” rather than relying on a global model.</p>
 <p>But Model-free updates within its trajectory: <span class="math display">\[
 V(s_t^m) \leftarrow V(s_t^m) + \alpha \left( g_t^m - V(s_t^m) \right)
 \]</span> <span class="math display">\[
 Q(s_t^m, a_t^m) \leftarrow Q(s_t^m, a_t^m) + \alpha \left( g_t^m - Q(s_t^m, a_t^m) \right)
 \]</span></p>
-<p>so model-free does not have access to p(s′,r∣s,a), why does it not try to learn it - like learning the interaction with neighboring states? instead of having to learn from within a full trajectory? (start with DeepSeek tmr)</p>
+<section id="q-why-do-model-free-methods-not-learn-the-environments-transition-probabilities-psrsa-why-do-they-learn-within-a-trajectory-instead-of-interacting-with-neighboring-states" class="level3">
+<h3 class="anchored" data-anchor-id="q-why-do-model-free-methods-not-learn-the-environments-transition-probabilities-psrsa-why-do-they-learn-within-a-trajectory-instead-of-interacting-with-neighboring-states">Q: Why do model-free methods not learn the environment’s transition probabilities <span class="math inline">\(p(s',r|s,a)\)</span>? Why do they learn “within a trajectory” instead of interacting with neighboring states?</h3>
+<p><strong>A:</strong> 1. <strong>Complexity of Learning the Model:</strong> Learning an accurate and comprehensive model of the environment (<span class="math inline">\(p(s',r|s,a)\)</span>) can be extremely challenging, especially in complex, high-dimensional environments (e.g., video games, robotic control). The number of possible states, actions, and transitions can be astronomically large. Representing and learning these probabilities accurately would require immense amounts of data and sophisticated function approximators. Even then, the learned model would only be an <em>estimate</em> and could contain errors that propagate, leading to suboptimal policies when used for planning.</p>
+<ol start="2" type="1">
+<li><p><strong>Directness vs.&nbsp;Indirectness:</strong> The ultimate goal in many RL problems is to find an optimal policy or value function. Model-free methods take a more direct route: they learn the value functions or the policy <em>directly from real-world experience</em>. They avoid the intermediate step of first learning a model, then using that model to derive value functions, and finally using value functions to determine the policy. This direct approach can be more computationally efficient and, in some cases, more sample-efficient (in terms of real-world interactions).</p></li>
+<li><p><strong>Data Efficiency vs.&nbsp;Sample Efficiency:</strong></p>
+<ul>
+<li><strong>Model-based methods</strong> are often <strong>data efficient</strong> because once they have a good model, they can perform extensive “planning” or “simulated experience” without needing further costly interactions with the real environment. They can generate vast amounts of synthetic data from their internal model to improve the policy. This is invaluable when real-world interactions are expensive, dangerous, or slow (e.g., training a robot, drug discovery).</li>
+<li><strong>Model-free methods</strong> are often considered <strong>sample efficient</strong> in the sense that they <em>directly use real experience</em> to update values or policies. They don’t expend resources on learning a model that might be inaccurate or unnecessary for the task. They excel when the environment’s model is unknown, too complex to learn, or when obtaining real-world samples isn’t prohibitively expensive.</li>
+</ul></li>
+</ol>
+</section>
 </section>
 <section id="monte-carlo-vs.-temporal-difference" class="level1">
 <h1>Monte Carlo vs.&nbsp;Temporal Difference</h1>
