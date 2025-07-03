@@ -1,10 +1,10 @@
 [
   {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "haha",
     "section": "",
-    "text": "About this blog"
+    "text": "Post With Code\n\n\n\nnews\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nJun 25, 2025\n\n\nHarlow Malloc\n\n\n\n\n\n\n\n\n\n\n\n\nReinforcement Learning\n\n\n\nmachine-learning\n\nRL\n\n\n\n\n\n\n\n\n\nJun 25, 2025\n\n\nDinh Tien Thang\n\n\n\n\n\n\n\n\n\n\n\n\nWelcome To My Blog\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nJun 22, 2025\n\n\nTristan O’Malley\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "posts/reinforcement-learning/index.html",
@@ -84,18 +84,88 @@
     "text": "Why is TD better?\n\nMarkov property: The RL environment has Markov property, that means the future depends only on the current state, not the history. And TD works based on that design, the update is just between neighboring states. Not like waiting for the whole trajectory like MC, \\(g_t^m\\) needs backward calculation for the whole trajectory =&gt; strongly history based. \\[\nV(s_t^m) \\leftarrow V(s_t^m) + \\alpha(g_t^m - V(s_t^m))\n\\]\n\nFor example in TD(0) the use of \\(V(s_{t+1}^m)\\) is very Markov property: \\[\nV(s_t^m) \\leftarrow V(s_t^m) + \\alpha(r_{t+1}^m + \\gamma V(s_{t+1}^m) - V(s_t^m))\n\\]\n\nReduced Variance: The effect of MC is calculating accumulated result at each single trajectory, then averaging then in the end, this makes the result very specific to the sampled trajectories. But TD directly add the already smoothed \\(+ \\gamma^n V(s_{t+n}^m)\\)\nOnline-learning we all know what that means"
   },
   {
-    "objectID": "posts/reinforcement-learning/index.html#sarsa-on-policy",
-    "href": "posts/reinforcement-learning/index.html#sarsa-on-policy",
+    "objectID": "posts/reinforcement-learning/index.html#what-does-larger-n-means",
+    "href": "posts/reinforcement-learning/index.html#what-does-larger-n-means",
     "title": "Reinforcement Learning",
-    "section": "SARSA (On-policy)",
-    "text": "SARSA (On-policy)\nGiven a (state, action), how much better or worse is my return Gt relative to the new state and the SPECIFIC action that I ended up taking?\n\\[\nQ(s_t, a_t) \\leftarrow Q(s_t, a_t) + \\alpha \\left[ r_t + \\gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \\right]\n\\] BUT: there are many actions, not just one action a+1 so what action to take? We do not have access to p(s’,a’|s,a) so we do not know But we can calculate what we can expect in the next state after we take an action a ## Expected SARSA Given a (state, action), how much better or worse is my return Gt relative to the new state withh ALL actions AVERAGED OUT acording to policy probability pi? - we can calculate all the possible action at the next state and take the expected average with the policy probability (expected SARSA) \\[\nQ(s_t, a_t) \\leftarrow Q(s_t, a_t) + \\alpha \\left[ r_t + \\gamma \\sum_a \\pi(a \\mid s_{t+1}) Q(s_{t+1}, a) - Q(s_t, a_t) \\right]\n\\]"
+    "section": "What does larger n means?",
+    "text": "What does larger n means?\nIncrease the bias = utilize more from the knowledge from this trajectory, instead of keep learning from the average.\nE.g., for a single episode with TD(8):\n\nAll states from \\(S_0\\) up to \\(S_{k-8}\\) (if \\(k \\ge 8\\)): Will be updated using a full 8-step return, bootstrapping from \\(V(S_{t+8})\\) =&gt; very average in the beginning\nThe last 7 states (\\(S_{k-7}, \\dots, S_{k-1}\\)): Will be updated using a return that effectively “runs out of steps” before 8. Their targets will be a mix of actual rewards leading to the terminal state, like Monte Carlo =&gt; direct reward in the end"
   },
   {
-    "objectID": "posts/reinforcement-learning/index.html#q-learning-off-policy",
-    "href": "posts/reinforcement-learning/index.html#q-learning-off-policy",
+    "objectID": "posts/reinforcement-learning/index.html#sum-up-on-policy-temporal-difference-n-step-sarsa",
+    "href": "posts/reinforcement-learning/index.html#sum-up-on-policy-temporal-difference-n-step-sarsa",
     "title": "Reinforcement Learning",
-    "section": "Q-Learning (Off-policy)",
-    "text": "Q-Learning (Off-policy)\nGiven a (state, action), how much better or worse is my return Gt relative to the new state with the best action? \\[\nQ(s_t, a_t) \\leftarrow Q(s_t, a_t) + \\alpha \\left[ r_t + \\gamma \\max_a Q(s_{t+1}, a) - Q(s_t, a_t) \\right]\n\\]"
+    "section": "Sum up: On-Policy Temporal Difference: n-step Sarsa",
+    "text": "Sum up: On-Policy Temporal Difference: n-step Sarsa\nModel-free control \\(\\rightarrow\\) use \\(Q(s, a)\\), not \\(V(s)\\).\nRedefine: \\[\ng_{t:t+n}^m = r_{t+1}^m + \\dots + \\gamma^{n-1}r_{t+n}^m + \\gamma^n Q(s_{t+n}^m, a_{t+n}^m)\n\\]\nUpdate rule: \\[\nQ(s_t^m, a_t^m) \\leftarrow Q(s_t^m, a_t^m) + \\alpha(g_{t:t+n}^m - Q(s_t^m, a_t^m))\n\\]"
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#q-learning",
+    "href": "posts/reinforcement-learning/index.html#q-learning",
+    "title": "Reinforcement Learning",
+    "section": "Q-Learning",
+    "text": "Q-Learning\n1-step TD Control—-target adjustment—-&gt; Q-Learning (off-policy).\nInstead of using \\(r_{t+1}^m + \\gamma Q(s_{t+1}^m, a_{t+1}^m)\\) (which is used in SARSA and relies on the next action taken by the policy), Q-Learning uses: \\[\nr_{t+1}^m + \\gamma \\max_{a} Q(s_{t+1}^m, a)\n\\]\nThe \\(\\max\\) operator means, regardless of which action the behavior policy \\(b\\) actually took, this target is formed by the best possible action from the next state \\(s_{t+1}^m\\) =&gt; Q-Learning an off-policy.\nTo describe what actually happens, it is like this: 1-step TD (SARSA-like): \\[\n\\dots s_0^m, \\underset{\\uparrow}{\\underline{a_0^m}}, r_1^m, s_1^m, \\underset{\\uparrow}{\\underline{a_1^m}}, r_2^m, s_2^m, \\underset{\\uparrow}{\\underline{a_2^m}}, r_3^m, s_3^m, \\dots\n\\] Updates for \\(Q(s_t, a_t)\\) occur after observing \\(s_{t+1}, a_{t+1}\\), using the target \\(r_{t+1} + \\gamma Q(s_{t+1}, a_{t+1})\\) where \\(a_{t+1}\\) is the action taken by the current policy.\n1-step Q-Learning: \\[\n\\dots  \\underset{\\uparrow}{\\underline{s_0^m}},a_0^m, r_1^m, \\underset{\\uparrow}{\\underline{s_1^m}},a_1^m, r_2^m, \\underset{\\uparrow}{\\underline{s_2^m}},a_2^m, r_3^m, \\dots\n\\] Updates for \\(Q(s_t, a_t)\\) occur after observing \\(s_{t+1}\\), using the target \\(r_{t+1} + \\gamma \\max_a Q(s_{t+1}, a)\\), where action \\(a_{t+1}\\) is observed but not used in forming the target for \\(Q(s_t, a_t)\\)."
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#expected-sarsa",
+    "href": "posts/reinforcement-learning/index.html#expected-sarsa",
+    "title": "Reinforcement Learning",
+    "section": "Expected Sarsa",
+    "text": "Expected Sarsa\n1-step Q-Learning —– \\(\\max\\) operator-&gt;average operator—&gt; Expected Sarsa \\[\nr_{t+1}^m + \\gamma \\max_{a} Q(s_{t+1}^m, a)\n\\] to using an expectation over all possible actions, weighted by the policy \\(\\pi\\): \\[\nr_{t+1}^m + \\gamma \\sum_{a} Q(s_{t+1}^m, a) \\pi(a|s_{t+1}^m)\n\\]\nAs presented (when the policy \\(\\pi\\) used in the target is the same as the behavior policy generating the data), this is an on-policy method.\nBut to make it off-policy, just need \\(\\text{policy generating the trajectory} \\neq \\pi \\text{ in target}\\)"
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#compare",
+    "href": "posts/reinforcement-learning/index.html#compare",
+    "title": "Reinforcement Learning",
+    "section": "Compare",
+    "text": "Compare\n\nSarsa has longer path, because it just took the action it actually took, which was most of the time exploratory, the one with \\(\\epsilon \\text{exploration}\\) policy that balance out\nQ-Learning does not use this \\(\\epsilon \\text{exploration}\\) policy, it uses \\(\\max\\) operator\nExpected Sarsa use weighted average, so yeah, always a safe choice."
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#summary-of-td",
+    "href": "posts/reinforcement-learning/index.html#summary-of-td",
+    "title": "Reinforcement Learning",
+    "section": "Summary of TD",
+    "text": "Summary of TD\nGoal of Q-Learning is updating Q-Table to optimal where: \\[\nQ_*(s_t, a_t) = \\mathbb{E} \\left[ r_t + \\gamma \\max_a Q_*(s_{t+1}, a) \\right]\n\\]\nAlso called Bellman Optimality Equation: every subsequence of a optimal sequence must also be optimal\nLearning Q-values:\n\nSARSA:\n\\[\nQ(s_t, a_t) \\leftarrow Q(s_t, a_t) + \\alpha \\left[ r_t + \\gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \\right]\n\\]\nExpected SARSA:\n\\[\nQ(s_t, a_t) \\leftarrow Q(s_t, a_t) + \\alpha \\left[ r_t + \\gamma \\sum_a \\pi(a \\mid s_{t+1}) Q(s_{t+1}, a) - Q(s_t, a_t) \\right]\n\\]\nQ-Learning:\n\\[\nQ(s_t, a_t) \\leftarrow Q(s_t, a_t) + \\alpha \\left[ r_t + \\gamma \\max_a Q(s_{t+1}, a) - Q(s_t, a_t) \\right]\n\\]\n\nLearning V-values:\n\\[\nV(s_t) \\leftarrow V(s_t) + \\alpha \\left[ r_t + \\gamma V(s_{t+1}) - V(s_t) \\right]\n\\]\nWhere \\(\\alpha\\) is the learning rate."
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#on-policy-evaluation-with-function-approximation",
+    "href": "posts/reinforcement-learning/index.html#on-policy-evaluation-with-function-approximation",
+    "title": "Reinforcement Learning",
+    "section": "On-Policy Evaluation with Function Approximation",
+    "text": "On-Policy Evaluation with Function Approximation\nGoal remains to approximate the state-value function \\(v_\\pi(s)\\). Data generated from a given fixed policy \\(\\pi\\).\nWe now learn a parameterized function \\(\\hat{v}(s, \\mathbf{w})\\), where:\n\n\\(\\mathbf{w} \\in \\mathbb{R}^d\\) is a vector of parameters\na state \\(s\\) as input\n\nWe learn \\(w\\) and hope that \\(v_\\pi(s) \\approx \\hat{v}(s, \\mathbf{w})\\)\nSince \\(d \\ll |\\mathcal{S}|\\), any change to \\(\\mathbf{w}\\) can simultaneously change \\(\\hat{v}(s, \\mathbf{w})\\) for many (or all) states \\(s\\). Different from tabular methods, where an update to \\(V(s)\\) for a specific state \\(s\\) affects only that state’s value.\nExample: two simple features for given image state \\(s\\):\n\n\\(x_1(s)\\): The average of all pixel values in the image.\n\\(x_2(s)\\): The standard deviation of all pixel values in the image.\n\n=&gt; feature vector \\(\\mathbf{x}(s) = \\begin{bmatrix} x_1(s) \\\\ x_2(s) \\end{bmatrix}\\)\nWith these features, we can construct a linear value function to approximate \\(v_\\pi(s)\\): \\[\n\\hat{v}(s, \\mathbf{w}) = \\mathbf{x}(s)^T \\mathbf{w}\n\\]"
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#goal-how-to-get-mathbfw",
+    "href": "posts/reinforcement-learning/index.html#goal-how-to-get-mathbfw",
+    "title": "Reinforcement Learning",
+    "section": "Goal: How to get \\(\\mathbf{w}\\)?",
+    "text": "Goal: How to get \\(\\mathbf{w}\\)?\nThe ‘best’ \\(\\mathbf{w}\\) minimizes: \\[\n\\overline{VE}(\\mathbf{w}) = \\sum_{s \\in \\mathcal{S}} \\mu(s)[v_\\pi(s) - \\hat{v}(s, \\mathbf{w})]^2\n\\] where \\(\\mu(\\cdot)\\) is a distribution over states (frequency of visiting each state).\n\nWe observe a surrogate for \\(v_\\pi(S_t)\\): \\(U_t\\): Since we don’t know \\(v_\\pi(S_t)\\) exactly, we use a sample-based estimate or target, \\(U_t\\), as a stand-in. This \\(U_t\\) could be the Monte Carlo return \\(G_t\\), or an n-step TD target \\(g_{t:t+n}\\), or a 1-step TD target \\((R_{t+1} + \\gamma \\hat{v}(S_{t+1}, \\mathbf{w}))\\).\n\nUpdate Rule we don’t have direct access to \\(v_\\pi(s)\\) for all states =&gt; Stochastic Gradient Descent (SGD) for updating our parameters \\(\\mathbf{w}\\): \\[\n\\mathbf{w} \\leftarrow \\mathbf{w} + \\alpha \\left[ U_t - \\hat{v}(S_t, \\mathbf{w}) \\right] \\nabla_{\\mathbf{w}} \\hat{v}(S_t, \\mathbf{w})\n\\] Where:\n\n\\(\\alpha\\) is the learning rate (step size).\n\\(\\left[ U_t - \\hat{v}(S_t, \\mathbf{w}) \\right]\\) is the TD error (or prediction error) based on our sample \\(U_t\\).\n\\(\\nabla_{\\mathbf{w}} \\hat{v}(S_t, \\mathbf{w})\\) is the gradient of our estimated value function with respect to its parameters \\(\\mathbf{w}\\), evaluated at state \\(S_t\\). This gradient tells us how to adjust \\(\\mathbf{w}\\) to change \\(\\hat{v}(S_t, \\mathbf{w})\\) in the desired direction."
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#how-to-obtain-the-target-u_t",
+    "href": "posts/reinforcement-learning/index.html#how-to-obtain-the-target-u_t",
+    "title": "Reinforcement Learning",
+    "section": "How to Obtain the Target \\(U_t\\)",
+    "text": "How to Obtain the Target \\(U_t\\)\nIn the Stochastic Gradient Descent update rule: \\[\n\\mathbf{w} \\leftarrow \\mathbf{w} + \\alpha \\left[ U_t - \\hat{v}(S_t, \\mathbf{w}) \\right] \\nabla_{\\mathbf{w}} \\hat{v}(S_t, \\mathbf{w})\n\\] The term \\(U_t\\) serves as our sample-based target for the true value \\(v_\\pi(S_t)\\). Since \\(v_\\pi(S_t)\\) is unknown, we must derive \\(U_t\\) from our observed experience. The choice of \\(U_t\\) determines whether our method leans towards Monte Carlo or Temporal Difference approaches:\n1. Monte Carlo Target: If the target \\(U_t\\) is the full Monte Carlo return from state \\(S_t\\) to the end of the episode, then we are using a Gradient Monte Carlo method: \\[\nU_t = G_t\n\\] where \\(G_t = R_{t+1} + \\gamma R_{t+2} + \\dots + \\gamma^{T-t-1}R_T\\) is the total discounted return observed from time step \\(t\\) until the terminal state \\(T\\).\n\nCharacteristics:\n\nUnbiased: If \\(G_t\\) is an unbiased estimate of \\(v_\\pi(S_t)\\) (which it is, on average), then using it as \\(U_t\\) can lead to the parameters \\(\\mathbf{w}\\) converging to a local optimum of the Mean Squared Value Error (\\(\\overline{VE}(\\mathbf{w})\\)).\nHigh Variance: \\(G_t\\) can be noisy due to the sum of many random rewards.\nRequires complete episodes: We must wait until the episode ends to compute \\(G_t\\).\n\n\n2. Temporal Difference (TD) Target: If the target \\(U_t\\) is derived using bootstrapping (i.e., using an estimate of the value of a future state), then we are using a Semi-Gradient TD method. The most common is the 1-step TD target: \\[\nU_t = R_{t+1} + \\gamma \\hat{v}(S_{t+1}, \\mathbf{w})\n\\] Here, \\(R_{t+1}\\) is the actual reward observed, and \\(\\hat{v}(S_{t+1}, \\mathbf{w})\\) is our current estimate of the value of the next state \\(S_{t+1}\\). For this specific update, \\(\\mathbf{w}\\) in \\(\\hat{v}(S_{t+1}, \\mathbf{w})\\) is usually the online network’s weights, not a target network’s weights in this basic formulation.\n\nCharacteristics:\n\nBiased: especially in the beginning with crappy initialized value \\(\\hat{v}(S_{t+1}, \\mathbf{w})\\).\nLower Variance: It typically has lower variance than the Monte Carlo target because it depends on only one actual reward and then uses a smoothed estimate for the rest of the future.\nOnline Learning: Updates can be performed after each single time step, without waiting for the end of an episode.\nSemi-Gradient: Since \\(U_t\\) depends on \\(\\mathbf{w}\\), our update rule is not a true gradient step. The gradient \\(\\nabla_{\\mathbf{w}} L(\\mathbf{w})\\) for the loss \\(\\left( (R_{t+1} + \\gamma \\hat{v}(S_{t+1}, \\mathbf{w})) - \\hat{v}(S_t, \\mathbf{w}) \\right)^2\\) would actually involve the derivative of \\(U_t\\) (\\(\\hat{v}(S_{t+1}, \\mathbf{w})\\)) with respect to \\(\\mathbf{w}\\). =&gt; semi-gradient means: \\(\\nabla_{\\mathbf{w}} \\hat{v}(S_{t+1}, \\mathbf{w})\\) is omitted for simplicity and stability, only taking \\(\\nabla_{\\mathbf{w}} \\hat{v}(S_{t}, \\mathbf{w})\\).\nNo Guarantee of Convergence (to Global Optimum): Because it’s not a true gradient of the overall \\(\\overline{VE}(\\mathbf{w})\\), we generally don’t guarantee convergence to the global optimum of the Mean Squared Value Error, even if the optimal \\(\\mathbf{w}\\) is unique. However, for linear function approximation, it can still converge to a local optimum. For non-linear approximators like neural networks, theoretical guarantees are weaker, but these methods still perform very well in practice.\n\n\nThe update rule remains: \\[\n\\mathbf{w} \\leftarrow \\mathbf{w} + \\alpha \\left[ R_{t+1} + \\gamma \\hat{v}(S_{t+1}, \\mathbf{w}) - \\hat{v}(S_t, \\mathbf{w}) \\right] \\nabla_{\\mathbf{w}} \\hat{v}(S_t, \\mathbf{w})\n\\]"
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#extension-to-on-policy-control-with-function-approximation",
+    "href": "posts/reinforcement-learning/index.html#extension-to-on-policy-control-with-function-approximation",
+    "title": "Reinforcement Learning",
+    "section": "Extension to On-Policy Control with Function Approximation",
+    "text": "Extension to On-Policy Control with Function Approximation\nSo far is just policy evaluation (approximating \\(v_\\pi(s)\\)). Now extend directly to control problems (finding an optimal policy), typically by approximating the action-value function \\(q_\\pi(s,a)\\) or \\(q_*(s,a)\\). \\[\n\\mathbf{w} \\leftarrow \\mathbf{w} + \\alpha \\left[ U_t - \\hat{q}(S_t, A_t, \\mathbf{w}) \\right] \\nabla_{\\mathbf{w}} \\hat{q}(S_t, A_t, \\mathbf{w})\n\\] Here, \\(\\hat{q}(S_t, A_t, \\mathbf{w})\\) is our function approximator’s estimate of the action-value for the state-action pair \\((S_t, A_t)\\) using parameters \\(\\mathbf{w}\\). The term \\(\\nabla_{\\mathbf{w}} \\hat{q}(S_t, A_t, \\mathbf{w})\\) is the gradient of this estimate with respect to \\(\\mathbf{w}\\).\nFor Semi-gradient 1-step Sarsa, the target \\(U_t\\) is defined as: \\[\nU_t = R_{t+1} + \\gamma \\hat{q}(S_{t+1}, A_{t+1}, \\mathbf{w})\n\\]\nSince both the action being evaluated (\\(A_t\\)) and the action used to construct the target (\\(A_{t+1}\\)) are chosen according to the same behavior policy (which is actively being improved based on \\(\\hat{q}\\)), this method is on-policy. The agent learns the value of the policy it is currently following, and this policy itself is improved through action selection methods (e.g., \\(\\epsilon\\)-greedy) based on the learned \\(\\hat{q}\\) values.\nExample: Linear Action-Value Function for the Mountain Car Task\nTo illustrate how function approximation can be used for action-value functions, let’s consider a scenario like The Mountain Car Task. We approximate the action-value function \\(\\hat{q}(s, a, \\mathbf{w})\\) using a linear function approximator instead of a Q-Table: \\[\n\\hat{q}(s, a, \\mathbf{w}) = \\begin{cases}\n    \\mathbf{w}_{-1}^T \\mathbf{x}(s) & \\text{if } a = -1 \\\\\n    \\mathbf{w}_{0}^T \\mathbf{x}(s) & \\text{if } a = 0 \\\\\n    \\mathbf{w}_{1}^T \\mathbf{x}(s) & \\text{if } a = 1\n\\end{cases}\n\\] Where:\n\naction \\(a\\) (-1, 0 -1)\n\\(\\mathbf{x}(s)\\) is the feature representation of the state \\(s\\) (length 120 decoded from position & velocity)\n\\(\\mathbf{w}_{-1}\\), \\(\\mathbf{w}_{0}\\), and \\(\\mathbf{w}_{1}\\) are distinct weight vectors, each corresponding to one of the possible actions.\nThe overall parameter vector \\(\\mathbf{w}\\) for the entire function approximator would be the concatenation of these individual action-specific weight vectors (i.e., \\(\\mathbf{w} = [\\mathbf{w}_{-1}, \\mathbf{w}_{0}, \\mathbf{w}_{1}]\\))."
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#extension-to-on-policy-control-with-function-approximation-1",
+    "href": "posts/reinforcement-learning/index.html#extension-to-on-policy-control-with-function-approximation-1",
+    "title": "Reinforcement Learning",
+    "section": "Extension to On-Policy Control with Function Approximation",
+    "text": "Extension to On-Policy Control with Function Approximation\nWe all know what that is, just that when we combine three things together:\n\noff-policy\nfunction approximation\nbootstrapping\n\nwe will have problem with convergence, which may be solved by the next topic …"
+  },
+  {
+    "objectID": "posts/reinforcement-learning/index.html#a-monte-carlo-style-policy-gradient-algorithm",
+    "href": "posts/reinforcement-learning/index.html#a-monte-carlo-style-policy-gradient-algorithm",
+    "title": "Reinforcement Learning",
+    "section": "A Monte Carlo Style Policy Gradient Algorithm",
+    "text": "A Monte Carlo Style Policy Gradient Algorithm\nThe core idea is to increase the probability of actions that lead to high returns and decrease the probability of actions that lead to low returns.\nInitialize:\n\nFunctional form for the policy: \\(\\pi(a|s, \\mathbf{\\theta})\\) (e.g., a neural network that outputs action probabilities given a state, parameterized by \\(\\mathbf{\\theta}\\)).\nInitial parameters: \\(\\mathbf{\\theta}\\) (e.g., randomly initialized weights for a neural network).\nStep size (learning rate): \\(\\alpha\\)\n\nAlgorithm:\nFor \\(m = 1, \\dots, M\\) (for each episode):\n\nSample a trajectory under the current policy \\(\\pi(\\cdot|\\cdot, \\mathbf{\\theta})\\): \\(s_0^m, a_0^m, r_1^m, \\dots, a_{T_m-1}^m, r_{T_m}^m\\) (where \\(T_m\\) is the length of the episode).\nFor \\(t = 0, \\dots, T_m - 1\\) (for each time step in the trajectory):\n\nCompute the return from time \\(t\\): \\(g_t^m \\leftarrow r_{t+1}^m + \\gamma r_{t+2}^m + \\dots + \\gamma^{T_m - t - 1} r_{T_m}^m\\) (This is the total discounted reward from \\(t+1\\) until the end of the episode).\nUpdate the policy parameters: \\[\n  \\mathbf{\\theta} \\leftarrow \\mathbf{\\theta} + \\alpha \\gamma^t g_t^m \\nabla_{\\mathbf{\\theta}} \\ln \\pi(a_t^m|s_t^m, \\mathbf{\\theta})\n  \\]\n\n\nExplanation of the Update Rule:\n\n\\(\\alpha\\): The learning rate, controlling the step size of the update.\n\\(\\gamma^t\\): The discount factor raised to the power of \\(t\\). This term accounts for the discounting of future rewards, ensuring that immediate rewards have a stronger influence on early actions.\n\\(g_t^m\\): The Monte Carlo return from time step \\(t\\). e.g. If return high =&gt; big step size, if return negative =&gt; step backward\n\\(\\nabla_{\\mathbf{\\theta}} \\ln \\pi(a_t^m|s_t^m, \\mathbf{\\theta})\\): This is the gradient of the log-probability of the action taken.\n\n\\(\\ln \\pi(a_t^m|s_t^m, \\mathbf{\\theta})\\): The logarithm of the probability that the policy \\(\\pi\\) would choose action \\(a_t^m\\) in state \\(s_t^m\\) with current parameters \\(\\mathbf{\\theta}\\). This is very important!!! It is a normalizer for cases like a random policy \\(\\pi\\) pick a positive (but low return) action too often, leading to pushing the probability too much, so by taking the gradient of \\(ln\\) of it, it limit down it, (and also the opposite for high reward actions but the behavior policy did not pick as many time to push enough higher). These situations usually happen with initialization of that lower reward already too high, and then add up that the policy random pick it too often pushing it even further.\n\\(\\nabla_{\\mathbf{\\theta}}\\): The gradient operator with respect to the policy parameters \\(\\mathbf{\\theta}\\). This term tells us how to change \\(\\mathbf{\\theta}\\) to increase the log-probability of taking action \\(a_t^m\\) in state \\(s_t^m\\).\n\n\nIntuition:\nThe update rule essentially says: if action \\(a_t^m\\) taken in state \\(s_t^m\\) leads to a high return (\\(g_t^m\\) is large and positive), then increase the probability of taking that action in that state. If it leads to a low (or negative) return, decrease its probability. The \\(\\gamma^t\\) term ensures that actions taken earlier in the trajectory, which influence more of the subsequent rewards, are given appropriate credit.\nREINFORCE is a fundamental algorithm that demonstrates the direct optimization of a policy, laying the groundwork for more advanced policy gradient methods."
   },
   {
     "objectID": "posts/reinforcement-learning/index.html#credit-assignment-problem",
@@ -103,13 +173,6 @@
     "title": "Reinforcement Learning",
     "section": "Credit assignment problem",
     "text": "Credit assignment problem\nwithin an episode, figure out what subpath made the episode bad or good a.k.a individual action impact on the episode =&gt;"
-  },
-  {
-    "objectID": "posts/reinforcement-learning/index.html#q-learning",
-    "href": "posts/reinforcement-learning/index.html#q-learning",
-    "title": "Reinforcement Learning",
-    "section": "Q-Learning",
-    "text": "Q-Learning\nDevelop a function \\[ Q \\] to approximate \\[ Q_* \\], by updating:\n\\[\nQ(s_t, a_t) \\rightarrow r_t + \\gamma \\max_a Q(s_{t+1}, a)\n\\]\nRemember, the environment is random (many possible next states/rewards).\nAccording to the world model:\n\\[\np(s', r \\mid s, a)\n\\]\n(You don’t have access to this model directly.)\nTherefore, We do Q-learning with enough sample trajectories, we can average them out Equation that describes what \\[ Q_* \\] is actually supposed to be: Result of samples averaging out \\[\nQ_*(s_t, a_t) = \\mathbb{E} \\left[ r_t + \\gamma \\max_a Q_*(s_{t+1}, a) \\right]\n\\]\n\nNote: \\[ \\mathbb{E}[\\cdot] \\] = expected value = weighted average according to probabilities\n\n=&gt; That means, eventhough we do not have world model, when we do sampling, we still can gather enough information near to it"
   },
   {
     "objectID": "posts/post-with-code/index.html",
@@ -126,10 +189,10 @@
     "text": "This is the first post in a Quarto blog. Welcome!\n\nSince this post doesn’t specify an explicit image, the first image in the post will be used in the listing page of posts."
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "haha",
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
     "section": "",
-    "text": "Post With Code\n\n\n\nnews\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nJun 25, 2025\n\n\nHarlow Malloc\n\n\n\n\n\n\n\n\n\n\n\n\nReinforcement Learning\n\n\n\nmachine-learning\n\nRL\n\n\n\n\n\n\n\n\n\nJun 25, 2025\n\n\nDinh Tien Thang\n\n\n\n\n\n\n\n\n\n\n\n\nWelcome To My Blog\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nJun 22, 2025\n\n\nTristan O’Malley\n\n\n\n\n\nNo matching items"
+    "text": "About this blog"
   }
 ]

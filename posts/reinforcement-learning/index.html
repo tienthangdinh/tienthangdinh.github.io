@@ -41,7 +41,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-db03927a41f77a8af5287a812d7101f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -215,25 +215,29 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#q-why-do-model-free-methods-not-learn-the-environments-transition-probabilities-psrsa-why-do-they-learn-within-a-trajectory-instead-of-interacting-with-neighboring-states" id="toc-q-why-do-model-free-methods-not-learn-the-environments-transition-probabilities-psrsa-why-do-they-learn-within-a-trajectory-instead-of-interacting-with-neighboring-states" class="nav-link" data-scroll-target="#q-why-do-model-free-methods-not-learn-the-environments-transition-probabilities-psrsa-why-do-they-learn-within-a-trajectory-instead-of-interacting-with-neighboring-states">Q: Why do model-free methods not learn the environment’s transition probabilities <span class="math inline">\(p(s',r|s,a)\)</span>? Why do they learn “within a trajectory” instead of interacting with neighboring states?</a></li>
   </ul></li>
-  <li><a href="#temporal-difference" id="toc-temporal-difference" class="nav-link" data-scroll-target="#temporal-difference">Temporal Difference</a>
+  <li><a href="#temporal-difference-still-a-model-free-without-p" id="toc-temporal-difference-still-a-model-free-without-p" class="nav-link" data-scroll-target="#temporal-difference-still-a-model-free-without-p">Temporal Difference (still a Model-free without p)</a>
   <ul class="collapse">
   <li><a href="#n-step-temporal-difference-learning" id="toc-n-step-temporal-difference-learning" class="nav-link" data-scroll-target="#n-step-temporal-difference-learning">n-step Temporal Difference Learning</a></li>
   <li><a href="#why-is-td-better" id="toc-why-is-td-better" class="nav-link" data-scroll-target="#why-is-td-better">Why is TD better?</a></li>
-  </ul></li>
-  <li><a href="#policy-gradient-methods" id="toc-policy-gradient-methods" class="nav-link" data-scroll-target="#policy-gradient-methods">Policy Gradient Methods</a></li>
-  <li><a href="#q-learning-variants" id="toc-q-learning-variants" class="nav-link" data-scroll-target="#q-learning-variants">Q-Learning Variants</a>
-  <ul class="collapse">
-  <li><a href="#sarsa-on-policy" id="toc-sarsa-on-policy" class="nav-link" data-scroll-target="#sarsa-on-policy">SARSA (On-policy)</a></li>
-  <li><a href="#q-learning-off-policy" id="toc-q-learning-off-policy" class="nav-link" data-scroll-target="#q-learning-off-policy">Q-Learning (Off-policy)</a></li>
-  </ul></li>
-  <li><a href="#bellman-optimality-equation" id="toc-bellman-optimality-equation" class="nav-link" data-scroll-target="#bellman-optimality-equation">Bellman Optimality Equation</a>
-  <ul class="collapse">
-  <li><a href="#credit-assignment-problem" id="toc-credit-assignment-problem" class="nav-link" data-scroll-target="#credit-assignment-problem">Credit assignment problem</a></li>
-  </ul></li>
-  <li><a href="#summary-of-value-updates" id="toc-summary-of-value-updates" class="nav-link" data-scroll-target="#summary-of-value-updates">Summary of Value Updates</a></li>
-  <li><a href="#on-policy-vs.-off-policy" id="toc-on-policy-vs.-off-policy" class="nav-link" data-scroll-target="#on-policy-vs.-off-policy">On-Policy vs.&nbsp;Off-Policy</a>
-  <ul class="collapse">
+  <li><a href="#what-does-larger-n-means" id="toc-what-does-larger-n-means" class="nav-link" data-scroll-target="#what-does-larger-n-means">What does larger n means?</a></li>
+  <li><a href="#sum-up-on-policy-temporal-difference-n-step-sarsa" id="toc-sum-up-on-policy-temporal-difference-n-step-sarsa" class="nav-link" data-scroll-target="#sum-up-on-policy-temporal-difference-n-step-sarsa">Sum up: On-Policy Temporal Difference: n-step Sarsa</a></li>
   <li><a href="#q-learning" id="toc-q-learning" class="nav-link" data-scroll-target="#q-learning">Q-Learning</a></li>
+  <li><a href="#expected-sarsa" id="toc-expected-sarsa" class="nav-link" data-scroll-target="#expected-sarsa">Expected Sarsa</a></li>
+  <li><a href="#compare" id="toc-compare" class="nav-link" data-scroll-target="#compare">Compare</a></li>
+  <li><a href="#summary-of-td" id="toc-summary-of-td" class="nav-link" data-scroll-target="#summary-of-td">Summary of TD</a></li>
+  </ul></li>
+  <li><a href="#function-approximation" id="toc-function-approximation" class="nav-link" data-scroll-target="#function-approximation">Function Approximation</a>
+  <ul class="collapse">
+  <li><a href="#on-policy-evaluation-with-function-approximation" id="toc-on-policy-evaluation-with-function-approximation" class="nav-link" data-scroll-target="#on-policy-evaluation-with-function-approximation">On-Policy Evaluation with Function Approximation</a></li>
+  <li><a href="#goal-how-to-get-mathbfw" id="toc-goal-how-to-get-mathbfw" class="nav-link" data-scroll-target="#goal-how-to-get-mathbfw">Goal: How to get <span class="math inline">\(\mathbf{w}\)</span>?</a></li>
+  <li><a href="#how-to-obtain-the-target-u_t" id="toc-how-to-obtain-the-target-u_t" class="nav-link" data-scroll-target="#how-to-obtain-the-target-u_t">How to Obtain the Target <span class="math inline">\(U_t\)</span></a></li>
+  <li><a href="#extension-to-on-policy-control-with-function-approximation" id="toc-extension-to-on-policy-control-with-function-approximation" class="nav-link" data-scroll-target="#extension-to-on-policy-control-with-function-approximation">Extension to On-Policy Control with Function Approximation</a></li>
+  <li><a href="#extension-to-on-policy-control-with-function-approximation-1" id="toc-extension-to-on-policy-control-with-function-approximation-1" class="nav-link" data-scroll-target="#extension-to-on-policy-control-with-function-approximation-1">Extension to On-Policy Control with Function Approximation</a></li>
+  </ul></li>
+  <li><a href="#policy-gradient-methods" id="toc-policy-gradient-methods" class="nav-link" data-scroll-target="#policy-gradient-methods">Policy Gradient Methods</a>
+  <ul class="collapse">
+  <li><a href="#a-monte-carlo-style-policy-gradient-algorithm" id="toc-a-monte-carlo-style-policy-gradient-algorithm" class="nav-link" data-scroll-target="#a-monte-carlo-style-policy-gradient-algorithm">A Monte Carlo Style Policy Gradient Algorithm</a></li>
+  <li><a href="#credit-assignment-problem" id="toc-credit-assignment-problem" class="nav-link" data-scroll-target="#credit-assignment-problem">Credit assignment problem</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -520,8 +524,8 @@ Q(s_t^m, a_t^m) \leftarrow Q(s_t^m, a_t^m) + \alpha \left( g_t^m - Q(s_t^m, a_t^
 </ol>
 </section>
 </section>
-<section id="temporal-difference" class="level1">
-<h1>Temporal Difference</h1>
+<section id="temporal-difference-still-a-model-free-without-p" class="level1">
+<h1>Temporal Difference (still a Model-free without p)</h1>
 <section id="n-step-temporal-difference-learning" class="level2">
 <h2 class="anchored" data-anchor-id="n-step-temporal-difference-learning">n-step Temporal Difference Learning</h2>
 <p>Recall from the MC approach: <span class="math display">\[
@@ -548,52 +552,64 @@ V(s_t^m) \leftarrow V(s_t^m) + \alpha(r_{t+1}^m + \gamma V(s_{t+1}^m) - V(s_t^m)
 <li><p><strong>Online-learning</strong> we all know what that means</p></li>
 </ol>
 </section>
-</section>
-<section id="policy-gradient-methods" class="level1">
-<h1>Policy Gradient Methods</h1>
-<p>Learn policy directly, optionally with a value function baseline:</p>
+<section id="what-does-larger-n-means" class="level2">
+<h2 class="anchored" data-anchor-id="what-does-larger-n-means">What does larger n means?</h2>
+<p>Increase the bias = utilize more from the knowledge from this trajectory, instead of keep learning from the average.</p>
+<p>E.g., for a single episode with TD(8):</p>
 <ul>
-<li>Without baseline → high variance (different average like a state with average return G1 of 100 and change +-5 are not the same with another state with average return G2 of 10 that also +-5)</li>
-<li>With baseline (e.g., <span class="math inline">\(V_\pi(s)\)</span>) → reduced variance</li>
+<li>All states from <span class="math inline">\(S_0\)</span> up to <span class="math inline">\(S_{k-8}\)</span> (if <span class="math inline">\(k \ge 8\)</span>): Will be updated using a full 8-step return, bootstrapping from <span class="math inline">\(V(S_{t+8})\)</span> =&gt; very <strong>average in the beginning</strong></li>
+<li>The last 7 states (<span class="math inline">\(S_{k-7}, \dots, S_{k-1}\)</span>): Will be updated using a return that effectively “runs out of steps” before 8. Their targets will be a mix of actual rewards leading to the terminal state, like Monte Carlo =&gt; <strong>direct reward in the end</strong></li>
 </ul>
 </section>
-<section id="q-learning-variants" class="level1">
-<h1>Q-Learning Variants</h1>
+<section id="sum-up-on-policy-temporal-difference-n-step-sarsa" class="level2">
+<h2 class="anchored" data-anchor-id="sum-up-on-policy-temporal-difference-n-step-sarsa">Sum up: On-Policy Temporal Difference: n-step Sarsa</h2>
+<p>Model-free control <span class="math inline">\(\rightarrow\)</span> use <span class="math inline">\(Q(s, a)\)</span>, not <span class="math inline">\(V(s)\)</span>.</p>
+<p><strong>Redefine:</strong> <span class="math display">\[
+g_{t:t+n}^m = r_{t+1}^m + \dots + \gamma^{n-1}r_{t+n}^m + \gamma^n Q(s_{t+n}^m, a_{t+n}^m)
+\]</span></p>
+<p><strong>Update rule:</strong> <span class="math display">\[
+Q(s_t^m, a_t^m) \leftarrow Q(s_t^m, a_t^m) + \alpha(g_{t:t+n}^m - Q(s_t^m, a_t^m))
+\]</span></p>
+</section>
+<section id="q-learning" class="level2">
+<h2 class="anchored" data-anchor-id="q-learning">Q-Learning</h2>
+<p>1-step TD Control—-target adjustment—-&gt; Q-Learning (off-policy).</p>
+<p>Instead of using <span class="math inline">\(r_{t+1}^m + \gamma Q(s_{t+1}^m, a_{t+1}^m)\)</span> (which is used in SARSA and relies on the <em>next action taken by the policy</em>), Q-Learning uses: <span class="math display">\[
+r_{t+1}^m + \gamma \max_{a} Q(s_{t+1}^m, a)
+\]</span></p>
+<p>The <span class="math inline">\(\max\)</span> operator means, regardless of which action the behavior policy <span class="math inline">\(b\)</span> actually took, this target is formed by the <em>best possible action</em> from the next state <span class="math inline">\(s_{t+1}^m\)</span> =&gt; Q-Learning an <strong>off-policy</strong>.</p>
+<p>To describe what actually happens, it is like this: <strong>1-step TD (SARSA-like):</strong> <span class="math display">\[
+\dots s_0^m, \underset{\uparrow}{\underline{a_0^m}}, r_1^m, s_1^m, \underset{\uparrow}{\underline{a_1^m}}, r_2^m, s_2^m, \underset{\uparrow}{\underline{a_2^m}}, r_3^m, s_3^m, \dots
+\]</span> Updates for <span class="math inline">\(Q(s_t, a_t)\)</span> occur after observing <span class="math inline">\(s_{t+1}, a_{t+1}\)</span>, using the target <span class="math inline">\(r_{t+1} + \gamma Q(s_{t+1}, a_{t+1})\)</span> <strong>where <span class="math inline">\(a_{t+1}\)</span> is the action taken by the <em>current policy</em>.</strong></p>
+<p><strong>1-step Q-Learning:</strong> <span class="math display">\[
+\dots  \underset{\uparrow}{\underline{s_0^m}},a_0^m, r_1^m, \underset{\uparrow}{\underline{s_1^m}},a_1^m, r_2^m, \underset{\uparrow}{\underline{s_2^m}},a_2^m, r_3^m, \dots
+\]</span> Updates for <span class="math inline">\(Q(s_t, a_t)\)</span> occur after observing <span class="math inline">\(s_{t+1}\)</span>, using the target <span class="math inline">\(r_{t+1} + \gamma \max_a Q(s_{t+1}, a)\)</span>, <strong>where action <span class="math inline">\(a_{t+1}\)</span> is observed but <em>not</em> used in forming the target for <span class="math inline">\(Q(s_t, a_t)\)</span>.</strong></p>
+</section>
+<section id="expected-sarsa" class="level2">
+<h2 class="anchored" data-anchor-id="expected-sarsa">Expected Sarsa</h2>
+<p>1-step Q-Learning —– <span class="math inline">\(\max\)</span> operator-&gt;<strong>average</strong> operator—&gt; Expected Sarsa <span class="math display">\[
+r_{t+1}^m + \gamma \max_{a} Q(s_{t+1}^m, a)
+\]</span> to using an expectation over all possible actions, weighted by the policy <span class="math inline">\(\pi\)</span>: <span class="math display">\[
+r_{t+1}^m + \gamma \sum_{a} Q(s_{t+1}^m, a) \pi(a|s_{t+1}^m)
+\]</span></p>
+<p>As presented (when the policy <span class="math inline">\(\pi\)</span> used in the target is the same as the behavior policy generating the data), this is an <strong>on-policy</strong> method.</p>
+<p>But to make it <strong>off-policy</strong>, just need <span class="math inline">\(\text{policy generating the trajectory} \neq \pi \text{ in target}\)</span></p>
+</section>
+<section id="compare" class="level2">
+<h2 class="anchored" data-anchor-id="compare">Compare</h2>
 <ul>
-<li>not have to worry about policy function, just update Q(s,a) from the table and trajectory and we are fine!</li>
+<li><strong>Sarsa</strong> has longer path, because it just took the action it actually took, which was most of the time exploratory, the one with <span class="math inline">\(\epsilon \text{exploration}\)</span> policy that balance out</li>
+<li><strong>Q-Learning</strong> does not use this <span class="math inline">\(\epsilon \text{exploration}\)</span> policy, it uses <span class="math inline">\(\max\)</span> operator</li>
+<li><strong>Expected Sarsa</strong> use weighted average, so yeah, always a safe choice.</li>
 </ul>
-<p>for each trajectory: for each state instance: Q(s,a) = Q(s,a) + learning rate * return G(t)</p>
-<section id="sarsa-on-policy" class="level2">
-<h2 class="anchored" data-anchor-id="sarsa-on-policy">SARSA (On-policy)</h2>
-<p><strong>Given a (state, action), how much better or worse is my return Gt relative to the new state and the SPECIFIC action that I ended up taking?</strong></p>
-<p><span class="math display">\[
-Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \right]
-\]</span> BUT: there are many actions, not just one action a+1 so what action to take? We do not have access to p(s’,a’|s,a) so we do not know But we can calculate what we can expect in the next state after we take an action a ## Expected SARSA <strong>Given a (state, action), how much better or worse is my return Gt relative to the new state withh ALL actions AVERAGED OUT acording to policy probability pi?</strong> - we can calculate all the possible action at the next state and take the expected average with the policy probability (expected SARSA) <span class="math display">\[
-Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \sum_a \pi(a \mid s_{t+1}) Q(s_{t+1}, a) - Q(s_t, a_t) \right]
-\]</span></p>
 </section>
-<section id="q-learning-off-policy" class="level2">
-<h2 class="anchored" data-anchor-id="q-learning-off-policy">Q-Learning (Off-policy)</h2>
-<p><strong>Given a (state, action), how much better or worse is my return Gt relative to the new state with the best action?</strong> <span class="math display">\[
-Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \max_a Q(s_{t+1}, a) - Q(s_t, a_t) \right]
-\]</span></p>
-</section>
-</section>
-<section id="bellman-optimality-equation" class="level1">
-<h1>Bellman Optimality Equation</h1>
-<p>Describes optimal Q-value function:</p>
-<p><span class="math display">\[
+<section id="summary-of-td" class="level2">
+<h2 class="anchored" data-anchor-id="summary-of-td">Summary of TD</h2>
+<p>Goal of Q-Learning is updating Q-Table to optimal where: <span class="math display">\[
 Q_*(s_t, a_t) = \mathbb{E} \left[ r_t + \gamma \max_a Q_*(s_{t+1}, a) \right]
 \]</span></p>
-<p>if a whole sequence is optimal, every subsequence must also be optimal, thats why Bellman add the max of the subsequence <em>a Q</em>*(s_{t+1}, a) to ensure this suboptimality</p>
-<section id="credit-assignment-problem" class="level2">
-<h2 class="anchored" data-anchor-id="credit-assignment-problem">Credit assignment problem</h2>
-<p>within an episode, figure out what subpath made the episode bad or good a.k.a individual action impact on the episode =&gt;</p>
-</section>
-</section>
-<section id="summary-of-value-updates" class="level1">
-<h1>Summary of Value Updates</h1>
-<p>Learning action-value (Q) function, notice that we only need one time step!!! no need to add up the whole trajectory: <strong>Learning Q-values</strong>:</p>
+<p>Also called Bellman Optimality Equation: every subsequence of a optimal sequence must also be optimal</p>
+<p><strong>Learning Q-values</strong>:</p>
 <ul>
 <li><p>SARSA:</p>
 <p><span class="math display">\[
@@ -614,32 +630,170 @@ V(s_t) \leftarrow V(s_t) + \alpha \left[ r_t + \gamma V(s_{t+1}) - V(s_t) \right
 \]</span></p>
 <p>Where <span class="math inline">\(\alpha\)</span> is the learning rate.</p>
 </section>
-<section id="on-policy-vs.-off-policy" class="level1">
-<h1>On-Policy vs.&nbsp;Off-Policy</h1>
+</section>
+<section id="function-approximation" class="level1">
+<h1>Function Approximation</h1>
+<p>For problem where number of states (<span class="math inline">\(|\mathcal{S}|\)</span>) is extremely large, apply Unsupervised Learning (Generalization function of states (or also actions)) as a part of RL.</p>
+<section id="on-policy-evaluation-with-function-approximation" class="level2">
+<h2 class="anchored" data-anchor-id="on-policy-evaluation-with-function-approximation">On-Policy Evaluation with Function Approximation</h2>
+<p><strong>Goal</strong> remains to approximate the state-value function <span class="math inline">\(v_\pi(s)\)</span>. Data generated from a given fixed policy <span class="math inline">\(\pi\)</span>.</p>
+<p>We now learn a parameterized function <span class="math inline">\(\hat{v}(s, \mathbf{w})\)</span>, where:</p>
 <ul>
-<li><strong>On-policy</strong>: Behavior and target policy are the same (SARSA), because they actually regarding what action they will be taking next, and use that to improve the pi, and the cycle again Qpi-&gt;Q*</li>
-<li><strong>Off-policy</strong>: Behavior and target policy differ (Q-Learning). Q-Learning just evaluate based on the best possible action could be taking =&gt; no longer dependent on policy. It still use pi for policy and gather experiences, but it does not evaluate pi, it instead evaluate optimal policy directly</li>
+<li><span class="math inline">\(\mathbf{w} \in \mathbb{R}^d\)</span> is a vector of parameters</li>
+<li>a state <span class="math inline">\(s\)</span> as input</li>
 </ul>
-<p>Q-Learning learns the optimal policy <span class="math inline">\(\pi^*\)</span>, regardless of current behavior policy.</p>
-<section id="q-learning" class="level2">
-<h2 class="anchored" data-anchor-id="q-learning">Q-Learning</h2>
-<p>Develop a function <span class="math display">\[ Q \]</span> to approximate <span class="math display">\[ Q_* \]</span>, by updating:</p>
-<p><span class="math display">\[
-Q(s_t, a_t) \rightarrow r_t + \gamma \max_a Q(s_{t+1}, a)
+<p>We learn <span class="math inline">\(w\)</span> and hope that <span class="math inline">\(v_\pi(s) \approx \hat{v}(s, \mathbf{w})\)</span></p>
+<p>Since <span class="math inline">\(d \ll |\mathcal{S}|\)</span>, any change to <span class="math inline">\(\mathbf{w}\)</span> can simultaneously change <span class="math inline">\(\hat{v}(s, \mathbf{w})\)</span> for many (or all) states <span class="math inline">\(s\)</span>. Different from tabular methods, where an update to <span class="math inline">\(V(s)\)</span> for a specific state <span class="math inline">\(s\)</span> affects <em>only</em> that state’s value.</p>
+<p><strong>Example:</strong> two simple features for given image state <span class="math inline">\(s\)</span>:</p>
+<ul>
+<li><span class="math inline">\(x_1(s)\)</span>: The average of all pixel values in the image.</li>
+<li><span class="math inline">\(x_2(s)\)</span>: The standard deviation of all pixel values in the image.</li>
+</ul>
+<p>=&gt; feature vector <span class="math inline">\(\mathbf{x}(s) = \begin{bmatrix} x_1(s) \\ x_2(s) \end{bmatrix}\)</span></p>
+<p>With these features, we can construct a <strong>linear value function</strong> to approximate <span class="math inline">\(v_\pi(s)\)</span>: <span class="math display">\[
+\hat{v}(s, \mathbf{w}) = \mathbf{x}(s)^T \mathbf{w}
 \]</span></p>
-<p>Remember, the environment is <strong>random</strong> (many possible next states/rewards).<br>
-According to the <strong>world model</strong>:</p>
-<p><span class="math display">\[
-p(s', r \mid s, a)
+</section>
+<section id="goal-how-to-get-mathbfw" class="level2">
+<h2 class="anchored" data-anchor-id="goal-how-to-get-mathbfw">Goal: How to get <span class="math inline">\(\mathbf{w}\)</span>?</h2>
+<p>The ‘best’ <span class="math inline">\(\mathbf{w}\)</span> minimizes: <span class="math display">\[
+\overline{VE}(\mathbf{w}) = \sum_{s \in \mathcal{S}} \mu(s)[v_\pi(s) - \hat{v}(s, \mathbf{w})]^2
+\]</span> where <span class="math inline">\(\mu(\cdot)\)</span> is a distribution over states (frequency of visiting each state).</p>
+<ul>
+<li><strong>We observe a surrogate for <span class="math inline">\(v_\pi(S_t)\)</span>: <span class="math inline">\(U_t\)</span>:</strong> Since we don’t know <span class="math inline">\(v_\pi(S_t)\)</span> exactly, we use a sample-based estimate or target, <span class="math inline">\(U_t\)</span>, as a stand-in. This <span class="math inline">\(U_t\)</span> could be the Monte Carlo return <span class="math inline">\(G_t\)</span>, or an n-step TD target <span class="math inline">\(g_{t:t+n}\)</span>, or a 1-step TD target <span class="math inline">\((R_{t+1} + \gamma \hat{v}(S_{t+1}, \mathbf{w}))\)</span>.</li>
+</ul>
+<p><strong>Update Rule</strong> we don’t have direct access to <span class="math inline">\(v_\pi(s)\)</span> for all states =&gt; <strong>Stochastic Gradient Descent (SGD)</strong> for updating our parameters <span class="math inline">\(\mathbf{w}\)</span>: <span class="math display">\[
+\mathbf{w} \leftarrow \mathbf{w} + \alpha \left[ U_t - \hat{v}(S_t, \mathbf{w}) \right] \nabla_{\mathbf{w}} \hat{v}(S_t, \mathbf{w})
+\]</span> Where:</p>
+<ul>
+<li><span class="math inline">\(\alpha\)</span> is the learning rate (step size).</li>
+<li><span class="math inline">\(\left[ U_t - \hat{v}(S_t, \mathbf{w}) \right]\)</span> is the <strong>TD error</strong> (or prediction error) based on our sample <span class="math inline">\(U_t\)</span>.</li>
+<li><span class="math inline">\(\nabla_{\mathbf{w}} \hat{v}(S_t, \mathbf{w})\)</span> is the gradient of our estimated value function with respect to its parameters <span class="math inline">\(\mathbf{w}\)</span>, evaluated at state <span class="math inline">\(S_t\)</span>. This gradient tells us how to adjust <span class="math inline">\(\mathbf{w}\)</span> to change <span class="math inline">\(\hat{v}(S_t, \mathbf{w})\)</span> in the desired direction.</li>
+</ul>
+</section>
+<section id="how-to-obtain-the-target-u_t" class="level2">
+<h2 class="anchored" data-anchor-id="how-to-obtain-the-target-u_t">How to Obtain the Target <span class="math inline">\(U_t\)</span></h2>
+<p>In the Stochastic Gradient Descent update rule: <span class="math display">\[
+\mathbf{w} \leftarrow \mathbf{w} + \alpha \left[ U_t - \hat{v}(S_t, \mathbf{w}) \right] \nabla_{\mathbf{w}} \hat{v}(S_t, \mathbf{w})
+\]</span> The term <span class="math inline">\(U_t\)</span> serves as our sample-based target for the true value <span class="math inline">\(v_\pi(S_t)\)</span>. Since <span class="math inline">\(v_\pi(S_t)\)</span> is unknown, we must derive <span class="math inline">\(U_t\)</span> from our observed experience. The choice of <span class="math inline">\(U_t\)</span> determines whether our method leans towards Monte Carlo or Temporal Difference approaches:</p>
+<p><strong>1. Monte Carlo Target:</strong> If the target <span class="math inline">\(U_t\)</span> is the <strong>full Monte Carlo return</strong> from state <span class="math inline">\(S_t\)</span> to the end of the episode, then we are using a <strong>Gradient Monte Carlo</strong> method: <span class="math display">\[
+U_t = G_t
+\]</span> where <span class="math inline">\(G_t = R_{t+1} + \gamma R_{t+2} + \dots + \gamma^{T-t-1}R_T\)</span> is the total discounted return observed from time step <span class="math inline">\(t\)</span> until the terminal state <span class="math inline">\(T\)</span>.</p>
+<ul>
+<li><strong>Characteristics:</strong>
+<ul>
+<li><strong>Unbiased:</strong> If <span class="math inline">\(G_t\)</span> is an unbiased estimate of <span class="math inline">\(v_\pi(S_t)\)</span> (which it is, on average), then using it as <span class="math inline">\(U_t\)</span> can lead to the parameters <span class="math inline">\(\mathbf{w}\)</span> converging to a local optimum of the Mean Squared Value Error (<span class="math inline">\(\overline{VE}(\mathbf{w})\)</span>).</li>
+<li><strong>High Variance:</strong> <span class="math inline">\(G_t\)</span> can be noisy due to the sum of many random rewards.</li>
+<li><strong>Requires complete episodes:</strong> We must wait until the episode ends to compute <span class="math inline">\(G_t\)</span>.</li>
+</ul></li>
+</ul>
+<p><strong>2. Temporal Difference (TD) Target:</strong> If the target <span class="math inline">\(U_t\)</span> is derived using <strong>bootstrapping</strong> (i.e., using an estimate of the value of a future state), then we are using a <strong>Semi-Gradient TD</strong> method. The most common is the 1-step TD target: <span class="math display">\[
+U_t = R_{t+1} + \gamma \hat{v}(S_{t+1}, \mathbf{w})
+\]</span> Here, <span class="math inline">\(R_{t+1}\)</span> is the actual reward observed, and <span class="math inline">\(\hat{v}(S_{t+1}, \mathbf{w})\)</span> is our <em>current estimate</em> of the value of the next state <span class="math inline">\(S_{t+1}\)</span>. For this specific update, <span class="math inline">\(\mathbf{w}\)</span> in <span class="math inline">\(\hat{v}(S_{t+1}, \mathbf{w})\)</span> is usually the online network’s weights, not a target network’s weights in this basic formulation.</p>
+<ul>
+<li><strong>Characteristics:</strong>
+<ul>
+<li><strong>Biased:</strong> especially in the beginning with crappy initialized value <span class="math inline">\(\hat{v}(S_{t+1}, \mathbf{w})\)</span>.</li>
+<li><strong>Lower Variance:</strong> It typically has lower variance than the Monte Carlo target because it depends on only one actual reward and then uses a smoothed estimate for the rest of the future.</li>
+<li><strong>Online Learning:</strong> Updates can be performed after each single time step, without waiting for the end of an episode.</li>
+<li><strong>Semi-Gradient:</strong> Since <span class="math inline">\(U_t\)</span> depends on <span class="math inline">\(\mathbf{w}\)</span>, our update rule is <strong>not a true gradient step</strong>. The gradient <span class="math inline">\(\nabla_{\mathbf{w}} L(\mathbf{w})\)</span> for the loss <span class="math inline">\(\left( (R_{t+1} + \gamma \hat{v}(S_{t+1}, \mathbf{w})) - \hat{v}(S_t, \mathbf{w}) \right)^2\)</span> would actually involve the derivative of <span class="math inline">\(U_t\)</span> (<span class="math inline">\(\hat{v}(S_{t+1}, \mathbf{w})\)</span>) with respect to <span class="math inline">\(\mathbf{w}\)</span>. =&gt; semi-gradient means: <span class="math inline">\(\nabla_{\mathbf{w}} \hat{v}(S_{t+1}, \mathbf{w})\)</span> is omitted for simplicity and stability, only taking <span class="math inline">\(\nabla_{\mathbf{w}} \hat{v}(S_{t}, \mathbf{w})\)</span>.</li>
+<li><strong>No Guarantee of Convergence (to Global Optimum):</strong> Because it’s not a true gradient of the overall <span class="math inline">\(\overline{VE}(\mathbf{w})\)</span>, we generally <strong>don’t guarantee convergence</strong> to the global optimum of the Mean Squared Value Error, even if the optimal <span class="math inline">\(\mathbf{w}\)</span> is unique. However, for linear function approximation, it can still converge to a local optimum. For non-linear approximators like neural networks, theoretical guarantees are weaker, but these methods still perform very well in practice.</li>
+</ul></li>
+</ul>
+<p>The update rule remains: <span class="math display">\[
+\mathbf{w} \leftarrow \mathbf{w} + \alpha \left[ R_{t+1} + \gamma \hat{v}(S_{t+1}, \mathbf{w}) - \hat{v}(S_t, \mathbf{w}) \right] \nabla_{\mathbf{w}} \hat{v}(S_t, \mathbf{w})
 \]</span></p>
-<p><em>(You don’t have access to this model directly.)</em></p>
-<p>Therefore, We do Q-learning with enough sample trajectories, we can average them out Equation that describes what <span class="math display">\[ Q_* \]</span> is actually supposed to be: Result of samples averaging out <span class="math display">\[
-Q_*(s_t, a_t) = \mathbb{E} \left[ r_t + \gamma \max_a Q_*(s_{t+1}, a) \right]
+</section>
+<section id="extension-to-on-policy-control-with-function-approximation" class="level2">
+<h2 class="anchored" data-anchor-id="extension-to-on-policy-control-with-function-approximation">Extension to On-Policy Control with Function Approximation</h2>
+<p>So far is just <strong>policy evaluation</strong> (approximating <span class="math inline">\(v_\pi(s)\)</span>). Now extend directly to <strong>control</strong> problems (finding an optimal policy), typically by approximating the action-value function <span class="math inline">\(q_\pi(s,a)\)</span> or <span class="math inline">\(q_*(s,a)\)</span>. <span class="math display">\[
+\mathbf{w} \leftarrow \mathbf{w} + \alpha \left[ U_t - \hat{q}(S_t, A_t, \mathbf{w}) \right] \nabla_{\mathbf{w}} \hat{q}(S_t, A_t, \mathbf{w})
+\]</span> Here, <span class="math inline">\(\hat{q}(S_t, A_t, \mathbf{w})\)</span> is our function approximator’s estimate of the action-value for the state-action pair <span class="math inline">\((S_t, A_t)\)</span> using parameters <span class="math inline">\(\mathbf{w}\)</span>. The term <span class="math inline">\(\nabla_{\mathbf{w}} \hat{q}(S_t, A_t, \mathbf{w})\)</span> is the gradient of this estimate with respect to <span class="math inline">\(\mathbf{w}\)</span>.</p>
+<p>For <strong>Semi-gradient 1-step Sarsa</strong>, the target <span class="math inline">\(U_t\)</span> is defined as: <span class="math display">\[
+U_t = R_{t+1} + \gamma \hat{q}(S_{t+1}, A_{t+1}, \mathbf{w})
 \]</span></p>
-<blockquote class="blockquote">
-<p><em>Note:</em> <span class="math display">\[ \mathbb{E}[\cdot] \]</span> = expected value = weighted average according to probabilities</p>
-</blockquote>
-<p>=&gt; That means, eventhough we do not have world model, when we do sampling, we still can gather enough information near to it</p>
+<p>Since both the action being evaluated (<span class="math inline">\(A_t\)</span>) and the action used to construct the target (<span class="math inline">\(A_{t+1}\)</span>) are chosen according to the <em>same behavior policy</em> (which is actively being improved based on <span class="math inline">\(\hat{q}\)</span>), this method is <strong>on-policy</strong>. The agent learns the value of the policy it is currently following, and this policy itself is improved through action selection methods (e.g., <span class="math inline">\(\epsilon\)</span>-greedy) based on the learned <span class="math inline">\(\hat{q}\)</span> values.</p>
+<p><strong>Example:</strong> Linear Action-Value Function for the Mountain Car Task</p>
+<p>To illustrate how function approximation can be used for action-value functions, let’s consider a scenario like <strong>The Mountain Car Task</strong>. We approximate the action-value function <span class="math inline">\(\hat{q}(s, a, \mathbf{w})\)</span> using a linear function approximator instead of a Q-Table: <span class="math display">\[
+\hat{q}(s, a, \mathbf{w}) = \begin{cases}
+    \mathbf{w}_{-1}^T \mathbf{x}(s) &amp; \text{if } a = -1 \\
+    \mathbf{w}_{0}^T \mathbf{x}(s) &amp; \text{if } a = 0 \\
+    \mathbf{w}_{1}^T \mathbf{x}(s) &amp; \text{if } a = 1
+\end{cases}
+\]</span> Where:</p>
+<ul>
+<li>action <span class="math inline">\(a\)</span> (-1, 0 -1)</li>
+<li><span class="math inline">\(\mathbf{x}(s)\)</span> is the feature representation of the state <span class="math inline">\(s\)</span> (length 120 decoded from position &amp; velocity)</li>
+<li><span class="math inline">\(\mathbf{w}_{-1}\)</span>, <span class="math inline">\(\mathbf{w}_{0}\)</span>, and <span class="math inline">\(\mathbf{w}_{1}\)</span> are distinct weight vectors, each corresponding to one of the possible actions.</li>
+<li>The overall parameter vector <span class="math inline">\(\mathbf{w}\)</span> for the entire function approximator would be the concatenation of these individual action-specific weight vectors (i.e., <span class="math inline">\(\mathbf{w} = [\mathbf{w}_{-1}, \mathbf{w}_{0}, \mathbf{w}_{1}]\)</span>).</li>
+</ul>
+</section>
+<section id="extension-to-on-policy-control-with-function-approximation-1" class="level2">
+<h2 class="anchored" data-anchor-id="extension-to-on-policy-control-with-function-approximation-1">Extension to On-Policy Control with Function Approximation</h2>
+<p>We all know what that is, just that when we combine three things together:</p>
+<ul>
+<li>off-policy</li>
+<li>function approximation</li>
+<li>bootstrapping</li>
+</ul>
+<p>we will have problem with convergence, which may be solved by the next topic …</p>
+</section>
+</section>
+<section id="policy-gradient-methods" class="level1">
+<h1>Policy Gradient Methods</h1>
+<p>Up until now, our primary approach to solving Reinforcement Learning problems has been <strong>value-based methods</strong>. These methods involve learning an approximate value function, such as <span class="math inline">\(\hat{q}(s,a, \mathbf{w})\)</span>, and then deriving a policy from this value function. For instance, in Q-learning or Sarsa, the policy <span class="math inline">\(\pi(a|s)\)</span> is often implicitly defined by choosing the action with the highest Q-value (or an <span class="math inline">\(\epsilon\)</span>-greedy variant of it): <span class="math display">\[\mathbf{w} \in \mathbb{R}^d \rightarrow \hat{q}(s,a, \mathbf{w}) \rightarrow \pi(a|s)\]</span> Where once again: <span class="math inline">\(\hat{q}(s,a, \mathbf{w}) = \mathbb{E}_\pi[G_t \mid s_t = s, a_t = a]\)</span></p>
+<p>Policy Gradient Methods more direct. <strong>directly learn a parameterized policy</strong>: <span class="math display">\[\mathbf{\theta} \in \mathbb{R}^{d'} \rightarrow \pi(a|s, \mathbf{\theta})\]</span> Here, <span class="math inline">\(\mathbf{\theta}\)</span> is a new set of parameters (distinct from <span class="math inline">\(\mathbf{w}\)</span> for value functions) that directly define the policy <span class="math inline">\(\pi(a|s, \mathbf{\theta})\)</span>. This policy directly maps states to probabilities of taking actions, or to specific actions in continuous action spaces. The dimensionality of these policy parameters is <span class="math inline">\(d'\)</span>.</p>
+<p>Advantages for complex tasks:</p>
+<ul>
+<li><strong>Continuous Action Spaces:</strong> It’s often more natural to parameterize a policy for continuous actions (e.g., a Gaussian distribution whose mean and variance are outputs of a neural network) than to find the maximum over a continuous Q-function.</li>
+<li><strong>Stochastic kind of Policies:</strong> For kind of exploratory task (where actions are chosen probabilistically).</li>
+<li><strong>Simpler Policy Updates:</strong> we all know what this means…</li>
+</ul>
+<p><strong>Goal:</strong> The core idea of policy gradient methods is to adjust the parameters <span class="math inline">\(\mathbf{\theta}\)</span> of the policy in the direction that maximizes the expected return (or performance) of the policy.</p>
+<p><strong>Problem:</strong></p>
+<ul>
+<li>Without baseline → high variance (different average like a state with average return G1 of 100 and change +-5 are not the same with another state with average return G2 of 10 that also +-5)</li>
+<li>With baseline (e.g., <span class="math inline">\(V_\pi(s)\)</span>) → reduced variance</li>
+</ul>
+<section id="a-monte-carlo-style-policy-gradient-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="a-monte-carlo-style-policy-gradient-algorithm">A Monte Carlo Style Policy Gradient Algorithm</h2>
+<p>The core idea is to increase the probability of actions that lead to high returns and decrease the probability of actions that lead to low returns.</p>
+<p><strong>Initialize:</strong></p>
+<ul>
+<li><strong>Functional form for the policy:</strong> <span class="math inline">\(\pi(a|s, \mathbf{\theta})\)</span> (e.g., a neural network that outputs action probabilities given a state, parameterized by <span class="math inline">\(\mathbf{\theta}\)</span>).</li>
+<li><strong>Initial parameters:</strong> <span class="math inline">\(\mathbf{\theta}\)</span> (e.g., randomly initialized weights for a neural network).</li>
+<li><strong>Step size (learning rate):</strong> <span class="math inline">\(\alpha\)</span></li>
+</ul>
+<p><strong>Algorithm:</strong></p>
+<p><strong>For</strong> <span class="math inline">\(m = 1, \dots, M\)</span> (for each episode):</p>
+<ul>
+<li><p><strong>Sample a trajectory under the current policy <span class="math inline">\(\pi(\cdot|\cdot, \mathbf{\theta})\)</span>:</strong> <span class="math inline">\(s_0^m, a_0^m, r_1^m, \dots, a_{T_m-1}^m, r_{T_m}^m\)</span> (where <span class="math inline">\(T_m\)</span> is the length of the episode).</p></li>
+<li><p><strong>For</strong> <span class="math inline">\(t = 0, \dots, T_m - 1\)</span> (for each time step in the trajectory):</p>
+<ul>
+<li><p><strong>Compute the return from time <span class="math inline">\(t\)</span>:</strong> <span class="math inline">\(g_t^m \leftarrow r_{t+1}^m + \gamma r_{t+2}^m + \dots + \gamma^{T_m - t - 1} r_{T_m}^m\)</span> (This is the total discounted reward from <span class="math inline">\(t+1\)</span> until the end of the episode).</p></li>
+<li><p><strong>Update the policy parameters:</strong> <span class="math display">\[
+  \mathbf{\theta} \leftarrow \mathbf{\theta} + \alpha \gamma^t g_t^m \nabla_{\mathbf{\theta}} \ln \pi(a_t^m|s_t^m, \mathbf{\theta})
+  \]</span></p></li>
+</ul></li>
+</ul>
+<p><strong>Explanation of the Update Rule:</strong></p>
+<ul>
+<li><span class="math inline">\(\alpha\)</span>: The learning rate, controlling the step size of the update.</li>
+<li><span class="math inline">\(\gamma^t\)</span>: The discount factor raised to the power of <span class="math inline">\(t\)</span>. This term accounts for the discounting of future rewards, ensuring that immediate rewards have a stronger influence on early actions.</li>
+<li><span class="math inline">\(g_t^m\)</span>: The Monte Carlo return from time step <span class="math inline">\(t\)</span>. e.g.&nbsp;If <strong>return high =&gt; big step size</strong>, if <strong>return negative =&gt; step backward</strong></li>
+<li><span class="math inline">\(\nabla_{\mathbf{\theta}} \ln \pi(a_t^m|s_t^m, \mathbf{\theta})\)</span>: This is the <strong>gradient of the log-probability of the action taken</strong>.
+<ul>
+<li><span class="math inline">\(\ln \pi(a_t^m|s_t^m, \mathbf{\theta})\)</span>: The logarithm of the probability that the policy <span class="math inline">\(\pi\)</span> would choose action <span class="math inline">\(a_t^m\)</span> in state <span class="math inline">\(s_t^m\)</span> with current parameters <span class="math inline">\(\mathbf{\theta}\)</span>. <strong>This is very important!!!</strong> It is a <strong>normalizer for cases like a random policy <span class="math inline">\(\pi\)</span> pick a positive (but low return) action too often,</strong> leading to pushing the probability too much, so by taking the gradient of <span class="math inline">\(ln\)</span> of it, it limit down it, (and also the opposite for high reward actions but the behavior policy did not pick as many time to push enough higher). These situations usually happen with <strong>initialization of that lower reward already too high, and then add up that the policy random pick it too often pushing it even further.</strong></li>
+<li><span class="math inline">\(\nabla_{\mathbf{\theta}}\)</span>: The gradient operator with respect to the policy parameters <span class="math inline">\(\mathbf{\theta}\)</span>. This term tells us how to change <span class="math inline">\(\mathbf{\theta}\)</span> to increase the log-probability of taking action <span class="math inline">\(a_t^m\)</span> in state <span class="math inline">\(s_t^m\)</span>.</li>
+</ul></li>
+</ul>
+<p><strong>Intuition:</strong></p>
+<p>The update rule essentially says: if action <span class="math inline">\(a_t^m\)</span> taken in state <span class="math inline">\(s_t^m\)</span> leads to a high return (<span class="math inline">\(g_t^m\)</span> is large and positive), then increase the probability of taking that action in that state. If it leads to a low (or negative) return, decrease its probability. The <span class="math inline">\(\gamma^t\)</span> term ensures that actions taken earlier in the trajectory, which influence more of the subsequent rewards, are given appropriate credit.</p>
+<p>REINFORCE is a fundamental algorithm that demonstrates the direct optimization of a policy, laying the groundwork for more advanced policy gradient methods.</p>
+</section>
+<section id="credit-assignment-problem" class="level2">
+<h2 class="anchored" data-anchor-id="credit-assignment-problem">Credit assignment problem</h2>
+<p>within an episode, figure out what subpath made the episode bad or good a.k.a individual action impact on the episode =&gt;</p>
 
 
 
