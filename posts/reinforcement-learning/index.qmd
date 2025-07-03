@@ -525,7 +525,7 @@ $$
 
 Where $\alpha$ is the learning rate.
 
-# Function Approximation
+# Function Approximation (parameterized continuous Value)
 For problem where number of states ($|\mathcal{S}|$) is extremely large, apply Unsupervised Learning (Generalization function of states (or also actions)) as a part of RL.
 
 ## On-Policy Evaluation with Function Approximation
@@ -541,7 +541,8 @@ We learn $w$ and hope that $v_\pi(s) \approx \hat{v}(s, \mathbf{w})$
 
 Since $d \ll |\mathcal{S}|$, any change to $\mathbf{w}$ can simultaneously change $\hat{v}(s, \mathbf{w})$ for many (or all) states $s$. Different from tabular methods, where an update to $V(s)$ for a specific state $s$ affects *only* that state's value.
 
-**Example:** two simple features for given image state $s$:
+## How to represent $\mathbf{x}(s)$?
+**Example 1:** two simple features for given image state $s$:
 
 * $x_1(s)$: The average of all pixel values in the image.
 * $x_2(s)$: The standard deviation of all pixel values in the image.
@@ -552,6 +553,10 @@ With these features, we can construct a **linear value function** to approximate
 $$
 \hat{v}(s, \mathbf{w}) = \mathbf{x}(s)^T \mathbf{w}
 $$
+
+**Example 2:** Mountain Car below with a dynamic model of velocity $dx$ and position $x$
+
+**Example 3:** Proto Points and Radius Basis Function will be discussed in next chapter Policy Gradient Method
 
 ## Goal: How to get $\mathbf{w}$?
 
@@ -654,7 +659,7 @@ We all know what that is, just that when we combine three things together:
 
 we will have problem with convergence, which may be solved by the next topic ...
 
-# Policy Gradient Methods
+# Policy Gradient Methods (parameterized continuous policy)
 
 Up until now, our primary approach to solving Reinforcement Learning problems has been **value-based methods**. These methods involve learning an approximate value function, such as $\hat{q}(s,a, \mathbf{w})$, and then deriving a policy from this value function. For instance, in Q-learning or Sarsa, the policy $\pi(a|s)$ is often implicitly defined by choosing the action with the highest Q-value (or an $\epsilon$-greedy variant of it):
 $$\mathbf{w} \in \mathbb{R}^d \rightarrow \hat{q}(s,a, \mathbf{w}) \rightarrow \pi(a|s)$$
@@ -672,10 +677,119 @@ Advantages for complex tasks:
 
 **Goal:** The core idea of policy gradient methods is to adjust the parameters $\mathbf{\theta}$ of the policy in the direction that maximizes the expected return (or performance) of the policy.
 
-**Problem:**
+## How to represent $x(s)$?
+### Proto Points and Radial Basis Functions (RBFs)
+instead of having a neural network directly compute an output, the state is first transformed into a set of features by measuring its "similarity" or "proximity" to a predefined set of "proto points" or "centers."
 
-* Without baseline → high variance (different average like a state with average return G1 of 100 and change +-5 are not the same with another state with average return G2 of 10 that also +-5)
-* With baseline (e.g., $V_\pi(s)$) → reduced variance
+#### Define Proto Points (Centers):
+
+First, you select a number of "proto points" or "centers" in your state space. Let's call these centers $c_1, c_2, \dots, c_k$. These centers are essentially fixed, representative points in your environment's state space. They could be chosen: manually or randomly
+
+#### Define Basis Functions (e.g., Radial Basis Functions):
+
+For each center $c_j$, you define a basis function $\phi_j(s)$. A common choice is a Gaussian Radial Basis Function:
+$$
+\phi_j(s) = \exp \left( -\frac{\|s - c_j\|^2}{2\sigma_j^2} \right)
+$$
+
+where:
+
+* $\|s - c_j\|^2$ is the squared Euclidean distance between the current state $s$ and the center $c_j$.
+* $\sigma_j^2$ is a variance or width parameter for that basis function, controlling how broad its "influence" is.
+
+What does $\phi_j(s)$ mean? It's a measure of how "similar" or "close" the current state $s$ is to the center $c_j$. It peaks at 1 when $s = c_j$ and decays to 0 as $s$ moves away from $c_j$.
+
+#### Construct the Feature Vector:
+
+For any given state $s$, you compute the value of each basis function:
+$$
+\mathbf{x}(s) = \begin{bmatrix} \phi_1(s) \\ \phi_2(s) \\ \vdots \\ \phi_k(s) \end{bmatrix}
+$$
+This $\mathbf{x}(s)$ is your feature vector, where each feature represents the activation of a "proto point."
+
+#### Linear Function Approximation:
+
+Now, these features are used in a linear function approximator. The parameters you learn are the weights associated with each of these basis functions.
+
+* **For a value function:**
+    $$
+    \hat{V}(s, \mathbf{w}) = \sum_{j=1}^k w_j \phi_j(s) = \mathbf{w}^T \mathbf{x}(s)
+    $$
+    Here, $\mathbf{w}$ is the vector $[w_1, \dots, w_k]$, and $w_j$ is the weight for the $j$-th proto point's influence.
+
+* **For a policy (e.g., logits in a softmax):**
+    For each action $a$, you'd have a separate weight vector $\mathbf{\theta}_a$, and the logits for the policy could be:
+    $$
+    h(s,a,\mathbf{\theta}_a) = \mathbf{\theta}_a^T \mathbf{x}(s)
+    $$
+    Then, $\pi(a|s,\mathbf{\theta}) = \text{softmax}(h(s,a,\mathbf{\theta}_a))$.
+
+### Example: Policy Gradient with Proto Points (RBFs) for Mountain Car
+
+Imagine our Mountain Car environment again. The state $s$ is (position, velocity), which are continuous. We want to learn a policy $\pi(a|s, \mathbf{\theta})$ directly.
+
+**1. Define Proto Points (Centers) in State Space:**
+
+Let's say we define $K=4$ proto points (centers) $c_j$ in our 2D (position, velocity) state space. For simplicity, let's pick them:
+
+* $c_1 = (-0.5, 0.0)$ (Mid-left, still)
+* $c_2 = (0.0, 0.0)$ (Center, still)
+* $c_3 = (0.5, 0.0)$ (Mid-right, still)
+* $c_4 = (-0.2, 0.05)$ (Slightly left, moving right)
+
+We also define a width $\sigma^2$ for all RBFs (or separate $\sigma_j^2$ values).
+
+**2. Create the State Feature Vector $\mathbf{x}(s)$ using RBFs:**
+
+For any state $s = (\text{pos}, \text{vel})$, we calculate its similarity to each of these 4 proto points using a Gaussian RBF. Our feature vector $\mathbf{x}(s)$ will have 4 dimensions:
+
+$$
+\mathbf{x}(s) = \begin{bmatrix}
+\phi_1(s) = \exp \left( -\frac{\|s - c_1\|^2}{2\sigma^2} \right) \\
+\phi_2(s) = \exp \left( -\frac{\|s - c_2\|^2}{2\sigma^2} \right) \\
+\phi_3(s) = \exp \left( -\frac{\|s - c_3\|^2}{2\sigma^2} \right) \\
+\phi_4(s) = \exp \left( -\frac{\|s - c_4\|^2}{2\sigma^2} \right)
+\end{bmatrix}
+$$
+This $\mathbf{x}(s)$ now serves as our "meaningful" representation of the state, telling us how similar $s$ is to certain key points in the environment.
+
+**3. Define the Policy $\pi(a|s, \mathbf{\theta})$ using these Features:**
+
+For each action $a \in \{-1, 0, 1\}$, we define a linear combination of these features to get a "score" or "logit" for that action.
+
+Let $\mathbf{\theta}_{-1}$, $\mathbf{\theta}_{0}$, $\mathbf{\theta}_{1}$ be our learnable parameter vectors (weights), each of size $K=4$. The total policy parameters $\mathbf{\theta}$ would be the concatenation of these three vectors.
+
+The logits for each action are:
+* $h(s, a=-1, \mathbf{\theta}) = \mathbf{\theta}_{-1}^T \mathbf{x}(s)$
+* $h(s, a=0, \mathbf{\theta}) = \mathbf{\theta}_{0}^T \mathbf{x}(s)$
+* $h(s, a=1, \mathbf{\theta}) = \mathbf{\theta}_{1}^T \mathbf{x}(s)$
+
+And the policy probabilities are then given by the softmax function:
+$$\pi(a|s, \mathbf{\theta}) = \frac{e^{h(s,a,\mathbf{\theta})}}{\sum_{a'} e^{h(s,a',\mathbf{\theta})}}$$
+
+**4. Update the Policy Parameters ($\mathbf{\theta}$) using Policy Gradients (REINFORCE):**
+
+When we collect a trajectory and compute returns $G_t$, the REINFORCE update rule applies:
+$$\mathbf{\theta} \leftarrow \mathbf{\theta} + \alpha G_t \nabla_{\mathbf{\theta}} \ln \pi(a_t|s_t, \mathbf{\theta})$$
+
+Let's look at a specific component of this update, say for $\mathbf{\theta}_{-1}$:
+$$\mathbf{\theta}_{-1} \leftarrow \mathbf{\theta}_{-1} + \alpha G_t \nabla_{\mathbf{\theta}_{-1}} \ln \pi(a_t|s_t, \mathbf{\theta})$$
+
+If $a_t = -1$, and $G_t$ is high, the gradient $\nabla_{\mathbf{\theta}_{-1}} \ln \pi(-1|s_t, \mathbf{\theta})$ will push $\mathbf{\theta}_{-1}$ to increase the score for action -1 when in state $s_t$. Since $h(s, a, \mathbf{\theta}_a) = \mathbf{\theta}_a^T \mathbf{x}(s)$, the gradient with respect to $\mathbf{\theta}_a$ is simply $\mathbf{x}(s)$. So, the update to $\mathbf{\theta}_{-1}$ will be proportional to $\mathbf{x}(s_t)$. This means:
+
+* If $s_t$ is very similar to $c_1$ (so $\phi_1(s_t)$ is high), then $w_{-1,1}$ (the weight for $c_1$ and action -1) will be adjusted significantly.
+* If $s_t$ is far from $c_1$ (so $\phi_1(s_t)$ is near zero), then $w_{-1,1}$ will be adjusted very little by this particular sample.
+
+This means the learning process adjusts the weights for each proto point *for each action* based on the returns received.
+
+### Are Probabilities Fixed When Starting with Proto Points?
+
+No, the probabilities of actions are **not fixed** when you start with proto points.
+
+* **Fixed:** The **proto points $c_j$ themselves are fixed** in the state space, and the **basis functions $\phi_j(s)$ are fixed** (their shape and location are determined at the start).
+* **Learned:** However, the **parameters $\mathbf{\theta}$ (the weights associated with each proto point for each action)** are *learnable*.
+
+**The idea** of **relying** action parameter $\theta$ on fixed state representation $x(s)$ is because **action $a$ depends on the state $(a|s)$**, so we need to fix states representation first, use it as a basis so that action parameter can learn.
 
 ## A Monte Carlo Style Policy Gradient Algorithm
 The core idea is to increase the probability of actions that lead to high returns and decrease the probability of actions that lead to low returns.
@@ -709,7 +823,7 @@ The core idea is to increase the probability of actions that lead to high return
 
 * $\alpha$: The learning rate, controlling the step size of the update.
 * $\gamma^t$: The discount factor raised to the power of $t$. This term accounts for the discounting of future rewards, ensuring that immediate rewards have a stronger influence on early actions.
-* $g_t^m$: The Monte Carlo return from time step $t$. e.g. If **return high => big step size**, if **return negative => step backward**
+* $g_t^m$: Scaling stepsize with the Monte Carlo return from time step $t$. e.g. If **return high => big step size**, if **return negative => step backward**
 * $\nabla_{\mathbf{\theta}} \ln \pi(a_t^m|s_t^m, \mathbf{\theta})$: This is the **gradient of the log-probability of the action taken**.
     * $\ln \pi(a_t^m|s_t^m, \mathbf{\theta})$: The logarithm of the probability that the policy $\pi$ would choose action $a_t^m$ in state $s_t^m$ with current parameters $\mathbf{\theta}$. **This is very important!!!** It is a **normalizer for cases like a random policy $\pi$ pick a positive (but low return) action too often,** leading to pushing the probability too much, so by taking the gradient of $ln$ of it, it limit down it, (and also the opposite for high reward actions but the behavior policy did not pick as many time to push enough higher). These situations usually happen with **initialization of that lower reward already too high, and then add up that the policy random pick it too often pushing it even further.**
     * $\nabla_{\mathbf{\theta}}$: The gradient operator with respect to the policy parameters $\mathbf{\theta}$. This term tells us how to change $\mathbf{\theta}$ to increase the log-probability of taking action $a_t^m$ in state $s_t^m$.
@@ -721,6 +835,30 @@ The update rule essentially says: if action $a_t^m$ taken in state $s_t^m$ leads
 REINFORCE is a fundamental algorithm that demonstrates the direct optimization of a policy, laying the groundwork for more advanced policy gradient methods.
 
 
-## Credit assignment problem
-within an episode, figure out what subpath made the episode bad or good a.k.a individual action impact on the episode
-=>
+## Variance Problem
+Return $g_t^m$ rewards the action when it is positive, and punish the action when it is negative. But some cases all actions can be positive, just some are *less positive* than other => it should not be encouraged.
+
+**Solution**: With baseline (e.g., $V_\pi(s,w)$) => then we have $$\mathbf{\theta} \leftarrow \mathbf{\theta} + \alpha \gamma^t (g_t^m - b(s_t^m)) \nabla_{\mathbf{\theta}} \ln \pi(a_t^m|s_t^m, \mathbf{\theta})$$ so that:
+
+* if $g_t^m > V_\pi(s,w)$, the scaling factor is **positive** => increase probability of action $a$
+* if $g_t^m < V_\pi(s,w)$, the scaling factor is **negative** => decrease probability of action $a$
+  
+## Sum up: REINFORCE Gradient Policy with Baseline
+To specify upfront:
+
+* Functional forms $\pi(a|s, \mathbf{\theta})$, $\hat{v}(s, \mathbf{w})$
+* Initial $\mathbf{\theta}, \mathbf{w}$
+* Step sizes $\alpha^{\theta}, \alpha^{w}$
+
+For $m = 1, \dots, M$:
+
+  1. Sample: $s_0^m, a_0^m, r_1^m \dots a_{T_m-1}^m, r_{T_m}^m$
+  2. For $t = 0, \dots, T_m - 1$:
+  $$g_t^m \leftarrow r_{t+1}^m + \gamma r_{t+2}^m + \dots$$
+
+  $$\delta \leftarrow g_t^m - \hat{v}(s_t^m, \mathbf{w})$$
+
+  $$\mathbf{w} \leftarrow \mathbf{w} + \alpha^w \delta \nabla_{\mathbf{w}} \hat{v}(s_t^m, \mathbf{w})$$
+  
+  $$\mathbf{\theta} \leftarrow \mathbf{\theta} + \alpha^{\theta} \gamma^t \delta \nabla \ln \pi(a_t^m|s_t^m, \mathbf{\theta})$$
+
