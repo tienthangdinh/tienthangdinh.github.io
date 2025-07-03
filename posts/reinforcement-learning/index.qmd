@@ -8,13 +8,13 @@ format:
   html:
     toc: true
     code-fold: true
+    math: mathjax
 ---
 
 Reinforcement Learning (RL) is a subfield of machine learning concerned with how agents ought to take actions in an environment in order to maximize cumulative reward.
 
-# RL Environment Setup
 
-## Markov Decision Process (MDP)
+# Markov Decision Process (MDP)
 
 An agent’s interaction with the environment is usually modeled as a **Markov Decision Process (MDP)**:
 
@@ -42,14 +42,12 @@ $$
 P(s_{t+1} \mid s_t, a_t) = P(s_{t+1} \mid s_1, a_1, ..., s_t, a_t)
 $$
 
----
 
 ### Policy
 
 * Stochastic: $\pi(a \mid s)$
 * Deterministic: $a = \pi(s)$
 
----
 
 ### Return
 
@@ -74,11 +72,14 @@ $$
 \max_\pi \, \mathbb{E}_\pi \left[ G_t \right]
 $$
 
----
+
 
 How can we determine a policy that accumulates a high reward?
 
-# Value Functions
+# Model-based Learning
+**world model** gives access to $p(s', r \mid s, a)$, so we will use them for the estimation below
+
+## Value Functions
 
 Very similar to return $\max_\pi \, \mathbb{E}_\pi \left[ G_t \right]$.
 
@@ -95,7 +96,7 @@ $V_\pi(s) = \sum_a \pi(a \mid s) Q_\pi(s, a)$ (semantically true because)
 
 $V_\pi(s) = \sum_a \pi(a \mid s) \mathbb{E}_\pi[G_t \mid s_t = s, a_t = a]$
 
-$V_\pi(s) = \sum_a \pi(a \mid s) \mathbb{E}_\pi[R_{t+1} + \gamma G_{t+1} \mid s_t = s, a_t = a]$ (because $ \mathbb{E}[G_{t+1} \mid s, a] = \mathbb{E}[V_\pi(S_{t+1}) \mid s, a]$)
+$V_\pi(s) = \sum_a \pi(a \mid s) \mathbb{E}_\pi[R_{t+1} + \gamma G_{t+1} \mid s_t = s, a_t = a]$ (because $\mathbb{E}[G_{t+1} \mid s, a] = \mathbb{E}[V_\pi(S_{t+1}) \mid s, a]$)
 
 $V_\pi(s) = \sum_a \pi(a \mid s) \mathbb{E}_\pi[R_{t+1} + \gamma V_\pi(S_{t+1}) \mid s_t = s, a_t = a]$
 
@@ -103,7 +104,7 @@ $V_\pi(s) = \sum_a \pi(a \mid s) \sum_{s',r} p(s',r \mid s,a)[r + \gamma V_\pi(s
 
 ## The Bellman Equations
 
-For *any* policy \( \pi \), all \( s \in \mathcal{S} \), and all \( a \in \mathcal{A}(s) \):
+For *any* policy $\pi$, all $s \in \mathcal{S}$, and all $a \in \mathcal{A}(s)$:
 
 **State-value function:**
 
@@ -119,27 +120,25 @@ $$
 
 After substitution as derived above:
 
-### Bellman Equation for \( v_\pi(s) \)
+### Bellman Equation for $v_\pi(s)$
 
 $$
 v_\pi(s) = \sum_{a \in \mathcal{A}(s)} \pi(a \mid s) \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma v_\pi(s') \right]
 $$
 
-### Bellman Equation for \( q_\pi(s, a) \)
+### Bellman Equation for $q_\pi(s, a)$
 
 $$
 q_\pi(s, a) = \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma \sum_{a' \in \mathcal{A}(s')} \pi(a' \mid s') q_\pi(s', a') \right]
 $$
 
----
 
 ### Optimal Bellman
 
 $V^*(s) = \arg\max_a Q^*(s, a)$
 
----
 
-## Policy Evaluation & Policy Improvement
+## Generalized Policy Iteration (GPI): Policy Evaluation & Policy Improvement
 
 Using the Bellman Equation above and an initial estimate (e.g. all states are randomly initialized or uniformly negative, except the terminal state which is 0), we iteratively update:
 
@@ -147,9 +146,7 @@ We apply the Bellman equations above for every single state (for V), or (state, 
 $$
 \pi'(s) = \arg\max_a q_\pi(s, a)
 $$
-
 Where:
-
 $$
 q_\pi(s, a) = \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma v_\pi(s') \right]
 $$
@@ -160,125 +157,346 @@ $$
 
 
 
-# World Models vs. Model-Free Learning
+# Model-Free Learning
 
-A **world model** gives access to $p(s', r \mid s, a)$ — but in practice we often don’t have it. Instead:
-
-1. Start with a random policy: $\pi(a \mid s) = \frac{1}{|A|}$
-2. Collect trajectories and estimate returns $G_t$
-3. Use **Monte Carlo** methods to update estimates:
-calculate all return Gt backward from an episode
-Within a specific trajectory:
+Until now, you can see we have been using $p(s', r \mid s, a)$ to update our policy, because a **world model** gives access to this — but in practice - we often don’t have it. So instead we use **Monte Carlo** to update $q_\pi(s, a)$ instead of $v_\pi(s)$, because in the end we still have to choose action policy, in which we still have to calculate $q_\pi(s,a)$, which is equivalent to this one from above, just that we **dont calculate this this way**, we have to estimate it stochastically somehow:
 $$
-G_t = r_t + \gamma G_{t+1}
+q_\pi(s, a) = \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma v_\pi(s') \right]
 $$
 
-FOr **every** episode (trjectory)
-update the return Gt **BACKWARD**
+The only difference is that, we have to construct $p(s', r \mid s, a)$ ourselves from experience from sampling.
+
+The next question is, how to do it?
+
+## Monte Carlo (State Value)
+
+**Goal**: Given samples under $\pi$, estimate $q_\pi$.
+
+> **We can express $q_\pi$-estimation as $v_\pi$-estimation.**
+Imagine a new problem where:
 $$
-G_t = r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \gamma^3 r_{t+3} + \dots
+S_t^{\text{new}} = (S_t, A_t)
 $$
 
+Any evaluation algorithm estimating $v(s^{\text{new}})$ would be estimating $q_\pi(s, a)$.
 
-# Monte Carlo vs. Temporal Difference
+So basically what happening is that we do not have a policy anymore, instead, policy is now a part of the environment. But why do we want to do that? Because:
+- This is a generalization anyway, something applied to state value function V, also applied for action value function Q.
+- It simplifies our analysis, **reduces** the problem to a **simpler problem** Markov Reward Process (MRP), which is MDP without actions (s1,r1,s2,r2,s3,r3,...)
 
-**Monte Carlo**:
+OK, but still, how to do it?
 
-* Updates happen after entire episodes
-* Can’t assign credit to individual steps within an episode
-* **Given a (state, action), What is my return Gt?**
-* we get good episodes and bad episodes
-- good episode: all actions evaluated better
-- bad episode: all actions evaluated worse
-- have to wait for episode to end to wait for the return to adjust evaluation for actions
-- within an episode, we dont know what subpath made the episode bad or good
+**Start** with a random value function: $V(s) = \frac{1}{|S|}$
+
+**Collect sampling trajectories** $M$ trajectory samples:
+$$
+s_0^m \quad r_1^m \quad s_1^m \quad \cdots \quad s_{T_m}^m \qquad m = 1, \ldots, M
+$$
+
+**The Goal**: Use _averages_ to approximate $v_\pi(s)$:
+$$
+v_\pi(s) = \mathbb{E}_\pi[G_t \mid S_t = s] \approx \frac{1}{C(s)} \sum_{m=1}^M \sum_{\tau=0}^{T_m - 1} \mathbb{I}[s_\tau^m = s] \, g_\tau^m
+$$
+where:
+$$
+\mathbb{I}[s_\tau^m = s] =
+\begin{cases}
+1 & \text{if } s_\tau^m = s \\
+0 & \text{otherwise}
+\end{cases}
+$$
+$$
+g_\tau^m = R_{t+1}^m + \gamma R_{t+2}^m + \gamma^2 R_{t+3}^m + \dots + \gamma^{T - t - 1} R_T^m
+$$
+
+For every sample trajectory $m$, at any step $\tau$ in that trajectory, check if the state $g_\tau^m$ of that step is the $s$ we are interested in, then include its return $g_\tau^m$ in the sum, then normalize by $C(s)$, the total number of times state $s$ was visited.
+
+
+At this moment I just realized that: the state will get **higher return, if its nearer to the beginning of a trajectory**, if u dont believe, have a look at $g_\tau^m$ again ^^.
+
+Btw, to calculate return $g_\tau^m$, maybe you already know, we have to calculate from the terminate state first $R_T^m$, where we know if the reward $R_T^m$ is 0 or 1 (reached the goal or not), then slowly trace backward with addding $\gamma$
+
+And to make sure you understand it, $v_\pi(s)$ is just like $G$, but $G$ is mostly binded to the trajectory and a policy, therefore the function $v_\pi(s)$ is actually $G$!!!
+
+**How to get to that Goal?** to apply after the $m$-th sample:
+$$
+V(s_t^m) \leftarrow V(s_t^m) + \alpha \left( g_t^m - V(s_t^m) \right)
+$$
+
+... then it will slowly converge to **the Goal above** ...
+
+BUT, how do we extend this to update our **action** ?
+
+## Monte Carlo (Action Value)
+Since we also have a deterministic set of action $a \in \mathcal{A}(s)$, therefore we can extend the **state value** above to **action value** like this, it is equivalent:
+
+**Start** also with $Q(s,a) = \frac{1}{|SxA|}$ or just simply 0
+
+Basically it just create a finer Q-table. 
+
+**The Goal**
+$$
+Q_\pi(s,a) = \mathbb{E}_\pi[G_t \mid S_t = s, A_t = a] \approx \frac{1}{C(s, a)} \sum_{m=1}^M \sum_{\tau=0}^{T_m - 1} \mathbb{I}[(s,a)_\tau^m = (s,a)] \, g_\tau^m
+$$
+
+**How to get to that goal?**
+$$
+Q(s_t^m, a_t^m) \leftarrow Q(s_t^m, a_t^m) + \alpha \left( g_t^m - Q(s_t^m, a_t^m) \right)
+$$
+
+... Then it will slowly converge **the Goal above**  ...
+
+Then we just argmax over action at each state, thats how we get optimal action.
+
+## Sum up: Constant-α MC Algorithm $\pi \approx \pi^*$
+
+**Algorithm inputs**: $\epsilon > 0$, $\alpha \in (0, 1]$, $M \in \mathbb{N}$
+
+**Initialize arbitrarily**:
+
+ * $\pi \leftarrow$ some $\epsilon$-soft policy  
+ * $Q(s,a) \leftarrow$ some value for $s \in \mathcal{S},\ a \in \mathcal{A}(s)$ (like a random Q-Table hehe)
+
+**For** $m = 1, \dots, M$:
+
+* Sample a trajectory under policy $\pi$:  
+  $s_0^m, a_0^m, r_1^m, \dots, a_{T_m - 1}^m, r_{T_m}^m$
+
+* **For (literally EACH - EVERY SINGLE)** $t = 0, \dots, T_m - 1$:
+
+  * Compute return (the best way is just to calculate backwards then slowly add $\gamma$ like Gonkee ^^):  
+    $g_t^m \leftarrow r_{t+1}^m + \gamma r_{t+2}^m + \dots$
+
+  * Update Q-value:  
+    $$
+    Q(s_t^m, a_t^m) \leftarrow Q(s_t^m, a_t^m) + \alpha(g_t^m - Q(s_t^m, a_t^m))
+    $$
+
+* Update policy:  
+  $\pi \leftarrow \epsilon\text{-greedy}(Q)$
+
+Where $\pi \leftarrow \epsilon\text{-greedy}(Q)$ is specified as follows:
+$$
+a^* \leftarrow \operatorname{argmax}_a Q(s_t^m, a) \quad \text{(ties broken arbitrarily)}
+$$
+
+For all $a \in \mathcal{A}(s_t^m)$: (this means to balance the policy to avoid a local optimal)
+$$
+\pi(a|s_t^m) \leftarrow
+\begin{cases}
+1 - \epsilon + \frac{\epsilon}{|\mathcal{A}(s_t^m)|} & \text{if } a = a^* \\
+\frac{\epsilon}{|\mathcal{A}(s_t^m)|} & \text{if } a \neq a^*
+\end{cases}
+$$
+
+($|\mathcal{A}(s_t^m)| = \text{number of actions in } \mathcal{A}(s_t^m)$)
+
+then back to the loop **For** $m = 1, \dots, M$ again and again ...
+
+## Off-Policy
+The problem is, as seen in the Blackjack example, lack of sample leads to local-optimal bias model
+
+=> **Goal: more variance**
+
+Sample a trajectory under a different policy $b$:  $s_0^m, a_0^m, r_1^m, \dots, a_{T_m - 1}^m, r_{T_m}^m$. But the rest of the algorithm stays the same.
+
+OK, but how to make sampling policy $b$ effect the main behavior policy $\pi$?
+
+### Relationship between sampling policy $b$ vs main behavior policy $\pi$?
+We want:
+$$
+q_\pi(s, a) = \mathbb{E}_\pi[G_t|S_t = s, A_t = a]
+$$
+
+Sampled data under $b$ means this is what we actually estimated:
+$$
+\mathbb{E}_b[G_t|S_t = s, A_t = a]
+$$
+
+Therefore we use Importance Sampling to bring them to $\pi$:
+$$
+q_\pi(s, a) = \mathbb{E}_b\left[\frac{p_\pi(G_t)}{p_b(G_t)}G_t|S_t = s, A_t = a\right]
+$$
+where $\rho$ is the importance sampling ratio:
+$$
+\frac{p_\pi(G_t)}{p_b(G_t)} = \rho = \prod_{\tau=t+1}^{T-1} \frac{\pi(A_\tau|S_\tau)}{b(A_\tau|S_\tau)}
+$$
+
+## Sum up: Off-Policy Constant-$\alpha$ MC for $\pi \approx \pi^*$
+
+**Algorithm inputs**:
+$b$ (behavior policy), $\alpha \in (0, 1]$, $M \in \mathbb{N}$
+
+**Initialize arbitrarily**:
+
+* $\pi \leftarrow$ some policy
+* $Q(s, a) \leftarrow$ some value for $s \in \mathcal{S}, a \in \mathcal{A}(s)$ (also the random Q-Table above hehe)
+
+**For** $m = 1, \dots, M$:
+
+Under $b$ sample: $s_0^m, a_0^m, r_1^m, \dots, a_{T_m-1}^m, r_{T_m}^m$
+
+* **For** $t = 0, \dots, T_m - 1$:
+
+  - $\rho_t^m \leftarrow \prod_{\tau=t+1}^{T_m-1} \frac{\pi(a_\tau^m|s_\tau^m)}{b(a_\tau^m|s_\tau^m)}$ (or 1 if $t+1 > T_m-1$)
+
+  - Compute return: $g_t^m \leftarrow \rho_t^m(r_{t+1}^m + \gamma r_{t+2}^m + \dots)$
+
+  - Update Q-Value: $Q(s_t^m, a_t^m) \leftarrow Q(s_t^m, a_t^m) + \alpha(g_t^m - Q(s_t^m, a_t^m))$
+
+  - Update policy: $\pi(s_t^m) \leftarrow \operatorname{argmax}_a Q(s_t^m, a)$ (ties broken arbitrarily)
   
-=> can only rely on large number of samplings
+  Note that at Update Policy: we do not need the $\pi$-greedy as above, because now using behavior-policy $b$, we could already diverse out for a more global view
 
-**Temporal Difference (TD)**:
+**BUT**, off policy MC has too much variance, therefore the next technique ... Temporal Difference
 
-* Updates happen at each time step
-* More efficient and faster convergence
-* action by action based (instead of episode by episode based)
-* For each (state,action) compare rewards difference with (state+1, action+1)
+Before we continue, let's see where is exactly the point of model-free MC learning:
 
-## Value Function
-keep track of the average return Gt expected when following a certain policy pi at a state (s) or (state, action) (s,a)
-- state value: V_pi(s)
-- action value: Q_pi(s,a)
-- actually V_pi(s) = Expected[Q_pi(a,s)]
+# Compare: Model-Based vs Model-Free
+**Similarity:** they actually does update the same thing: state value V, or action value Q
 
-Goal: best case scenario (optimal)
-V*(s), Q*(s,a)
+**Difference:** 
+**Model-based (Breadth Approach)** approaches assume knowledge of, or explicitly learn, a model of the environment $p(s', r \mid s, a)$. => can update value functions by **bootstrapping** from all possible successor states and rewards. => Updates based on *predictions* from the model, even without direct experience of every transition.
 
-# Policy Gradient Methods
-
-Learn policy directly, optionally with a value function baseline:
-
-* Without baseline → high variance (different average like a state with average return G1 of 100 and change +-5 are not the same with another state with average return G2 of 10 that also +-5)
-* With baseline (e.g., $V_\pi(s)$) → reduced variance
-
-
-# Q-Learning Variants
-- not have to worry about policy function, just update Q(s,a) from the table and trajectory and we are fine!
-
-for each trajectory:
-  for each state instance:
-    Q(s,a) = Q(s,a) + learning rate * return G(t)
-
-
-## SARSA (On-policy)
-**Given a (state, action), how much better or worse is my return Gt relative to the new state and the SPECIFIC action that I ended up taking?**
-
+Model-based update one state from its neighboring transition, therefore it updates this way, from its neighbors:
 $$
-Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \right]
+v_\pi(s) = \sum_{a \in \mathcal{A}(s)} \pi(a \mid s) \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma v_\pi(s') \right]
 $$
-BUT: there are many actions, not just one action a+1
-so what action to take?
-We do not have access to p(s',a'|s,a) so we do not know
-But we can calculate what we can expect in the next state after we take an action a
-## Expected SARSA
-**Given a (state, action), how much better or worse is my return Gt relative to the new state withh ALL actions AVERAGED OUT acording to policy probability pi?**
-- we can calculate all the possible action at the next state and take the expected average with the policy probability (expected SARSA)
 $$
-Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \sum_a \pi(a \mid s_{t+1}) Q(s_{t+1}, a) - Q(s_t, a_t) \right]
-$$
-
-## Q-Learning (Off-policy)
-**Given a (state, action), how much better or worse is my return Gt relative to the new state with the best action?**
-$$
-Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \max_a Q(s_{t+1}, a) - Q(s_t, a_t) \right]
+q_\pi(s, a) = \sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s', r \mid s, a) \left[ r + \gamma \sum_{a' \in \mathcal{A}(s')} \pi(a' \mid s') q_\pi(s', a') \right]
 $$
 
 
-# Bellman Optimality Equation
+**Model-free (Depth Approach)** approaches do not require or learn an explicit model of the environment. Instead, they learn value functions directly from **experience sampled through interactions with the environment**. Updates are performed based on actual observed transitions and returns within a single trajectory (or a small batch of trajectories). This means that updates are driven by the specific sequence of states, actions, and rewards encountered. Model-free methods effectively update "within their trajectory" rather than relying on a global model.
 
-Describes optimal Q-value function:
+But Model-free updates within its trajectory:
+$$
+V(s_t^m) \leftarrow V(s_t^m) + \alpha \left( g_t^m - V(s_t^m) \right)
+$$
+$$
+Q(s_t^m, a_t^m) \leftarrow Q(s_t^m, a_t^m) + \alpha \left( g_t^m - Q(s_t^m, a_t^m) \right)
+$$
 
+
+### Q: Why do model-free methods not learn the environment's transition probabilities $p(s',r|s,a)$? Why do they learn "within a trajectory" instead of interacting with neighboring states?
+
+1.  **Complexity of Learning the Model:**
+    Learning model of the environment ($p(s',r|s,a)$) can be extremely challenging in complex, high-dimensional environments (e.g., video games, robotic control). gridworld with 100 states and 4 actions already requires estimating 100×4×100 = 40,000 transition probabilities.
+
+2.  **Trajectory has direct ground truth to the problem**
+    Ultimate Goal: to find an optimal policy $\pi$ or value function $V_\pi$. => direct route: they learn the value functions or the policy *directly from real-world experience*. Instead of first learning a model $p(s',r|s,a)$, then using that model to derive value functions $V_\pi$, and finally using value functions to determine the policy $\pi$.
+
+
+
+
+# Temporal Difference (still a Model-free without p)
+## n-step Temporal Difference Learning
+
+Recall from the MC approach:
+$$
+V(s_t^m) \leftarrow V(s_t^m) + \alpha(g_t^m - V(s_t^m))
+$$
+
+where: $g_t^m \leftarrow r_{t+1}^m + \gamma r_{t+2}^m + \dots$
+
+**n-STEP TD**: Replace the target, $g_t^m$, with:
+$$
+g_{t:t+n}^m = r_{t+1}^m + \gamma r_{t+2}^m + \dots + \gamma^{n-1}r_{t+n}^m + \gamma^n V(s_{t+n}^m)
+$$
+
+where $V(s_{t+n}^m)$ is actually no different than $g_{t+n}^m$, but instead of waiting for the trajectory to finish the episode then calculate backward, we just need to wait for $n$ steps to **BOOTSTRAPPING** the existing $V(s_{t+n})$ calculated from older trajectories, think a little bit, it means the same thing with $g_{t+n}$ (accumulated return). If $n = \infty$: TD is identical to MC.
+
+## Why is TD better?
+1. **Markov property:** The RL environment has Markov property, that means the future depends only on the current state, not the history. And TD works based on that design, the update is just between neighboring states. Not like waiting for the whole trajectory like MC, $g_t^m$ needs backward calculation for the whole trajectory => strongly history based. 
+$$
+V(s_t^m) \leftarrow V(s_t^m) + \alpha(g_t^m - V(s_t^m))
+$$
+
+For example in TD(0) the use of $V(s_{t+1}^m)$ is very **Markov property**:
+$$
+V(s_t^m) \leftarrow V(s_t^m) + \alpha(r_{t+1}^m + \gamma V(s_{t+1}^m) - V(s_t^m))
+$$
+
+
+2. **Reduced Variance:** The effect of MC is calculating accumulated result at each single trajectory, then averaging then in the end, this makes the result very specific to the sampled trajectories. But TD directly add the already smoothed $+ \gamma^n V(s_{t+n}^m)$
+
+3. **Online-learning** we all know what that means
+
+## What does larger n means?
+Increase the bias = utilize more from the knowledge from this trajectory, instead of keep learning from the average.
+
+E.g., for a single episode with TD(8):
+
+* All states from $S_0$ up to $S_{k-8}$ (if $k \ge 8$): Will be updated using a full 8-step return, bootstrapping from $V(S_{t+8})$ => very **average in the beginning** 
+* The last 7 states ($S_{k-7}, \dots, S_{k-1}$): Will be updated using a return that effectively "runs out of steps" before 8. Their targets will be a mix of actual rewards leading to the terminal state, like Monte Carlo => **direct reward in the end** 
+
+## Sum up: On-Policy Temporal Difference: n-step Sarsa
+
+Model-free control $\rightarrow$ use $Q(s, a)$, not $V(s)$.
+
+**Redefine:**
+$$
+g_{t:t+n}^m = r_{t+1}^m + \dots + \gamma^{n-1}r_{t+n}^m + \gamma^n Q(s_{t+n}^m, a_{t+n}^m)
+$$
+
+**Update rule:**
+$$
+Q(s_t^m, a_t^m) \leftarrow Q(s_t^m, a_t^m) + \alpha(g_{t:t+n}^m - Q(s_t^m, a_t^m))
+$$
+
+## Q-Learning
+
+1-step TD Control----target adjustment----> Q-Learning (off-policy).
+
+Instead of using $r_{t+1}^m + \gamma Q(s_{t+1}^m, a_{t+1}^m)$ (which is used in SARSA and relies on the *next action taken by the policy*), Q-Learning uses:
+$$
+r_{t+1}^m + \gamma \max_{a} Q(s_{t+1}^m, a)
+$$
+
+The $\max$ operator means, regardless of which action the behavior policy $b$ actually took, this target is formed by the *best possible action* from the next state $s_{t+1}^m$ => Q-Learning an **off-policy**.
+
+To describe what actually happens, it is like this:
+**1-step TD (SARSA-like):**
+$$
+\dots s_0^m, \underset{\uparrow}{\underline{a_0^m}}, r_1^m, s_1^m, \underset{\uparrow}{\underline{a_1^m}}, r_2^m, s_2^m, \underset{\uparrow}{\underline{a_2^m}}, r_3^m, s_3^m, \dots
+$$
+Updates for $Q(s_t, a_t)$ occur after observing $s_{t+1}, a_{t+1}$, using the target $r_{t+1} + \gamma Q(s_{t+1}, a_{t+1})$ **where $a_{t+1}$ is the action taken by the *current policy*.**
+
+**1-step Q-Learning:**
+$$
+\dots  \underset{\uparrow}{\underline{s_0^m}},a_0^m, r_1^m, \underset{\uparrow}{\underline{s_1^m}},a_1^m, r_2^m, \underset{\uparrow}{\underline{s_2^m}},a_2^m, r_3^m, \dots
+$$
+Updates for $Q(s_t, a_t)$ occur after observing $s_{t+1}$, using the target $r_{t+1} + \gamma \max_a Q(s_{t+1}, a)$, **where action $a_{t+1}$ is observed but *not* used in forming the target for $Q(s_t, a_t)$.**
+
+## Expected Sarsa
+
+1-step Q-Learning ----- $\max$ operator->**average** operator---> Expected Sarsa
+$$
+r_{t+1}^m + \gamma \max_{a} Q(s_{t+1}^m, a)
+$$
+to using an expectation over all possible actions, weighted by the policy $\pi$:
+$$
+r_{t+1}^m + \gamma \sum_{a} Q(s_{t+1}^m, a) \pi(a|s_{t+1}^m)
+$$
+
+As presented (when the policy $\pi$ used in the target is the same as the behavior policy generating the data), this is an **on-policy** method.
+
+But to make it **off-policy**, just need $\text{policy generating the trajectory} \neq \pi \text{ in target}$
+
+## Compare
+* **Sarsa** has longer path, because it just took the action it actually took, which was most of the time exploratory, the one with $\epsilon \text{exploration}$ policy that balance out
+* **Q-Learning** does not use this $\epsilon \text{exploration}$ policy, it uses $\max$ operator
+* **Expected Sarsa** use weighted average, so yeah, always a safe choice.
+
+
+## Summary of TD
+Goal of Q-Learning is updating Q-Table to optimal where:
 $$
 Q_*(s_t, a_t) = \mathbb{E} \left[ r_t + \gamma \max_a Q_*(s_{t+1}, a) \right]
 $$
 
-if a whole sequence is optimal, every subsequence must also be optimal, thats why Bellman add the max of the subsequence \max_a Q_*(s_{t+1}, a) to ensure this suboptimality
+Also called Bellman Optimality Equation: every subsequence of a optimal sequence must also be optimal
 
-# Exploration vs. Exploitation
-
-* **Exploration**: Random actions (e.g., $\epsilon$-greedy with $\epsilon > 0$)
-* **Exploitation**: Choose action that maximizes $Q(s, a)$
-
-Balance is essential during training.
-
-# Sample Efficiency
-
-Refers to how quickly a method converges given the number of samples (episodes or steps).
-
-
-## Credit assignment problem
-within an episode, figure out what subpath made the episode bad or good a.k.a individual action impact on the episode
-=>
-
-# Summary of Value Updates
- Learning action-value (Q) function, notice that we only need one time step!!! no need to add up the whole trajectory:
 **Learning Q-values**:
 
 * SARSA:
@@ -307,40 +525,202 @@ $$
 
 Where $\alpha$ is the learning rate.
 
-# On-Policy vs. Off-Policy
+# Function Approximation
+For problem where number of states ($|\mathcal{S}|$) is extremely large, apply Unsupervised Learning (Generalization function of states (or also actions)) as a part of RL.
 
-* **On-policy**: Behavior and target policy are the same (SARSA), because they actually regarding what action they will be taking next, and use that to improve the pi, and the cycle again 
-Qpi->Q*
-* **Off-policy**: Behavior and target policy differ (Q-Learning). Q-Learning just evaluate based on the best possible action could be taking => no longer dependent on policy. It still use pi for policy and gather experiences, but it does not evaluate pi, it instead evaluate optimal policy directly
+## On-Policy Evaluation with Function Approximation
 
-Q-Learning learns the optimal policy $\pi^*$, regardless of current behavior policy.
+**Goal** remains to approximate the state-value function $v_\pi(s)$. Data generated from a given fixed policy $\pi$. 
 
+We now learn a parameterized function $\hat{v}(s, \mathbf{w})$, where:
 
-## Q-Learning
+- $\mathbf{w} \in \mathbb{R}^d$ is a vector of parameters 
+- a state $s$ as input
 
-Develop a function $$ Q $$ to approximate $$ Q_* $$, by updating:
+We learn $w$ and hope that $v_\pi(s) \approx \hat{v}(s, \mathbf{w})$
 
+Since $d \ll |\mathcal{S}|$, any change to $\mathbf{w}$ can simultaneously change $\hat{v}(s, \mathbf{w})$ for many (or all) states $s$. Different from tabular methods, where an update to $V(s)$ for a specific state $s$ affects *only* that state's value.
+
+**Example:** two simple features for given image state $s$:
+
+* $x_1(s)$: The average of all pixel values in the image.
+* $x_2(s)$: The standard deviation of all pixel values in the image.
+
+=> feature vector $\mathbf{x}(s) = \begin{bmatrix} x_1(s) \\ x_2(s) \end{bmatrix}$
+
+With these features, we can construct a **linear value function** to approximate $v_\pi(s)$:
 $$
-Q(s_t, a_t) \rightarrow r_t + \gamma \max_a Q(s_{t+1}, a)
-$$
-
-Remember, the environment is **random** (many possible next states/rewards).  
-According to the **world model**:
-
-$$
-p(s', r \mid s, a)
-$$
-
-*(You don't have access to this model directly.)*
-
-Therefore, We do Q-learning with enough sample trajectories, we can average them out
-Equation that describes what $$ Q_* $$ is actually supposed to be:
-Result of samples averaging out
-$$
-Q_*(s_t, a_t) = \mathbb{E} \left[ r_t + \gamma \max_a Q_*(s_{t+1}, a) \right]
+\hat{v}(s, \mathbf{w}) = \mathbf{x}(s)^T \mathbf{w}
 $$
 
-> *Note:* $$ \mathbb{E}[\cdot] $$ = expected value = weighted average according to probabilities
+## Goal: How to get $\mathbf{w}$?
 
-=> That means, eventhough we do not have world model, when we do sampling, we still can gather enough information near to it
+The 'best' $\mathbf{w}$ minimizes:
+$$
+\overline{VE}(\mathbf{w}) = \sum_{s \in \mathcal{S}} \mu(s)[v_\pi(s) - \hat{v}(s, \mathbf{w})]^2
+$$
+where $\mu(\cdot)$ is a distribution over states (frequency of visiting each state).
 
+* **We observe a surrogate for $v_\pi(S_t)$: $U_t$:** Since we don't know $v_\pi(S_t)$ exactly, we use a sample-based estimate or target, $U_t$, as a stand-in. This $U_t$ could be the Monte Carlo return $G_t$, or an n-step TD target $g_{t:t+n}$, or a 1-step TD target $(R_{t+1} + \gamma \hat{v}(S_{t+1}, \mathbf{w}))$.
+
+**Update Rule** we don't have direct access to $v_\pi(s)$ for all states => **Stochastic Gradient Descent (SGD)** for updating our parameters $\mathbf{w}$:
+$$
+\mathbf{w} \leftarrow \mathbf{w} + \alpha \left[ U_t - \hat{v}(S_t, \mathbf{w}) \right] \nabla_{\mathbf{w}} \hat{v}(S_t, \mathbf{w})
+$$
+Where:
+
+* $\alpha$ is the learning rate (step size).
+* $\left[ U_t - \hat{v}(S_t, \mathbf{w}) \right]$ is the **TD error** (or prediction error) based on our sample $U_t$.
+* $\nabla_{\mathbf{w}} \hat{v}(S_t, \mathbf{w})$ is the gradient of our estimated value function with respect to its parameters $\mathbf{w}$, evaluated at state $S_t$. This gradient tells us how to adjust $\mathbf{w}$ to change $\hat{v}(S_t, \mathbf{w})$ in the desired direction.
+
+## How to Obtain the Target $U_t$
+
+In the Stochastic Gradient Descent update rule:
+$$
+\mathbf{w} \leftarrow \mathbf{w} + \alpha \left[ U_t - \hat{v}(S_t, \mathbf{w}) \right] \nabla_{\mathbf{w}} \hat{v}(S_t, \mathbf{w})
+$$
+The term $U_t$ serves as our sample-based target for the true value $v_\pi(S_t)$. Since $v_\pi(S_t)$ is unknown, we must derive $U_t$ from our observed experience. The choice of $U_t$ determines whether our method leans towards Monte Carlo or Temporal Difference approaches:
+
+**1. Monte Carlo Target:**
+If the target $U_t$ is the **full Monte Carlo return** from state $S_t$ to the end of the episode, then we are using a **Gradient Monte Carlo** method:
+$$
+U_t = G_t
+$$
+where $G_t = R_{t+1} + \gamma R_{t+2} + \dots + \gamma^{T-t-1}R_T$ is the total discounted return observed from time step $t$ until the terminal state $T$.
+
+* **Characteristics:**
+    * **Unbiased:** If $G_t$ is an unbiased estimate of $v_\pi(S_t)$ (which it is, on average), then using it as $U_t$ can lead to the parameters $\mathbf{w}$ converging to a local optimum of the Mean Squared Value Error ($\overline{VE}(\mathbf{w})$).
+    * **High Variance:** $G_t$ can be noisy due to the sum of many random rewards.
+    * **Requires complete episodes:** We must wait until the episode ends to compute $G_t$.
+
+**2. Temporal Difference (TD) Target:**
+If the target $U_t$ is derived using **bootstrapping** (i.e., using an estimate of the value of a future state), then we are using a **Semi-Gradient TD** method. The most common is the 1-step TD target:
+$$
+U_t = R_{t+1} + \gamma \hat{v}(S_{t+1}, \mathbf{w})
+$$
+Here, $R_{t+1}$ is the actual reward observed, and $\hat{v}(S_{t+1}, \mathbf{w})$ is our *current estimate* of the value of the next state $S_{t+1}$. For this specific update, $\mathbf{w}$ in $\hat{v}(S_{t+1}, \mathbf{w})$ is usually the online network's weights, not a target network's weights in this basic formulation.
+
+* **Characteristics:**
+    * **Biased:** especially in the beginning with crappy initialized value $\hat{v}(S_{t+1}, \mathbf{w})$.
+    * **Lower Variance:** It typically has lower variance than the Monte Carlo target because it depends on only one actual reward and then uses a smoothed estimate for the rest of the future.
+    * **Online Learning:** Updates can be performed after each single time step, without waiting for the end of an episode.
+    * **Semi-Gradient:** Since $U_t$ depends on $\mathbf{w}$, our update rule is **not a true gradient step**. The gradient $\nabla_{\mathbf{w}} L(\mathbf{w})$ for the loss $\left( (R_{t+1} + \gamma \hat{v}(S_{t+1}, \mathbf{w})) - \hat{v}(S_t, \mathbf{w}) \right)^2$ would actually involve the derivative of $U_t$ ($\hat{v}(S_{t+1}, \mathbf{w})$) with respect to $\mathbf{w}$. => semi-gradient means: $\nabla_{\mathbf{w}} \hat{v}(S_{t+1}, \mathbf{w})$ is omitted for simplicity and stability, only taking $\nabla_{\mathbf{w}} \hat{v}(S_{t}, \mathbf{w})$.
+    * **No Guarantee of Convergence (to Global Optimum):** Because it's not a true gradient of the overall $\overline{VE}(\mathbf{w})$, we generally **don't guarantee convergence** to the global optimum of the Mean Squared Value Error, even if the optimal $\mathbf{w}$ is unique. However, for linear function approximation, it can still converge to a local optimum. For non-linear approximators like neural networks, theoretical guarantees are weaker, but these methods still perform very well in practice.
+
+
+The update rule remains:
+$$
+\mathbf{w} \leftarrow \mathbf{w} + \alpha \left[ R_{t+1} + \gamma \hat{v}(S_{t+1}, \mathbf{w}) - \hat{v}(S_t, \mathbf{w}) \right] \nabla_{\mathbf{w}} \hat{v}(S_t, \mathbf{w})
+$$
+
+## Extension to On-Policy Control with Function Approximation
+
+So far is just **policy evaluation** (approximating $v_\pi(s)$). Now extend directly to **control** problems (finding an optimal policy), typically by approximating the action-value function $q_\pi(s,a)$ or $q_*(s,a)$.
+$$
+\mathbf{w} \leftarrow \mathbf{w} + \alpha \left[ U_t - \hat{q}(S_t, A_t, \mathbf{w}) \right] \nabla_{\mathbf{w}} \hat{q}(S_t, A_t, \mathbf{w})
+$$
+Here, $\hat{q}(S_t, A_t, \mathbf{w})$ is our function approximator's estimate of the action-value for the state-action pair $(S_t, A_t)$ using parameters $\mathbf{w}$. The term $\nabla_{\mathbf{w}} \hat{q}(S_t, A_t, \mathbf{w})$ is the gradient of this estimate with respect to $\mathbf{w}$.
+
+For **Semi-gradient 1-step Sarsa**, the target $U_t$ is defined as:
+$$
+U_t = R_{t+1} + \gamma \hat{q}(S_{t+1}, A_{t+1}, \mathbf{w})
+$$
+
+Since both the action being evaluated ($A_t$) and the action used to construct the target ($A_{t+1}$) are chosen according to the *same behavior policy* (which is actively being improved based on $\hat{q}$), this method is **on-policy**. The agent learns the value of the policy it is currently following, and this policy itself is improved through action selection methods (e.g., $\epsilon$-greedy) based on the learned $\hat{q}$ values.
+
+**Example:** Linear Action-Value Function for the Mountain Car Task
+
+To illustrate how function approximation can be used for action-value functions, let's consider a scenario like **The Mountain Car Task**. We approximate the action-value function $\hat{q}(s, a, \mathbf{w})$ using a linear function approximator instead of a Q-Table:
+$$
+\hat{q}(s, a, \mathbf{w}) = \begin{cases}
+    \mathbf{w}_{-1}^T \mathbf{x}(s) & \text{if } a = -1 \\
+    \mathbf{w}_{0}^T \mathbf{x}(s) & \text{if } a = 0 \\
+    \mathbf{w}_{1}^T \mathbf{x}(s) & \text{if } a = 1
+\end{cases}
+$$
+Where:
+
+* action $a$ (-1, 0 -1)
+* $\mathbf{x}(s)$ is the feature representation of the state $s$ (length 120 decoded from position & velocity)
+* $\mathbf{w}_{-1}$, $\mathbf{w}_{0}$, and $\mathbf{w}_{1}$ are distinct weight vectors, each corresponding to one of the possible actions.
+* The overall parameter vector $\mathbf{w}$ for the entire function approximator would be the concatenation of these individual action-specific weight vectors (i.e., $\mathbf{w} = [\mathbf{w}_{-1}, \mathbf{w}_{0}, \mathbf{w}_{1}]$).
+
+## Extension to On-Policy Control with Function Approximation
+We all know what that is, just that when we combine three things together:
+
+* off-policy
+* function approximation
+* bootstrapping
+
+we will have problem with convergence, which may be solved by the next topic ...
+
+# Policy Gradient Methods
+
+Up until now, our primary approach to solving Reinforcement Learning problems has been **value-based methods**. These methods involve learning an approximate value function, such as $\hat{q}(s,a, \mathbf{w})$, and then deriving a policy from this value function. For instance, in Q-learning or Sarsa, the policy $\pi(a|s)$ is often implicitly defined by choosing the action with the highest Q-value (or an $\epsilon$-greedy variant of it):
+$$\mathbf{w} \in \mathbb{R}^d \rightarrow \hat{q}(s,a, \mathbf{w}) \rightarrow \pi(a|s)$$
+Where once again: $\hat{q}(s,a, \mathbf{w}) = \mathbb{E}_\pi[G_t \mid s_t = s, a_t = a]$
+
+Policy Gradient Methods more direct. **directly learn a parameterized policy**:
+$$\mathbf{\theta} \in \mathbb{R}^{d'} \rightarrow \pi(a|s, \mathbf{\theta})$$
+Here, $\mathbf{\theta}$ is a new set of parameters (distinct from $\mathbf{w}$ for value functions) that directly define the policy $\pi(a|s, \mathbf{\theta})$. This policy directly maps states to probabilities of taking actions, or to specific actions in continuous action spaces. The dimensionality of these policy parameters is $d'$.
+
+Advantages for complex tasks:
+
+* **Continuous Action Spaces:** It's often more natural to parameterize a policy for continuous actions (e.g., a Gaussian distribution whose mean and variance are outputs of a neural network) than to find the maximum over a continuous Q-function.
+* **Stochastic kind of Policies:** For kind of exploratory task (where actions are chosen probabilistically).
+* **Simpler Policy Updates:** we all know what this means...
+
+**Goal:** The core idea of policy gradient methods is to adjust the parameters $\mathbf{\theta}$ of the policy in the direction that maximizes the expected return (or performance) of the policy.
+
+**Problem:**
+
+* Without baseline → high variance (different average like a state with average return G1 of 100 and change +-5 are not the same with another state with average return G2 of 10 that also +-5)
+* With baseline (e.g., $V_\pi(s)$) → reduced variance
+
+## A Monte Carlo Style Policy Gradient Algorithm
+The core idea is to increase the probability of actions that lead to high returns and decrease the probability of actions that lead to low returns.
+
+**Initialize:**
+
+* **Functional form for the policy:** $\pi(a|s, \mathbf{\theta})$ (e.g., a neural network that outputs action probabilities given a state, parameterized by $\mathbf{\theta}$).
+* **Initial parameters:** $\mathbf{\theta}$ (e.g., randomly initialized weights for a neural network).
+* **Step size (learning rate):** $\alpha$
+
+**Algorithm:**
+
+**For** $m = 1, \dots, M$ (for each episode):
+
+* **Sample a trajectory under the current policy $\pi(\cdot|\cdot, \mathbf{\theta})$:**
+    $s_0^m, a_0^m, r_1^m, \dots, a_{T_m-1}^m, r_{T_m}^m$
+    (where $T_m$ is the length of the episode).
+
+* **For** $t = 0, \dots, T_m - 1$ (for each time step in the trajectory):
+
+    * **Compute the return from time $t$:**
+        $g_t^m \leftarrow r_{t+1}^m + \gamma r_{t+2}^m + \dots + \gamma^{T_m - t - 1} r_{T_m}^m$
+        (This is the total discounted reward from $t+1$ until the end of the episode).
+
+    * **Update the policy parameters:**
+        $$
+        \mathbf{\theta} \leftarrow \mathbf{\theta} + \alpha \gamma^t g_t^m \nabla_{\mathbf{\theta}} \ln \pi(a_t^m|s_t^m, \mathbf{\theta})
+        $$
+
+**Explanation of the Update Rule:**
+
+* $\alpha$: The learning rate, controlling the step size of the update.
+* $\gamma^t$: The discount factor raised to the power of $t$. This term accounts for the discounting of future rewards, ensuring that immediate rewards have a stronger influence on early actions.
+* $g_t^m$: The Monte Carlo return from time step $t$. e.g. If **return high => big step size**, if **return negative => step backward**
+* $\nabla_{\mathbf{\theta}} \ln \pi(a_t^m|s_t^m, \mathbf{\theta})$: This is the **gradient of the log-probability of the action taken**.
+    * $\ln \pi(a_t^m|s_t^m, \mathbf{\theta})$: The logarithm of the probability that the policy $\pi$ would choose action $a_t^m$ in state $s_t^m$ with current parameters $\mathbf{\theta}$. **This is very important!!!** It is a **normalizer for cases like a random policy $\pi$ pick a positive (but low return) action too often,** leading to pushing the probability too much, so by taking the gradient of $ln$ of it, it limit down it, (and also the opposite for high reward actions but the behavior policy did not pick as many time to push enough higher). These situations usually happen with **initialization of that lower reward already too high, and then add up that the policy random pick it too often pushing it even further.**
+    * $\nabla_{\mathbf{\theta}}$: The gradient operator with respect to the policy parameters $\mathbf{\theta}$. This term tells us how to change $\mathbf{\theta}$ to increase the log-probability of taking action $a_t^m$ in state $s_t^m$.
+
+**Intuition:**
+
+The update rule essentially says: if action $a_t^m$ taken in state $s_t^m$ leads to a high return ($g_t^m$ is large and positive), then increase the probability of taking that action in that state. If it leads to a low (or negative) return, decrease its probability. The $\gamma^t$ term ensures that actions taken earlier in the trajectory, which influence more of the subsequent rewards, are given appropriate credit.
+
+REINFORCE is a fundamental algorithm that demonstrates the direct optimization of a policy, laying the groundwork for more advanced policy gradient methods.
+
+
+## Credit assignment problem
+within an episode, figure out what subpath made the episode bad or good a.k.a individual action impact on the episode
+=>
