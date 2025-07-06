@@ -9,7 +9,7 @@
 <meta name="author" content="Your Name">
 <meta name="dcterms.date" content="2025-07-05">
 
-<title>Understanding Bayesian Optimization – haha</title>
+<title>Gaussian Process &amp; Bayesian Optimization – haha</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -41,7 +41,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-db03927a41f77a8af5287a812d7101f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -145,7 +145,7 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Understanding Bayesian Optimization</h1>
+      <h1 class="title">Gaussian Process &amp; Bayesian Optimization</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">Machine Learning</div>
                 <div class="quarto-category">Optimization</div>
@@ -183,13 +183,42 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#the-foundation---bayes-theorem" id="toc-the-foundation---bayes-theorem" class="nav-link active" data-scroll-target="#the-foundation---bayes-theorem">The Foundation - Bayes’ Theorem</a>
+  <li><a href="#from-bayes-theorem-to-gaussian-process" id="toc-from-bayes-theorem-to-gaussian-process" class="nav-link active" data-scroll-target="#from-bayes-theorem-to-gaussian-process">From Bayes’ Theorem to Gaussian Process</a>
   <ul class="collapse">
-  <li><a href="#naive-bayes-classifier---simplicity-meets-speed" id="toc-naive-bayes-classifier---simplicity-meets-speed" class="nav-link" data-scroll-target="#naive-bayes-classifier---simplicity-meets-speed">Naive Bayes Classifier - Simplicity Meets Speed</a>
+  <li><a href="#the-gp-prior-pf-joint-gaussian-over-all-relevant-points" id="toc-the-gp-prior-pf-joint-gaussian-over-all-relevant-points" class="nav-link" data-scroll-target="#the-gp-prior-pf-joint-gaussian-over-all-relevant-points">1. The GP Prior <span class="math inline">\(P(f)\)</span>: Joint Gaussian over All Relevant Points</a></li>
+  <li><a href="#the-likelihood-pmathcald-f-adding-gaussian-noise" id="toc-the-likelihood-pmathcald-f-adding-gaussian-noise" class="nav-link" data-scroll-target="#the-likelihood-pmathcald-f-adding-gaussian-noise">2. The Likelihood <span class="math inline">\(P(\mathcal{D} | f)\)</span>: Adding Gaussian Noise</a></li>
+  <li><a href="#the-multiplication-and-conditioning-to-get-the-posterior-pf-mathcald" id="toc-the-multiplication-and-conditioning-to-get-the-posterior-pf-mathcald" class="nav-link" data-scroll-target="#the-multiplication-and-conditioning-to-get-the-posterior-pf-mathcald">3. The “Multiplication” and Conditioning to Get the Posterior <span class="math inline">\(P(f | \mathcal{D})\)</span></a></li>
+  </ul></li>
+  <li><a href="#official-mathematical-formulation-of-bayesian-optimization-and-gaussian-processes" id="toc-official-mathematical-formulation-of-bayesian-optimization-and-gaussian-processes" class="nav-link" data-scroll-target="#official-mathematical-formulation-of-bayesian-optimization-and-gaussian-processes">Official Mathematical Formulation of Bayesian Optimization and Gaussian Processes</a>
   <ul class="collapse">
-  <li><a href="#the-naive-assumption-conditional-independence" id="toc-the-naive-assumption-conditional-independence" class="nav-link" data-scroll-target="#the-naive-assumption-conditional-independence">The “Naive” Assumption: Conditional Independence</a></li>
-  <li><a href="#mathematical-formulation" id="toc-mathematical-formulation" class="nav-link" data-scroll-target="#mathematical-formulation">Mathematical Formulation</a></li>
-  <li><a href="#how-it-works-for-classification" id="toc-how-it-works-for-classification" class="nav-link" data-scroll-target="#how-it-works-for-classification">How it Works (for Classification)</a></li>
+  <li><a href="#the-gaussian-process-gp-as-the-surrogate-model" id="toc-the-gaussian-process-gp-as-the-surrogate-model" class="nav-link" data-scroll-target="#the-gaussian-process-gp-as-the-surrogate-model">1. The Gaussian Process (GP) as the Surrogate Model</a></li>
+  <li><a href="#bayesian-optimization-iteration-using-an-acquisition-function" id="toc-bayesian-optimization-iteration-using-an-acquisition-function" class="nav-link" data-scroll-target="#bayesian-optimization-iteration-using-an-acquisition-function">2. Bayesian Optimization Iteration using an Acquisition Function</a></li>
+  <li><a href="#numerical-example-optimizing-a-simple-1d-function" id="toc-numerical-example-optimizing-a-simple-1d-function" class="nav-link" data-scroll-target="#numerical-example-optimizing-a-simple-1d-function">3. Numerical Example: Optimizing a Simple 1D Function</a></li>
+  </ul></li>
+  <li><a href="#bayes-theorem" id="toc-bayes-theorem" class="nav-link" data-scroll-target="#bayes-theorem">Bayes’ Theorem</a>
+  <ul class="collapse">
+  <li><a href="#formulation" id="toc-formulation" class="nav-link" data-scroll-target="#formulation">Formulation</a>
+  <ul class="collapse">
+  <li><a href="#maximum-likelihood-estimation-mle" id="toc-maximum-likelihood-estimation-mle" class="nav-link" data-scroll-target="#maximum-likelihood-estimation-mle">Maximum Likelihood Estimation (MLE)</a></li>
+  <li><a href="#maximum-a-posteriori-map-estimation" id="toc-maximum-a-posteriori-map-estimation" class="nav-link" data-scroll-target="#maximum-a-posteriori-map-estimation">Maximum A Posteriori (MAP) Estimation</a></li>
+  <li><a href="#mle-is-a-special-case-of-map" id="toc-mle-is-a-special-case-of-map" class="nav-link" data-scroll-target="#mle-is-a-special-case-of-map">MLE is a Special Case of MAP</a></li>
+  </ul></li>
+  <li><a href="#naive-bayes-classifier---the-naive-assumption-conditional-independence" id="toc-naive-bayes-classifier---the-naive-assumption-conditional-independence" class="nav-link" data-scroll-target="#naive-bayes-classifier---the-naive-assumption-conditional-independence">Naive Bayes Classifier - The “Naive” Assumption: Conditional Independence</a></li>
+  </ul></li>
+  <li><a href="#covariance---measuring-relationships-and-uncertainty" id="toc-covariance---measuring-relationships-and-uncertainty" class="nav-link" data-scroll-target="#covariance---measuring-relationships-and-uncertainty">Covariance - Measuring Relationships and Uncertainty</a>
+  <ul class="collapse">
+  <li><a href="#covariance-between-two-random-variables-1d" id="toc-covariance-between-two-random-variables-1d" class="nav-link" data-scroll-target="#covariance-between-two-random-variables-1d">Covariance between Two Random Variables (1D)</a></li>
+  <li><a href="#covariance-of-a-single-random-variable-with-itself-variance" id="toc-covariance-of-a-single-random-variable-with-itself-variance" class="nav-link" data-scroll-target="#covariance-of-a-single-random-variable-with-itself-variance">Covariance of a Single Random Variable with Itself (Variance)</a></li>
+  <li><a href="#the-covariance-matrix-for-multiple-random-variables-multivariate-case" id="toc-the-covariance-matrix-for-multiple-random-variables-multivariate-case" class="nav-link" data-scroll-target="#the-covariance-matrix-for-multiple-random-variables-multivariate-case">The Covariance Matrix for Multiple Random Variables (Multivariate Case)</a></li>
+  <li><a href="#intuition-of-the-covariance-matrix-spread-and-relationships" id="toc-intuition-of-the-covariance-matrix-spread-and-relationships" class="nav-link" data-scroll-target="#intuition-of-the-covariance-matrix-spread-and-relationships">Intuition of the Covariance Matrix: Spread and Relationships</a></li>
+  </ul></li>
+  <li><a href="#maximum-likelihood-estimation-mle-1" id="toc-maximum-likelihood-estimation-mle-1" class="nav-link" data-scroll-target="#maximum-likelihood-estimation-mle-1">Maximum Likelihood Estimation (MLE)</a>
+  <ul class="collapse">
+  <li><a href="#the-linear-model-and-gaussian-noise-assumption" id="toc-the-linear-model-and-gaussian-noise-assumption" class="nav-link" data-scroll-target="#the-linear-model-and-gaussian-noise-assumption">The Linear Model and Gaussian Noise Assumption</a></li>
+  <li><a href="#likelihood-function" id="toc-likelihood-function" class="nav-link" data-scroll-target="#likelihood-function">Likelihood Function</a>
+  <ul class="collapse">
+  <li><a href="#derivation" id="toc-derivation" class="nav-link" data-scroll-target="#derivation">Derivation</a></li>
+  <li><a href="#maximizing-this-function-with-respect-to-boldsymbolbeta" id="toc-maximizing-this-function-with-respect-to-boldsymbolbeta" class="nav-link" data-scroll-target="#maximizing-this-function-with-respect-to-boldsymbolbeta">Maximizing this function with respect to <span class="math inline">\(\boldsymbol{\beta}\)</span></a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -202,58 +231,361 @@ window.Quarto = {
 
 
 
-<section id="the-foundation---bayes-theorem" class="level1">
-<h1>The Foundation - Bayes’ Theorem</h1>
-<p>It is a framework for performing <strong>inference</strong>: moving from an initial state of knowledge (the prior <span class="math inline">\(P(H)\)</span>) to an updated state of knowledge (the posterior <span class="math inline">\(P(H|E)\)</span>) by incorporating new information (the evidence <span class="math inline">\(P(E)\)</span> through the likelihood <span class="math inline">\(P(E|H)\)</span>). It is an iterative update process =&gt; powerful for learning and decision-making under uncertainty.</p>
-<p><span class="math display">\[P(H|E) = \frac{P(E|H) \cdot P(H)}{P(E)}\]</span></p>
-<p>where:</p>
+<section id="from-bayes-theorem-to-gaussian-process" class="level1">
+<h1>From Bayes’ Theorem to Gaussian Process</h1>
+<p><span class="math inline">\(P(f | \mathcal{D}) \propto P(\mathcal{D} | f) P(f)\)</span> is a real multiplication of probability densities. However, when dealing with functions and multivariate Gaussians, this multiplication is implicitly handled by the properties of joint and conditional Gaussian distributions.</p>
+<section id="the-gp-prior-pf-joint-gaussian-over-all-relevant-points" class="level2">
+<h2 class="anchored" data-anchor-id="the-gp-prior-pf-joint-gaussian-over-all-relevant-points">1. The GP Prior <span class="math inline">\(P(f)\)</span>: Joint Gaussian over All Relevant Points</h2>
+<p>The key to the GP’s tractability is that while it’s a distribution over infinite-dimensional functions, any <strong>finite collection of function values</strong> drawn from a GP jointly follow a multivariate Gaussian distribution.</p>
+<p>Consider our observed input points <span class="math inline">\(\mathbf{X}_t = \{\mathbf{x}_1, \dots, \mathbf{x}_t\}\)</span> and a new test input point <span class="math inline">\(\mathbf{x}^*\)</span>. Under the GP prior, the vector of true (but unobserved) function values at these points, <span class="math inline">\(\mathbf{f}_t = [f(\mathbf{x}_1), \dots, f(\mathbf{x}_t)]^T\)</span> and <span class="math inline">\(f^* = f(\mathbf{x}^*)\)</span>, has a joint multivariate Gaussian distribution:</p>
+<p><span class="math display">\[\begin{pmatrix} \mathbf{f}_t \\ f^* \end{pmatrix} \sim \mathcal{N} \left( \begin{pmatrix} \mathbf{m}_t \\ m(\mathbf{x}^*) \end{pmatrix}, \begin{pmatrix} \mathbf{K}_t &amp; \mathbf{k}_* \\ \mathbf{k}_*^T &amp; k(\mathbf{x}^*, \mathbf{x}^*) \end{pmatrix} \right)\]</span></p>
+<p>Here:</p>
 <ul>
-<li><p><strong><span class="math inline">\(P(H|E)\)</span> : The Posterior Probability</strong> What we are trying to find. It is the probability of the hypothesis (<span class="math inline">\(H\)</span>) <em>given</em> observed the evidence (<span class="math inline">\(E\)</span>). a.k.a Updated belief after updated new evidence data.</p></li>
-<li><p><strong><span class="math inline">\(P(E|H)\)</span> : The Likelihood</strong> Probability of observing the evidence (<span class="math inline">\(E\)</span>) <em>given</em> the hypothesis (<span class="math inline">\(H\)</span>). a.k.a how well the hypothesis explains the observed data.</p></li>
-<li><p><strong><span class="math inline">\(P(H)\)</span> : The Prior Probability</strong> Probability of the hypothesis (<span class="math inline">\(H\)</span>) <em>before</em> considering any new evidence (<span class="math inline">\(E\)</span>). It is what we know (or assume) before seeing the data.</p></li>
-<li><p><strong><span class="math inline">\(P(E)\)</span> : The Evidence (or Marginal Likelihood)</strong> Probability of observing the evidence (<span class="math inline">\(E\)</span>) under all possible hypotheses. Often, <span class="math inline">\(P(E)\)</span> acts as a normalizing constant to ensure that the sum of all posterior probabilities for all possible hypotheses equals 1 <span class="math inline">\(\sum_i P(H_i|E) = 1\)</span>. Because <span class="math inline">\(P(E) = \sum_i P(E|H_i)P(H_i)\)</span>.</p></li>
+<li><span class="math inline">\(\mathbf{m}_t = [m(\mathbf{x}_1), \dots, m(\mathbf{x}_t)]^T\)</span> is the prior mean at observed points.</li>
+<li><span class="math inline">\(\mathbf{K}_t\)</span> is the <span class="math inline">\(t \times t\)</span> covariance matrix of the observed points, where <span class="math inline">\([\mathbf{K}_t]_{ij} = k(\mathbf{x}_i, \mathbf{x}_j)\)</span>.</li>
+<li><span class="math inline">\(\mathbf{k}_* = [k(\mathbf{x}^*, \mathbf{x}_1), \dots, k(\mathbf{x}^*, \mathbf{x}_t)]^T\)</span> is the <span class="math inline">\(t \times 1\)</span> vector of covariances between the test point and observed points.</li>
+<li><span class="math inline">\(k(\mathbf{x}^*, \mathbf{x}^*)\)</span> is the prior variance at the test point itself.</li>
 </ul>
-<section id="naive-bayes-classifier---simplicity-meets-speed" class="level2">
-<h2 class="anchored" data-anchor-id="naive-bayes-classifier---simplicity-meets-speed">Naive Bayes Classifier - Simplicity Meets Speed</h2>
-<p><strong>Naive Bayes Classifier</strong> is a powerful and widely used machine learning algorithm building upon the foundation of Bayes’ Theorem, we now turn our attention to the <strong>Naive Bayes Classifier</strong>. Renowned for its simplicity, speed, and effectiveness in tasks like text classification (e.g., spam detection).</p>
-<section id="the-naive-assumption-conditional-independence" class="level3">
-<h3 class="anchored" data-anchor-id="the-naive-assumption-conditional-independence">The “Naive” Assumption: Conditional Independence</h3>
-<p><strong>Assumption:</strong> that all features (or attributes) are <strong>conditionally independent</strong> of each other, <em>given the class label</em>. This assumption is almost always violated in real-world data (features are rarely truly independent),but it works</p>
-<p><strong>Example</strong> classify an email as “Spam” or “Not Spam,” based on features like “contains ‘money’,” “contains ‘free’,” and “contains ‘Viagra’.”</p>
+<p>This joint prior distribution for <span class="math inline">\(\begin{pmatrix} \mathbf{f}_t \\ f^* \end{pmatrix}\)</span> represents the <span class="math inline">\(P(f)\)</span> term in Bayes’ Theorem. We do not know what that exactly is, but it does tell us about the plausible relationships between function values at observed and unobserved locations <em>before</em> we see any data.</p>
+</section>
+<section id="the-likelihood-pmathcald-f-adding-gaussian-noise" class="level2">
+<h2 class="anchored" data-anchor-id="the-likelihood-pmathcald-f-adding-gaussian-noise">2. The Likelihood <span class="math inline">\(P(\mathcal{D} | f)\)</span>: Adding Gaussian Noise</h2>
+<p>We observe the data <span class="math inline">\(\mathcal{D}_t = \{(\mathbf{x}_i, y_i)\}_{i=1}^t\)</span>, where <span class="math inline">\(y_i = f(\mathbf{x}_i) + \epsilon_i\)</span> and <span class="math inline">\(\epsilon_i \sim \mathcal{N}(0, \sigma_n^2)\)</span>. This can be written in vector form as:</p>
+<p><span class="math display">\[\mathbf{y}_t = \mathbf{f}_t + \boldsymbol{\epsilon}\]</span></p>
+<p>where <span class="math inline">\(\boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \sigma_n^2 \mathbf{I})\)</span>.</p>
+<p>The <strong>likelihood <span class="math inline">\(P(\mathcal{D}_t | f)\)</span></strong> (or more precisely, <span class="math inline">\(P(\mathbf{y}_t | \mathbf{f}_t)\)</span>) is a Gaussian centered at the true function values <span class="math inline">\(\mathbf{f}_t\)</span>:</p>
+<p><span class="math display">\[P(\mathbf{y}_t | \mathbf{f}_t) = \mathcal{N}(\mathbf{y}_t | \mathbf{f}_t, \sigma_n^2 \mathbf{I})\]</span></p>
+<p>This explicitly defines the <span class="math inline">\(P(\mathcal{D}|f)\)</span> term (using <span class="math inline">\(\mathbf{f}_t\)</span> as the “specific function” part for the observed data).</p>
+</section>
+<section id="the-multiplication-and-conditioning-to-get-the-posterior-pf-mathcald" class="level2">
+<h2 class="anchored" data-anchor-id="the-multiplication-and-conditioning-to-get-the-posterior-pf-mathcald">3. The “Multiplication” and Conditioning to Get the Posterior <span class="math inline">\(P(f | \mathcal{D})\)</span></h2>
+<p>Now, the “multiplication” that yields the posterior GP is achieved by a fundamental property of <strong>multivariate Gaussian distributions</strong>:</p>
+<p>If you have two random variables (or vectors of variables) <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> that are jointly Gaussian <strong>(note that <span class="math inline">\(\Sigma = Cov\)</span>)</strong>:</p>
+<p><span class="math display">\[\begin{pmatrix} A \\ B \end{pmatrix} \sim \mathcal{N} \left( \begin{pmatrix} \boldsymbol{\mu}_A \\ \boldsymbol{\mu}_B \end{pmatrix}, \begin{pmatrix} \boldsymbol{\Sigma}_{AA} &amp; \boldsymbol{\Sigma}_{AB} \\ \boldsymbol{\Sigma}_{BA} &amp; \boldsymbol{\Sigma}_{BB} \end{pmatrix} \right)\]</span></p>
+<p>Then, the conditional distribution of <span class="math inline">\(B\)</span> given <span class="math inline">\(A\)</span> (i.e., <span class="math inline">\(P(B|A)\)</span>) is also Gaussian with:</p>
 <ul>
-<li><strong>Without the Naive assumption</strong>, a true Bayesian classifier would need to figure out complex relationships: <em>if</em> the email contains “money,” how does that affect the probability of it also containing “free,” given it’s spam?</li>
-<li><strong>The Naive Bayes Classifier</strong> simplifies this by assuming that, <em>if we already know the email is spam</em>, the presence of “money” doesn’t change the probability of “free” being there. They are treated as independent events, conditional on the class.</li>
+<li><strong>Conditional Mean:</strong> <span class="math inline">\(\boldsymbol{\mu}_{B|A} = \boldsymbol{\mu}_B + \boldsymbol{\Sigma}_{BA} \boldsymbol{\Sigma}_{AA}^{-1} (\mathbf{A} - \boldsymbol{\mu}_A)\)</span></li>
+<li><strong>Conditional Covariance:</strong> <span class="math inline">\(\boldsymbol{\Sigma}_{B|A} = \boldsymbol{\Sigma}_{BB} - \boldsymbol{\Sigma}_{BA} \boldsymbol{\Sigma}_{AA}^{-1} \boldsymbol{\Sigma}_{AB}\)</span></li>
+</ul>
+<p><strong>How this maps to GPs:</strong></p>
+<ol type="1">
+<li><p><strong>Form the Joint Distribution of <span class="math inline">\((\mathbf{y}_t, f^*)\)</span> under the Prior:</strong> We need the joint prior distribution of our observed outputs <span class="math inline">\(\mathbf{y}_t\)</span> and our unobserved test point function value <span class="math inline">\(f^*\)</span>. We know <span class="math inline">\(\mathbf{y}_t = \mathbf{f}_t + \boldsymbol{\epsilon}\)</span>. Since <span class="math inline">\(\mathbf{f}_t\)</span> and <span class="math inline">\(f^*\)</span> are jointly Gaussian (from the GP prior) and <span class="math inline">\(\boldsymbol{\epsilon}\)</span> is Gaussian (noise), their sum is also jointly Gaussian. The joint prior mean of <span class="math inline">\(\begin{pmatrix} \mathbf{y}_t \\ f^* \end{pmatrix}\)</span> is <span class="math inline">\(\begin{pmatrix} \mathbf{m}_t \\ m(\mathbf{x}^*) \end{pmatrix}\)</span>. The joint prior covariance of <span class="math inline">\(\begin{pmatrix} \mathbf{y}_t \\ f^* \end{pmatrix}\)</span> is:</p>
+<p><span class="math display">\[\text{Cov}\left(\begin{pmatrix} \mathbf{y}_t \\ f^* \end{pmatrix}\right) = \begin{pmatrix} \mathbf{K}_t + \sigma_n^2 \mathbf{I} &amp; \mathbf{k}_* \\ \mathbf{k}_*^T &amp; k(\mathbf{x}^*, \mathbf{x}^*) \end{pmatrix}\]</span></p>
+<p>(Here, the <span class="math inline">\(\sigma_n^2 \mathbf{I}\)</span> term comes from the noise added to <span class="math inline">\(\mathbf{f}_t\)</span> in the <span class="math inline">\(\mathbf{y}_t\)</span> block).</p></li>
+<li><p><strong>Conditioning (Applying Bayes’ Rule):</strong> Now, we have observed <span class="math inline">\(\mathbf{y}_t\)</span>. We want to find the posterior distribution of <span class="math inline">\(f^*\)</span> given <span class="math inline">\(\mathbf{y}_t\)</span>, which is <span class="math inline">\(P(f^* | \mathbf{y}_t)\)</span>. Using the conditional Gaussian formulas, let:</p>
+<ul>
+<li><span class="math inline">\(A = \mathbf{y}_t\)</span> (our observed data)</li>
+<li><span class="math inline">\(B = f^*\)</span> (the function value we want to predict)</li>
+<li><span class="math inline">\(\boldsymbol{\mu}_A = \mathbf{m}_t\)</span></li>
+<li><span class="math inline">\(\boldsymbol{\mu}_B = m(\mathbf{x}^*)\)</span></li>
+<li><span class="math inline">\(\boldsymbol{\Sigma}_{AA} = \mathbf{K}_t + \sigma_n^2 \mathbf{I}\)</span></li>
+<li><span class="math inline">\(\boldsymbol{\Sigma}_{BB} = k(\mathbf{x}^*, \mathbf{x}^*)\)</span></li>
+<li><span class="math inline">\(\boldsymbol{\Sigma}_{AB} = \mathbf{k}_*\)</span></li>
+<li><span class="math inline">\(\boldsymbol{\Sigma}_{BA} = \mathbf{k}_*^T\)</span></li>
+</ul>
+<p>Plugging these into the conditional mean and covariance formulas gives exactly the GP posterior predictive mean and variance:</p>
+<p><strong>Posterior Mean <span class="math inline">\(\mu_t(\mathbf{x}^*)\)</span>:</strong></p>
+<p><span class="math display">\[\mu_t(\mathbf{x}^*) = m(\mathbf{x}^*) + \mathbf{k}_*^T (\mathbf{K}_t + \sigma_n^2 \mathbf{I})^{-1} (\mathbf{y}_t - \mathbf{m}_t)\]</span></p>
+<p><strong>Posterior Variance <span class="math inline">\(\sigma_t^2(\mathbf{x}^*)\)</span>:</strong></p>
+<p><span class="math display">\[\sigma_t^2(\mathbf{x}^*) = k(\mathbf{x}^*, \mathbf{x}^*) - \mathbf{k}_*^T (\mathbf{K}_t + \sigma_n^2 \mathbf{I})^{-1} \mathbf{k}_*\]</span></p></li>
+</ol>
+<p><strong>In essence:</strong></p>
+<p>The “multiplication” <span class="math inline">\(P(\mathcal{D} | f) P(f)\)</span> is handled internally by the mathematical properties of Gaussian distributions. The GP framework sets up a joint Gaussian prior over all relevant function values (observed and unobserved). The likelihood then specifies how our observed data <span class="math inline">\(\mathbf{y}_t\)</span> relates to the true function values <span class="math inline">\(\mathbf{f}_t\)</span>. By conditioning this joint prior on the observed data <span class="math inline">\(\mathbf{y}_t\)</span>, we directly derive the exact posterior distribution for the unobserved function values <span class="math inline">\(f^*\)</span>, which turns out to also be Gaussian with the mean and variance formulas.</p>
+</section>
+</section>
+<section id="official-mathematical-formulation-of-bayesian-optimization-and-gaussian-processes" class="level1">
+<h1>Official Mathematical Formulation of Bayesian Optimization and Gaussian Processes</h1>
+<section id="the-gaussian-process-gp-as-the-surrogate-model" class="level2">
+<h2 class="anchored" data-anchor-id="the-gaussian-process-gp-as-the-surrogate-model">1. The Gaussian Process (GP) as the Surrogate Model</h2>
+<p>As established, the Gaussian Process models our unknown objective function <span class="math inline">\(f(\mathbf{x})\)</span> as a probability distribution over functions:</p>
+<p><span class="math display">\[f(\mathbf{x}) \sim \mathcal{GP}(m(\mathbf{x}), k(\mathbf{x}, \mathbf{x}'))\]</span></p>
+<ul>
+<li><p><span class="math inline">\(m(\mathbf{x})\)</span>: Mean function (often assumed to be <span class="math inline">\(m(\mathbf{x})=0\)</span> or the mean of observed data for simplicity).</p></li>
+<li><p><span class="math inline">\(k(\mathbf{x}, \mathbf{x}')\)</span>: Kernel (covariance) function, defining similarity between function values at different points. A common choice is the Squared Exponential (RBF) kernel:</p>
+<p><span class="math display">\[k(\mathbf{x}, \mathbf{x}') = \sigma_f^2 \exp\left(-\frac{\|\mathbf{x} - \mathbf{x}'\|^2}{2l^2}\right)\]</span></p>
+<p>where <span class="math inline">\(\sigma_f^2\)</span> is the signal variance (amplitude) and <span class="math inline">\(l\)</span> is the length-scale.</p></li>
+</ul>
+<p>Given a set of <span class="math inline">\(t\)</span> observed data points <span class="math inline">\(\mathcal{D}_t = \{(\mathbf{x}_1, y_1), \dots, (\mathbf{x}_t, y_t)\}\)</span>, where <span class="math inline">\(y_i = f(\mathbf{x}_i) + \epsilon_i\)</span> (with additive Gaussian noise <span class="math inline">\(\epsilon_i \sim \mathcal{N}(0, \sigma_n^2)\)</span>), the posterior predictive distribution for a new point <span class="math inline">\(\mathbf{x}^*\)</span> is Gaussian:</p>
+<p><span class="math display">\[f(\mathbf{x}^*) | \mathcal{D}_t \sim \mathcal{N}(\mu_t(\mathbf{x}^*), \sigma_t^2(\mathbf{x}^*))\]</span></p>
+<p>The predictive mean <span class="math inline">\(\mu_t(\mathbf{x}^*)\)</span> and variance <span class="math inline">\(\sigma_t^2(\mathbf{x}^*)\)</span> are given by:</p>
+<p><span class="math display">\[\mu_t(\mathbf{x}^*) = m(\mathbf{x}^*) + \mathbf{k}_*^T (\mathbf{K}_t + \sigma_n^2 \mathbf{I})^{-1} (\mathbf{y}_t - \mathbf{m}_t)\]</span> <span class="math display">\[\sigma_t^2(\mathbf{x}^*) = k(\mathbf{x}^*, \mathbf{x}^*) - \mathbf{k}_*^T (\mathbf{K}_t + \sigma_n^2 \mathbf{I})^{-1} \mathbf{k}_*\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(\mathbf{y}_t = [y_1, \dots, y_t]^T\)</span> (vector of observed values)</li>
+<li><span class="math inline">\(\mathbf{m}_t = [m(\mathbf{x}_1), \dots, m(\mathbf{x}_t)]^T\)</span> (mean function evaluated at observed points)</li>
+<li><span class="math inline">\(\mathbf{K}_t\)</span>: <span class="math inline">\(t \times t\)</span> covariance matrix where <span class="math inline">\([\mathbf{K}_t]_{ij} = k(\mathbf{x}_i, \mathbf{x}_j)\)</span>.</li>
+<li><span class="math inline">\(\mathbf{k}_*\)</span>: <span class="math inline">\(t \times 1\)</span> vector where <span class="math inline">\([\mathbf{k}_*]_i = k(\mathbf{x}^*, \mathbf{x}_i)\)</span>.</li>
+<li><span class="math inline">\(\mathbf{I}\)</span>: Identity matrix.</li>
+<li><span class="math inline">\(\sigma_n^2\)</span>: Noise variance.</li>
 </ul>
 </section>
-<section id="mathematical-formulation" class="level3">
-<h3 class="anchored" data-anchor-id="mathematical-formulation">Mathematical Formulation</h3>
+<section id="bayesian-optimization-iteration-using-an-acquisition-function" class="level2">
+<h2 class="anchored" data-anchor-id="bayesian-optimization-iteration-using-an-acquisition-function">2. Bayesian Optimization Iteration using an Acquisition Function</h2>
+<p>The goal of Bayesian Optimization is to find <span class="math inline">\(\mathbf{x}^* = \arg\max_{\mathbf{x} \in \mathcal{X}} f(\mathbf{x})\)</span>, where <span class="math inline">\(\mathcal{X}\)</span> is the search domain.</p>
+<p>The iterative process involves:</p>
+<ol type="1">
+<li><p><strong>Update GP:</strong> Use the current dataset <span class="math inline">\(\mathcal{D}_t\)</span> to compute the posterior mean <span class="math inline">\(\mu_t(\mathbf{x})\)</span> and variance <span class="math inline">\(\sigma_t^2(\mathbf{x})\)</span> for the entire search space <span class="math inline">\(\mathcal{X}\)</span>.</p></li>
+<li><p><strong>Maximize Acquisition Function:</strong> Select the next point <span class="math inline">\(\mathbf{x}_{next}\)</span> by maximizing an acquisition function <span class="math inline">\(a(\mathbf{x})\)</span>, which intelligently balances exploration (sampling in uncertain regions) and exploitation (sampling in promising regions). We’ll use Expected Improvement (EI) for our example:</p>
+<p><span class="math display">\[\text{EI}(\mathbf{x}) = \mathbb{E}[\max(0, f(\mathbf{x}) - y_{\text{max}}^*)]\]</span></p>
+<p>Where <span class="math inline">\(y_{\text{max}}^* = \max_{i=1 \dots t} y_i\)</span> is the current best observed value.</p>
+<p>The analytical form of EI (assuming <span class="math inline">\(\sigma_t(\mathbf{x}) &gt; 0\)</span>) is:</p>
+<p><span class="math display">\[\text{EI}(\mathbf{x}) = \sigma_t(\mathbf{x}) \left[\phi(Z) + Z\Phi(Z)\right]\]</span></p>
+<p>where <span class="math inline">\(Z = \frac{\mu_t(\mathbf{x}) - y_{\text{max}}^*}{\sigma_t(\mathbf{x})}\)</span>. If <span class="math inline">\(\sigma_t(\mathbf{x}) = 0\)</span>, then <span class="math inline">\(\text{EI}(\mathbf{x}) = 0\)</span>. <span class="math inline">\(\phi(\cdot)\)</span> is the PDF and <span class="math inline">\(\Phi(\cdot)\)</span> is the CDF of the standard normal distribution.</p></li>
+<li><p><strong>Evaluate True Function:</strong> Obtain <span class="math inline">\(y_{next} = f(\mathbf{x}_{next})\)</span>.</p></li>
+<li><p><strong>Add to Data:</strong> <span class="math inline">\(\mathcal{D}_{t+1} = \mathcal{D}_t \cup \{(\mathbf{x}_{next}, y_{next})\}\)</span>.</p></li>
+</ol>
+</section>
+<section id="numerical-example-optimizing-a-simple-1d-function" class="level2">
+<h2 class="anchored" data-anchor-id="numerical-example-optimizing-a-simple-1d-function">3. Numerical Example: Optimizing a Simple 1D Function</h2>
+<p>Let’s use a very simple 1D objective function <span class="math inline">\(f(x) = -(x-2)^2 + 4\)</span> over the domain <span class="math inline">\(x \in [0,4]\)</span>. The true maximum is at <span class="math inline">\(x=2\)</span> with <span class="math inline">\(f(2)=4\)</span>.</p>
+<p><strong>GP Hyperparameters (Fixed for Simplicity):</strong></p>
+<ul>
+<li>Mean function <span class="math inline">\(m(x)=0\)</span>.</li>
+<li>Squared Exponential Kernel: <span class="math inline">\(\sigma_f^2=1.0\)</span>, <span class="math inline">\(l=1.0\)</span>. So, <span class="math inline">\(k(x,x') = 1.0 \cdot \exp\left(-\frac{(x-x')^2}{2 \cdot 1.0^2}\right) = \exp\left(-\frac{(x-x')^2}{2}\right)\)</span>.</li>
+<li>Noise variance <span class="math inline">\(\sigma_n^2=0.01\)</span>.</li>
+</ul>
+<p><strong>Initial Data Points (<span class="math inline">\(\mathcal{D}_2\)</span>):</strong> Let’s say we randomly selected two points and evaluated the true function (with no noise for simplicity in the example, so <span class="math inline">\(\epsilon_i=0\)</span>):</p>
+<ul>
+<li><span class="math inline">\(x_1=1.0 \Rightarrow y_1 = -(1.0-2)^2 + 4 = -(-1)^2 + 4 = 3.0\)</span></li>
+<li><span class="math inline">\(x_2=3.0 \Rightarrow y_2 = -(3.0-2)^2 + 4 = -(1)^2 + 4 = 3.0\)</span></li>
+</ul>
+<p>So, our initial dataset is <span class="math inline">\(\mathcal{D}_2 = \{(1.0, 3.0), (3.0, 3.0)\}\)</span>. Current best observed value: <span class="math inline">\(y_{\text{max}}^* = 3.0\)</span>.</p>
+<section id="iteration-1-find-the-next-point-to-evaluate" class="level4">
+<h4 class="anchored" data-anchor-id="iteration-1-find-the-next-point-to-evaluate">Iteration 1: Find the Next Point to Evaluate</h4>
+<p><strong>Step 1: Compute <span class="math inline">\(\mathbf{K}_t + \sigma_n^2 \mathbf{I}\)</span> and its inverse</strong></p>
+<p>First, calculate the kernel matrix <span class="math inline">\(\mathbf{K}_2\)</span> for <span class="math inline">\(x_1=1.0\)</span> and <span class="math inline">\(x_2=3.0\)</span>:</p>
+<ul>
+<li><span class="math inline">\(k(x_1,x_1) = \exp\left(-\frac{(1-1)^2}{2}\right) = \exp(0) = 1.0\)</span></li>
+<li><span class="math inline">\(k(x_1,x_2) = \exp\left(-\frac{(1-3)^2}{2}\right) = \exp\left(-\frac{(-2)^2}{2}\right) = \exp\left(-\frac{4}{2}\right) = \exp(-2) \approx 0.1353\)</span></li>
+<li><span class="math inline">\(k(x_2,x_1) = k(x_1,x_2) \approx 0.1353\)</span></li>
+<li><span class="math inline">\(k(x_2,x_2) = \exp\left(-\frac{(3-3)^2}{2}\right) = \exp(0) = 1.0\)</span></li>
+</ul>
+<p>So, <span class="math inline">\(\mathbf{K}_2 = \begin{bmatrix} 1.0 &amp; 0.1353 \\ 0.1353 &amp; 1.0 \end{bmatrix}\)</span></p>
+<p>Now add the noise variance <span class="math inline">\(\sigma_n^2 \mathbf{I} = 0.01 \begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix} = \begin{bmatrix} 0.01 &amp; 0 \\ 0 &amp; 0.01 \end{bmatrix}\)</span>: <span class="math inline">\(\mathbf{K}_2 + \sigma_n^2 \mathbf{I} = \begin{bmatrix} 1.01 &amp; 0.1353 \\ 0.1353 &amp; 1.01 \end{bmatrix}\)</span></p>
+<p>Calculate the inverse <span class="math inline">\((\mathbf{K}_2 + \sigma_n^2 \mathbf{I})^{-1}\)</span>: Determinant <span class="math inline">\(= (1.01 \times 1.01) - (0.1353 \times 0.1353) = 1.0201 - 0.0183 \approx 1.0018\)</span> Inverse <span class="math inline">\(\approx \frac{1}{1.0018} \begin{bmatrix} 1.01 &amp; -0.1353 \\ -0.1353 &amp; 1.01 \end{bmatrix} \approx \begin{bmatrix} 1.0082 &amp; -0.1351 \\ -0.1351 &amp; 1.0082 \end{bmatrix}\)</span></p>
+<p><strong>Step 2: Calculate <span class="math inline">\(\mu_t(x^*)\)</span> and <span class="math inline">\(\sigma_t^2(x^*)\)</span> for candidate points</strong></p>
+<p>Let’s pick a few candidate points <span class="math inline">\(x^*\)</span> to evaluate our GP at:</p>
+<ul>
+<li><span class="math inline">\(x_A^* = 0.5\)</span></li>
+<li><span class="math inline">\(x_B^* = 2.0\)</span> (Near the true optimum, but previously unobserved)</li>
+<li><span class="math inline">\(x_C^* = 3.5\)</span></li>
+</ul>
+<p>For each <span class="math inline">\(x^*\)</span>, we need <span class="math inline">\(\mathbf{k}_* = [k(x^*,x_1), k(x^*,x_2)]^T\)</span>:</p>
+<p>For <span class="math inline">\(x_A^* = 0.5\)</span>:</p>
+<ul>
+<li><span class="math inline">\(k(0.5,1.0) = \exp\left(-\frac{(0.5-1.0)^2}{2}\right) = \exp\left(-\frac{(-0.5)^2}{2}\right) = \exp(-0.125) \approx 0.8825\)</span></li>
+<li><span class="math inline">\(k(0.5,3.0) = \exp\left(-\frac{(0.5-3.0)^2}{2}\right) = \exp\left(-\frac{(-2.5)^2}{2}\right) = \exp(-3.125) \approx 0.0440\)</span> So, <span class="math inline">\(\mathbf{k}_* = \begin{bmatrix} 0.8825 \\ 0.0440 \end{bmatrix}\)</span></li>
+</ul>
+<p>Now compute <span class="math inline">\(\mu_t(0.5)\)</span> and <span class="math inline">\(\sigma_t^2(0.5)\)</span>: (<span class="math inline">\(\mathbf{y}_t - \mathbf{m}_t = \mathbf{y}_t = [3.0, 3.0]^T\)</span> since <span class="math inline">\(m(x)=0\)</span>)</p>
+<p><span class="math inline">\(\mu_t(0.5) = \mathbf{k}_*^T (\mathbf{K}_2 + \sigma_n^2 \mathbf{I})^{-1} \mathbf{y}_t\)</span> (since <span class="math inline">\(\mathbf{m}_t=0\)</span>) <span class="math inline">\(\mu_t(0.5) \approx \begin{bmatrix} 0.8825 &amp; 0.0440 \end{bmatrix} \begin{bmatrix} 1.0082 &amp; -0.1351 \\ -0.1351 &amp; 1.0082 \end{bmatrix} \begin{bmatrix} 3.0 \\ 3.0 \end{bmatrix}\)</span> <span class="math inline">\(\approx \begin{bmatrix} 0.8825 &amp; 0.0440 \end{bmatrix} \begin{bmatrix} (1.0082 \times 3) + (-0.1351 \times 3) \\ (-0.1351 \times 3) + (1.0082 \times 3) \end{bmatrix} = \begin{bmatrix} 0.8825 &amp; 0.0440 \end{bmatrix} \begin{bmatrix} 2.6193 \\ 2.6193 \end{bmatrix}\)</span> <span class="math inline">\(\approx (0.8825 \times 2.6193) + (0.0440 \times 2.6193) \approx 2.3106 + 0.1151 \approx \mathbf{2.4257}\)</span></p>
+<p><span class="math inline">\(\sigma_t^2(0.5) = k(0.5,0.5) - \mathbf{k}_*^T (\mathbf{K}_2 + \sigma_n^2 \mathbf{I})^{-1} \mathbf{k}_*\)</span> <span class="math inline">\(k(0.5,0.5) = 1.0\)</span> <span class="math inline">\(\mathbf{k}_*^T (\mathbf{K}_2 + \sigma_n^2 \mathbf{I})^{-1} \mathbf{k}_* \approx \begin{bmatrix} 0.8825 &amp; 0.0440 \end{bmatrix} \begin{bmatrix} 1.0082 &amp; -0.1351 \\ -0.1351 &amp; 1.0082 \end{bmatrix} \begin{bmatrix} 0.8825 \\ 0.0440 \end{bmatrix}\)</span> <span class="math inline">\(\approx \begin{bmatrix} 0.8825 &amp; 0.0440 \end{bmatrix} \begin{bmatrix} (1.0082 \times 0.8825) + (-0.1351 \times 0.0440) \\ (-0.1351 \times 0.8825) + (1.0082 \times 0.0440) \end{bmatrix}\)</span> <span class="math inline">\(\approx \begin{bmatrix} 0.8825 &amp; 0.0440 \end{bmatrix} \begin{bmatrix} 0.8837 \\ -0.0762 \end{bmatrix} \approx (0.8825 \times 0.8837) + (0.0440 \times -0.0762) \approx 0.7797 - 0.0033 \approx 0.7764\)</span> <span class="math inline">\(\sigma_t^2(0.5) \approx 1.0 - 0.7764 = \mathbf{0.2236}\)</span></p>
+<p>Let’s summarize for our candidates (using a more precise calculator for speed for <span class="math inline">\(x_B^*\)</span> and <span class="math inline">\(x_C^*\)</span>):</p>
+<ul>
+<li><strong>At <span class="math inline">\(x_A^* = 0.5\)</span>:</strong> <span class="math inline">\(\mu_t(0.5) \approx 2.425\)</span> <span class="math inline">\(\sigma_t(0.5) = \sqrt{0.2236} \approx 0.473\)</span></li>
+<li><strong>At <span class="math inline">\(x_B^* = 2.0\)</span>:</strong> (This point is exactly in the middle of our two observed points, so we expect high uncertainty as it’s unobserved but also perhaps a good mean due to interpolation) <span class="math inline">\(\mu_t(2.0) \approx 3.0\)</span> <span class="math inline">\(\sigma_t(2.0) \approx 0.995\)</span> (High uncertainty because it’s far from observed data in terms of kernel distance, but interpolated mean is high)</li>
+<li><strong>At <span class="math inline">\(x_C^* = 3.5\)</span>:</strong> <span class="math inline">\(\mu_t(3.5) \approx 2.425\)</span> <span class="math inline">\(\sigma_t(3.5) \approx 0.473\)</span></li>
+</ul>
+<p><strong>Step 3: Calculate Expected Improvement (EI) for candidate points</strong></p>
+<p>Current best <span class="math inline">\(y_{\text{max}}^* = 3.0\)</span>. We will use <span class="math inline">\(\xi=0\)</span> (the default for simple EI, meaning no exploration-exploitation trade-off parameter).</p>
+<p>For <span class="math inline">\(x_A^* = 0.5\)</span>:</p>
+<p><span class="math inline">\(Z = \frac{\mu_t(0.5) - y_{\text{max}}^*}{\sigma_t(0.5)} = \frac{2.425 - 3.0}{0.473} = \frac{-0.575}{0.473} \approx -1.215\)</span> <span class="math inline">\(\phi(-1.215) \approx 0.1804\)</span> (PDF value)</p>
+<p><span class="math inline">\(\Phi(-1.215) \approx 0.1122\)</span> (CDF value)</p>
+<p><span class="math inline">\(\text{EI}(0.5) = 0.473 [0.1804 + (-1.215) \cdot 0.1122] = 0.473 [0.1804 - 0.1364] = 0.473 [0.044] \approx \mathbf{0.0208}\)</span></p>
+<p>For <span class="math inline">\(x_B^* = 2.0\)</span>:</p>
+<p><span class="math inline">\(Z = \frac{\mu_t(2.0) - y_{\text{max}}^*}{\sigma_t(2.0)} = \frac{3.0 - 3.0}{0.995} = 0\)</span> <span class="math inline">\(\phi(0) \approx 0.3989\)</span> <span class="math inline">\(\Phi(0) = 0.5\)</span> <span class="math inline">\(\text{EI}(2.0) = 0.995 [0.3989 + 0 \cdot 0.5] = 0.995 [0.3989] \approx \mathbf{0.3964}\)</span></p>
+<p>For <span class="math inline">\(x_C^* = 3.5\)</span>:</p>
+<p><span class="math inline">\(Z = \frac{\mu_t(3.5) - y_{\text{max}}^*}{\sigma_t(3.5)} = \frac{2.425 - 3.0}{0.473} \approx -1.215\)</span> <span class="math inline">\(\text{EI}(3.5) \approx \mathbf{0.0208}\)</span> (same as <span class="math inline">\(x_A^*\)</span> due to symmetry in this specific example setup)</p>
+<p><strong>Step 4: Identify <span class="math inline">\(\mathbf{x}_{next}\)</span></strong></p>
+<p>Comparing the EI values:</p>
+<ul>
+<li><span class="math inline">\(\text{EI}(0.5) \approx 0.0208\)</span></li>
+<li><span class="math inline">\(\text{EI}(2.0) \approx 0.3964\)</span></li>
+<li><span class="math inline">\(\text{EI}(3.5) \approx 0.0208\)</span></li>
+</ul>
+<p>The point <span class="math inline">\(\mathbf{x}_{next}=\mathbf{2.0}\)</span> has the highest Expected Improvement. This makes sense: it’s centrally located relative to the observed points, and while its predicted mean is only 3.0 (same as observed), its uncertainty is very high, suggesting a high potential for improvement.</p>
+<p><strong>Step 5: Evaluate the true function at <span class="math inline">\(\mathbf{x}_{next}\)</span> and update data</strong></p>
+<p>We evaluate <span class="math inline">\(f(2.0) = -(2.0-2)^2 + 4 = 4.0\)</span>. Our updated dataset becomes <span class="math inline">\(\mathcal{D}_3 = \{(1.0, 3.0), (3.0, 3.0), (2.0, 4.0)\}\)</span>. The new best observed value <span class="math inline">\(y_{\text{max}}^* = 4.0\)</span>.</p>
+</section>
+<section id="iteration-2-conceptual" class="level4">
+<h4 class="anchored" data-anchor-id="iteration-2-conceptual">Iteration 2 (Conceptual)</h4>
+<p>With the new point <span class="math inline">\((2.0, 4.0)\)</span>, the GP model would be updated. The uncertainty around <span class="math inline">\(x=2.0\)</span> would drastically decrease, as we now know its value precisely (or with very low noise). The acquisition function would then be maximized again. Given that <span class="math inline">\(y_{\text{max}}^*\)</span> is now 4.0 (the true optimum), the EI will be very low at <span class="math inline">\(x=2.0\)</span>. The algorithm would likely explore regions further away from <span class="math inline">\(x=2.0\)</span> to ensure no other maxima exist, or converge as no significant improvement is expected elsewhere.</p>
+</section>
+</section>
+</section>
+<section id="bayes-theorem" class="level1">
+<h1>Bayes’ Theorem</h1>
+<section id="formulation" class="level2">
+<h2 class="anchored" data-anchor-id="formulation">Formulation</h2>
+<p>Bayes’ Theorem:</p>
+<p><span class="math display">\[P(\theta | D) = \frac{P(D | \theta) P(\theta)}{P(D)}\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(P(\theta | D)\)</span>: <strong>Posterior</strong> (Our updated belief in the parameters <span class="math inline">\(\theta\)</span> after seeing the Data <span class="math inline">\(D\)</span>). This is what we want to find in Bayesian inference.</li>
+<li><span class="math inline">\(P(D | \theta)\)</span>: <strong>Likelihood</strong> (The probability of observing the Data <span class="math inline">\(D\)</span> given the parameters <span class="math inline">\(\theta\)</span>). This is the core term that MLE maximizes.</li>
+<li><span class="math inline">\(P(\theta)\)</span>: <strong>Prior Probability</strong> (Our initial belief in the parameters <span class="math inline">\(\theta\)</span> before seeing any data).</li>
+<li><span class="math inline">\(P(D)\)</span>: <strong>Evidence / Marginal Likelihood</strong> (The total probability of the data, across all possible parameters. This is a normalizing constant).</li>
+</ul>
+<section id="maximum-likelihood-estimation-mle" class="level3">
+<h3 class="anchored" data-anchor-id="maximum-likelihood-estimation-mle">Maximum Likelihood Estimation (MLE)</h3>
+<p>MLE is purely <strong>data-driven</strong> (no belief about parameters needed). It asks: “Given this data, what are the parameters that make this data most probable?”</p>
+<p><span class="math display">\[\theta_{MLE} = \arg \max_{\theta} P(D | \theta)\]</span></p>
+</section>
+<section id="maximum-a-posteriori-map-estimation" class="level3">
+<h3 class="anchored" data-anchor-id="maximum-a-posteriori-map-estimation">Maximum A Posteriori (MAP) Estimation</h3>
+<p>MAP is the inverse one, working on posterior:</p>
+<p><span class="math display">\[\theta_{MAP} = \arg \max_{\theta} P(\theta | D)\]</span></p>
+<p>Applying Bayes’ Theorem:</p>
+<p><span class="math display">\[\theta_{MAP} = \arg \max_{\theta} \frac{P(D | \theta) P(\theta)}{P(D)}\]</span></p>
+<p>Since <span class="math inline">\(P(D)\)</span> is a constant with respect to <span class="math inline">\(\theta\)</span> ( doesn’t depend on <span class="math inline">\(\theta\)</span>):</p>
+<p><span class="math display">\[\theta_{MAP} = \arg \max_{\theta} P(D | \theta) P(\theta)\]</span></p>
+<p><strong>Key characteristic:</strong> MAP is a blend of data and prior beliefs. It asks: “Given this data <em>and</em> my prior beliefs about the parameters, what are the parameters that are most probable?”</p>
+</section>
+<section id="mle-is-a-special-case-of-map" class="level3">
+<h3 class="anchored" data-anchor-id="mle-is-a-special-case-of-map">MLE is a Special Case of MAP</h3>
+<p><span class="math inline">\(P(\theta)\)</span> is constant, because parameter space is uniformly distributed:</p>
+<p><span class="math display">\[\theta_{MAP} = \arg \max_{\theta} P(D | \theta)\]</span></p>
+<p><strong>Wow, MAP is reduced to MLE when parameters are uniformly distributed</strong></p>
+<p><strong>In simple terms:</strong></p>
+<ul>
+<li><strong>MLE:</strong> “What parameters <em>best explain the data I observed</em>?” <span class="math inline">\(\rightarrow P(D | \theta)\)</span></li>
+<li><strong>MAP:</strong> “What parameters <em>are most plausible overall</em>, considering both the data and what I already believed <em>before</em> seeing the data?” <span class="math inline">\(\rightarrow P(D | \theta) \times P(\theta)\)</span></li>
+<li><strong>Bayes’ Theorem (Full Inference):</strong> “What’s the <em>complete updated probability distribution</em> for my parameters, given everything I know?”</li>
+</ul>
+</section>
+</section>
+<section id="naive-bayes-classifier---the-naive-assumption-conditional-independence" class="level2">
+<h2 class="anchored" data-anchor-id="naive-bayes-classifier---the-naive-assumption-conditional-independence">Naive Bayes Classifier - The “Naive” Assumption: Conditional Independence</h2>
 <p>Recall Bayes’ Theorem for a hypothesis <span class="math inline">\(H\)</span> (which is our class <span class="math inline">\(C\)</span>) and evidence <span class="math inline">\(E\)</span> (which are our features <span class="math inline">\(F_1, F_2, \dots, F_n\)</span>):</p>
 <p><span class="math display">\[P(C | F_1, F_2, \dots, F_n) = \frac{P(F_1, F_2, \dots, F_n | C) \cdot P(C)}{P(F_1, F_2, \dots, F_n)}\]</span></p>
 <p>Computing the joint probability of correlated evidences <strong>likelihood term</strong> <span class="math inline">\(P(F_1, F_2, \dots, F_n | C)\)</span> can be very complex.</p>
-<p>The “Naive” assumption: conditional independence, the <strong>joint likelihood</strong> = <strong>the product of individual</strong> feature likelihoods.:</p>
+<p>The “Naive” assumption: conditional independence, the <strong>joint likelihood</strong> = <strong>the product of individual</strong> feature likelihoods:</p>
 <p><span class="math display">\[P(F_1, F_2, \dots, F_n | C) \approx \prod_{i=1}^n P(F_i | C)\]</span></p>
 <p>Thus, we reduced the Naive Bayes Classifier to finding <span class="math inline">\(C\)</span> that maximizes the posterior probability:</p>
-<p><span class="math display">\[C_{predicted} = \arg \max_{C} \left( P(C) \cdot \prod_{i=1}^n P(F_i | C) \right)\]</span></p>
+<p><span class="math inline">\(C_{predicted} = \arg \max_{C} \left( P(C) \cdot \prod_{i=1}^n P(F_i | C) \right)\)</span></p>
 <p>Just the same as above, the denominator <span class="math inline">\(P(E) = \sum_i P(E|H_i)P(H_i) = P(F_1, F_2, \dots, F_n)\)</span> is omitted during prediction because it’s a constant for all classes, acting only as a normalizer so that the sum of all posterior probabilities for all possible hypotheses equals 1.</p>
 </section>
-<section id="how-it-works-for-classification" class="level3">
-<h3 class="anchored" data-anchor-id="how-it-works-for-classification">How it Works (for Classification)</h3>
-<ol type="1">
-<li><strong>Training Phase (Learning Probabilities):</strong>
+</section>
+<section id="covariance---measuring-relationships-and-uncertainty" class="level1">
+<h1>Covariance - Measuring Relationships and Uncertainty</h1>
+<p>In Bayesian Optimization and Gaussian Processes, the concept of <strong>covariance</strong> allows us to quantify how two random variables change together, and how our beliefs about a function’s value at one point are related to its value at another.</p>
+<section id="covariance-between-two-random-variables-1d" class="level2">
+<h2 class="anchored" data-anchor-id="covariance-between-two-random-variables-1d">Covariance between Two Random Variables (1D)</h2>
+<p>Let’s start with the simplest case: two scalar random variables <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>. The covariance between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>, denoted <span class="math inline">\(Cov(X, Y)\)</span> or <span class="math inline">\(\sigma_{XY}\)</span>, measures the degree to which they vary together.</p>
+<p>The formal definition of covariance is:</p>
+<p><span class="math display">\[Cov(X, Y) = \mathbb{E}[(X - \mathbb{E}[X])(Y - \mathbb{E}[Y])]\]</span></p>
+<p>Where:</p>
 <ul>
-<li>Calculate the <strong>prior probability</strong> <span class="math inline">\(P(C)\)</span> for each class (e.g., the proportion of spam emails in your training data).</li>
-<li>Calculate the <strong>likelihood</strong> <span class="math inline">\(P(F_i | C)\)</span> for each feature <span class="math inline">\(F_i\)</span> and each class <span class="math inline">\(C\)</span>. This involves counting how often each feature value appears within instances of each class.</li>
-</ul></li>
-<li><strong>Prediction Phase (Classifying New Data):</strong>
+<li><ol type="1">
+<li><span class="math inline">\(\mathbb{E}[X]\)</span> is the expected value (mean) of a vector that contains some samples but only taking the <span class="math inline">\(X\)</span> dimension.</li>
+</ol></li>
+<li><ol start="2" type="1">
+<li><span class="math inline">\(\mathbb{E}[Y]\)</span> is the expected value (mean) of a vector that contains the samples but only taking the <span class="math inline">\(Y\)</span> dimension.</li>
+</ol></li>
+<li><ol start="3" type="1">
+<li>Dot product between vectors <span class="math inline">\((X - \mathbb{E}[X]) and (Y - \mathbb{E}[Y])\)</span></li>
+</ol></li>
+<li><ol start="4" type="1">
+<li>The outer operation <span class="math inline">\(\mathbb{E}[(X - \mathbb{E}[X])(Y - \mathbb{E}[Y])]\)</span> basically just eventually normalized by dividing the number of samples</li>
+</ol></li>
+</ul>
+<p><strong>Intuition:</strong></p>
 <ul>
-<li>For a new, unclassified data instance with features <span class="math inline">\((F_1, F_2, \dots, F_n)\)</span>:</li>
-<li>For each possible class <span class="math inline">\(C\)</span>:
+<li>If <span class="math inline">\(X\)</span> mostly distributed above its mean <strong>AND</strong> <span class="math inline">\(Y\)</span> is also above its mean, the product <span class="math inline">\((X - \mathbb{E}[X])(Y - \mathbb{E}[Y])\)</span> will often be positive.</li>
+<li>If <span class="math inline">\(X\)</span> mostly distributed above its mean <strong>AND</strong> <span class="math inline">\(Y\)</span> is below its mean (and vice-versa), the product will often be negative.</li>
+<li>Otherwise the distributed <span class="math inline">\(X\)</span> and <span class="math inline">\(y\)</span> cancel out on average =&gt; zero covariance only implies no <em>linear</em> relationship; variables can still have a non-linear relationship.</li>
+</ul>
+</section>
+<section id="covariance-of-a-single-random-variable-with-itself-variance" class="level2">
+<h2 class="anchored" data-anchor-id="covariance-of-a-single-random-variable-with-itself-variance">Covariance of a Single Random Variable with Itself (Variance)</h2>
+<p>Variance measures how much a single random variable deviates from its mean, or its spread, <span class="math inline">\(Cov(X, X)\)</span>. This gives us the <strong>variance</strong> of <span class="math inline">\(X\)</span>, denoted <span class="math inline">\(Var(X)\)</span> or <span class="math inline">\(\sigma_X^2\)</span>:</p>
+<p><span class="math display">\[Cov(X, X) = \mathbb{E}[(X - \mathbb{E}[X])(X - \mathbb{E}[X])] = \mathbb{E}[(X - \mathbb{E}[X])^2] = Var(X)\]</span></p>
+<p>Calculate the same way as above, basically a dot product of a vector <span class="math inline">\((X - \mathbb{E}[X])\)</span> with itself, therefore it will be sth like this:</p>
+<p><span class="math display">\[Var(X) = (Xsample_1 - meanX)² + (Xsample_2 - meanX)² + ... + (Xsample_n - meanX)² = {a positive or negative number}\]</span></p>
+<p><strong>Intuition:</strong></p>
 <ul>
-<li>Compute the posterior probability (or a score proportional to it) using the formula above.</li>
+<li>mean <span class="math inline">\(E[X]\)</span> could be in the middle, but when most samples are mostly distributed on negative or positive side, then the <strong>Medium</strong> will be on that side</li>
+<li>remember we are dealing with only one dimensional (scalar) variables</li>
+</ul>
+</section>
+<section id="the-covariance-matrix-for-multiple-random-variables-multivariate-case" class="level2">
+<h2 class="anchored" data-anchor-id="the-covariance-matrix-for-multiple-random-variables-multivariate-case">The Covariance Matrix for Multiple Random Variables (Multivariate Case)</h2>
+<p>Now, let’s extend both concepts above to multiple random variables. Suppose we have a random vector <span class="math inline">\(\mathbf{X}\)</span> consisting of <span class="math inline">\(n\)</span> random variables:</p>
+<p><span class="math display">\[\mathbf{X} = \begin{bmatrix} X_1 \\ X_2 \\ \vdots \\ X_n \end{bmatrix}\]</span></p>
+<p>The <strong>covariance matrix</strong> <span class="math inline">\(\mathbf{\Sigma}\)</span>, is an <span class="math inline">\(n \times n\)</span> matrix where each element <span class="math inline">\(\mathbf{\Sigma}_{ij}\)</span> represents the covariance between the <span class="math inline">\(i\)</span>-th random variable <span class="math inline">\(X_i\)</span> and the <span class="math inline">\(j\)</span>-th random variable <span class="math inline">\(X_j\)</span>:</p>
+<p><span class="math display">\[\mathbf{\Sigma}_{ij} = Cov(X_i, X_j)\]</span></p>
+<p>More formally, the covariance matrix <span class="math inline">\(\mathbf{\Sigma}\)</span> is defined as:</p>
+<p><span class="math display">\[\mathbf{\Sigma} = \mathbb{E}[(\mathbf{X} - \mathbb{E}[\mathbf{X}])(\mathbf{X} - \mathbb{E}[\mathbf{X}])^T]\]</span></p>
+<p>Let’s explicitly write out the elements of a <span class="math inline">\(3 \times 3\)</span> covariance matrix for a random vector <span class="math inline">\(\mathbf{X} = [X_1, X_2, X_3]^T\)</span>:</p>
+<p><span class="math display">\[
+\mathbf{\Sigma} = \begin{bmatrix}
+Var(X_1) &amp; Cov(X_1, X_2) &amp; Cov(X_1, X_3) \\
+Cov(X_2, X_1) &amp; Var(X_2) &amp; Cov(X_2, X_3) \\
+Cov(X_3, X_1) &amp; Cov(X_3, X_2) &amp; Var(X_3)
+\end{bmatrix}
+\]</span></p>
+</section>
+<section id="intuition-of-the-covariance-matrix-spread-and-relationships" class="level2">
+<h2 class="anchored" data-anchor-id="intuition-of-the-covariance-matrix-spread-and-relationships">Intuition of the Covariance Matrix: Spread and Relationships</h2>
+<ul>
+<li><p><strong>Diagonal Elements:</strong> The variances of each individual random variable a.k.a the individual spread: <span class="math display">\[\mathbf{\Sigma}_{ii} = Cov(X_i, X_i) = Var(X_i)\]</span></p></li>
+<li><p><strong>Off-Diagonal Elements:</strong> <span class="math display">\[\mathbf{\Sigma}_{ij} = Cov(X_i, X_j) \quad \text{for } i \neq j\]</span> These tell us how pairs of variables move together.</p>
+<ul>
+<li>If <span class="math inline">\(\mathbf{\Sigma}_{ij} &gt; 0\)</span>, <span class="math inline">\(X_i\)</span> and <span class="math inline">\(X_j\)</span> tend to increase or decrease together.</li>
+<li>If <span class="math inline">\(\mathbf{\Sigma}_{ij} &lt; 0\)</span>, <span class="math inline">\(X_i\)</span> tends to increase when <span class="math inline">\(X_j\)</span> decreases, and vice-versa.</li>
+<li>If <span class="math inline">\(\mathbf{\Sigma}_{ij} \approx 0\)</span>, there is little to no linear relationship between <span class="math inline">\(X_i\)</span> and <span class="math inline">\(X_j\)</span>.</li>
 </ul></li>
-<li>The class with the highest computed posterior probability is assigned as the prediction.</li>
-</ul></li>
-</ol>
+<li><p><strong>Symmetry:</strong> The covariance matrix is always symmetric, <span class="math inline">\(\mathbf{\Sigma}_{ij} = \mathbf{\Sigma}_{ji}\)</span> because <span class="math inline">\(Cov(X_i, X_j) = Cov(X_j, X_i)\)</span>, you know how.</p></li>
+</ul>
+<p>In the next chapter about Gaussian Processes, we will slowly build the kernel function <span class="math inline">\(k(x, x')\)</span> directly defines the elements of this covariance matrix for function values at different input points. This matrix say how much a point x is impacted by x’.</p>
+</section>
+</section>
+<section id="maximum-likelihood-estimation-mle-1" class="level1">
+<h1>Maximum Likelihood Estimation (MLE)</h1>
+<p>The parameters that minimize the sum of squared errors are precisely the <strong>Maximum Likelihood Estimates (MLEs)</strong> for the model parameters, <em>if we assume that the noise (or errors) in our data is independently and identically distributed according to a Gaussian (Normal) distribution.</em></p>
+<p>Let’s derive this.</p>
+<section id="the-linear-model-and-gaussian-noise-assumption" class="level2">
+<h2 class="anchored" data-anchor-id="the-linear-model-and-gaussian-noise-assumption">The Linear Model and Gaussian Noise Assumption</h2>
+<p>Consider a simple linear regression model where we try to predict an output <span class="math inline">\(y_i\)</span> based on input features <span class="math inline">\(\mathbf{x}_i\)</span>:</p>
+<p><span class="math display">\[y_i = \mathbf{x}_i^T \boldsymbol{\beta} + \epsilon_i\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(y_i\)</span> is the <span class="math inline">\(i\)</span>-th observed output.</li>
+<li><span class="math inline">\(\mathbf{x}_i^T\)</span> representing the features for the <span class="math inline">\(i\)</span>-th observation.</li>
+<li><span class="math inline">\(\boldsymbol{\beta}\)</span> is the vector of unknown regression coefficients (parameters) we want to estimate.</li>
+<li><span class="math inline">\(\epsilon_i\)</span> is the error or noise term for the <span class="math inline">\(i\)</span>-th observation.</li>
+</ul>
+<p><strong>Crucial assumption for this derivation</strong> is that these error terms <span class="math inline">\(\epsilon_i\)</span> are <strong>independently and identically distributed (i.i.d.) according to a Gaussian (Normal) distribution</strong> with a mean of zero and a constant variance <span class="math inline">\(\sigma^2\)</span>:</p>
+<p><span class="math display">\[\epsilon_i \sim \mathcal{N}(0, \sigma^2)\]</span></p>
+<p>Because <span class="math inline">\(\mathbf{x}_i^T \boldsymbol{\beta}\)</span> is a fixed (non-random) quantity for a given <span class="math inline">\(\mathbf{x}_i\)</span>, this assumption about the error implies that <span class="math inline">\(y_i\)</span> itself is also normally distributed:</p>
+<p><span class="math display">\[y_i | \mathbf{x}_i, \boldsymbol{\beta}, \sigma^2 \sim \mathcal{N}(\mathbf{x}_i^T \boldsymbol{\beta}, \sigma^2)\]</span></p>
+<p>This means the probability density function (PDF) for a single observation <span class="math inline">\(y_i\)</span> is:</p>
+<p><span class="math display">\[p(y_i | \mathbf{x}_i, \boldsymbol{\beta}, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2}{2\sigma^2}\right)\]</span></p>
+</section>
+<section id="likelihood-function" class="level2">
+<h2 class="anchored" data-anchor-id="likelihood-function">Likelihood Function</h2>
+<p><strong>Important Definition:</strong> For a dataset of <span class="math inline">\(N\)</span> independent observations <span class="math inline">\((\mathbf{x}_1, y_1), \dots, (\mathbf{x}_N, y_N)\)</span>, the <strong>likelihood function</strong> <span class="math inline">\(L(\boldsymbol{\beta}, \sigma^2 | \mathbf{X}, \mathbf{y})\)</span> is the <strong>product of the individual PDFs</strong> (due to the independence assumption):</p>
+<p><span class="math display">\[L(\boldsymbol{\beta}, \sigma^2 | \mathbf{X}, \mathbf{y}) = \prod_{i=1}^N p(y_i | \mathbf{x}_i, \boldsymbol{\beta}, \sigma^2)\]</span></p>
+<p><span class="math display">\[L(\boldsymbol{\beta}, \sigma^2 | \mathbf{X}, \mathbf{y}) = \prod_{i=1}^N \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2}{2\sigma^2}\right)\]</span></p>
+<p><strong>Goal Maximum Likelihood Estimation (MLE):</strong></p>
+<ul>
+<li>Given datast <span class="math inline">\((\mathbf{x}_1, y_1), \dots, (\mathbf{x}_N, y_N)\)</span></li>
+<li>=&gt; Find <span class="math inline">\(\boldsymbol{\beta}\)</span> (and <span class="math inline">\(\sigma^2\)</span>) that maximize this likelihood function.</li>
+</ul>
+<section id="derivation" class="level3">
+<h3 class="anchored" data-anchor-id="derivation">Derivation</h3>
+<p>Converts products into sums, simplifying differentiation. Since the logarithm is a monotonically increasing function, maximizing <span class="math inline">\(\ln L\)</span> is equivalent to maximizing <span class="math inline">\(L\)</span>:</p>
+<p><span class="math display">\[\ln L(\boldsymbol{\beta}, \sigma^2 | \mathbf{X}, \mathbf{y}) = \ln \left( \prod_{i=1}^N \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2}{2\sigma^2}\right) \right)\]</span></p>
+<p>Using logarithm properties (<span class="math inline">\(\ln(ab) = \ln a + \ln b\)</span> and <span class="math inline">\(\ln(a^b) = b \ln a\)</span>):</p>
+<p><span class="math display">\[\ln L = \sum_{i=1}^N \left[ \ln\left(\frac{1}{\sqrt{2\pi\sigma^2}}\right) + \ln\left(\exp\left(-\frac{(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2}{2\sigma^2}\right)\right) \right]\]</span></p>
+<p><span class="math display">\[\ln L = \sum_{i=1}^N \left[ -\frac{1}{2}\ln(2\pi\sigma^2) - \frac{(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2}{2\sigma^2} \right]\]</span></p>
+<p><span class="math display">\[\ln L = -N \cdot \frac{1}{2}\ln(2\pi\sigma^2) - \sum_{i=1}^N \frac{(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2}{2\sigma^2}\]</span></p>
+</section>
+<section id="maximizing-this-function-with-respect-to-boldsymbolbeta" class="level3">
+<h3 class="anchored" data-anchor-id="maximizing-this-function-with-respect-to-boldsymbolbeta">Maximizing this function with respect to <span class="math inline">\(\boldsymbol{\beta}\)</span></h3>
+<p>To do that, easy, we take the <strong>partial derivative</strong> with respect to <span class="math inline">\(\boldsymbol{\beta}\)</span> and <strong>set it to zero</strong>.</p>
+<p>Interestingly, <span class="math inline">\(-N \cdot \frac{1}{2}\ln(2\pi\sigma^2)\)</span>, does <strong>not</strong> depend on <span class="math inline">\(\boldsymbol{\beta}\)</span>. Therefore, when maximizing <span class="math inline">\(\ln L\)</span> with respect to <span class="math inline">\(\boldsymbol{\beta}\)</span>, we only need to consider the second term:</p>
+<p><span class="math display">\[\text{maximize} \left( - \sum_{i=1}^N \frac{(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2}{2\sigma^2} \right)\]</span></p>
+<p>and voila!: <span class="math display">\[\text{minimize} \left( \sum_{i=1}^N (y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2 \right)\]</span></p>
 
 
 
