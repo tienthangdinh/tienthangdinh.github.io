@@ -41,7 +41,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-db03927a41f77a8af5287a812d7101f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -226,26 +226,18 @@ window.Quarto = {
   <li><a href="#compare" id="toc-compare" class="nav-link" data-scroll-target="#compare">Compare</a></li>
   <li><a href="#summary-of-td" id="toc-summary-of-td" class="nav-link" data-scroll-target="#summary-of-td">Summary of TD</a></li>
   </ul></li>
-  <li><a href="#function-approximation-parameterized-continuous-value" id="toc-function-approximation-parameterized-continuous-value" class="nav-link" data-scroll-target="#function-approximation-parameterized-continuous-value">Function Approximation (parameterized continuous Value)</a>
+  <li><a href="#function-approximation" id="toc-function-approximation" class="nav-link" data-scroll-target="#function-approximation">Function Approximation</a>
   <ul class="collapse">
   <li><a href="#on-policy-evaluation-with-function-approximation" id="toc-on-policy-evaluation-with-function-approximation" class="nav-link" data-scroll-target="#on-policy-evaluation-with-function-approximation">On-Policy Evaluation with Function Approximation</a></li>
-  <li><a href="#how-to-represent-mathbfxs" id="toc-how-to-represent-mathbfxs" class="nav-link" data-scroll-target="#how-to-represent-mathbfxs">How to represent <span class="math inline">\(\mathbf{x}(s)\)</span>?</a></li>
   <li><a href="#goal-how-to-get-mathbfw" id="toc-goal-how-to-get-mathbfw" class="nav-link" data-scroll-target="#goal-how-to-get-mathbfw">Goal: How to get <span class="math inline">\(\mathbf{w}\)</span>?</a></li>
   <li><a href="#how-to-obtain-the-target-u_t" id="toc-how-to-obtain-the-target-u_t" class="nav-link" data-scroll-target="#how-to-obtain-the-target-u_t">How to Obtain the Target <span class="math inline">\(U_t\)</span></a></li>
   <li><a href="#extension-to-on-policy-control-with-function-approximation" id="toc-extension-to-on-policy-control-with-function-approximation" class="nav-link" data-scroll-target="#extension-to-on-policy-control-with-function-approximation">Extension to On-Policy Control with Function Approximation</a></li>
   <li><a href="#extension-to-on-policy-control-with-function-approximation-1" id="toc-extension-to-on-policy-control-with-function-approximation-1" class="nav-link" data-scroll-target="#extension-to-on-policy-control-with-function-approximation-1">Extension to On-Policy Control with Function Approximation</a></li>
   </ul></li>
-  <li><a href="#policy-gradient-methods-parameterized-continuous-policy" id="toc-policy-gradient-methods-parameterized-continuous-policy" class="nav-link" data-scroll-target="#policy-gradient-methods-parameterized-continuous-policy">Policy Gradient Methods (parameterized continuous policy)</a>
+  <li><a href="#policy-gradient-methods" id="toc-policy-gradient-methods" class="nav-link" data-scroll-target="#policy-gradient-methods">Policy Gradient Methods</a>
   <ul class="collapse">
-  <li><a href="#how-to-represent-xs" id="toc-how-to-represent-xs" class="nav-link" data-scroll-target="#how-to-represent-xs">How to represent <span class="math inline">\(x(s)\)</span>?</a>
-  <ul class="collapse">
-  <li><a href="#proto-points-and-radial-basis-functions-rbfs" id="toc-proto-points-and-radial-basis-functions-rbfs" class="nav-link" data-scroll-target="#proto-points-and-radial-basis-functions-rbfs">Proto Points and Radial Basis Functions (RBFs)</a></li>
-  <li><a href="#example-policy-gradient-with-proto-points-rbfs-for-mountain-car" id="toc-example-policy-gradient-with-proto-points-rbfs-for-mountain-car" class="nav-link" data-scroll-target="#example-policy-gradient-with-proto-points-rbfs-for-mountain-car">Example: Policy Gradient with Proto Points (RBFs) for Mountain Car</a></li>
-  <li><a href="#are-probabilities-fixed-when-starting-with-proto-points" id="toc-are-probabilities-fixed-when-starting-with-proto-points" class="nav-link" data-scroll-target="#are-probabilities-fixed-when-starting-with-proto-points">Are Probabilities Fixed When Starting with Proto Points?</a></li>
-  </ul></li>
   <li><a href="#a-monte-carlo-style-policy-gradient-algorithm" id="toc-a-monte-carlo-style-policy-gradient-algorithm" class="nav-link" data-scroll-target="#a-monte-carlo-style-policy-gradient-algorithm">A Monte Carlo Style Policy Gradient Algorithm</a></li>
-  <li><a href="#variance-problem" id="toc-variance-problem" class="nav-link" data-scroll-target="#variance-problem">Variance Problem</a></li>
-  <li><a href="#sum-up-reinforce-gradient-policy-with-baseline" id="toc-sum-up-reinforce-gradient-policy-with-baseline" class="nav-link" data-scroll-target="#sum-up-reinforce-gradient-policy-with-baseline">Sum up: REINFORCE Gradient Policy with Baseline</a></li>
+  <li><a href="#credit-assignment-problem" id="toc-credit-assignment-problem" class="nav-link" data-scroll-target="#credit-assignment-problem">Credit assignment problem</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -639,8 +631,8 @@ V(s_t) \leftarrow V(s_t) + \alpha \left[ r_t + \gamma V(s_{t+1}) - V(s_t) \right
 <p>Where <span class="math inline">\(\alpha\)</span> is the learning rate.</p>
 </section>
 </section>
-<section id="function-approximation-parameterized-continuous-value" class="level1">
-<h1>Function Approximation (parameterized continuous Value)</h1>
+<section id="function-approximation" class="level1">
+<h1>Function Approximation</h1>
 <p>For problem where number of states (<span class="math inline">\(|\mathcal{S}|\)</span>) is extremely large, apply Unsupervised Learning (Generalization function of states (or also actions)) as a part of RL.</p>
 <section id="on-policy-evaluation-with-function-approximation" class="level2">
 <h2 class="anchored" data-anchor-id="on-policy-evaluation-with-function-approximation">On-Policy Evaluation with Function Approximation</h2>
@@ -652,10 +644,7 @@ V(s_t) \leftarrow V(s_t) + \alpha \left[ r_t + \gamma V(s_{t+1}) - V(s_t) \right
 </ul>
 <p>We learn <span class="math inline">\(w\)</span> and hope that <span class="math inline">\(v_\pi(s) \approx \hat{v}(s, \mathbf{w})\)</span></p>
 <p>Since <span class="math inline">\(d \ll |\mathcal{S}|\)</span>, any change to <span class="math inline">\(\mathbf{w}\)</span> can simultaneously change <span class="math inline">\(\hat{v}(s, \mathbf{w})\)</span> for many (or all) states <span class="math inline">\(s\)</span>. Different from tabular methods, where an update to <span class="math inline">\(V(s)\)</span> for a specific state <span class="math inline">\(s\)</span> affects <em>only</em> that state’s value.</p>
-</section>
-<section id="how-to-represent-mathbfxs" class="level2">
-<h2 class="anchored" data-anchor-id="how-to-represent-mathbfxs">How to represent <span class="math inline">\(\mathbf{x}(s)\)</span>?</h2>
-<p><strong>Example 1:</strong> two simple features for given image state <span class="math inline">\(s\)</span>:</p>
+<p><strong>Example:</strong> two simple features for given image state <span class="math inline">\(s\)</span>:</p>
 <ul>
 <li><span class="math inline">\(x_1(s)\)</span>: The average of all pixel values in the image.</li>
 <li><span class="math inline">\(x_2(s)\)</span>: The standard deviation of all pixel values in the image.</li>
@@ -664,8 +653,6 @@ V(s_t) \leftarrow V(s_t) + \alpha \left[ r_t + \gamma V(s_{t+1}) - V(s_t) \right
 <p>With these features, we can construct a <strong>linear value function</strong> to approximate <span class="math inline">\(v_\pi(s)\)</span>: <span class="math display">\[
 \hat{v}(s, \mathbf{w}) = \mathbf{x}(s)^T \mathbf{w}
 \]</span></p>
-<p><strong>Example 2:</strong> Mountain Car below with a dynamic model of velocity <span class="math inline">\(dx\)</span> and position <span class="math inline">\(x\)</span></p>
-<p><strong>Example 3:</strong> Proto Points and Radius Basis Function will be discussed in next chapter Policy Gradient Method</p>
 </section>
 <section id="goal-how-to-get-mathbfw" class="level2">
 <h2 class="anchored" data-anchor-id="goal-how-to-get-mathbfw">Goal: How to get <span class="math inline">\(\mathbf{w}\)</span>?</h2>
@@ -752,8 +739,8 @@ U_t = R_{t+1} + \gamma \hat{q}(S_{t+1}, A_{t+1}, \mathbf{w})
 <p>we will have problem with convergence, which may be solved by the next topic …</p>
 </section>
 </section>
-<section id="policy-gradient-methods-parameterized-continuous-policy" class="level1">
-<h1>Policy Gradient Methods (parameterized continuous policy)</h1>
+<section id="policy-gradient-methods" class="level1">
+<h1>Policy Gradient Methods</h1>
 <p>Up until now, our primary approach to solving Reinforcement Learning problems has been <strong>value-based methods</strong>. These methods involve learning an approximate value function, such as <span class="math inline">\(\hat{q}(s,a, \mathbf{w})\)</span>, and then deriving a policy from this value function. For instance, in Q-learning or Sarsa, the policy <span class="math inline">\(\pi(a|s)\)</span> is often implicitly defined by choosing the action with the highest Q-value (or an <span class="math inline">\(\epsilon\)</span>-greedy variant of it): <span class="math display">\[\mathbf{w} \in \mathbb{R}^d \rightarrow \hat{q}(s,a, \mathbf{w}) \rightarrow \pi(a|s)\]</span> Where once again: <span class="math inline">\(\hat{q}(s,a, \mathbf{w}) = \mathbb{E}_\pi[G_t \mid s_t = s, a_t = a]\)</span></p>
 <p>Policy Gradient Methods more direct. <strong>directly learn a parameterized policy</strong>: <span class="math display">\[\mathbf{\theta} \in \mathbb{R}^{d'} \rightarrow \pi(a|s, \mathbf{\theta})\]</span> Here, <span class="math inline">\(\mathbf{\theta}\)</span> is a new set of parameters (distinct from <span class="math inline">\(\mathbf{w}\)</span> for value functions) that directly define the policy <span class="math inline">\(\pi(a|s, \mathbf{\theta})\)</span>. This policy directly maps states to probabilities of taking actions, or to specific actions in continuous action spaces. The dimensionality of these policy parameters is <span class="math inline">\(d'\)</span>.</p>
 <p>Advantages for complex tasks:</p>
@@ -763,93 +750,11 @@ U_t = R_{t+1} + \gamma \hat{q}(S_{t+1}, A_{t+1}, \mathbf{w})
 <li><strong>Simpler Policy Updates:</strong> we all know what this means…</li>
 </ul>
 <p><strong>Goal:</strong> The core idea of policy gradient methods is to adjust the parameters <span class="math inline">\(\mathbf{\theta}\)</span> of the policy in the direction that maximizes the expected return (or performance) of the policy.</p>
-<section id="how-to-represent-xs" class="level2">
-<h2 class="anchored" data-anchor-id="how-to-represent-xs">How to represent <span class="math inline">\(x(s)\)</span>?</h2>
-<section id="proto-points-and-radial-basis-functions-rbfs" class="level3">
-<h3 class="anchored" data-anchor-id="proto-points-and-radial-basis-functions-rbfs">Proto Points and Radial Basis Functions (RBFs)</h3>
-<p>instead of having a neural network directly compute an output, the state is first transformed into a set of features by measuring its “similarity” or “proximity” to a predefined set of “proto points” or “centers.”</p>
-<section id="define-proto-points-centers" class="level4">
-<h4 class="anchored" data-anchor-id="define-proto-points-centers">Define Proto Points (Centers):</h4>
-<p>First, you select a number of “proto points” or “centers” in your state space. Let’s call these centers <span class="math inline">\(c_1, c_2, \dots, c_k\)</span>. These centers are essentially fixed, representative points in your environment’s state space. They could be chosen: manually or randomly</p>
-</section>
-<section id="define-basis-functions-e.g.-radial-basis-functions" class="level4">
-<h4 class="anchored" data-anchor-id="define-basis-functions-e.g.-radial-basis-functions">Define Basis Functions (e.g., Radial Basis Functions):</h4>
-<p>For each center <span class="math inline">\(c_j\)</span>, you define a basis function <span class="math inline">\(\phi_j(s)\)</span>. A common choice is a Gaussian Radial Basis Function: <span class="math display">\[
-\phi_j(s) = \exp \left( -\frac{\|s - c_j\|^2}{2\sigma_j^2} \right)
-\]</span></p>
-<p>where:</p>
+<p><strong>Problem:</strong></p>
 <ul>
-<li><span class="math inline">\(\|s - c_j\|^2\)</span> is the squared Euclidean distance between the current state <span class="math inline">\(s\)</span> and the center <span class="math inline">\(c_j\)</span>.</li>
-<li><span class="math inline">\(\sigma_j^2\)</span> is a variance or width parameter for that basis function, controlling how broad its “influence” is.</li>
+<li>Without baseline → high variance (different average like a state with average return G1 of 100 and change +-5 are not the same with another state with average return G2 of 10 that also +-5)</li>
+<li>With baseline (e.g., <span class="math inline">\(V_\pi(s)\)</span>) → reduced variance</li>
 </ul>
-<p>What does <span class="math inline">\(\phi_j(s)\)</span> mean? It’s a measure of how “similar” or “close” the current state <span class="math inline">\(s\)</span> is to the center <span class="math inline">\(c_j\)</span>. It peaks at 1 when <span class="math inline">\(s = c_j\)</span> and decays to 0 as <span class="math inline">\(s\)</span> moves away from <span class="math inline">\(c_j\)</span>.</p>
-</section>
-<section id="construct-the-feature-vector" class="level4">
-<h4 class="anchored" data-anchor-id="construct-the-feature-vector">Construct the Feature Vector:</h4>
-<p>For any given state <span class="math inline">\(s\)</span>, you compute the value of each basis function: <span class="math display">\[
-\mathbf{x}(s) = \begin{bmatrix} \phi_1(s) \\ \phi_2(s) \\ \vdots \\ \phi_k(s) \end{bmatrix}
-\]</span> This <span class="math inline">\(\mathbf{x}(s)\)</span> is your feature vector, where each feature represents the activation of a “proto point.”</p>
-</section>
-<section id="linear-function-approximation" class="level4">
-<h4 class="anchored" data-anchor-id="linear-function-approximation">Linear Function Approximation:</h4>
-<p>Now, these features are used in a linear function approximator. The parameters you learn are the weights associated with each of these basis functions.</p>
-<ul>
-<li><p><strong>For a value function:</strong> <span class="math display">\[
-  \hat{V}(s, \mathbf{w}) = \sum_{j=1}^k w_j \phi_j(s) = \mathbf{w}^T \mathbf{x}(s)
-  \]</span> Here, <span class="math inline">\(\mathbf{w}\)</span> is the vector <span class="math inline">\([w_1, \dots, w_k]\)</span>, and <span class="math inline">\(w_j\)</span> is the weight for the <span class="math inline">\(j\)</span>-th proto point’s influence.</p></li>
-<li><p><strong>For a policy (e.g., logits in a softmax):</strong> For each action <span class="math inline">\(a\)</span>, you’d have a separate weight vector <span class="math inline">\(\mathbf{\theta}_a\)</span>, and the logits for the policy could be: <span class="math display">\[
-  h(s,a,\mathbf{\theta}_a) = \mathbf{\theta}_a^T \mathbf{x}(s)
-  \]</span> Then, <span class="math inline">\(\pi(a|s,\mathbf{\theta}) = \text{softmax}(h(s,a,\mathbf{\theta}_a))\)</span>.</p></li>
-</ul>
-</section>
-</section>
-<section id="example-policy-gradient-with-proto-points-rbfs-for-mountain-car" class="level3">
-<h3 class="anchored" data-anchor-id="example-policy-gradient-with-proto-points-rbfs-for-mountain-car">Example: Policy Gradient with Proto Points (RBFs) for Mountain Car</h3>
-<p>Imagine our Mountain Car environment again. The state <span class="math inline">\(s\)</span> is (position, velocity), which are continuous. We want to learn a policy <span class="math inline">\(\pi(a|s, \mathbf{\theta})\)</span> directly.</p>
-<p><strong>1. Define Proto Points (Centers) in State Space:</strong></p>
-<p>Let’s say we define <span class="math inline">\(K=4\)</span> proto points (centers) <span class="math inline">\(c_j\)</span> in our 2D (position, velocity) state space. For simplicity, let’s pick them:</p>
-<ul>
-<li><span class="math inline">\(c_1 = (-0.5, 0.0)\)</span> (Mid-left, still)</li>
-<li><span class="math inline">\(c_2 = (0.0, 0.0)\)</span> (Center, still)</li>
-<li><span class="math inline">\(c_3 = (0.5, 0.0)\)</span> (Mid-right, still)</li>
-<li><span class="math inline">\(c_4 = (-0.2, 0.05)\)</span> (Slightly left, moving right)</li>
-</ul>
-<p>We also define a width <span class="math inline">\(\sigma^2\)</span> for all RBFs (or separate <span class="math inline">\(\sigma_j^2\)</span> values).</p>
-<p><strong>2. Create the State Feature Vector <span class="math inline">\(\mathbf{x}(s)\)</span> using RBFs:</strong></p>
-<p>For any state <span class="math inline">\(s = (\text{pos}, \text{vel})\)</span>, we calculate its similarity to each of these 4 proto points using a Gaussian RBF. Our feature vector <span class="math inline">\(\mathbf{x}(s)\)</span> will have 4 dimensions:</p>
-<p><span class="math display">\[
-\mathbf{x}(s) = \begin{bmatrix}
-\phi_1(s) = \exp \left( -\frac{\|s - c_1\|^2}{2\sigma^2} \right) \\
-\phi_2(s) = \exp \left( -\frac{\|s - c_2\|^2}{2\sigma^2} \right) \\
-\phi_3(s) = \exp \left( -\frac{\|s - c_3\|^2}{2\sigma^2} \right) \\
-\phi_4(s) = \exp \left( -\frac{\|s - c_4\|^2}{2\sigma^2} \right)
-\end{bmatrix}
-\]</span> This <span class="math inline">\(\mathbf{x}(s)\)</span> now serves as our “meaningful” representation of the state, telling us how similar <span class="math inline">\(s\)</span> is to certain key points in the environment.</p>
-<p><strong>3. Define the Policy <span class="math inline">\(\pi(a|s, \mathbf{\theta})\)</span> using these Features:</strong></p>
-<p>For each action <span class="math inline">\(a \in \{-1, 0, 1\}\)</span>, we define a linear combination of these features to get a “score” or “logit” for that action.</p>
-<p>Let <span class="math inline">\(\mathbf{\theta}_{-1}\)</span>, <span class="math inline">\(\mathbf{\theta}_{0}\)</span>, <span class="math inline">\(\mathbf{\theta}_{1}\)</span> be our learnable parameter vectors (weights), each of size <span class="math inline">\(K=4\)</span>. The total policy parameters <span class="math inline">\(\mathbf{\theta}\)</span> would be the concatenation of these three vectors.</p>
-<p>The logits for each action are: * <span class="math inline">\(h(s, a=-1, \mathbf{\theta}) = \mathbf{\theta}_{-1}^T \mathbf{x}(s)\)</span> * <span class="math inline">\(h(s, a=0, \mathbf{\theta}) = \mathbf{\theta}_{0}^T \mathbf{x}(s)\)</span> * <span class="math inline">\(h(s, a=1, \mathbf{\theta}) = \mathbf{\theta}_{1}^T \mathbf{x}(s)\)</span></p>
-<p>And the policy probabilities are then given by the softmax function: <span class="math display">\[\pi(a|s, \mathbf{\theta}) = \frac{e^{h(s,a,\mathbf{\theta})}}{\sum_{a'} e^{h(s,a',\mathbf{\theta})}}\]</span></p>
-<p><strong>4. Update the Policy Parameters (<span class="math inline">\(\mathbf{\theta}\)</span>) using Policy Gradients (REINFORCE):</strong></p>
-<p>When we collect a trajectory and compute returns <span class="math inline">\(G_t\)</span>, the REINFORCE update rule applies: <span class="math display">\[\mathbf{\theta} \leftarrow \mathbf{\theta} + \alpha G_t \nabla_{\mathbf{\theta}} \ln \pi(a_t|s_t, \mathbf{\theta})\]</span></p>
-<p>Let’s look at a specific component of this update, say for <span class="math inline">\(\mathbf{\theta}_{-1}\)</span>: <span class="math display">\[\mathbf{\theta}_{-1} \leftarrow \mathbf{\theta}_{-1} + \alpha G_t \nabla_{\mathbf{\theta}_{-1}} \ln \pi(a_t|s_t, \mathbf{\theta})\]</span></p>
-<p>If <span class="math inline">\(a_t = -1\)</span>, and <span class="math inline">\(G_t\)</span> is high, the gradient <span class="math inline">\(\nabla_{\mathbf{\theta}_{-1}} \ln \pi(-1|s_t, \mathbf{\theta})\)</span> will push <span class="math inline">\(\mathbf{\theta}_{-1}\)</span> to increase the score for action -1 when in state <span class="math inline">\(s_t\)</span>. Since <span class="math inline">\(h(s, a, \mathbf{\theta}_a) = \mathbf{\theta}_a^T \mathbf{x}(s)\)</span>, the gradient with respect to <span class="math inline">\(\mathbf{\theta}_a\)</span> is simply <span class="math inline">\(\mathbf{x}(s)\)</span>. So, the update to <span class="math inline">\(\mathbf{\theta}_{-1}\)</span> will be proportional to <span class="math inline">\(\mathbf{x}(s_t)\)</span>. This means:</p>
-<ul>
-<li>If <span class="math inline">\(s_t\)</span> is very similar to <span class="math inline">\(c_1\)</span> (so <span class="math inline">\(\phi_1(s_t)\)</span> is high), then <span class="math inline">\(w_{-1,1}\)</span> (the weight for <span class="math inline">\(c_1\)</span> and action -1) will be adjusted significantly.</li>
-<li>If <span class="math inline">\(s_t\)</span> is far from <span class="math inline">\(c_1\)</span> (so <span class="math inline">\(\phi_1(s_t)\)</span> is near zero), then <span class="math inline">\(w_{-1,1}\)</span> will be adjusted very little by this particular sample.</li>
-</ul>
-<p>This means the learning process adjusts the weights for each proto point <em>for each action</em> based on the returns received.</p>
-</section>
-<section id="are-probabilities-fixed-when-starting-with-proto-points" class="level3">
-<h3 class="anchored" data-anchor-id="are-probabilities-fixed-when-starting-with-proto-points">Are Probabilities Fixed When Starting with Proto Points?</h3>
-<p>No, the probabilities of actions are <strong>not fixed</strong> when you start with proto points.</p>
-<ul>
-<li><strong>Fixed:</strong> The <strong>proto points <span class="math inline">\(c_j\)</span> themselves are fixed</strong> in the state space, and the <strong>basis functions <span class="math inline">\(\phi_j(s)\)</span> are fixed</strong> (their shape and location are determined at the start).</li>
-<li><strong>Learned:</strong> However, the <strong>parameters <span class="math inline">\(\mathbf{\theta}\)</span> (the weights associated with each proto point for each action)</strong> are <em>learnable</em>.</li>
-</ul>
-<p><strong>The idea</strong> of <strong>relying</strong> action parameter <span class="math inline">\(\theta\)</span> on fixed state representation <span class="math inline">\(x(s)\)</span> is because <strong>action <span class="math inline">\(a\)</span> depends on the state <span class="math inline">\((a|s)\)</span></strong>, so we need to fix states representation first, use it as a basis so that action parameter can learn.</p>
-</section>
-</section>
 <section id="a-monte-carlo-style-policy-gradient-algorithm" class="level2">
 <h2 class="anchored" data-anchor-id="a-monte-carlo-style-policy-gradient-algorithm">A Monte Carlo Style Policy Gradient Algorithm</h2>
 <p>The core idea is to increase the probability of actions that lead to high returns and decrease the probability of actions that lead to low returns.</p>
@@ -875,7 +780,7 @@ U_t = R_{t+1} + \gamma \hat{q}(S_{t+1}, A_{t+1}, \mathbf{w})
 <ul>
 <li><span class="math inline">\(\alpha\)</span>: The learning rate, controlling the step size of the update.</li>
 <li><span class="math inline">\(\gamma^t\)</span>: The discount factor raised to the power of <span class="math inline">\(t\)</span>. This term accounts for the discounting of future rewards, ensuring that immediate rewards have a stronger influence on early actions.</li>
-<li><span class="math inline">\(g_t^m\)</span>: Scaling stepsize with the Monte Carlo return from time step <span class="math inline">\(t\)</span>. e.g.&nbsp;If <strong>return high =&gt; big step size</strong>, if <strong>return negative =&gt; step backward</strong></li>
+<li><span class="math inline">\(g_t^m\)</span>: The Monte Carlo return from time step <span class="math inline">\(t\)</span>. e.g.&nbsp;If <strong>return high =&gt; big step size</strong>, if <strong>return negative =&gt; step backward</strong></li>
 <li><span class="math inline">\(\nabla_{\mathbf{\theta}} \ln \pi(a_t^m|s_t^m, \mathbf{\theta})\)</span>: This is the <strong>gradient of the log-probability of the action taken</strong>.
 <ul>
 <li><span class="math inline">\(\ln \pi(a_t^m|s_t^m, \mathbf{\theta})\)</span>: The logarithm of the probability that the policy <span class="math inline">\(\pi\)</span> would choose action <span class="math inline">\(a_t^m\)</span> in state <span class="math inline">\(s_t^m\)</span> with current parameters <span class="math inline">\(\mathbf{\theta}\)</span>. <strong>This is very important!!!</strong> It is a <strong>normalizer for cases like a random policy <span class="math inline">\(\pi\)</span> pick a positive (but low return) action too often,</strong> leading to pushing the probability too much, so by taking the gradient of <span class="math inline">\(ln\)</span> of it, it limit down it, (and also the opposite for high reward actions but the behavior policy did not pick as many time to push enough higher). These situations usually happen with <strong>initialization of that lower reward already too high, and then add up that the policy random pick it too often pushing it even further.</strong></li>
@@ -886,31 +791,9 @@ U_t = R_{t+1} + \gamma \hat{q}(S_{t+1}, A_{t+1}, \mathbf{w})
 <p>The update rule essentially says: if action <span class="math inline">\(a_t^m\)</span> taken in state <span class="math inline">\(s_t^m\)</span> leads to a high return (<span class="math inline">\(g_t^m\)</span> is large and positive), then increase the probability of taking that action in that state. If it leads to a low (or negative) return, decrease its probability. The <span class="math inline">\(\gamma^t\)</span> term ensures that actions taken earlier in the trajectory, which influence more of the subsequent rewards, are given appropriate credit.</p>
 <p>REINFORCE is a fundamental algorithm that demonstrates the direct optimization of a policy, laying the groundwork for more advanced policy gradient methods.</p>
 </section>
-<section id="variance-problem" class="level2">
-<h2 class="anchored" data-anchor-id="variance-problem">Variance Problem</h2>
-<p>Return <span class="math inline">\(g_t^m\)</span> rewards the action when it is positive, and punish the action when it is negative. But some cases all actions can be positive, just some are <em>less positive</em> than other =&gt; it should not be encouraged.</p>
-<p><strong>Solution</strong>: With baseline (e.g., <span class="math inline">\(V_\pi(s,w)\)</span>) =&gt; then we have <span class="math display">\[\mathbf{\theta} \leftarrow \mathbf{\theta} + \alpha \gamma^t (g_t^m - b(s_t^m)) \nabla_{\mathbf{\theta}} \ln \pi(a_t^m|s_t^m, \mathbf{\theta})\]</span> so that:</p>
-<ul>
-<li>if <span class="math inline">\(g_t^m &gt; V_\pi(s,w)\)</span>, the scaling factor is <strong>positive</strong> =&gt; increase probability of action <span class="math inline">\(a\)</span></li>
-<li>if <span class="math inline">\(g_t^m &lt; V_\pi(s,w)\)</span>, the scaling factor is <strong>negative</strong> =&gt; decrease probability of action <span class="math inline">\(a\)</span></li>
-</ul>
-</section>
-<section id="sum-up-reinforce-gradient-policy-with-baseline" class="level2">
-<h2 class="anchored" data-anchor-id="sum-up-reinforce-gradient-policy-with-baseline">Sum up: REINFORCE Gradient Policy with Baseline</h2>
-<p>To specify upfront:</p>
-<ul>
-<li>Functional forms <span class="math inline">\(\pi(a|s, \mathbf{\theta})\)</span>, <span class="math inline">\(\hat{v}(s, \mathbf{w})\)</span></li>
-<li>Initial <span class="math inline">\(\mathbf{\theta}, \mathbf{w}\)</span></li>
-<li>Step sizes <span class="math inline">\(\alpha^{\theta}, \alpha^{w}\)</span></li>
-</ul>
-<p>For <span class="math inline">\(m = 1, \dots, M\)</span>:</p>
-<ol type="1">
-<li>Sample: <span class="math inline">\(s_0^m, a_0^m, r_1^m \dots a_{T_m-1}^m, r_{T_m}^m\)</span></li>
-<li>For <span class="math inline">\(t = 0, \dots, T_m - 1\)</span>: <span class="math display">\[g_t^m \leftarrow r_{t+1}^m + \gamma r_{t+2}^m + \dots\]</span></li>
-</ol>
-<p><span class="math display">\[\delta \leftarrow g_t^m - \hat{v}(s_t^m, \mathbf{w})\]</span></p>
-<p><span class="math display">\[\mathbf{w} \leftarrow \mathbf{w} + \alpha^w \delta \nabla_{\mathbf{w}} \hat{v}(s_t^m, \mathbf{w})\]</span></p>
-<p><span class="math display">\[\mathbf{\theta} \leftarrow \mathbf{\theta} + \alpha^{\theta} \gamma^t \delta \nabla \ln \pi(a_t^m|s_t^m, \mathbf{\theta})\]</span></p>
+<section id="credit-assignment-problem" class="level2">
+<h2 class="anchored" data-anchor-id="credit-assignment-problem">Credit assignment problem</h2>
+<p>within an episode, figure out what subpath made the episode bad or good a.k.a individual action impact on the episode =&gt;</p>
 
 
 
