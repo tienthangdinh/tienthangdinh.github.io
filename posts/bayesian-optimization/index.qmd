@@ -1,0 +1,76 @@
+---
+title: "Understanding Bayesian Optimization"
+author: "Your Name" # Or appledinh
+date: "2025-07-05" # Current date or desired publication date
+categories: [Machine Learning, Optimization, Bayesian Statistics] # Add relevant categories
+image: "featured_image.png" # Optional: Path to a featured image for the post listing
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+# The Foundation - Bayes' Theorem
+
+It is a framework for performing **inference**: moving from an initial state of knowledge (the prior $P(H)$) to an updated state of knowledge (the posterior $P(H|E)$) by incorporating new information (the evidence $P(E)$ through the likelihood $P(E|H)$). It is an iterative update process => powerful for learning and decision-making under uncertainty.
+
+$$P(H|E) = \frac{P(E|H) \cdot P(H)}{P(E)}$$
+
+where:
+
+* **$P(H|E)$ : The Posterior Probability**
+    What we are trying to find. It is the probability of the hypothesis ($H$) *given* observed the evidence ($E$). a.k.a Updated belief after updated new evidence data.
+
+* **$P(E|H)$ : The Likelihood**
+    Probability of observing the evidence ($E$) *given* the hypothesis ($H$). a.k.a how well the hypothesis explains the observed data.
+
+* **$P(H)$ : The Prior Probability**
+    Probability of the hypothesis ($H$) *before* considering any new evidence ($E$). It is what we know (or assume) before seeing the data.
+
+* **$P(E)$ : The Evidence (or Marginal Likelihood)**
+    Probability of observing the evidence ($E$) under all possible hypotheses. Often, $P(E)$ acts as a normalizing constant to ensure that the sum of all posterior probabilities for all possible hypotheses equals 1 $\sum_i P(H_i|E) = 1$. Because $P(E) = \sum_i P(E|H_i)P(H_i)$.
+
+
+## Naive Bayes Classifier - Simplicity Meets Speed
+
+**Naive Bayes Classifier** is a powerful and widely used machine learning algorithm building upon the foundation of Bayes' Theorem, we now turn our attention to the **Naive Bayes Classifier**. Renowned for its simplicity, speed, and effectiveness in tasks like text classification (e.g., spam detection).
+
+### The "Naive" Assumption: Conditional Independence
+
+**Assumption:** that all features (or attributes) are **conditionally independent** of each other, *given the class label*. This assumption is almost always violated in real-world data (features are rarely truly independent),but it works
+
+**Example** classify an email as "Spam" or "Not Spam," based on features like "contains 'money'," "contains 'free'," and "contains 'Viagra'."
+
+* **Without the Naive assumption**, a true Bayesian classifier would need to figure out complex relationships: *if* the email contains "money," how does that affect the probability of it also containing "free," given it's spam?
+* **The Naive Bayes Classifier** simplifies this by assuming that, *if we already know the email is spam*, the presence of "money" doesn't change the probability of "free" being there. They are treated as independent events, conditional on the class.
+
+
+### Mathematical Formulation
+
+Recall Bayes' Theorem for a hypothesis $H$ (which is our class $C$) and evidence $E$ (which are our features $F_1, F_2, \dots, F_n$):
+
+$$P(C | F_1, F_2, \dots, F_n) = \frac{P(F_1, F_2, \dots, F_n | C) \cdot P(C)}{P(F_1, F_2, \dots, F_n)}$$
+
+Computing the joint probability of correlated evidences **likelihood term** $P(F_1, F_2, \dots, F_n | C)$ can be very complex.
+
+The "Naive" assumption: conditional independence, the **joint likelihood** = **the product of individual** feature likelihoods.:
+
+$$P(F_1, F_2, \dots, F_n | C) \approx \prod_{i=1}^n P(F_i | C)$$
+
+Thus, we reduced the Naive Bayes Classifier to finding $C$ that maximizes the posterior probability:
+
+$$C_{predicted} = \arg \max_{C} \left( P(C) \cdot \prod_{i=1}^n P(F_i | C) \right)$$
+
+Just the same as above, the denominator $P(E) = \sum_i P(E|H_i)P(H_i) = P(F_1, F_2, \dots, F_n)$ is omitted during prediction because it's a constant for all classes, acting only as a normalizer so that the sum of all posterior probabilities for all possible hypotheses equals 1.
+
+### How it Works (for Classification)
+
+1.  **Training Phase (Learning Probabilities):**
+    * Calculate the **prior probability** $P(C)$ for each class (e.g., the proportion of spam emails in your training data).
+    * Calculate the **likelihood** $P(F_i | C)$ for each feature $F_i$ and each class $C$. This involves counting how often each feature value appears within instances of each class.
+
+2.  **Prediction Phase (Classifying New Data):**
+    * For a new, unclassified data instance with features $(F_1, F_2, \dots, F_n)$:
+    * For each possible class $C$:
+        * Compute the posterior probability (or a score proportional to it) using the formula above.
+    * The class with the highest computed posterior probability is assigned as the prediction.

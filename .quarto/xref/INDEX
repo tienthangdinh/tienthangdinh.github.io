@@ -13,5 +13,8 @@
   },
   "posts/reinforcement-learning/index.qmd": {
     "index.html": "34d5ce93"
+  },
+  "posts/bayesian-optimization/index.qmd": {
+    "index.html": "927e70b1"
   }
 }
