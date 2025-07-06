@@ -1,5 +1,5 @@
 ---
-title: "Understanding Bayesian Optimization"
+title: "Gaussian Process & Bayesian Optimization"
 author: "Your Name" # Or appledinh
 date: "2025-07-05" # Current date or desired publication date
 categories: [Machine Learning, Optimization, Bayesian Statistics] # Add relevant categories
@@ -10,42 +10,338 @@ format:
     code-fold: true
     math: mathjax
 ---
-# The Foundation - Bayes' Theorem
 
-It is a framework for performing **inference**: moving from an initial state of knowledge (the prior $P(H)$) to an updated state of knowledge (the posterior $P(H|E)$) by incorporating new information (the evidence $P(E)$ through the likelihood $P(E|H)$). It is an iterative update process => powerful for learning and decision-making under uncertainty.
-
-$$P(H|E) = \frac{P(E|H) \cdot P(H)}{P(E)}$$
-
-where:
-
-* **$P(H|E)$ : The Posterior Probability**
-    What we are trying to find. It is the probability of the hypothesis ($H$) *given* observed the evidence ($E$). a.k.a Updated belief after updated new evidence data.
-
-* **$P(E|H)$ : The Likelihood**
-    Probability of observing the evidence ($E$) *given* the hypothesis ($H$). a.k.a how well the hypothesis explains the observed data.
-
-* **$P(H)$ : The Prior Probability**
-    Probability of the hypothesis ($H$) *before* considering any new evidence ($E$). It is what we know (or assume) before seeing the data.
-
-* **$P(E)$ : The Evidence (or Marginal Likelihood)**
-    Probability of observing the evidence ($E$) under all possible hypotheses. Often, $P(E)$ acts as a normalizing constant to ensure that the sum of all posterior probabilities for all possible hypotheses equals 1 $\sum_i P(H_i|E) = 1$. Because $P(E) = \sum_i P(E|H_i)P(H_i)$.
+# From Bayes' Theorem to Gaussian Process
 
 
-## Naive Bayes Classifier - Simplicity Meets Speed
+$P(f | \mathcal{D}) \propto P(\mathcal{D} | f) P(f)$ is a real multiplication of probability densities. However, when dealing with functions and multivariate Gaussians, this multiplication is implicitly handled by the properties of joint and conditional Gaussian distributions.
 
-**Naive Bayes Classifier** is a powerful and widely used machine learning algorithm building upon the foundation of Bayes' Theorem, we now turn our attention to the **Naive Bayes Classifier**. Renowned for its simplicity, speed, and effectiveness in tasks like text classification (e.g., spam detection).
+## 1. The GP Prior $P(f)$: Joint Gaussian over All Relevant Points
 
-### The "Naive" Assumption: Conditional Independence
+The key to the GP's tractability is that while it's a distribution over infinite-dimensional functions, any **finite collection of function values** drawn from a GP jointly follow a multivariate Gaussian distribution.
 
-**Assumption:** that all features (or attributes) are **conditionally independent** of each other, *given the class label*. This assumption is almost always violated in real-world data (features are rarely truly independent),but it works
+Consider our observed input points $\mathbf{X}_t = \{\mathbf{x}_1, \dots, \mathbf{x}_t\}$ and a new test input point $\mathbf{x}^*$.
+Under the GP prior, the vector of true (but unobserved) function values at these points, $\mathbf{f}_t = [f(\mathbf{x}_1), \dots, f(\mathbf{x}_t)]^T$ and $f^* = f(\mathbf{x}^*)$, has a joint multivariate Gaussian distribution:
 
-**Example** classify an email as "Spam" or "Not Spam," based on features like "contains 'money'," "contains 'free'," and "contains 'Viagra'."
+$$\begin{pmatrix} \mathbf{f}_t \\ f^* \end{pmatrix} \sim \mathcal{N} \left( \begin{pmatrix} \mathbf{m}_t \\ m(\mathbf{x}^*) \end{pmatrix}, \begin{pmatrix} \mathbf{K}_t & \mathbf{k}_* \\ \mathbf{k}_*^T & k(\mathbf{x}^*, \mathbf{x}^*) \end{pmatrix} \right)$$
 
-* **Without the Naive assumption**, a true Bayesian classifier would need to figure out complex relationships: *if* the email contains "money," how does that affect the probability of it also containing "free," given it's spam?
-* **The Naive Bayes Classifier** simplifies this by assuming that, *if we already know the email is spam*, the presence of "money" doesn't change the probability of "free" being there. They are treated as independent events, conditional on the class.
+Here:
+
+* $\mathbf{m}_t = [m(\mathbf{x}_1), \dots, m(\mathbf{x}_t)]^T$ is the prior mean at observed points.
+* $\mathbf{K}_t$ is the $t \times t$ covariance matrix of the observed points, where $[\mathbf{K}_t]_{ij} = k(\mathbf{x}_i, \mathbf{x}_j)$.
+* $\mathbf{k}_* = [k(\mathbf{x}^*, \mathbf{x}_1), \dots, k(\mathbf{x}^*, \mathbf{x}_t)]^T$ is the $t \times 1$ vector of covariances between the test point and observed points.
+* $k(\mathbf{x}^*, \mathbf{x}^*)$ is the prior variance at the test point itself.
+
+This joint prior distribution for $\begin{pmatrix} \mathbf{f}_t \\ f^* \end{pmatrix}$ represents the $P(f)$ term in Bayes' Theorem. We do not know what that exactly is, but it does tell us about the plausible relationships between function values at observed and unobserved locations *before* we see any data.
+
+## 2. The Likelihood $P(\mathcal{D} | f)$: Adding Gaussian Noise
+
+We observe the data $\mathcal{D}_t = \{(\mathbf{x}_i, y_i)\}_{i=1}^t$, where $y_i = f(\mathbf{x}_i) + \epsilon_i$ and $\epsilon_i \sim \mathcal{N}(0, \sigma_n^2)$.
+This can be written in vector form as:
+
+$$\mathbf{y}_t = \mathbf{f}_t + \boldsymbol{\epsilon}$$
+
+where $\boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \sigma_n^2 \mathbf{I})$.
+
+The **likelihood $P(\mathcal{D}_t | f)$** (or more precisely, $P(\mathbf{y}_t | \mathbf{f}_t)$) is a Gaussian centered at the true function values $\mathbf{f}_t$:
+
+$$P(\mathbf{y}_t | \mathbf{f}_t) = \mathcal{N}(\mathbf{y}_t | \mathbf{f}_t, \sigma_n^2 \mathbf{I})$$
+
+This explicitly defines the $P(\mathcal{D}|f)$ term (using $\mathbf{f}_t$ as the "specific function" part for the observed data).
+
+## 3. The "Multiplication" and Conditioning to Get the Posterior $P(f | \mathcal{D})$
+
+Now, the "multiplication" that yields the posterior GP is achieved by a fundamental property of **multivariate Gaussian distributions**:
+
+If you have two random variables (or vectors of variables) $A$ and $B$ that are jointly Gaussian **(note that $\Sigma = Cov$)**:
+
+$$\begin{pmatrix} A \\ B \end{pmatrix} \sim \mathcal{N} \left( \begin{pmatrix} \boldsymbol{\mu}_A \\ \boldsymbol{\mu}_B \end{pmatrix}, \begin{pmatrix} \boldsymbol{\Sigma}_{AA} & \boldsymbol{\Sigma}_{AB} \\ \boldsymbol{\Sigma}_{BA} & \boldsymbol{\Sigma}_{BB} \end{pmatrix} \right)$$
+
+Then, the conditional distribution of $B$ given $A$ (i.e., $P(B|A)$) is also Gaussian with:
+
+* **Conditional Mean:** $\boldsymbol{\mu}_{B|A} = \boldsymbol{\mu}_B + \boldsymbol{\Sigma}_{BA} \boldsymbol{\Sigma}_{AA}^{-1} (\mathbf{A} - \boldsymbol{\mu}_A)$
+* **Conditional Covariance:** $\boldsymbol{\Sigma}_{B|A} = \boldsymbol{\Sigma}_{BB} - \boldsymbol{\Sigma}_{BA} \boldsymbol{\Sigma}_{AA}^{-1} \boldsymbol{\Sigma}_{AB}$
+
+**How this maps to GPs:**
+
+1.  **Form the Joint Distribution of $(\mathbf{y}_t, f^*)$ under the Prior:**
+    We need the joint prior distribution of our observed outputs $\mathbf{y}_t$ and our unobserved test point function value $f^*$.
+    We know $\mathbf{y}_t = \mathbf{f}_t + \boldsymbol{\epsilon}$.
+    Since $\mathbf{f}_t$ and $f^*$ are jointly Gaussian (from the GP prior) and $\boldsymbol{\epsilon}$ is Gaussian (noise), their sum is also jointly Gaussian.
+    The joint prior mean of $\begin{pmatrix} \mathbf{y}_t \\ f^* \end{pmatrix}$ is $\begin{pmatrix} \mathbf{m}_t \\ m(\mathbf{x}^*) \end{pmatrix}$.
+    The joint prior covariance of $\begin{pmatrix} \mathbf{y}_t \\ f^* \end{pmatrix}$ is:
+
+    $$\text{Cov}\left(\begin{pmatrix} \mathbf{y}_t \\ f^* \end{pmatrix}\right) = \begin{pmatrix} \mathbf{K}_t + \sigma_n^2 \mathbf{I} & \mathbf{k}_* \\ \mathbf{k}_*^T & k(\mathbf{x}^*, \mathbf{x}^*) \end{pmatrix}$$
+
+    (Here, the $\sigma_n^2 \mathbf{I}$ term comes from the noise added to $\mathbf{f}_t$ in the $\mathbf{y}_t$ block).
+
+2.  **Conditioning (Applying Bayes' Rule):**
+    Now, we have observed $\mathbf{y}_t$. We want to find the posterior distribution of $f^*$ given $\mathbf{y}_t$, which is $P(f^* | \mathbf{y}_t)$.
+    Using the conditional Gaussian formulas, let:
+    * $A = \mathbf{y}_t$ (our observed data)
+    * $B = f^*$ (the function value we want to predict)
+    * $\boldsymbol{\mu}_A = \mathbf{m}_t$
+    * $\boldsymbol{\mu}_B = m(\mathbf{x}^*)$
+    * $\boldsymbol{\Sigma}_{AA} = \mathbf{K}_t + \sigma_n^2 \mathbf{I}$
+    * $\boldsymbol{\Sigma}_{BB} = k(\mathbf{x}^*, \mathbf{x}^*)$
+    * $\boldsymbol{\Sigma}_{AB} = \mathbf{k}_*$
+    * $\boldsymbol{\Sigma}_{BA} = \mathbf{k}_*^T$
+
+    Plugging these into the conditional mean and covariance formulas gives exactly the GP posterior predictive mean and variance:
+
+    **Posterior Mean $\mu_t(\mathbf{x}^*)$:**
+
+    $$\mu_t(\mathbf{x}^*) = m(\mathbf{x}^*) + \mathbf{k}_*^T (\mathbf{K}_t + \sigma_n^2 \mathbf{I})^{-1} (\mathbf{y}_t - \mathbf{m}_t)$$
+
+    **Posterior Variance $\sigma_t^2(\mathbf{x}^*)$:**
+
+    $$\sigma_t^2(\mathbf{x}^*) = k(\mathbf{x}^*, \mathbf{x}^*) - \mathbf{k}_*^T (\mathbf{K}_t + \sigma_n^2 \mathbf{I})^{-1} \mathbf{k}_*$$
+
+**In essence:**
+
+The "multiplication" $P(\mathcal{D} | f) P(f)$ is handled internally by the mathematical properties of Gaussian distributions. The GP framework sets up a joint Gaussian prior over all relevant function values (observed and unobserved). The likelihood then specifies how our observed data $\mathbf{y}_t$ relates to the true function values $\mathbf{f}_t$. By conditioning this joint prior on the observed data $\mathbf{y}_t$, we directly derive the exact posterior distribution for the unobserved function values $f^*$, which turns out to also be Gaussian with the mean and variance formulas.
 
 
-### Mathematical Formulation
+
+
+
+# Official Mathematical Formulation of Bayesian Optimization and Gaussian Processes
+
+## 1. The Gaussian Process (GP) as the Surrogate Model
+
+As established, the Gaussian Process models our unknown objective function $f(\mathbf{x})$ as a probability distribution over functions:
+
+$$f(\mathbf{x}) \sim \mathcal{GP}(m(\mathbf{x}), k(\mathbf{x}, \mathbf{x}'))$$
+
+* $m(\mathbf{x})$: Mean function (often assumed to be $m(\mathbf{x})=0$ or the mean of observed data for simplicity).
+* $k(\mathbf{x}, \mathbf{x}')$: Kernel (covariance) function, defining similarity between function values at different points. A common choice is the Squared Exponential (RBF) kernel:
+
+    $$k(\mathbf{x}, \mathbf{x}') = \sigma_f^2 \exp\left(-\frac{\|\mathbf{x} - \mathbf{x}'\|^2}{2l^2}\right)$$
+
+    where $\sigma_f^2$ is the signal variance (amplitude) and $l$ is the length-scale.
+
+Given a set of $t$ observed data points $\mathcal{D}_t = \{(\mathbf{x}_1, y_1), \dots, (\mathbf{x}_t, y_t)\}$, where $y_i = f(\mathbf{x}_i) + \epsilon_i$ (with additive Gaussian noise $\epsilon_i \sim \mathcal{N}(0, \sigma_n^2)$), the posterior predictive distribution for a new point $\mathbf{x}^*$ is Gaussian:
+
+$$f(\mathbf{x}^*) | \mathcal{D}_t \sim \mathcal{N}(\mu_t(\mathbf{x}^*), \sigma_t^2(\mathbf{x}^*))$$
+
+The predictive mean $\mu_t(\mathbf{x}^*)$ and variance $\sigma_t^2(\mathbf{x}^*)$ are given by:
+
+$$\mu_t(\mathbf{x}^*) = m(\mathbf{x}^*) + \mathbf{k}_*^T (\mathbf{K}_t + \sigma_n^2 \mathbf{I})^{-1} (\mathbf{y}_t - \mathbf{m}_t)$$
+$$\sigma_t^2(\mathbf{x}^*) = k(\mathbf{x}^*, \mathbf{x}^*) - \mathbf{k}_*^T (\mathbf{K}_t + \sigma_n^2 \mathbf{I})^{-1} \mathbf{k}_*$$
+
+Where:
+
+* $\mathbf{y}_t = [y_1, \dots, y_t]^T$ (vector of observed values)
+* $\mathbf{m}_t = [m(\mathbf{x}_1), \dots, m(\mathbf{x}_t)]^T$ (mean function evaluated at observed points)
+* $\mathbf{K}_t$: $t \times t$ covariance matrix where $[\mathbf{K}_t]_{ij} = k(\mathbf{x}_i, \mathbf{x}_j)$.
+* $\mathbf{k}_*$: $t \times 1$ vector where $[\mathbf{k}_*]_i = k(\mathbf{x}^*, \mathbf{x}_i)$.
+* $\mathbf{I}$: Identity matrix.
+* $\sigma_n^2$: Noise variance.
+
+## 2. Bayesian Optimization Iteration using an Acquisition Function
+
+The goal of Bayesian Optimization is to find $\mathbf{x}^* = \arg\max_{\mathbf{x} \in \mathcal{X}} f(\mathbf{x})$, where $\mathcal{X}$ is the search domain.
+
+The iterative process involves:
+
+1.  **Update GP:** Use the current dataset $\mathcal{D}_t$ to compute the posterior mean $\mu_t(\mathbf{x})$ and variance $\sigma_t^2(\mathbf{x})$ for the entire search space $\mathcal{X}$.
+2.  **Maximize Acquisition Function:** Select the next point $\mathbf{x}_{next}$ by maximizing an acquisition function $a(\mathbf{x})$, which intelligently balances exploration (sampling in uncertain regions) and exploitation (sampling in promising regions). We'll use Expected Improvement (EI) for our example:
+
+    $$\text{EI}(\mathbf{x}) = \mathbb{E}[\max(0, f(\mathbf{x}) - y_{\text{max}}^*)]$$
+
+    Where $y_{\text{max}}^* = \max_{i=1 \dots t} y_i$ is the current best observed value.
+
+    The analytical form of EI (assuming $\sigma_t(\mathbf{x}) > 0$) is:
+
+    $$\text{EI}(\mathbf{x}) = \sigma_t(\mathbf{x}) \left[\phi(Z) + Z\Phi(Z)\right]$$
+
+    where $Z = \frac{\mu_t(\mathbf{x}) - y_{\text{max}}^*}{\sigma_t(\mathbf{x})}$.
+    If $\sigma_t(\mathbf{x}) = 0$, then $\text{EI}(\mathbf{x}) = 0$. $\phi(\cdot)$ is the PDF and $\Phi(\cdot)$ is the CDF of the standard normal distribution.
+
+3.  **Evaluate True Function:** Obtain $y_{next} = f(\mathbf{x}_{next})$.
+4.  **Add to Data:** $\mathcal{D}_{t+1} = \mathcal{D}_t \cup \{(\mathbf{x}_{next}, y_{next})\}$.
+
+## 3. Numerical Example: Optimizing a Simple 1D Function
+
+Let's use a very simple 1D objective function $f(x) = -(x-2)^2 + 4$ over the domain $x \in [0,4]$. The true maximum is at $x=2$ with $f(2)=4$.
+
+**GP Hyperparameters (Fixed for Simplicity):**
+
+* Mean function $m(x)=0$.
+* Squared Exponential Kernel: $\sigma_f^2=1.0$, $l=1.0$. So, $k(x,x') = 1.0 \cdot \exp\left(-\frac{(x-x')^2}{2 \cdot 1.0^2}\right) = \exp\left(-\frac{(x-x')^2}{2}\right)$.
+* Noise variance $\sigma_n^2=0.01$.
+
+**Initial Data Points ($\mathcal{D}_2$):**
+Let's say we randomly selected two points and evaluated the true function (with no noise for simplicity in the example, so $\epsilon_i=0$):
+
+* $x_1=1.0 \Rightarrow y_1 = -(1.0-2)^2 + 4 = -(-1)^2 + 4 = 3.0$
+* $x_2=3.0 \Rightarrow y_2 = -(3.0-2)^2 + 4 = -(1)^2 + 4 = 3.0$
+
+So, our initial dataset is $\mathcal{D}_2 = \{(1.0, 3.0), (3.0, 3.0)\}$.
+Current best observed value: $y_{\text{max}}^* = 3.0$.
+
+#### Iteration 1: Find the Next Point to Evaluate
+
+**Step 1: Compute $\mathbf{K}_t + \sigma_n^2 \mathbf{I}$ and its inverse**
+
+First, calculate the kernel matrix $\mathbf{K}_2$ for $x_1=1.0$ and $x_2=3.0$:
+
+* $k(x_1,x_1) = \exp\left(-\frac{(1-1)^2}{2}\right) = \exp(0) = 1.0$
+* $k(x_1,x_2) = \exp\left(-\frac{(1-3)^2}{2}\right) = \exp\left(-\frac{(-2)^2}{2}\right) = \exp\left(-\frac{4}{2}\right) = \exp(-2) \approx 0.1353$
+* $k(x_2,x_1) = k(x_1,x_2) \approx 0.1353$
+* $k(x_2,x_2) = \exp\left(-\frac{(3-3)^2}{2}\right) = \exp(0) = 1.0$
+
+So, $\mathbf{K}_2 = \begin{bmatrix} 1.0 & 0.1353 \\ 0.1353 & 1.0 \end{bmatrix}$
+
+Now add the noise variance $\sigma_n^2 \mathbf{I} = 0.01 \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} = \begin{bmatrix} 0.01 & 0 \\ 0 & 0.01 \end{bmatrix}$:
+$\mathbf{K}_2 + \sigma_n^2 \mathbf{I} = \begin{bmatrix} 1.01 & 0.1353 \\ 0.1353 & 1.01 \end{bmatrix}$
+
+Calculate the inverse $(\mathbf{K}_2 + \sigma_n^2 \mathbf{I})^{-1}$:
+Determinant $= (1.01 \times 1.01) - (0.1353 \times 0.1353) = 1.0201 - 0.0183 \approx 1.0018$
+Inverse $\approx \frac{1}{1.0018} \begin{bmatrix} 1.01 & -0.1353 \\ -0.1353 & 1.01 \end{bmatrix} \approx \begin{bmatrix} 1.0082 & -0.1351 \\ -0.1351 & 1.0082 \end{bmatrix}$
+
+**Step 2: Calculate $\mu_t(x^*)$ and $\sigma_t^2(x^*)$ for candidate points**
+
+Let's pick a few candidate points $x^*$ to evaluate our GP at:
+
+* $x_A^* = 0.5$
+* $x_B^* = 2.0$ (Near the true optimum, but previously unobserved)
+* $x_C^* = 3.5$
+
+For each $x^*$, we need $\mathbf{k}_* = [k(x^*,x_1), k(x^*,x_2)]^T$:
+
+For $x_A^* = 0.5$:
+
+* $k(0.5,1.0) = \exp\left(-\frac{(0.5-1.0)^2}{2}\right) = \exp\left(-\frac{(-0.5)^2}{2}\right) = \exp(-0.125) \approx 0.8825$
+* $k(0.5,3.0) = \exp\left(-\frac{(0.5-3.0)^2}{2}\right) = \exp\left(-\frac{(-2.5)^2}{2}\right) = \exp(-3.125) \approx 0.0440$
+So, $\mathbf{k}_* = \begin{bmatrix} 0.8825 \\ 0.0440 \end{bmatrix}$
+
+Now compute $\mu_t(0.5)$ and $\sigma_t^2(0.5)$:
+($\mathbf{y}_t - \mathbf{m}_t = \mathbf{y}_t = [3.0, 3.0]^T$ since $m(x)=0$)
+
+$\mu_t(0.5) = \mathbf{k}_*^T (\mathbf{K}_2 + \sigma_n^2 \mathbf{I})^{-1} \mathbf{y}_t$ (since $\mathbf{m}_t=0$)
+$\mu_t(0.5) \approx \begin{bmatrix} 0.8825 & 0.0440 \end{bmatrix} \begin{bmatrix} 1.0082 & -0.1351 \\ -0.1351 & 1.0082 \end{bmatrix} \begin{bmatrix} 3.0 \\ 3.0 \end{bmatrix}$
+$\approx \begin{bmatrix} 0.8825 & 0.0440 \end{bmatrix} \begin{bmatrix} (1.0082 \times 3) + (-0.1351 \times 3) \\ (-0.1351 \times 3) + (1.0082 \times 3) \end{bmatrix} = \begin{bmatrix} 0.8825 & 0.0440 \end{bmatrix} \begin{bmatrix} 2.6193 \\ 2.6193 \end{bmatrix}$
+$\approx (0.8825 \times 2.6193) + (0.0440 \times 2.6193) \approx 2.3106 + 0.1151 \approx \mathbf{2.4257}$
+
+$\sigma_t^2(0.5) = k(0.5,0.5) - \mathbf{k}_*^T (\mathbf{K}_2 + \sigma_n^2 \mathbf{I})^{-1} \mathbf{k}_*$
+$k(0.5,0.5) = 1.0$
+$\mathbf{k}_*^T (\mathbf{K}_2 + \sigma_n^2 \mathbf{I})^{-1} \mathbf{k}_* \approx \begin{bmatrix} 0.8825 & 0.0440 \end{bmatrix} \begin{bmatrix} 1.0082 & -0.1351 \\ -0.1351 & 1.0082 \end{bmatrix} \begin{bmatrix} 0.8825 \\ 0.0440 \end{bmatrix}$
+$\approx \begin{bmatrix} 0.8825 & 0.0440 \end{bmatrix} \begin{bmatrix} (1.0082 \times 0.8825) + (-0.1351 \times 0.0440) \\ (-0.1351 \times 0.8825) + (1.0082 \times 0.0440) \end{bmatrix}$
+$\approx \begin{bmatrix} 0.8825 & 0.0440 \end{bmatrix} \begin{bmatrix} 0.8837 \\ -0.0762 \end{bmatrix} \approx (0.8825 \times 0.8837) + (0.0440 \times -0.0762) \approx 0.7797 - 0.0033 \approx 0.7764$
+$\sigma_t^2(0.5) \approx 1.0 - 0.7764 = \mathbf{0.2236}$
+
+Let's summarize for our candidates (using a more precise calculator for speed for $x_B^*$ and $x_C^*$):
+
+* **At $x_A^* = 0.5$:**
+    $\mu_t(0.5) \approx 2.425$
+    $\sigma_t(0.5) = \sqrt{0.2236} \approx 0.473$
+* **At $x_B^* = 2.0$:** (This point is exactly in the middle of our two observed points, so we expect high uncertainty as it's unobserved but also perhaps a good mean due to interpolation)
+    $\mu_t(2.0) \approx 3.0$
+    $\sigma_t(2.0) \approx 0.995$ (High uncertainty because it's far from observed data in terms of kernel distance, but interpolated mean is high)
+* **At $x_C^* = 3.5$:**
+    $\mu_t(3.5) \approx 2.425$
+    $\sigma_t(3.5) \approx 0.473$
+
+**Step 3: Calculate Expected Improvement (EI) for candidate points**
+
+Current best $y_{\text{max}}^* = 3.0$. We will use $\xi=0$ (the default for simple EI, meaning no exploration-exploitation trade-off parameter).
+
+For $x_A^* = 0.5$:
+
+$Z = \frac{\mu_t(0.5) - y_{\text{max}}^*}{\sigma_t(0.5)} = \frac{2.425 - 3.0}{0.473} = \frac{-0.575}{0.473} \approx -1.215$
+$\phi(-1.215) \approx 0.1804$ (PDF value)
+
+$\Phi(-1.215) \approx 0.1122$ (CDF value)
+
+$\text{EI}(0.5) = 0.473 [0.1804 + (-1.215) \cdot 0.1122] = 0.473 [0.1804 - 0.1364] = 0.473 [0.044] \approx \mathbf{0.0208}$
+
+For $x_B^* = 2.0$:
+
+$Z = \frac{\mu_t(2.0) - y_{\text{max}}^*}{\sigma_t(2.0)} = \frac{3.0 - 3.0}{0.995} = 0$
+$\phi(0) \approx 0.3989$
+$\Phi(0) = 0.5$
+$\text{EI}(2.0) = 0.995 [0.3989 + 0 \cdot 0.5] = 0.995 [0.3989] \approx \mathbf{0.3964}$
+
+For $x_C^* = 3.5$:
+
+$Z = \frac{\mu_t(3.5) - y_{\text{max}}^*}{\sigma_t(3.5)} = \frac{2.425 - 3.0}{0.473} \approx -1.215$
+$\text{EI}(3.5) \approx \mathbf{0.0208}$ (same as $x_A^*$ due to symmetry in this specific example setup)
+
+**Step 4: Identify $\mathbf{x}_{next}$**
+
+Comparing the EI values:
+
+* $\text{EI}(0.5) \approx 0.0208$
+* $\text{EI}(2.0) \approx 0.3964$
+* $\text{EI}(3.5) \approx 0.0208$
+
+The point $\mathbf{x}_{next}=\mathbf{2.0}$ has the highest Expected Improvement. This makes sense: it's centrally located relative to the observed points, and while its predicted mean is only 3.0 (same as observed), its uncertainty is very high, suggesting a high potential for improvement.
+
+**Step 5: Evaluate the true function at $\mathbf{x}_{next}$ and update data**
+
+We evaluate $f(2.0) = -(2.0-2)^2 + 4 = 4.0$.
+Our updated dataset becomes $\mathcal{D}_3 = \{(1.0, 3.0), (3.0, 3.0), (2.0, 4.0)\}$.
+The new best observed value $y_{\text{max}}^* = 4.0$.
+
+#### Iteration 2 (Conceptual)
+
+With the new point $(2.0, 4.0)$, the GP model would be updated. The uncertainty around $x=2.0$ would drastically decrease, as we now know its value precisely (or with very low noise).
+The acquisition function would then be maximized again. Given that $y_{\text{max}}^*$ is now 4.0 (the true optimum), the EI will be very low at $x=2.0$. The algorithm would likely explore regions further away from $x=2.0$ to ensure no other maxima exist, or converge as no significant improvement is expected elsewhere.
+
+
+# Bayes' Theorem
+
+## Formulation
+Bayes' Theorem:
+
+$$P(\theta | D) = \frac{P(D | \theta) P(\theta)}{P(D)}$$
+
+Where:
+
+* $P(\theta | D)$: **Posterior** (Our updated belief in the parameters $\theta$ after seeing the Data $D$). This is what we want to find in Bayesian inference.
+* $P(D | \theta)$: **Likelihood** (The probability of observing the Data $D$ given the parameters $\theta$). This is the core term that MLE maximizes.
+* $P(\theta)$: **Prior Probability** (Our initial belief in the parameters $\theta$ before seeing any data).
+* $P(D)$: **Evidence / Marginal Likelihood** (The total probability of the data, across all possible parameters. This is a normalizing constant).
+
+### Maximum Likelihood Estimation (MLE)
+
+MLE is purely **data-driven** (no belief about parameters needed). It asks: "Given this data, what are the parameters that make this data most probable?"
+
+$$\theta_{MLE} = \arg \max_{\theta} P(D | \theta)$$
+
+
+### Maximum A Posteriori (MAP) Estimation
+
+MAP is the inverse one, working on posterior:
+
+$$\theta_{MAP} = \arg \max_{\theta} P(\theta | D)$$
+
+Applying Bayes' Theorem:
+
+$$\theta_{MAP} = \arg \max_{\theta} \frac{P(D | \theta) P(\theta)}{P(D)}$$
+
+Since $P(D)$ is a constant with respect to $\theta$ ( doesn't depend on $\theta$):
+
+$$\theta_{MAP} = \arg \max_{\theta} P(D | \theta) P(\theta)$$
+
+**Key characteristic:** MAP is a blend of data and prior beliefs. It asks: "Given this data *and* my prior beliefs about the parameters, what are the parameters that are most probable?"
+
+### MLE is a Special Case of MAP
+
+$P(\theta)$ is constant, because parameter space is uniformly distributed:
+
+$$\theta_{MAP} = \arg \max_{\theta} P(D | \theta)$$
+
+**Wow, MAP is reduced to MLE when parameters are uniformly distributed**
+
+**In simple terms:**
+
+* **MLE:** "What parameters *best explain the data I observed*?" $\rightarrow P(D | \theta)$
+* **MAP:** "What parameters *are most plausible overall*, considering both the data and what I already believed *before* seeing the data?" $\rightarrow P(D | \theta) \times P(\theta)$
+* **Bayes' Theorem (Full Inference):** "What's the *complete updated probability distribution* for my parameters, given everything I know?"
+
+## Naive Bayes Classifier - The "Naive" Assumption: Conditional Independence
 
 Recall Bayes' Theorem for a hypothesis $H$ (which is our class $C$) and evidence $E$ (which are our features $F_1, F_2, \dots, F_n$):
 
@@ -53,24 +349,163 @@ $$P(C | F_1, F_2, \dots, F_n) = \frac{P(F_1, F_2, \dots, F_n | C) \cdot P(C)}{P(
 
 Computing the joint probability of correlated evidences **likelihood term** $P(F_1, F_2, \dots, F_n | C)$ can be very complex.
 
-The "Naive" assumption: conditional independence, the **joint likelihood** = **the product of individual** feature likelihoods.:
+The "Naive" assumption: conditional independence, the **joint likelihood** = **the product of individual** feature likelihoods:
 
 $$P(F_1, F_2, \dots, F_n | C) \approx \prod_{i=1}^n P(F_i | C)$$
 
 Thus, we reduced the Naive Bayes Classifier to finding $C$ that maximizes the posterior probability:
 
-$$C_{predicted} = \arg \max_{C} \left( P(C) \cdot \prod_{i=1}^n P(F_i | C) \right)$$
+$C_{predicted} = \arg \max_{C} \left( P(C) \cdot \prod_{i=1}^n P(F_i | C) \right)$
 
 Just the same as above, the denominator $P(E) = \sum_i P(E|H_i)P(H_i) = P(F_1, F_2, \dots, F_n)$ is omitted during prediction because it's a constant for all classes, acting only as a normalizer so that the sum of all posterior probabilities for all possible hypotheses equals 1.
 
-### How it Works (for Classification)
 
-1.  **Training Phase (Learning Probabilities):**
-    * Calculate the **prior probability** $P(C)$ for each class (e.g., the proportion of spam emails in your training data).
-    * Calculate the **likelihood** $P(F_i | C)$ for each feature $F_i$ and each class $C$. This involves counting how often each feature value appears within instances of each class.
+# Covariance - Measuring Relationships and Uncertainty
 
-2.  **Prediction Phase (Classifying New Data):**
-    * For a new, unclassified data instance with features $(F_1, F_2, \dots, F_n)$:
-    * For each possible class $C$:
-        * Compute the posterior probability (or a score proportional to it) using the formula above.
-    * The class with the highest computed posterior probability is assigned as the prediction.
+In Bayesian Optimization and Gaussian Processes, the concept of **covariance**  allows us to quantify how two random variables change together, and how our beliefs about a function's value at one point are related to its value at another.
+
+## Covariance between Two Random Variables (1D)
+
+Let's start with the simplest case: two scalar random variables $X$ and $Y$. The covariance between $X$ and $Y$, denoted $Cov(X, Y)$ or $\sigma_{XY}$, measures the degree to which they vary together.
+
+The formal definition of covariance is:
+
+$$Cov(X, Y) = \mathbb{E}[(X - \mathbb{E}[X])(Y - \mathbb{E}[Y])]$$
+
+Where:
+
+* 1. $\mathbb{E}[X]$ is the expected value (mean) of a vector that contains some samples but only taking the $X$ dimension.
+* 2. $\mathbb{E}[Y]$ is the expected value (mean) of a vector that contains the samples but only taking the $Y$ dimension.
+* 3. Dot product between vectors $(X - \mathbb{E}[X]) and (Y - \mathbb{E}[Y])$
+* 4. The outer operation $\mathbb{E}[(X - \mathbb{E}[X])(Y - \mathbb{E}[Y])]$ basically just eventually normalized by dividing the number of samples
+
+**Intuition:**
+
+* If $X$ mostly distributed above its mean **AND** $Y$ is also above its mean, the product $(X - \mathbb{E}[X])(Y - \mathbb{E}[Y])$ will often be positive.
+* If $X$ mostly distributed above its mean **AND** $Y$ is below its mean (and vice-versa), the product will often be negative.
+* Otherwise the distributed $X$ and $y$ cancel out on average => zero covariance only implies no *linear* relationship; variables can still have a non-linear relationship.
+
+## Covariance of a Single Random Variable with Itself (Variance)
+
+Variance measures how much a single random variable deviates from its mean, or its spread, $Cov(X, X)$. This gives us the **variance** of $X$, denoted $Var(X)$ or $\sigma_X^2$:
+
+$$Cov(X, X) = \mathbb{E}[(X - \mathbb{E}[X])(X - \mathbb{E}[X])] = \mathbb{E}[(X - \mathbb{E}[X])^2] = Var(X)$$
+
+Calculate the same way as above, basically a dot product of a vector $(X - \mathbb{E}[X])$ with itself, therefore it will be sth like this:
+
+$$Var(X) = (Xsample_1 - meanX)² + (Xsample_2 - meanX)² + ... + (Xsample_n - meanX)² = {a positive or negative number}$$
+
+**Intuition:** 
+
+* mean $E[X]$ could be in the middle, but when most samples are mostly distributed on negative or positive side, then the **Medium** will be on that side
+* remember we are dealing with only one dimensional (scalar) variables
+
+## The Covariance Matrix for Multiple Random Variables (Multivariate Case)
+
+Now, let's extend both concepts above to multiple random variables. Suppose we have a random vector $\mathbf{X}$ consisting of $n$ random variables:
+
+$$\mathbf{X} = \begin{bmatrix} X_1 \\ X_2 \\ \vdots \\ X_n \end{bmatrix}$$
+
+The **covariance matrix** $\mathbf{\Sigma}$, is an $n \times n$ matrix where each element $\mathbf{\Sigma}_{ij}$ represents the covariance between the $i$-th random variable $X_i$ and the $j$-th random variable $X_j$:
+
+$$\mathbf{\Sigma}_{ij} = Cov(X_i, X_j)$$
+
+More formally, the covariance matrix $\mathbf{\Sigma}$ is defined as:
+
+$$\mathbf{\Sigma} = \mathbb{E}[(\mathbf{X} - \mathbb{E}[\mathbf{X}])(\mathbf{X} - \mathbb{E}[\mathbf{X}])^T]$$
+
+Let's explicitly write out the elements of a $3 \times 3$ covariance matrix for a random vector $\mathbf{X} = [X_1, X_2, X_3]^T$:
+
+$$
+\mathbf{\Sigma} = \begin{bmatrix}
+Var(X_1) & Cov(X_1, X_2) & Cov(X_1, X_3) \\
+Cov(X_2, X_1) & Var(X_2) & Cov(X_2, X_3) \\
+Cov(X_3, X_1) & Cov(X_3, X_2) & Var(X_3)
+\end{bmatrix}
+$$
+
+## Intuition of the Covariance Matrix: Spread and Relationships
+
+* **Diagonal Elements:** The variances of each individual random variable a.k.a the individual spread:
+    $$\mathbf{\Sigma}_{ii} = Cov(X_i, X_i) = Var(X_i)$$
+
+* **Off-Diagonal Elements:** 
+    $$\mathbf{\Sigma}_{ij} = Cov(X_i, X_j) \quad \text{for } i \neq j$$
+    These tell us how pairs of variables move together.
+    * If $\mathbf{\Sigma}_{ij} > 0$, $X_i$ and $X_j$ tend to increase or decrease together.
+    * If $\mathbf{\Sigma}_{ij} < 0$, $X_i$ tends to increase when $X_j$ decreases, and vice-versa.
+    * If $\mathbf{\Sigma}_{ij} \approx 0$, there is little to no linear relationship between $X_i$ and $X_j$.
+
+* **Symmetry:** The covariance matrix is always symmetric, $\mathbf{\Sigma}_{ij} = \mathbf{\Sigma}_{ji}$ because $Cov(X_i, X_j) = Cov(X_j, X_i)$, you know how.
+
+In the next chapter about Gaussian Processes, we will slowly build the kernel function $k(x, x')$ directly defines the elements of this covariance matrix for function values at different input points. This matrix say how much a point x is impacted by x'.
+
+# Maximum Likelihood Estimation (MLE)
+
+The parameters that minimize the sum of squared errors are precisely the **Maximum Likelihood Estimates (MLEs)** for the model parameters, *if we assume that the noise (or errors) in our data is independently and identically distributed according to a Gaussian (Normal) distribution.*
+
+Let's derive this.
+
+## The Linear Model and Gaussian Noise Assumption
+
+Consider a simple linear regression model where we try to predict an output $y_i$ based on input features $\mathbf{x}_i$:
+
+$$y_i = \mathbf{x}_i^T \boldsymbol{\beta} + \epsilon_i$$
+
+Where:
+
+* $y_i$ is the $i$-th observed output.
+* $\mathbf{x}_i^T$ representing the features for the $i$-th observation. 
+* $\boldsymbol{\beta}$ is the vector of unknown regression coefficients (parameters) we want to estimate.
+* $\epsilon_i$ is the error or noise term for the $i$-th observation.
+
+**Crucial assumption for this derivation** is that these error terms $\epsilon_i$ are **independently and identically distributed (i.i.d.) according to a Gaussian (Normal) distribution** with a mean of zero and a constant variance $\sigma^2$:
+
+$$\epsilon_i \sim \mathcal{N}(0, \sigma^2)$$
+
+Because $\mathbf{x}_i^T \boldsymbol{\beta}$ is a fixed (non-random) quantity for a given $\mathbf{x}_i$, this assumption about the error implies that $y_i$ itself is also normally distributed:
+
+$$y_i | \mathbf{x}_i, \boldsymbol{\beta}, \sigma^2 \sim \mathcal{N}(\mathbf{x}_i^T \boldsymbol{\beta}, \sigma^2)$$
+
+This means the probability density function (PDF) for a single observation $y_i$ is:
+
+$$p(y_i | \mathbf{x}_i, \boldsymbol{\beta}, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2}{2\sigma^2}\right)$$
+
+## Likelihood Function
+
+**Important Definition:** For a dataset of $N$ independent observations $(\mathbf{x}_1, y_1), \dots, (\mathbf{x}_N, y_N)$, the **likelihood function** $L(\boldsymbol{\beta}, \sigma^2 | \mathbf{X}, \mathbf{y})$ is the **product of the individual PDFs** (due to the independence assumption):
+
+$$L(\boldsymbol{\beta}, \sigma^2 | \mathbf{X}, \mathbf{y}) = \prod_{i=1}^N p(y_i | \mathbf{x}_i, \boldsymbol{\beta}, \sigma^2)$$
+
+$$L(\boldsymbol{\beta}, \sigma^2 | \mathbf{X}, \mathbf{y}) = \prod_{i=1}^N \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2}{2\sigma^2}\right)$$
+
+**Goal Maximum Likelihood Estimation (MLE):**  
+
+* Given datast $(\mathbf{x}_1, y_1), \dots, (\mathbf{x}_N, y_N)$
+* => Find $\boldsymbol{\beta}$ (and $\sigma^2$) that maximize this likelihood function.
+
+### Derivation
+
+Converts products into sums, simplifying differentiation. Since the logarithm is a monotonically increasing function, maximizing $\ln L$ is equivalent to maximizing $L$:
+
+$$\ln L(\boldsymbol{\beta}, \sigma^2 | \mathbf{X}, \mathbf{y}) = \ln \left( \prod_{i=1}^N \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2}{2\sigma^2}\right) \right)$$
+
+Using logarithm properties ($\ln(ab) = \ln a + \ln b$ and $\ln(a^b) = b \ln a$):
+
+$$\ln L = \sum_{i=1}^N \left[ \ln\left(\frac{1}{\sqrt{2\pi\sigma^2}}\right) + \ln\left(\exp\left(-\frac{(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2}{2\sigma^2}\right)\right) \right]$$
+
+$$\ln L = \sum_{i=1}^N \left[ -\frac{1}{2}\ln(2\pi\sigma^2) - \frac{(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2}{2\sigma^2} \right]$$
+
+$$\ln L = -N \cdot \frac{1}{2}\ln(2\pi\sigma^2) - \sum_{i=1}^N \frac{(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2}{2\sigma^2}$$
+
+### Maximizing this function with respect to $\boldsymbol{\beta}$
+
+To do that, easy, we take the **partial derivative** with respect to $\boldsymbol{\beta}$ and **set it to zero**.
+
+Interestingly, $-N \cdot \frac{1}{2}\ln(2\pi\sigma^2)$, does **not** depend on $\boldsymbol{\beta}$. Therefore, when maximizing $\ln L$ with respect to $\boldsymbol{\beta}$, we only need to consider the second term:
+
+$$\text{maximize} \left( - \sum_{i=1}^N \frac{(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2}{2\sigma^2} \right)$$
+
+and voila!:
+$$\text{minimize} \left( \sum_{i=1}^N (y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2 \right)$$
+
