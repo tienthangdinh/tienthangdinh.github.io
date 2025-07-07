@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://tienthangdinh.github.io/index.html</loc>
-    <lastmod>2025-06-25T09:09:13.280Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/bayesian-optimization/index.html</loc>
-    <lastmod>2025-07-06T21:27:08.762Z</lastmod>
+    <loc>https://tienthangdinh.github.io/about.html</loc>
+    <lastmod>2025-07-07T14:59:32.722Z</lastmod>
   </url>
   <url>
     <loc>https://tienthangdinh.github.io/posts/reinforcement-learning/index.html</loc>
-    <lastmod>2025-07-03T21:26:01.355Z</lastmod>
+    <lastmod>2025-07-07T14:38:42.160Z</lastmod>
   </url>
   <url>
-    <loc>https://tienthangdinh.github.io/about.html</loc>
-    <lastmod>2025-06-25T09:09:13.280Z</lastmod>
+    <loc>https://tienthangdinh.github.io/posts/bayesian-optimization/index.html</loc>
+    <lastmod>2025-07-07T14:38:42.159Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/control/index.html</loc>
+    <lastmod>2025-07-07T14:38:42.159Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/index.html</loc>
+    <lastmod>2025-07-07T14:52:41.017Z</lastmod>
   </url>
 </urlset>

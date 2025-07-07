@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/control/index.html",
       "/posts/bayesian-optimization/index.html",
       "/posts/reinforcement-learning/index.html"
     ]
