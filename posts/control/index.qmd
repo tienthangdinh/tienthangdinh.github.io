@@ -1,0 +1,10 @@
+---
+title: "From Control to Model-based Learning"
+date: 2025-07-07
+categories: [Control Theory, Optimization, Dynamics, Model-based Learning, Reinforcement Learning]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---

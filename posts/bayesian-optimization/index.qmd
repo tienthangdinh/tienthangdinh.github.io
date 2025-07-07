@@ -1,9 +1,7 @@
 ---
 title: "Gaussian Process & Bayesian Optimization"
-author: "Your Name" # Or appledinh
 date: "2025-07-05" # Current date or desired publication date
 categories: [Machine Learning, Optimization, Bayesian Statistics] # Add relevant categories
-image: "featured_image.png" # Optional: Path to a featured image for the post listing
 format:
   html:
     toc: true

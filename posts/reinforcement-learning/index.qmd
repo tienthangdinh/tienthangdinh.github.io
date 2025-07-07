@@ -1,9 +1,7 @@
 ---
-title: "Reinforcement Learning"
-author: Dinh Tien Thang
+title: "Model-free Reinforcement Learning"
 date: 2025-06-25
-categories: [machine-learning, RL]
-image: thumbnail.jpg  # optional
+categories: [Machine Learning, Reinforcement Learning, Model-free Learning]
 format:
   html:
     toc: true
@@ -11,18 +9,13 @@ format:
     math: mathjax
 ---
 
-Reinforcement Learning (RL) is a subfield of machine learning concerned with how agents ought to take actions in an environment in order to maximize cumulative reward.
-
-
 # Markov Decision Process (MDP)
 
 An agent’s interaction with the environment is usually modeled as a **Markov Decision Process (MDP)**:
 
-s₀, a₀, r₀ → (s₁, a₁, **R₁**) → s₂, a₂, **R₂** → ...
+$s_0, a_0, r_1, s_1, a_1, r_2, s_2, a_2,...$
 
-This sequence is called an **episode**, and it may or may not terminate depending on the task.
-
-Let:
+where:
 
 * $t \in \{0, 1, 2, \dots\}$
 * $s \in \mathcal{S}$: a state

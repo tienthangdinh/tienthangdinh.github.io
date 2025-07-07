@@ -16,5 +16,8 @@
   },
   "posts/bayesian-optimization/index.qmd": {
     "index.html": "927e70b1"
+  },
+  "posts/control/index.qmd": {
+    "index.html": "3c7b4363"
   }
 }
