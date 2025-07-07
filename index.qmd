@@ -1,5 +1,5 @@
 ---
-title: "haha"
+title: "໒(⊙ᴗ⊙)७✎▤"
 listing:
   contents: posts
   sort: "date desc"

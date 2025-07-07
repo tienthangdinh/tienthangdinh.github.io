@@ -1,5 +1,5 @@
 ---
-title: "About"
+title: "Stalk me"
 image: profile.jpg
 about:
   template: jolla
@@ -13,3 +13,4 @@ about:
 
 ---
 
+Xin chào tớ là Thắng, tớ thích ăn bánh cuốn nguội tại vì nó thơm. Tớ quan tâm đến các vấn đề tự hành và ước mơ của tớ là để người máy giúp hết việc cho các bác công nhân đỡ vất vả :3
