@@ -40,7 +40,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-db03927a41f77a8af5287a812d7101f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -163,8 +163,23 @@ window.Quarto = {
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#pid-controller---foundation-of-feedback-control" id="toc-pid-controller---foundation-of-feedback-control" class="nav-link active" data-scroll-target="#pid-controller---foundation-of-feedback-control">PID Controller - Foundation of Feedback Control</a>
+  <ul class="collapse">
+  <li><a href="#mathematical-formulation" id="toc-mathematical-formulation" class="nav-link" data-scroll-target="#mathematical-formulation">Mathematical Formulation</a></li>
+  <li><a href="#but-why-p-i-and-d-why-not-just-use-the-current-error" id="toc-but-why-p-i-and-d-why-not-just-use-the-current-error" class="nav-link" data-scroll-target="#but-why-p-i-and-d-why-not-just-use-the-current-error">But Why P, I, and D? Why not just use the current error?</a>
+  <ul class="collapse">
+  <li><a href="#the-proportional-p-term-present" id="toc-the-proportional-p-term-present" class="nav-link" data-scroll-target="#the-proportional-p-term-present">The Proportional (P) Term: Present</a></li>
+  <li><a href="#the-integral-i-term-gradual-push-effort" id="toc-the-integral-i-term-gradual-push-effort" class="nav-link" data-scroll-target="#the-integral-i-term-gradual-push-effort">The Integral (I) Term: Gradual Push Effort</a></li>
+  <li><a href="#the-derivative-d-term-anticipation-and-damping" id="toc-the-derivative-d-term-anticipation-and-damping" class="nav-link" data-scroll-target="#the-derivative-d-term-anticipation-and-damping">The Derivative (D) Term: Anticipation and Damping</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content">
@@ -173,9 +188,74 @@ window.Quarto = {
 
 
 
+<section id="pid-controller---foundation-of-feedback-control" class="level1">
+<h1>PID Controller - Foundation of Feedback Control</h1>
+<section id="mathematical-formulation" class="level2">
+<h2 class="anchored" data-anchor-id="mathematical-formulation">Mathematical Formulation</h2>
+<p>A PID controller is a feedback control loop that continuously calculates an “error” value <span class="math inline">\(e(t)\)</span> as the difference between a desired setpoint <span class="math inline">\(r(t)\)</span> and a measured process variable <span class="math inline">\(y(t)\)</span>:</p>
+<p><span class="math display">\[e(t) = r(t) - y(t)\]</span></p>
+<p>Based on this error, the PID controller generates a control output <span class="math inline">\(u(t)\)</span> by combining three distinct terms:</p>
+<ul>
+<li><strong>Proportional Term (<span class="math inline">\(P\)</span>-term):</strong> Accounts for the <em>current</em> error.</li>
+<li><strong>Integral Term (<span class="math inline">\(I\)</span>-term):</strong> Accounts for the <em>accumulation</em> of past errors.</li>
+<li><strong>Derivative Term (<span class="math inline">\(D\)</span>-term):</strong> Accounts for the <em>rate of change</em> of the error.</li>
+</ul>
+<p>Combining these, the <strong>continuous-time PID control law</strong> is given by:</p>
+<p><span class="math display">\[u(t) = K_p e(t) + K_i \int e(t) dt + K_d \frac{de(t)}{dt}\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(u(t)\)</span> is the controller’s output.</li>
+<li><span class="math inline">\(e(t)\)</span> is the error at time <span class="math inline">\(t\)</span>.</li>
+<li><span class="math inline">\(K_p\)</span> is the proportional gain.</li>
+<li><span class="math inline">\(K_i\)</span> is the integral gain.</li>
+<li><span class="math inline">\(K_d\)</span> is the derivative gain.</li>
+</ul>
+</section>
+<section id="but-why-p-i-and-d-why-not-just-use-the-current-error" class="level2">
+<h2 class="anchored" data-anchor-id="but-why-p-i-and-d-why-not-just-use-the-current-error">But Why P, I, and D? Why not just use the current error?</h2>
+<section id="the-proportional-p-term-present" class="level3">
+<h3 class="anchored" data-anchor-id="the-proportional-p-term-present">The Proportional (P) Term: Present</h3>
+<p><span class="math display">\[u_P(t) = K_p e(t)\]</span></p>
+<ul>
+<li><p><strong>Present:</strong> If the error is large, the controller acts strongly; if the error is small, it acts weakly. =&gt; quickly drive the system towards the setpoint.</p></li>
+<li><p><strong>Gradual Loss Problem</strong>: There are some system where the output just naturally decays over time (like heat loss from a room, or friction in a motor). A simplified model could be, notice that for the output <span class="math inline">\(y\)</span> to be maintained at a constant setpoint <span class="math inline">\(r\)</span> (i.e., <span class="math inline">\(\frac{dy}{dt}=0\)</span>), the control input <span class="math inline">\(u\)</span> must provide a continuous effort to compensate: <span class="math inline">\(u_{required} = \frac{ay}{b}\)</span>. <strong>This system is the core problem</strong>:</p>
+<p><span class="math display">\[\frac{dy}{dt} = -ay + bu\]</span></p>
+<p>So what we require is that for this type of model to be at steady state, <span class="math inline">\(\frac{dy}{dt}=0 \implies ay_{ss} = bu_{ss}\)</span>.</p>
+<p><strong>But the problem is here!!!</strong> With P-control, we can only have <span class="math inline">\(u_{ss} = K_p (r - y_{ss})\)</span> that kinda only acts based on the last timestep error. <span class="math display">\[ay_{ss} = bK_p (r - y_{ss})\]</span> <span class="math display">\[ay_{ss} = bK_pr - bK_py_{ss}\]</span> <span class="math display">\[y_{ss} = \frac{K_p r}{(K_p + a/b)}\]</span></p>
+<p>Since <span class="math inline">\(a,b,K_p\)</span> are positive, <span class="math inline">\(y_{ss}\)</span> will always be less than <span class="math inline">\(r\)</span>, meaning there will always be a <strong>non-zero steady-state error</strong>: <span class="math inline">\(e_{ss} = r - y_{ss} \ne 0\)</span>.</p>
+<p><strong>Therefore</strong> In this time of time-decaying systems, a sole P-Term simply cannot provide a sustained, non-zero output, simply because it <strong>only acts with the current error, and never act for the upcoming decay</strong></p></li>
+</ul>
+</section>
+<section id="the-integral-i-term-gradual-push-effort" class="level3">
+<h3 class="anchored" data-anchor-id="the-integral-i-term-gradual-push-effort">The Integral (I) Term: Gradual Push Effort</h3>
+<p><span class="math display">\[u_I(t) = K_i \int e(t) dt\]</span></p>
+<ul>
+<li><strong>Compensate the gradual Loss:</strong> Probably now you know what to do… we <strong>push a little more</strong>, in such <strong>time-decaying system, we need continuous effort</strong> to to maintain the setpoint. It does this by continuously accumulating errors over time.</li>
+<li><strong>Analogy:</strong> You’re driving at 99 km/h when the limit is 100 km/h (small error). The P-term might give only a tiny gas pedal press. But you know, car on the street is exactly this type of <strong>time-decaying system</strong> (<span class="math inline">\(\frac{dy}{dt} = -ay + bu\)</span>) =&gt; To maintain 99 km/h for a long time, the I-term “notices” this persistent deficit and <em>gradually</em> pushes the gas pedal a little harder and holds it there until you finally reach 100 km/h.</li>
+<li><strong>Drawback:</strong> The integral term can make the system slower to respond and potentially cause overshoot or oscillations if its gain <span class="math inline">\(K_i\)</span> is set too high, because it’s reacting to <em>past</em> errors, not current or future ones.</li>
+<li><strong>When does this accumulated stop?</strong> I would say almost never, because we have a time-decaying system, so we always need it.</li>
+<li><strong>BUT</strong>, of course sometimes we want do stop overshooting it, therefore we have another term down here…</li>
+</ul>
+</section>
+<section id="the-derivative-d-term-anticipation-and-damping" class="level3">
+<h3 class="anchored" data-anchor-id="the-derivative-d-term-anticipation-and-damping">The Derivative (D) Term: Anticipation and Damping</h3>
+<p><span class="math display">\[u_D(t) = K_d \frac{de(t)}{dt}\]</span></p>
+<ul>
+<li><strong>Anticipation and Damping :</strong>This is really nice.
+<ul>
+<li>If the error is <strong>rapidly increasing</strong> (either negative or positive quantitatively), the D-term will counteract it quickly.</li>
+<li>If the error is <strong>rapidly decreasing</strong> (meaning the system is approaching the setpoint quickly), the D-term will reduce the control action to prevent overshoot.</li>
+</ul></li>
+<li><strong>Analogy:</strong> You see a sharp turn (error changing rapidly) approaching in your car. You start braking <em>before</em> the turn to slow down smoothly and avoid overshooting the curve. Or, you’re speeding towards the 100 km/h limit; as you get closer, the D-term will gradually ease off the gas, preventing you from overshooting.</li>
+<li><strong>Benefits:</strong> Reduces overshoot, reduces oscillations, and improves the transient response (how quickly and smoothly the system reaches the setpoint).</li>
+<li><strong>Drawback:</strong> The D-term is very sensitive to noise in the measurement signal. Rapid changes in noisy signals can lead to large, jerky control actions.</li>
+</ul>
 
 
 
+</section>
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
