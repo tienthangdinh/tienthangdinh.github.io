@@ -8,3 +8,74 @@ format:
     code-fold: true
     math: mathjax
 ---
+# PID Controller - Foundation of Feedback Control
+
+## Mathematical Formulation
+
+A PID controller is a feedback control loop that continuously calculates an "error" value $e(t)$ as the difference between a desired setpoint $r(t)$ and a measured process variable $y(t)$:
+
+$$e(t) = r(t) - y(t)$$
+
+Based on this error, the PID controller generates a control output $u(t)$ by combining three distinct terms:
+
+* **Proportional Term ($P$-term):** Accounts for the *current* error.
+* **Integral Term ($I$-term):** Accounts for the *accumulation* of past errors.
+* **Derivative Term ($D$-term):** Accounts for the *rate of change* of the error.
+
+Combining these, the **continuous-time PID control law** is given by:
+
+$$u(t) = K_p e(t) + K_i \int e(t) dt + K_d \frac{de(t)}{dt}$$
+
+Where:
+
+* $u(t)$ is the controller's output.
+* $e(t)$ is the error at time $t$.
+* $K_p$ is the proportional gain.
+* $K_i$ is the integral gain.
+* $K_d$ is the derivative gain.
+
+
+## But Why P, I, and D? Why not just use the current error?
+
+
+### The Proportional (P) Term: Present
+$$u_P(t) = K_p e(t)$$
+
+* **Present:** If the error is large, the controller acts strongly; if the error is small, it acts weakly. => quickly drive the system towards the setpoint.
+
+* **Gradual Loss Problem**: There are some system where the output just naturally decays over time (like heat loss from a room, or friction in a motor). A simplified model could be, notice that for the output $y$ to be maintained at a constant setpoint $r$ (i.e., $\frac{dy}{dt}=0$), the control input $u$ must provide a continuous effort to compensate: $u_{required} = \frac{ay}{b}$. **This system is the core problem**:
+
+    $$\frac{dy}{dt} = -ay + bu$$
+
+
+    So what we require is that for this type of model to be at steady state, $\frac{dy}{dt}=0 \implies ay_{ss} = bu_{ss}$.
+
+    **But the problem is here!!!** With P-control, we can only have $u_{ss} = K_p (r - y_{ss})$ that kinda only acts based on the last timestep error.
+    $$ay_{ss} = bK_p (r - y_{ss})$$
+    $$ay_{ss} = bK_pr - bK_py_{ss}$$
+    $$y_{ss} = \frac{K_p r}{(K_p + a/b)}$$
+
+    Since $a,b,K_p$ are positive, $y_{ss}$ will always be less than $r$, meaning there will always be a **non-zero steady-state error**: $e_{ss} = r - y_{ss} \ne 0$. 
+    
+    **Therefore** In this time of time-decaying systems, a sole P-Term simply cannot provide a sustained, non-zero output, simply because it **only acts with the current error, and never act for the upcoming decay**
+
+### The Integral (I) Term: Gradual Push Effort
+
+$$u_I(t) = K_i \int e(t) dt$$
+
+* **Compensate the gradual Loss:** Probably now you know what to do... we **push a little more**, in such **time-decaying system, we need continuous effort** to to maintain the setpoint. It does this by continuously accumulating errors over time.
+* **Analogy:** You're driving at 99 km/h when the limit is 100 km/h (small error). The P-term might give only a tiny gas pedal press. But you know, car on the street is exactly this type of **time-decaying system** ($\frac{dy}{dt} = -ay + bu$) => To maintain 99 km/h for a long time, the I-term "notices" this persistent deficit and *gradually* pushes the gas pedal a little harder and holds it there until you finally reach 100 km/h.
+* **Drawback:** The integral term can make the system slower to respond and potentially cause overshoot or oscillations if its gain $K_i$ is set too high, because it's reacting to *past* errors, not current or future ones.
+* **When does this accumulated stop?** I would say almost never, because we have a time-decaying system, so we always need it.
+* **BUT**, of course sometimes we want do stop overshooting it, therefore we have another term down here...
+
+### The Derivative (D) Term: Anticipation and Damping
+$$u_D(t) = K_d \frac{de(t)}{dt}$$
+
+* **Anticipation and Damping
+:**This is really nice.
+    * If the error is **rapidly increasing** (either negative or positive quantitatively), the D-term will counteract it quickly.
+    * If the error is **rapidly decreasing** (meaning the system is approaching the setpoint quickly), the D-term will reduce the control action to prevent overshoot.
+* **Analogy:** You see a sharp turn (error changing rapidly) approaching in your car. You start braking *before* the turn to slow down smoothly and avoid overshooting the curve. Or, you're speeding towards the 100 km/h limit; as you get closer, the D-term will gradually ease off the gas, preventing you from overshooting.
+* **Benefits:** Reduces overshoot, reduces oscillations, and improves the transient response (how quickly and smoothly the system reaches the setpoint).
+* **Drawback:** The D-term is very sensitive to noise in the measurement signal. Rapid changes in noisy signals can lead to large, jerky control actions.
