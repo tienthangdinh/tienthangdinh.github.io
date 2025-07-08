@@ -79,3 +79,159 @@ $$u_D(t) = K_d \frac{de(t)}{dt}$$
 * **Analogy:** You see a sharp turn (error changing rapidly) approaching in your car. You start braking *before* the turn to slow down smoothly and avoid overshooting the curve. Or, you're speeding towards the 100 km/h limit; as you get closer, the D-term will gradually ease off the gas, preventing you from overshooting.
 * **Benefits:** Reduces overshoot, reduces oscillations, and improves the transient response (how quickly and smoothly the system reaches the setpoint).
 * **Drawback:** The D-term is very sensitive to noise in the measurement signal. Rapid changes in noisy signals can lead to large, jerky control actions.
+
+
+
+
+# The LTI System Dynamics: The State-Space Model
+
+Specifically in **Linear Time-Invariant (LTI) systems**, the differential equation $\dot{\mathbf{x}}(t)=\mathbf{A}\mathbf{x}(t)+\mathbf{B}\mathbf{u}(t)$ is known as the **state-space representation** of a dynamic system. $\mathbf{x}(t)$ contains the **state variables** of the system.
+
+**It can always be First-Order Form like this!!!:** Even if a physical system is described by a single high-order differential equation (e.g., a second-order equation for a mass-spring-damper) as example below, it can *always* be converted into a set of coupled **first-order differential equations**, will be described in the below example. Each row of the state-space equation represents the time derivative of one of other state variables.
+
+**What about nonlinear or time-varying systems?**
+For these systems, we can **linearize it** by approximating around a specific operating point. This linear approximation is valid only close to that operating point. THen apply LQR and MPC as normal.
+
+## Example LTI System: The Mass-Spring-Damper
+
+**System Description:**
+This is a common **second-order system**. Consider a mass $m$ (kg) connected to a spring with stiffness $k$ (N/m) and a damper with damping coefficient $b$ (Ns/m). An external force $F(t)$ (N) is applied to the mass, causing a displacement $y(t)$ (m) from its equilibrium position.
+
+**1. Governing Differential Equation:** Applying Newton's Second Law ($\sum F = m \ddot{y}$) to the mass:
+
+* Applied force: $+F(t)$
+* Spring force (restoring): $-k y(t)$
+* Damping force (opposing velocity): $-b \dot{y}(t)$
+
+So, we have now a **second-order** linear ordinary differential equation:
+$$m\ddot{y}(t) + b\dot{y}(t) + k y(t) = F(t)$$
+$$m\ddot{y}(t) = F(t) - b\dot{y}(t) - k y(t)$$
+
+
+
+**2. Converting to State-Space Form:**
+To convert this second-order equation into the **first-order** state-space form, we define state variables. A common choice is to pick the position and velocity as states:
+
+* $x_1(t) = y(t)$ (the position of the mass)
+* $x_2(t) = \dot{y}(t)$ (the velocity of the mass)
+
+Now, we need to express the derivatives of these state variables in terms of the states themselves and the input $F(t)$.
+$$\dot{x_1}(t) = \dot{y}(t) = x_2(t)$$
+$$\ddot{y}(t) = \frac{1}{m} F(t) - \frac{b}{m}\dot{y}(t) - \frac{k}{m}y(t)$$
+Substituting our state variables ($y(t)=x_1(t)$ and $\dot{y}(t)=x_2(t)$) and our input $u(t) = F(t)$:
+$$\dot{x_2}(t) = -\frac{k}{m}x_1(t) - \frac{b}{m}x_2(t) + \frac{1}{m}u(t)$$
+
+**3. Writing in Matrix Form:**
+Now, we can assemble these first-order equations into the state-space matrix form $\dot{\mathbf{x}}(t)=\mathbf{A}\mathbf{x}(t)+\mathbf{B}\mathbf{u}(t)$:
+
+$$\begin{pmatrix} \dot{x_1}(t) \\ \dot{x_2}(t) \end{pmatrix} = \begin{pmatrix} 0 & 1 \\ -\frac{k}{m} & -\frac{b}{m} \end{pmatrix} \begin{pmatrix} x_1(t) \\ x_2(t) \end{pmatrix} + \begin{pmatrix} 0 \\ \frac{1}{m} \end{pmatrix} u(t)$$
+
+From this, we can identify the  statematrix $\mathbf{A}$ and input matrix $\mathbf{B}$:
+$$\mathbf{A} = \begin{pmatrix} 0 & 1 \\ -\frac{k}{m} & -\frac{b}{m} \end{pmatrix}, \mathbf{B} = \begin{pmatrix} 0 \\ \frac{1}{m} \end{pmatrix}$$
+
+# The Linear Quadratic Regulator (LQR) - Model-hint to Optimal Control
+
+PID relies on heuristic tuning and does not handle multi-variable systems. This is where the **Linear Quadratic Regulator (LQR)** steps in. It operates on any system platform that follow this **linear time-invariant (LTI) state-space model**:
+$$\dot{\mathbf{x}}(t) = \mathbf{A}\mathbf{x}(t) + \mathbf{B}\mathbf{u}(t)$$
+
+This model is a linear approximation of a real system, assumed to be valid around an operating point (e.g., linearization around an equilibrium).
+
+## Formulate into integral of terms using x and u
+
+The formal LQR problem is to find the optimal control input $\mathbf{u}^*(t)$ that minimizes the cost function $J$, subject to the system dynamics:
+
+$$\text{Minimize } J = \int_0^\infty (\mathbf{x}^T(t)\mathbf{Q}\mathbf{x}(t) + \mathbf{u}^T(t)\mathbf{R}\mathbf{u}(t)) dt$$
+$$\text{Subject to: } \dot{\mathbf{x}}(t) = \mathbf{A}\mathbf{x}(t) + \mathbf{B}\mathbf{u}(t)$$
+
+Our goal is now, choosing the weighting matrices $\mathbf{Q}$ and $\mathbf{R}$, we can tune the controller to prioritize different aspects of performance:
+
+* **Larger $\mathbf{Q}$:** driving states to zero quickly
+* **Larger $\mathbf{R}$:** minimizing control effort
+
+You know what? LQR is a linear state-feedback control system, so it people from long time ago has found out it also satisfies this form:
+
+$$\mathbf{u}(t) = -\mathbf{K}\mathbf{x}(t)$$
+
+well, we do not know what $K$ is, we need to find $P$ to calculate $K$:
+
+$$\mathbf{K} = \mathbf{R}^{-1}\mathbf{B}^T\mathbf{P}$$
+
+But $\mathbf{P} \in \mathbb{R}^{n \times n}$ is also sth that we need to find. 
+
+People long time ago just started by adding and subtracting $\mathbf{x}_0^T\mathbf{P}\mathbf{x}_0$ from $J$ to see what they can explore from here:
+
+$$J = \mathbf{x}_0^T\mathbf{P}\mathbf{x}_0 - \mathbf{x}_0^T\mathbf{P}\mathbf{x}_0 + \int_0^\infty (\mathbf{x}^T\mathbf{Q}\mathbf{x} + \mathbf{u}^T\mathbf{R}\mathbf{u}) dt$$
+
+Substituting the integral form of $-\mathbf{x}_0^T\mathbf{P}\mathbf{x}_0 = \int_0^\infty ( \frac{d}{dt}(\mathbf{x}^T\mathbf{P}\mathbf{x}))dt$:
+
+$$J = \mathbf{x}_0^T\mathbf{P}\mathbf{x}_0 + \int_0^\infty \left( \frac{d}{dt}(\mathbf{x}^T\mathbf{P}\mathbf{x}) + \mathbf{x}^T\mathbf{Q}\mathbf{x} + \mathbf{u}^T\mathbf{R}\mathbf{u} \right) dt$$
+
+Now we derive $\frac{d}{dt}(\mathbf{x}^T\mathbf{P}\mathbf{x})$. Since $\mathbf{P}$ is a constant, symmetric matrix ($\mathbf{P} = \mathbf{P}^T$):
+
+$$\frac{d}{dt}(\mathbf{x}^T\mathbf{P}\mathbf{x}) = \dot{\mathbf{x}}^T\mathbf{P}\mathbf{x} + \mathbf{x}^T\mathbf{P}\dot{\mathbf{x}}$$
+
+Now, substitute $\dot{\mathbf{x}} = \mathbf{A}\mathbf{x} + \mathbf{B}\mathbf{u}$ into this expression:
+
+$$\frac{d}{dt}(\mathbf{x}^T\mathbf{P}\mathbf{x}) = (\mathbf{A}\mathbf{x} + \mathbf{B}\mathbf{u})^T\mathbf{P}\mathbf{x} + \mathbf{x}^T\mathbf{P}(\mathbf{A}\mathbf{x} + \mathbf{B}\mathbf{u})$$
+$$\frac{d}{dt}(\mathbf{x}^T\mathbf{P}\mathbf{x}) = (\mathbf{x}^T\mathbf{A}^T + \mathbf{u}^T\mathbf{B}^T)\mathbf{P}\mathbf{x} + \mathbf{x}^T\mathbf{P}\mathbf{A}\mathbf{x} + \mathbf{x}^T\mathbf{P}\mathbf{B}\mathbf{u}$$
+$$\frac{d}{dt}(\mathbf{x}^T\mathbf{P}\mathbf{x}) = \mathbf{x}^T\mathbf{A}^T\mathbf{P}\mathbf{x} + \mathbf{u}^T\mathbf{B}^T\mathbf{P}\mathbf{x} + \mathbf{x}^T\mathbf{P}\mathbf{A}\mathbf{x} + \mathbf{x}^T\mathbf{P}\mathbf{B}\mathbf{u}$$
+
+Substitute this back into the expression for $J$:
+
+$$J = \mathbf{x}_0^T\mathbf{P}\mathbf{x}_0 + \int_0^\infty \left( \mathbf{x}^T\mathbf{A}^T\mathbf{P}\mathbf{x} + \mathbf{u}^T\mathbf{B}^T\mathbf{P}\mathbf{x} + \mathbf{x}^T\mathbf{P}\mathbf{A}\mathbf{x} + \mathbf{x}^T\mathbf{P}\mathbf{B}\mathbf{u} + \mathbf{x}^T\mathbf{Q}\mathbf{x} + \mathbf{u}^T\mathbf{R}\mathbf{u} \right) dt$$
+
+Now, let's group the terms. We can gather terms involving $\mathbf{x}^T (\cdot) \mathbf{x}$ and terms involving $\mathbf{u}$. Note that $\mathbf{u}^T\mathbf{B}^T\mathbf{P}\mathbf{x}$ and $\mathbf{x}^T\mathbf{P}\mathbf{B}\mathbf{u}$ are scalars and transposes of each other (and since $\mathbf{P}=\mathbf{P}^T$), they are equal. So their sum is $2\mathbf{x}^T\mathbf{P}\mathbf{B}\mathbf{u}$.
+
+$$J = \mathbf{x}_0^T\mathbf{P}\mathbf{x}_0 + \int_0^\infty \left( \mathbf{x}^T(\mathbf{A}^T\mathbf{P} + \mathbf{P}\mathbf{A} + \mathbf{Q})\mathbf{x} + \mathbf{u}^T\mathbf{R}\mathbf{u} + 2\mathbf{x}^T\mathbf{P}\mathbf{B}\mathbf{u} \right) dt$$
+
+Now, we want to rewrite the terms dependent on $\mathbf{u}$ into a perfect square like:
+
+$$(a + b)² = a² + 2ab + b²$$
+$$a² + 2ab = (a + b)² - b²$$
+
+we somehow figuredout it looks like this, I also cannot derive it how, but thats the result:
+
+$$\mathbf{u}^T\mathbf{R}\mathbf{u} + 2\mathbf{x}^T\mathbf{P}\mathbf{B}\mathbf{u} = (\mathbf{u} + \mathbf{R}^{-1}\mathbf{B}^T\mathbf{P}\mathbf{x})^T \mathbf{R} (\mathbf{u} + \mathbf{R}^{-1}\mathbf{B}^T\mathbf{P}\mathbf{x}) - \mathbf{x}^T\mathbf{P}\mathbf{B}\mathbf{R}^{-1}\mathbf{B}^T\mathbf{P}\mathbf{x}$$
+
+Substitute this back into the expression for $J$:
+
+$$J = \mathbf{x}_0^T\mathbf{P}\mathbf{x}_0 + \int_0^\infty \left( \mathbf{x}^T(\mathbf{A}^T\mathbf{P} + \mathbf{P}\mathbf{A} + \mathbf{Q})\mathbf{x} + (\mathbf{u} + \mathbf{R}^{-1}\mathbf{B}^T\mathbf{P}\mathbf{x})^T \mathbf{R} (\mathbf{u} + \mathbf{R}^{-1}\mathbf{B}^T\mathbf{P}\mathbf{x}) - \mathbf{x}^T\mathbf{P}\mathbf{B}\mathbf{R}^{-1}\mathbf{B}^T\mathbf{P}\mathbf{x} \right) dt$$
+
+### Important part
+Finally, group the $\mathbf{x}^T(\cdot)\mathbf{x}$ terms **AGAIN, we did this twice aigoo**:
+
+$$J = \mathbf{x}_0^T\mathbf{P}\mathbf{x}_0 + \int_0^\infty \left( \mathbf{x}^T(\mathbf{A}^T\mathbf{P} + \mathbf{P}\mathbf{A} + \mathbf{Q} - \mathbf{P}\mathbf{B}\mathbf{R}^{-1}\mathbf{B}^T\mathbf{P})\mathbf{x} + (\mathbf{u} + \mathbf{R}^{-1}\mathbf{B}^T\mathbf{P}\mathbf{x})^T \mathbf{R} (\mathbf{u} + \mathbf{R}^{-1}\mathbf{B}^T\mathbf{P}\mathbf{x}) \right) dt$$
+
+To minimize $J$, we need to make the integral as small as possible. Let's analyze the terms within the integral:
+
+1.  The term $\mathbf{x}^T(\mathbf{A}^T\mathbf{P} + \mathbf{P}\mathbf{A} + \mathbf{Q} - \mathbf{P}\mathbf{B}\mathbf{R}^{-1}\mathbf{B}^T\mathbf{P})\mathbf{x}$ depends only on the state $\mathbf{x}$, which is a consequence of the control.
+2.  The term $(\mathbf{u} + \mathbf{R}^{-1}\mathbf{B}^T\mathbf{P}\mathbf{x})^T \mathbf{R} (\mathbf{u} + \mathbf{R}^{-1}\mathbf{B}^T\mathbf{P}\mathbf{x})$ is a quadratic form involving $\mathbf{u}$. Since $\mathbf{R}$ is a positive definite matrix, this term is always greater than or equal to zero.
+
+To minimize $J$, we must choose $\mathbf{u}$ such that the second term in the integral is zero (its minimum possible value). This occurs when:
+
+$$\mathbf{u} + \mathbf{R}^{-1}\mathbf{B}^T\mathbf{P}\mathbf{x} = \mathbf{0}$$
+
+Imagine we already have a **optimal control**:
+$$\mathbf{u}^*(t) = -\mathbf{R}^{-1}\mathbf{B}^T\mathbf{P}\mathbf{x}(t)$$
+
+Imagine a specific case at a convergence, this $\mathbf{u}^*(t)$ term is only 0, only when $\mathbf{x}$ must also be zero. Therefore, interestingly:
+
+$$\mathbf{A}^T\mathbf{P} + \mathbf{P}\mathbf{A} + \mathbf{Q} - \mathbf{P}\mathbf{B}\mathbf{R}^{-1}\mathbf{B}^T\mathbf{P} = \mathbf{0}$$
+
+This is the famous **Algebraic Riccati Equation (ARE)** which we can solve numerically.
+
+
+**FInally Back to the Top: Now Calculate $\mathbf{K}$** using the obtained $\mathbf{P}$ to get optimal control $\mathbf{u}(t)$:
+
+$$\mathbf{K} = \mathbf{R}^{-1}\mathbf{B}^T\mathbf{P}$$
+$$\mathbf{u}(t) = -\mathbf{K}\mathbf{x}(t)$$
+
+This means the controller takes the current state $\mathbf{x}(t)$, multiplies it by the pre-computed gain matrix $\mathbf{K}$, and applies this as the control input. The negative sign indicates feedback (driving the state towards zero).
+
+## Summary
+
+It moves from a empirical heuristic PID to a rigorous way to design an optimal feedback controller for linear systems (as long as we know the model).
+
+**Advantages of LQR:** Optimality Warranty, Rigorous-direct system design, Multivariability
+
+**Disadvantages of LQR:** Linear Model Required, No Explicit Constraint Handling
