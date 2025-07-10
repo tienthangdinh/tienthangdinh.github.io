@@ -8,7 +8,7 @@ format:
     code-fold: true
     math: mathjax
 ---
-# PID Controller - Foundation of Feedback Control
+# PID Controller and its Problem
 
 ## Mathematical Formulation
 
