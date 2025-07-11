@@ -40,7 +40,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-db03927a41f77a8af5287a812d7101f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -168,7 +168,7 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#pid-controller---foundation-of-feedback-control" id="toc-pid-controller---foundation-of-feedback-control" class="nav-link active" data-scroll-target="#pid-controller---foundation-of-feedback-control">PID Controller - Foundation of Feedback Control</a>
+  <li><a href="#pid-controller-and-its-problem" id="toc-pid-controller-and-its-problem" class="nav-link active" data-scroll-target="#pid-controller-and-its-problem">PID Controller and its Problem</a>
   <ul class="collapse">
   <li><a href="#mathematical-formulation" id="toc-mathematical-formulation" class="nav-link" data-scroll-target="#mathematical-formulation">Mathematical Formulation</a></li>
   <li><a href="#but-why-p-i-and-d-why-not-just-use-the-current-error" id="toc-but-why-p-i-and-d-why-not-just-use-the-current-error" class="nav-link" data-scroll-target="#but-why-p-i-and-d-why-not-just-use-the-current-error">But Why P, I, and D? Why not just use the current error?</a>
@@ -188,7 +188,13 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#important-part" id="toc-important-part" class="nav-link" data-scroll-target="#important-part">Important part</a></li>
   </ul></li>
-  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#derivation-of-linear-optimal-control-u--kx-and-quadratic-value-function-vxxt-px" id="toc-derivation-of-linear-optimal-control-u--kx-and-quadratic-value-function-vxxt-px" class="nav-link" data-scroll-target="#derivation-of-linear-optimal-control-u--kx-and-quadratic-value-function-vxxt-px">Derivation of Linear Optimal Control (<span class="math inline">\(u^* = -Kx\)</span>) and Quadratic Value Function (<span class="math inline">\(V(x)=x^T Px\)</span>)</a>
+  <ul class="collapse">
+  <li><a href="#bellman-optimality---the-value-function-cost-to-go" id="toc-bellman-optimality---the-value-function-cost-to-go" class="nav-link" data-scroll-target="#bellman-optimality---the-value-function-cost-to-go">Bellman Optimality -&gt; The Value Function (Cost-to-Go):</a></li>
+  <li><a href="#deriving-u--kx" id="toc-deriving-u--kx" class="nav-link" data-scroll-target="#deriving-u--kx">Deriving <span class="math inline">\(u^* = -Kx\)</span></a></li>
+  <li><a href="#deriving-vxxt-px" id="toc-deriving-vxxt-px" class="nav-link" data-scroll-target="#deriving-vxxt-px">Deriving <span class="math inline">\(V(x)=x^T Px\)</span></a></li>
+  <li><a href="#deriving-are" id="toc-deriving-are" class="nav-link" data-scroll-target="#deriving-are">Deriving ARE</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 </nav>
@@ -200,8 +206,8 @@ window.Quarto = {
 
 
 
-<section id="pid-controller---foundation-of-feedback-control" class="level1">
-<h1>PID Controller - Foundation of Feedback Control</h1>
+<section id="pid-controller-and-its-problem" class="level1">
+<h1>PID Controller and its Problem</h1>
 <section id="mathematical-formulation" class="level2">
 <h2 class="anchored" data-anchor-id="mathematical-formulation">Mathematical Formulation</h2>
 <p>A PID controller is a feedback control loop that continuously calculates an “error” value <span class="math inline">\(e(t)\)</span> as the difference between a desired setpoint <span class="math inline">\(r(t)\)</span> and a measured process variable <span class="math inline">\(y(t)\)</span>:</p>
@@ -347,14 +353,60 @@ window.Quarto = {
 <p>This means the controller takes the current state <span class="math inline">\(\mathbf{x}(t)\)</span>, multiplies it by the pre-computed gain matrix <span class="math inline">\(\mathbf{K}\)</span>, and applies this as the control input. The negative sign indicates feedback (driving the state towards zero).</p>
 </section>
 </section>
-<section id="summary" class="level2">
-<h2 class="anchored" data-anchor-id="summary">Summary</h2>
-<p>It moves from a empirical heuristic PID to a rigorous way to design an optimal feedback controller for linear systems (as long as we know the model).</p>
-<p><strong>Advantages of LQR:</strong> Optimality Warranty, Rigorous-direct system design, Multivariability</p>
-<p><strong>Disadvantages of LQR:</strong> Linear Model Required, No Explicit Constraint Handling</p>
+<section id="derivation-of-linear-optimal-control-u--kx-and-quadratic-value-function-vxxt-px" class="level2">
+<h2 class="anchored" data-anchor-id="derivation-of-linear-optimal-control-u--kx-and-quadratic-value-function-vxxt-px">Derivation of Linear Optimal Control (<span class="math inline">\(u^* = -Kx\)</span>) and Quadratic Value Function (<span class="math inline">\(V(x)=x^T Px\)</span>)</h2>
+<section id="bellman-optimality---the-value-function-cost-to-go" class="level3">
+<h3 class="anchored" data-anchor-id="bellman-optimality---the-value-function-cost-to-go">Bellman Optimality -&gt; The Value Function (Cost-to-Go):</h3>
+<p>if a path from point A to point C is optimal, then any segment of that path (e.g., from point B to point C, where B is on the path) must also be optimal from point B. This motivated the transformation of cost function J to the value function below.</p>
+<p><strong>The Cost Function (J):</strong> Our problem statement is to find <span class="math inline">\(u(t)\)</span> that minimizes: <span class="math display">\[J = \int_{0}^{\infty} (x^T(\tau)Qx(\tau) + u^T(\tau)Ru(\tau))d\tau\]</span></p>
+<p>This is the objective.</p>
+<p><strong>The Value Function (V) is Defined in Terms of J:</strong> The value function V(x(t),t)$, as the minimum possible future cost from the current state <span class="math inline">\(x(t)\)</span> at time <span class="math inline">\(t\)</span> to the end of the control horizon (which is <span class="math inline">\(\infty\)</span> for infinite-horizon LQR). <span class="math display">\[V(x(t),t) = \min_{u(\tau),\tau \ge t} \int_{t}^{\infty} (x^T(\tau)Qx(\tau) + u^T(\tau)Ru(\tau))d\tau\]</span></p>
+<p>So, <span class="math inline">\(V(x(t),t)\)</span> is literally the minimum value of a section of the integral <span class="math inline">\(J\)</span>.</p>
+<p><strong>Time-Invariance of <span class="math inline">\(V(x)\)</span>:</strong> For an LTI system with an infinite horizon and constant cost weights, the optimal cost-to-go function <span class="math inline">\(V\)</span> will eventually reach a steady-state. This means it will no longer explicitly depend on time <span class="math inline">\(t\)</span>. Therefore, <span class="math inline">\(\frac{\partial V}{\partial t} = 0\)</span>. <span class="math display">\[-\frac{\partial V}{\partial t} = \min_{u} \left[ x^T Q x + u^T R u + \left(\frac{\partial V}{\partial x}\right)^T (Ax + Bu) \right]\]</span></p>
+<p><span class="math display">\[0 = \min_{u} \left[ x^T Q x + u^T R u + \frac{\partial V}{\partial t} + \left(\frac{\partial V}{\partial x}\right)^T (Ax + Bu) \right]\]</span></p>
+</section>
+<section id="deriving-u--kx" class="level3">
+<h3 class="anchored" data-anchor-id="deriving-u--kx">Deriving <span class="math inline">\(u^* = -Kx\)</span></h3>
+<p>Let’s focus on the term inside the <span class="math inline">\(\min_{u}\)</span> operator. This is a function of <span class="math inline">\(u\)</span>. To find the <span class="math inline">\(u\)</span> that minimizes it, we take the partial derivative with respect to <span class="math inline">\(u\)</span> and set it to zero.</p>
+<p>Let <span class="math inline">\(g(u) = x^T Q x + u^T R u + \left(\frac{\partial V}{\partial x}\right)^T (Ax + Bu)\)</span>. We’re minimizing <span class="math inline">\(g(u)\)</span> with respect to <span class="math inline">\(u\)</span>. Only terms involving <span class="math inline">\(u\)</span> are relevant:</p>
+<p><span class="math display">\[g(u) = u^T R u + \left(\frac{\partial V}{\partial x}\right)^T Bu\]</span></p>
+<p>Taking the derivative with respect to <span class="math inline">\(u\)</span>:</p>
+<p><span class="math display">\[\frac{\partial g}{\partial u} = 2Ru + B^T \frac{\partial V}{\partial x}\]</span></p>
+<p>Set to zero to find the optimal <span class="math inline">\(u^*\)</span>:</p>
+<p><span class="math display">\[2Ru^* + B^T \frac{\partial V}{\partial x} = 0\]</span> <span class="math display">\[u^* = -\frac{1}{2} R^{-1} B^T \frac{\partial V}{\partial x}\]</span></p>
+<p>This is the crucial step: The optimal control is found to be a linear function of the gradient of the value function!</p>
+</section>
+<section id="deriving-vxxt-px" class="level3">
+<h3 class="anchored" data-anchor-id="deriving-vxxt-px">Deriving <span class="math inline">\(V(x)=x^T Px\)</span></h3>
+<p>At this point, we have <span class="math inline">\(u^*\)</span> expressed in terms of <span class="math inline">\(\frac{\partial V}{\partial x}\)</span>. Now we need to solve for <span class="math inline">\(V(x)\)</span>. This is where the specific structure of the LQR problem (linear dynamics, quadratic cost) becomes paramount.</p>
+<p>Since the problem is Linear-Quadratic, it is a known property from optimal control theory that the optimal value function <span class="math inline">\(V(x)\)</span> will be a quadratic form of the state. This is not just a guess, but a deduction based on the inherent structure of LQ problems.</p>
+<ul>
+<li><strong>Why Quadratic?</strong> If <span class="math inline">\(V(x)\)</span> were linear, its second derivative would be zero, which wouldn’t match the quadratic terms in the HJB. If it were higher order, the derivatives would lead to more complex non-linear equations, which would contradict the simplicity and linearity that arise from the problem. The quadratic form <span class="math inline">\(x^T Px\)</span> is the lowest-order non-trivial form that is consistent with the problem’s structure.</li>
+<li><strong>Symmetry:</strong> <span class="math inline">\(P\)</span> is typically chosen to be symmetric (<span class="math inline">\(P=P^T\)</span>) because <span class="math inline">\(x^T Px = x^T P^T x\)</span>. Any asymmetric part of <span class="math inline">\(P\)</span> cancels out in the quadratic form, so we enforce symmetry for uniqueness and consistency.</li>
+</ul>
+<p>So, we propose (or infer) the form:</p>
+<p><span class="math display">\[V(x) = x^T Px\]</span></p>
+<p>where <span class="math inline">\(P\)</span> is a symmetric positive definite matrix.</p>
+<p>Now, calculate the gradient of <span class="math inline">\(V(x)\)</span> with respect to <span class="math inline">\(x\)</span>:</p>
+<p><span class="math display">\[\frac{\partial V}{\partial x} = 2Px\]</span></p>
+</section>
+<section id="deriving-are" class="level3">
+<h3 class="anchored" data-anchor-id="deriving-are">Deriving ARE</h3>
+<p>Substitute <span class="math inline">\(\frac{\partial V}{\partial x} = 2Px\)</span> back into the expression for <span class="math inline">\(u^*\)</span>:</p>
+<p><span class="math display">\[u^* = -\frac{1}{2} R^{-1} B^T (2Px)\]</span> <span class="math display">\[u^* = -R^{-1} B^T Px\]</span></p>
+<p>This is our desired linear state feedback law! Here, <span class="math inline">\(K = R^{-1} B^T P\)</span>.</p>
+<p>Now, substitute <span class="math inline">\(u^*\)</span> and <span class="math inline">\(\frac{\partial V}{\partial x}\)</span> back into the simplified HJB equation:</p>
+<p><span class="math display">\[0 = x^T Q x + (-R^{-1} B^T Px)^T R (-R^{-1} B^T Px) + (2Px)^T (Ax + B(-R^{-1} B^T Px))\]</span> <span class="math display">\[0 = x^T Q x + x^T P^T (B^T)^T (R^{-1})^T R R^{-1} B^T Px + 2x^T P^T (Ax - BR^{-1} B^T Px)\]</span> Since <span class="math inline">\(P = P^T\)</span> and <span class="math inline">\(R\)</span> is symmetric (<span class="math inline">\(R=R^T\)</span>), <span class="math inline">\(R^{-1}\)</span> is also symmetric (<span class="math inline">\((R^{-1})^T = R^{-1}\)</span>). Also, <span class="math inline">\((B^T)^T = B\)</span>.</p>
+<p><span class="math display">\[0 = x^T Q x + x^T P B R^{-1} B^T Px + 2x^T PAx - 2x^T P B R^{-1} B^T Px\]</span> <span class="math display">\[0 = x^T Q x + 2x^T PAx - x^T P B R^{-1} B^T Px\]</span></p>
+<p>Recognizing that <span class="math inline">\(2x^T PAx = x^T PAx + x^T A^T P^T x = x^T (A^T P + PA)x\)</span> (since <span class="math inline">\(P\)</span> is symmetric):</p>
+<p><span class="math display">\[0 = x^T (Q + A^T P + PA - P B R^{-1} B^T P)x\]</span></p>
+<p>For this equation to hold for any state <span class="math inline">\(x\)</span>, the matrix in the parenthesis must be identically zero.</p>
+<p><span class="math display">\[A^T P + PA - P B R^{-1} B^T P + Q = 0\]</span></p>
+<p>This is the <strong>Algebraic Riccati Equation (ARE)</strong>.</p>
 
 
 
+</section>
 </section>
 </section>
 
