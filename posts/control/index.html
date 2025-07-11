@@ -196,6 +196,23 @@ window.Quarto = {
   <li><a href="#deriving-are" id="toc-deriving-are" class="nav-link" data-scroll-target="#deriving-are">Deriving ARE</a></li>
   </ul></li>
   </ul></li>
+  <li><a href="#mpc" id="toc-mpc" class="nav-link" data-scroll-target="#mpc">MPC</a>
+  <ul class="collapse">
+  <li><a href="#transformation-to-a-standard-quadratic-program-qp" id="toc-transformation-to-a-standard-quadratic-program-qp" class="nav-link" data-scroll-target="#transformation-to-a-standard-quadratic-program-qp">Transformation to a Standard Quadratic Program (QP)</a>
+  <ul class="collapse">
+  <li><a href="#prediction-of-future-states" id="toc-prediction-of-future-states" class="nav-link" data-scroll-target="#prediction-of-future-states">1. Prediction of Future States:</a></li>
+  <li><a href="#substituting-into-the-objective-function" id="toc-substituting-into-the-objective-function" class="nav-link" data-scroll-target="#substituting-into-the-objective-function">2. Substituting into the Objective Function:</a></li>
+  <li><a href="#substituting-into-constraints" id="toc-substituting-into-constraints" class="nav-link" data-scroll-target="#substituting-into-constraints">3. Substituting into Constraints:</a></li>
+  </ul></li>
+  <li><a href="#the-result-a-standard-qp-form" id="toc-the-result-a-standard-qp-form" class="nav-link" data-scroll-target="#the-result-a-standard-qp-form">The Result: A Standard QP Form</a></li>
+  <li><a href="#solutions-for-mpc-quadratic-programming-qp-solvers" id="toc-solutions-for-mpc-quadratic-programming-qp-solvers" class="nav-link" data-scroll-target="#solutions-for-mpc-quadratic-programming-qp-solvers">Solutions for MPC (Quadratic Programming (QP) Solvers)</a></li>
+  <li><a href="#derivation" id="toc-derivation" class="nav-link" data-scroll-target="#derivation">Derivation</a>
+  <ul class="collapse">
+  <li><a href="#state-prediction-in-compact-matrix-form" id="toc-state-prediction-in-compact-matrix-form" class="nav-link" data-scroll-target="#state-prediction-in-compact-matrix-form">State Prediction in Compact Matrix Form</a></li>
+  <li><a href="#substituting-into-the-objective-function-deriving-h-g-j_const" id="toc-substituting-into-the-objective-function-deriving-h-g-j_const" class="nav-link" data-scroll-target="#substituting-into-the-objective-function-deriving-h-g-j_const">Substituting into the Objective Function (Deriving H, G, J_const)</a></li>
+  <li><a href="#but-why-do-we-need-to-transform-the-cost-function-into-separated-linear-quadratic-and-jconst-term" id="toc-but-why-do-we-need-to-transform-the-cost-function-into-separated-linear-quadratic-and-jconst-term" class="nav-link" data-scroll-target="#but-why-do-we-need-to-transform-the-cost-function-into-separated-linear-quadratic-and-jconst-term">But why do we need to transform the cost function into separated linear, quadratic and Jconst term?</a></li>
+  </ul></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -403,6 +420,174 @@ window.Quarto = {
 <p>For this equation to hold for any state <span class="math inline">\(x\)</span>, the matrix in the parenthesis must be identically zero.</p>
 <p><span class="math display">\[A^T P + PA - P B R^{-1} B^T P + Q = 0\]</span></p>
 <p>This is the <strong>Algebraic Riccati Equation (ARE)</strong>.</p>
+</section>
+</section>
+</section>
+<section id="mpc" class="level1">
+<h1>MPC</h1>
+<section id="transformation-to-a-standard-quadratic-program-qp" class="level2">
+<h2 class="anchored" data-anchor-id="transformation-to-a-standard-quadratic-program-qp">Transformation to a Standard Quadratic Program (QP)</h2>
+<p>The goal is to eliminate the state variables <span class="math inline">\(x(k+i|k)\)</span> from the optimization problem, leaving only the control input sequence <span class="math inline">\(U_k\)</span> as the decision variables. This is possible because the state evolution is precisely defined by the linear system dynamics, which act as equality constraints.</p>
+<section id="prediction-of-future-states" class="level3">
+<h3 class="anchored" data-anchor-id="prediction-of-future-states">1. Prediction of Future States:</h3>
+<p>We start by recursively expanding the system dynamics equation: <span class="math inline">\(x(k+i+1|k) = Ax(k+i|k) + Bu(k+i|k)\)</span>.</p>
+<ul>
+<li><strong>Initial State:</strong> <span class="math inline">\(x(k|k) = x(k)\)</span> (the current measured state).</li>
+<li><strong>1-step ahead prediction:</strong> <span class="math inline">\(x(k+1|k) = Ax(k|k) + Bu(k|k)\)</span></li>
+<li><strong>2-step ahead prediction:</strong> <span class="math inline">\(x(k+2|k) = Ax(k+1|k) + Bu(k+1|k)\)</span> Substitute <span class="math inline">\(x(k+1|k)\)</span>: <span class="math inline">\(x(k+2|k) = A(Ax(k|k) + Bu(k|k)) + Bu(k+1|k)\)</span> <span class="math inline">\(x(k+2|k) = A^2 x(k|k) + ABu(k|k) + Bu(k+1|k)\)</span></li>
+</ul>
+<p>And so on, up to <span class="math inline">\(H_p\)</span> steps:</p>
+<p>Generalizing, the predicted state at any future time <span class="math inline">\(k+i\)</span> can be expressed as a sum of terms related to the initial state <span class="math inline">\(x(k)\)</span> and the future control inputs <span class="math inline">\(u(k|k), \dots, u(k+i-1|k)\)</span>:</p>
+<p><span class="math display">\[x(k+i|k) = A^i x(k) + \sum_{j=0}^{i-1} A^{i-1-j} Bu(k+j|k)\]</span></p>
+<p>Now, let’s stack all the predicted states and controls into large vectors.</p>
+<p>Let <span class="math inline">\(X_k = \begin{bmatrix} x(k+1|k) \\ x(k+2|k) \\ \vdots \\ x(k+H_p|k) \end{bmatrix}\)</span> and <span class="math inline">\(U_k = \begin{bmatrix} u(k|k) \\ u(k+1|k) \\ \vdots \\ u(k+H_c-1|k) \end{bmatrix}\)</span> (remembering the assumption that <span class="math inline">\(u\)</span> is constant after <span class="math inline">\(H_c-1\)</span>).</p>
+<p>We can write the entire sequence of future states as:</p>
+<p><span class="math display">\[X_k = \mathbf{\Phi} x(k) + \mathbf{\Gamma} U_k\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(\mathbf{\Phi}\)</span> is a large block matrix derived from powers of <span class="math inline">\(A\)</span>.</li>
+<li><span class="math inline">\(\mathbf{\Gamma}\)</span> is a large block lower triangular matrix (often called the Toeplitz matrix or controllability matrix) containing terms like <span class="math inline">\(B, AB, A^2 B, \dots\)</span>. Its structure reflects how current and past controls affect future states.</li>
+</ul>
+</section>
+<section id="substituting-into-the-objective-function" class="level3">
+<h3 class="anchored" data-anchor-id="substituting-into-the-objective-function">2. Substituting into the Objective Function:</h3>
+<p>Recall the objective function:</p>
+<p><span class="math display">\[J(U_k, x(k)) = \sum_{i=0}^{H_p-1} \left( \|x(k+i|k) - x_{ref}(k+i)\|_Q^2 + \|u(k+i|k) - u_{ref}(k+i)\|_R^2 \right) + \|x(k+H_p|k) - x_{ref}(k+H_p)\|_P^2\]</span></p>
+<p>We can rewrite this in a compact quadratic form. Let’s simplify by assuming <span class="math inline">\(x_{ref}=0\)</span> and <span class="math inline">\(u_{ref}=0\)</span> for now to highlight the structure. The general case simply introduces linear terms.</p>
+<p><span class="math display">\[J(U_k, x(k)) = \sum_{i=0}^{H_p-1} x(k+i|k)^T Q x(k+i|k) + \sum_{i=0}^{H_c-1} u(k+i|k)^T R u(k+i|k) + x(k+H_p|k)^T P x(k+H_p|k)\]</span></p>
+<p>By substituting <span class="math inline">\(x(k+i|k) = A^i x(k) + \sum_{j=0}^{i-1} A^{i-1-j} Bu(k+j|k)\)</span> into the expression for <span class="math inline">\(J\)</span>, the objective function becomes a quadratic function of <span class="math inline">\(U_k\)</span> and <span class="math inline">\(x(k)\)</span>:</p>
+<p><span class="math display">\[J(U_k, x(k)) = \frac{1}{2} U_k^T H U_k + G^T U_k + J_{const}\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(H\)</span> is a symmetric positive definite matrix (or positive semi-definite, depending on <span class="math inline">\(R\)</span>). It encapsulates the weights <span class="math inline">\(Q, R, P\)</span> and system matrices <span class="math inline">\(A, B\)</span>.</li>
+<li><span class="math inline">\(G\)</span> is a vector that depends on the current state <span class="math inline">\(x(k)\)</span> and the reference trajectories.</li>
+<li><span class="math inline">\(J_{const}\)</span> is a term that depends only on <span class="math inline">\(x(k)\)</span> and the reference trajectories, which doesn’t affect the minimization with respect to <span class="math inline">\(U_k\)</span>.</li>
+</ul>
+</section>
+<section id="substituting-into-constraints" class="level3">
+<h3 class="anchored" data-anchor-id="substituting-into-constraints">3. Substituting into Constraints:</h3>
+<p>Similarly, all constraints (input, state, output) are originally expressed in terms of <span class="math inline">\(x(k+i|k)\)</span> and <span class="math inline">\(u(k+i|k)\)</span>. By substituting the state prediction equation <span class="math inline">\(x(k+i|k) = \mathbf{\Phi}_i x(k) + \mathbf{\Gamma}_i U_k\)</span> (where <span class="math inline">\(\mathbf{\Phi}_i\)</span> and <span class="math inline">\(\mathbf{\Gamma}_i\)</span> are parts of <span class="math inline">\(\mathbf{\Phi}\)</span> and <span class="math inline">\(\mathbf{\Gamma}\)</span> corresponding to time <span class="math inline">\(k+i\)</span>), all constraints can be rewritten purely in terms of <span class="math inline">\(x(k)\)</span> (which is known) and <span class="math inline">\(U_k\)</span> (the decision variables).</p>
+<p>For example, a state constraint <span class="math inline">\(x_{min} \le x(k+i|k) \le x_{max}\)</span> becomes:</p>
+<p><span class="math display">\[x_{min} \le \mathbf{\Phi}_{i} x(k) + \mathbf{\Gamma}_{i} \mathbf{U}_k \le x_{max}\]</span></p>
+<p>This can be rearranged into the standard inequality form:</p>
+<p><span class="math display">\[-\mathbf{\Gamma}_{i} \mathbf{U}_k \le \mathbf{\Phi}_{i} x(k) - x_{min}\]</span> <span class="math display">\[\mathbf{\Gamma}_{i} \mathbf{U}_k \le x_{max} - \mathbf{\Phi}_{i} x(k)\]</span></p>
+<p>These are stacked for all <span class="math inline">\(i\)</span> and all types of constraints (input, state, output) into the compact form:</p>
+<p><span class="math display">\[\mathbf{L} \mathbf{U}_k \le \mathbf{W}\]</span></p>
+<p>where <span class="math inline">\(\mathbf{L}\)</span> and <span class="math inline">\(\mathbf{W}\)</span> are matrices and vectors that encapsulate all the constraint bounds, system matrices, and the current state <span class="math inline">\(x(k)\)</span>. Equality constraints (like the dynamics, if kept explicit rather than condensed) would form <span class="math inline">\(\mathbf{M}U_k = \mathbf{V}\)</span>.</p>
+</section>
+</section>
+<section id="the-result-a-standard-qp-form" class="level2">
+<h2 class="anchored" data-anchor-id="the-result-a-standard-qp-form">The Result: A Standard QP Form</h2>
+<p>After this transformation, the MPC problem at each time step <span class="math inline">\(k\)</span> is reduced to:</p>
+<p><strong>Minimize:</strong> <span class="math display">\[\frac{1}{2} U_k^T H U_k + G^T U_k\]</span> <strong>Subject to:</strong> <span class="math display">\[\mathbf{L}U_k \le \mathbf{W} \quad \text{(and possibly } \mathbf{M}U_k = \mathbf{V} \text{ for equality constraints)}\]</span></p>
+<p>This is precisely the standard form of a Quadratic Program (QP), where <span class="math inline">\(U_k\)</span> is the optimization variable (what’s called ‘z’ in a generic QP solver). The matrices <span class="math inline">\(H, G, L, W, M, V\)</span> are updated at each time step based on the current measured state <span class="math inline">\(x(k)\)</span>.</p>
+</section>
+<section id="solutions-for-mpc-quadratic-programming-qp-solvers" class="level2">
+<h2 class="anchored" data-anchor-id="solutions-for-mpc-quadratic-programming-qp-solvers">Solutions for MPC (Quadratic Programming (QP) Solvers)</h2>
+<ul>
+<li><strong>Active Set Methods:</strong> These methods work by iteratively selecting a subset of the inequality constraints to be “active” (i.e., treated as equality constraints). They solve an equality-constrained QP at each iteration, update the active set, and move towards the optimal solution.
+<ul>
+<li><strong>Pros:</strong> Highly reliable, provide exact solutions (within machine precision), often used for small to medium-sized problems.</li>
+<li><strong>Cons:</strong> Can be slow for large problems, especially if many active set changes are required. Number of iterations can be high.</li>
+</ul></li>
+<li><strong>Interior-Point Methods:</strong> These methods transform the constrained QP into a sequence of unconstrained problems by adding “barrier functions” to the objective that penalize approaching the constraint boundaries. They then use Newton’s method to solve these unconstrained problems.
+<ul>
+<li><strong>Pros:</strong> Generally scale much better with problem size (fewer iterations, though each iteration is more complex) and are often faster for large-scale QPs. They work well with warm-starting (using the previous solution as an initial guess).</li>
+<li><strong>Cons:</strong> Can be more complex to implement than active set methods.</li>
+</ul></li>
+<li><strong>Primal-Dual Methods:</strong> A broader class that includes many interior-point methods. They simultaneously solve the primal (original) QP problem and its dual problem.</li>
+</ul>
+</section>
+<section id="derivation" class="level2">
+<h2 class="anchored" data-anchor-id="derivation">Derivation</h2>
+<section id="state-prediction-in-compact-matrix-form" class="level3">
+<h3 class="anchored" data-anchor-id="state-prediction-in-compact-matrix-form">State Prediction in Compact Matrix Form</h3>
+<p><strong>THE POINT: ONLY REPRESENT IN U, YOU CAN SEE IN THE MATRIX BELOW</strong></p>
+<p><strong>Recap:</strong> We want to express all future predicted states <span class="math inline">\(x(k+i|k)\)</span> as a function of the current state <span class="math inline">\(x(k)\)</span> and the sequence of future control inputs <span class="math inline">\(U_k\)</span>.</p>
+<p><strong>System:</strong> <span class="math inline">\(x(k+1)=Ax(k)+Bu(k)\)</span> <strong>Prediction Horizon:</strong> <span class="math inline">\(H_p\)</span> <strong>Control Horizon:</strong> <span class="math inline">\(H_c\)</span> (For simplicity, let’s assume <span class="math inline">\(H_c=H_p\)</span> for now. The case <span class="math inline">\(H_c&lt;H_p\)</span> just means some <span class="math inline">\(u\)</span>s are repeated, which is a minor modification.)</p>
+<p><strong>Step-by-step prediction expansion:</strong></p>
+<p><span class="math inline">\(x(k+1|k)=Ax(k)+Bu(k|k)\)</span> <span class="math inline">\(x(k+2|k)=Ax(k+1|k)+Bu(k+1|k)=A(Ax(k)+Bu(k|k))+Bu(k+1|k)=A^2x(k)+ABu(k|k)+Bu(k+1|k)\)</span> <span class="math inline">\(x(k+3|k)=Ax(k+2|k)+Bu(k+2|k)=A(A^2x(k)+ABu(k|k)+Bu(k+1|k))+Bu(k+2|k)=A^3x(k)+A^2Bu(k|k)+ABu(k+1|k)+Bu(k+2|k)\)</span> … and so on, up to <span class="math inline">\(x(k+H_p|k)\)</span>.</p>
+<p><strong>Stacking the Predictions:</strong></p>
+<p>Now, let’s define the stacked vectors:</p>
+<ul>
+<li><strong>Future States Vector:</strong> <span class="math inline">\(X_k = \begin{bmatrix} x(k+1|k) \\ x(k+2|k) \\ \vdots \\ x(k+H_p|k) \end{bmatrix}\)</span> (size <span class="math inline">\(n \cdot H_p \times 1\)</span>)</li>
+<li><strong>Control Input Sequence (Decision Variable):</strong> <span class="math inline">\(U_k = \begin{bmatrix} u(k|k) \\ u(k+1|k) \\ \vdots \\ u(k+H_c-1|k) \end{bmatrix}\)</span> (size <span class="math inline">\(m \cdot H_c \times 1\)</span>)</li>
+</ul>
+<p>Substitute the expanded predictions into <span class="math inline">\(X_k\)</span>:</p>
+<p><span class="math display">\[X_k = \begin{bmatrix} Ax(k)+Bu(k|k) \\ A^2x(k)+ABu(k|k)+Bu(k+1|k) \\ A^3x(k)+A^2Bu(k|k)+ABu(k+1|k)+Bu(k+2|k) \\ \vdots \\ A^{H_p}x(k)+A^{H_p-1}Bu(k|k)+\dots+Bu(k+H_p-1|k) \end{bmatrix}\]</span></p>
+<p>Now, we separate the terms involving <span class="math inline">\(x(k)\)</span> from the terms involving <span class="math inline">\(U_k\)</span>:</p>
+<p><span class="math display">\[X_k = \begin{bmatrix} A \\ A^2 \\ A^3 \\ \vdots \\ A^{H_p} \end{bmatrix} x(k) + \begin{bmatrix} B &amp; 0 &amp; 0 &amp; \dots &amp; 0 \\ AB &amp; B &amp; 0 &amp; \dots &amp; 0 \\ A^2B &amp; AB &amp; B &amp; \dots &amp; 0 \\ \vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\ A^{H_p-1}B &amp; A^{H_p-2}B &amp; A^{H_p-3}B &amp; \dots &amp; B \end{bmatrix} \begin{bmatrix} u(k|k) \\ u(k+1|k) \\ u(k+2|k) \\ \vdots \\ u(k+H_p-1|k) \end{bmatrix}\]</span></p>
+<p>This is exactly the form: <span class="math inline">\(X_k = \mathbf{\Phi} x(k) + \mathbf{\Gamma} U_k\)</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(\mathbf{\Phi}\)</span> (State Contribution Matrix): <span class="math display">\[\mathbf{\Phi} = \begin{bmatrix} A \\ A^2 \\ \vdots \\ A^{H_p} \end{bmatrix}\]</span> <strong>Size:</strong> (<span class="math inline">\(n \cdot H_p\)</span>) <span class="math inline">\(\times n\)</span>. Each block is <span class="math inline">\(n \times n\)</span>. This matrix shows how the initial state <span class="math inline">\(x(k)\)</span> propagates to all future states if no control were applied.</li>
+<li><span class="math inline">\(\mathbf{\Gamma}\)</span> (Control Contribution Matrix / Block Controllability Matrix): <span class="math display">\[\mathbf{\Gamma} = \begin{bmatrix} B &amp; 0 &amp; 0 &amp; \dots &amp; 0 \\ AB &amp; B &amp; 0 &amp; \dots &amp; 0 \\ A^2B &amp; AB &amp; B &amp; \dots &amp; 0 \\ \vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\ A^{H_p-1}B &amp; A^{H_p-2}B &amp; A^{H_p-3}B &amp; \dots &amp; B \end{bmatrix}\]</span> <strong>Size:</strong> (<span class="math inline">\(n \cdot H_p\)</span>) <span class="math inline">\(\times\)</span> (<span class="math inline">\(m \cdot H_p\)</span>). Each block is <span class="math inline">\(n \times m\)</span>. This lower triangular block matrix (sometimes called a block Toeplitz matrix) shows how the sequence of control inputs <span class="math inline">\(U_k\)</span> influences the future states. The “controllability” aspect comes from the powers of <span class="math inline">\(A\)</span> multiplying <span class="math inline">\(B\)</span>, indicating how inputs at different times propagate through the system.</li>
+</ul>
+<section id="numerical-example" class="level4">
+<h4 class="anchored" data-anchor-id="numerical-example">Numerical Example</h4>
+<p>Let’s use a very simple system: <span class="math inline">\(x(k+1)=Ax(k)+Bu(k)\)</span> <span class="math inline">\(A=\begin{bmatrix} 1 &amp; 0 \\ 1 &amp; 1 \end{bmatrix}\)</span>, <span class="math inline">\(B=\begin{bmatrix} 0 \\ 1 \end{bmatrix}\)</span> (This is a discrete-time integrator/position system) Let <span class="math inline">\(H_p=2\)</span> and <span class="math inline">\(H_c=2\)</span>.</p>
+<p><strong>Predictions:</strong></p>
+<p><span class="math inline">\(x(k+1|k)=Ax(k)+Bu(k|k)\)</span> <span class="math inline">\(x(k+2|k)=Ax(k+1|k)+Bu(k+1|k)=A^2x(k)+ABu(k|k)+Bu(k+1|k)\)</span></p>
+<p><strong>Calculate powers of A and products with B:</strong> <span class="math inline">\(A^2 = \begin{bmatrix} 1 &amp; 0 \\ 1 &amp; 1 \end{bmatrix} \begin{bmatrix} 1 &amp; 0 \\ 1 &amp; 1 \end{bmatrix} = \begin{bmatrix} 1 &amp; 0 \\ 2 &amp; 1 \end{bmatrix}\)</span> <span class="math inline">\(AB = \begin{bmatrix} 1 &amp; 0 \\ 1 &amp; 1 \end{bmatrix} \begin{bmatrix} 0 \\ 1 \end{bmatrix} = \begin{bmatrix} 0 \\ 1 \end{bmatrix}\)</span></p>
+<p><strong>Stacked Vectors:</strong> <span class="math inline">\(X_k = \begin{bmatrix} x(k+1|k) \\ x(k+2|k) \end{bmatrix}\)</span> <span class="math inline">\(U_k = \begin{bmatrix} u(k|k) \\ u(k+1|k) \end{bmatrix}\)</span></p>
+<p><strong>Forming <span class="math inline">\(\mathbf{\Phi}\)</span> and <span class="math inline">\(\mathbf{\Gamma}\)</span>:</strong></p>
+<p><span class="math display">\[X_k = \begin{bmatrix} A \\ A^2 \end{bmatrix} x(k) + \begin{bmatrix} B &amp; 0 \\ AB &amp; B \end{bmatrix} U_k\]</span></p>
+<p>Substitute the numerical matrices:</p>
+<p><span class="math display">\[\mathbf{\Phi} = \begin{bmatrix} \begin{bmatrix} 1 &amp; 0 \\ 1 &amp; 1 \end{bmatrix} \\ \begin{bmatrix} 1 &amp; 0 \\ 2 &amp; 1 \end{bmatrix} \end{bmatrix} = \begin{bmatrix} 1 &amp; 0 \\ 1 &amp; 1 \\ 1 &amp; 0 \\ 2 &amp; 1 \end{bmatrix} \quad \text{(size } (2 \cdot 2) \times 2 = 4 \times 2 \text{)}\]</span></p>
+<p><span class="math display">\[\mathbf{\Gamma} = \begin{bmatrix} \begin{bmatrix} 0 \\ 1 \end{bmatrix} &amp; \begin{bmatrix} 0 \\ 0 \end{bmatrix} \\ \begin{bmatrix} 0 \\ 1 \end{bmatrix} &amp; \begin{bmatrix} 0 \\ 1 \end{bmatrix} \end{bmatrix} = \begin{bmatrix} 0 &amp; 0 \\ 1 &amp; 0 \\ 0 &amp; 0 \\ 1 &amp; 1 \end{bmatrix} \quad \text{(size } (2 \cdot 2) \times (1 \cdot 2) = 4 \times 2 \text{)}\]</span></p>
+<p>So, <span class="math inline">\(X_k = \mathbf{\Phi} x(k) + \mathbf{\Gamma} U_k\)</span> where all components are explicitly defined. This is how the state prediction is condensed.</p>
+<hr>
+</section>
+</section>
+<section id="substituting-into-the-objective-function-deriving-h-g-j_const" class="level3">
+<h3 class="anchored" data-anchor-id="substituting-into-the-objective-function-deriving-h-g-j_const">Substituting into the Objective Function (Deriving H, G, J_const)</h3>
+<p><strong>Recap:</strong> We want to transform <span class="math inline">\(J(U_k,x(k))\)</span> into <span class="math inline">\(\frac{1}{2}U_k^T H U_k + G^T U_k + J_{const}\)</span>.</p>
+<p><strong>Objective Function:</strong></p>
+<p><span class="math display">\[J(U_k,x(k)) = \sum_{i=0}^{H_p-1} (\|x(k+i|k)-x_{ref}(k+i)\|_Q^2 + \|u(k+i|k)-u_{ref}(k+i)\|_R^2) + \|x(k+H_p|k)-x_{ref}(k+H_p)\|_P^2\]</span></p>
+<p>Let <span class="math inline">\(e_x(k+i|k)=x(k+i|k)-x_{ref}(k+i)\)</span> and <span class="math inline">\(e_u(k+i|k)=u(k+i|k)-u_{ref}(k+i)\)</span>. The term <span class="math inline">\(\|v\|_W^2 = v^T W v\)</span>.</p>
+<p>Let’s adjust the sum for x states to start from <span class="math inline">\(i=1\)</span> to <span class="math inline">\(H_p\)</span> to align with the stacked <span class="math inline">\(X_k\)</span> derived in Part 1 (which starts from <span class="math inline">\(x(k+1|k)\)</span>). The terminal cost (with P) is explicitly included at <span class="math inline">\(H_p\)</span>.</p>
+<p><span class="math display">\[J(U_k,x(k)) = \sum_{i=1}^{H_p} \|x(k+i|k)-x_{ref}(k+i)\|_Q^2 + \sum_{i=0}^{H_c-1} \|u(k+i|k)-u_{ref}(k+i)\|_R^2\]</span> <em>(Note: For clarity, the terminal cost is typically a separate term at <span class="math inline">\(x(k+H_p|k)\)</span> with weight <span class="math inline">\(P\)</span>. If <span class="math inline">\(P\)</span> is used as a <code>Q</code> for the last state in the sum, then <span class="math inline">\(Q_{H_p}\)</span> is <span class="math inline">\(P\)</span>. Let’s explicitly keep it in the sum by making <span class="math inline">\(Q_{H_p} = P\)</span> for <span class="math inline">\(i=H_p\)</span>.)</em></p>
+<p>We can write the sums in stacked form:</p>
+<p><span class="math display">\[J = E_X^T \bar{Q} E_X + E_U^T \bar{R} E_U\]</span></p>
+<p>Where: * <span class="math inline">\(E_X = \begin{bmatrix} e_x(k+1|k) \\ e_x(k+2|k) \\ \vdots \\ e_x(k+H_p|k) \end{bmatrix}\)</span> (size <span class="math inline">\(n \cdot H_p \times 1\)</span>) * <span class="math inline">\(E_U = \begin{bmatrix} e_u(k|k) \\ e_u(k+1|k) \\ \vdots \\ e_u(k+H_c-1|k) \end{bmatrix}\)</span> (size <span class="math inline">\(m \cdot H_c \times 1\)</span>)</p>
+<ul>
+<li><span class="math inline">\(\bar{Q} = \text{diag}(Q, Q, \dots, Q, P)\)</span> (a block diagonal matrix of size <span class="math inline">\((n \cdot H_p) \times (n \cdot H_p)\)</span>, where the last block is <span class="math inline">\(P\)</span> for <span class="math inline">\(x(k+H_p|k)\)</span> and others are <span class="math inline">\(Q\)</span>).</li>
+<li><span class="math inline">\(\bar{R} = \text{diag}(R, R, \dots, R)\)</span> (<span class="math inline">\(H_c\)</span> times, block diagonal matrix, size <span class="math inline">\((m \cdot H_c) \times (m \cdot H_c)\)</span>).</li>
+</ul>
+<p>Now, substitute <span class="math inline">\(X_k=\mathbf{\Phi}x(k)+\mathbf{\Gamma}U_k\)</span> into the objective. Let’s define the full reference vector <span class="math inline">\(X_{ref}=[x_{ref}(k+1)^T \dots x_{ref}(k+H_p)^T]^T\)</span> and <span class="math inline">\(U_{ref}=[u_{ref}(k)^T \dots u_{ref}(k+H_c-1)^T]^T\)</span>.</p>
+<p>The stacked state error is <span class="math inline">\(E_X = X_k - X_{ref} = (\mathbf{\Phi}x(k)+\mathbf{\Gamma}U_k) - X_{ref}\)</span>. The stacked input error is <span class="math inline">\(E_U = U_k - U_{ref}\)</span>.</p>
+<p>Then:</p>
+<p><span class="math display">\[J = (\mathbf{\Phi}x(k)+\mathbf{\Gamma}U_k - X_{ref})^T \bar{Q} (\mathbf{\Phi}x(k)+\mathbf{\Gamma}U_k - X_{ref}) + (U_k - U_{ref})^T \bar{R} (U_k - U_{ref})\]</span></p>
+<p>Now, expand and collect terms by powers of <span class="math inline">\(U_k\)</span>:</p>
+<ul>
+<li><p><strong>Quadratic term in <span class="math inline">\(U_k\)</span> (for <span class="math inline">\(H\)</span>):</strong> From the first term: <span class="math inline">\((\mathbf{\Gamma}U_k)^T \bar{Q} (\mathbf{\Gamma}U_k) = U_k^T \mathbf{\Gamma}^T \bar{Q} \mathbf{\Gamma} U_k\)</span> From the second term: <span class="math inline">\(U_k^T \bar{R} U_k\)</span> So, the full quadratic term is <span class="math inline">\(U_k^T (\mathbf{\Gamma}^T \bar{Q} \mathbf{\Gamma} + \bar{R}) U_k\)</span>. Therefore, <span class="math inline">\(H = 2(\mathbf{\Gamma}^T \bar{Q} \mathbf{\Gamma} + \bar{R})\)</span>. (The factor of 2 comes from the standard <span class="math inline">\(\frac{1}{2}z^T H z\)</span> form of QP objective).</p></li>
+<li><p><strong>Linear term in <span class="math inline">\(U_k\)</span> (for <span class="math inline">\(G\)</span>):</strong> Let <span class="math inline">\(c_x = \mathbf{\Phi}x(k) - X_{ref}\)</span>. From the first term (cross-term <span class="math inline">\(2 c_x^T \bar{Q} \mathbf{\Gamma} U_k\)</span>): <span class="math inline">\(2(\mathbf{\Phi}x(k) - X_{ref})^T \bar{Q} \mathbf{\Gamma} U_k\)</span> From the second term (cross-term <span class="math inline">\(-2 U_{ref}^T \bar{R} U_k\)</span>): <span class="math inline">\(-2U_{ref}^T \bar{R} U_k\)</span> So, the full linear term is <span class="math inline">\(2(\mathbf{\Phi}x(k) - X_{ref})^T \bar{Q} \mathbf{\Gamma} U_k - 2U_{ref}^T \bar{R} U_k\)</span>. Therefore, <span class="math inline">\(G^T = 2(\mathbf{\Phi}x(k) - X_{ref})^T \bar{Q} \mathbf{\Gamma} - 2U_{ref}^T \bar{R}\)</span>. Or, <span class="math inline">\(G = 2\mathbf{\Gamma}^T \bar{Q} (\mathbf{\Phi}x(k) - X_{ref}) - 2\bar{R}^T U_{ref}\)</span>. Note that <span class="math inline">\(\bar{R}\)</span> is symmetric, so <span class="math inline">\(\bar{R}^T=\bar{R}\)</span>.</p></li>
+<li><p><strong>Constant term (for <span class="math inline">\(J_{const}\)</span>):</strong> This term does not depend on <span class="math inline">\(U_k\)</span> and is effectively ignored by the optimizer. It includes: <span class="math inline">\((\mathbf{\Phi}x(k) - X_{ref})^T \bar{Q} (\mathbf{\Phi}x(k) - X_{ref}) + U_{ref}^T \bar{R} U_{ref}\)</span>. This term is important if you want to know the actual minimum cost, but not for finding the optimal <span class="math inline">\(U_k\)</span>.</p></li>
+</ul>
+<section id="numerical-example-1" class="level4">
+<h4 class="anchored" data-anchor-id="numerical-example-1">Numerical Example</h4>
+<p>Continue with our previous example: <span class="math inline">\(A=\begin{bmatrix} 1 &amp; 0 \\ 1 &amp; 1 \end{bmatrix}\)</span>, <span class="math inline">\(B=\begin{bmatrix} 0 \\ 1 \end{bmatrix}\)</span> <span class="math inline">\(H_p=2\)</span>, <span class="math inline">\(H_c=2\)</span>. Let <span class="math inline">\(Q=\begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix}\)</span> (identity matrix for state penalty), <span class="math inline">\(R=[0.1]\)</span> (scalar for input penalty). Let <span class="math inline">\(P=Q\)</span> (for simplicity of <span class="math inline">\(\bar{Q}\)</span> structure), <span class="math inline">\(x_{ref}=0\)</span>, <span class="math inline">\(u_{ref}=0\)</span>.</p>
+<p>From Part 1: <span class="math inline">\(\mathbf{\Phi}=\begin{bmatrix} 1 &amp; 0 \\ 1 &amp; 1 \\ 1 &amp; 0 \\ 2 &amp; 1 \end{bmatrix}\)</span> <span class="math inline">\(\mathbf{\Gamma}=\begin{bmatrix} 0 &amp; 0 \\ 1 &amp; 0 \\ 0 &amp; 0 \\ 1 &amp; 1 \end{bmatrix}\)</span></p>
+<p>Also: <span class="math inline">\(\bar{Q}=\begin{bmatrix} Q &amp; 0 \\ 0 &amp; P \end{bmatrix} = \begin{bmatrix} \begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix} &amp; \begin{bmatrix} 0 &amp; 0 \\ 0 &amp; 0 \end{bmatrix} \\ \begin{bmatrix} 0 &amp; 0 \\ 0 &amp; 0 \end{bmatrix} &amp; \begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix} \end{bmatrix} = \begin{bmatrix} 1 &amp; 0 &amp; 0 &amp; 0 \\ 0 &amp; 1 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 1 &amp; 0 \\ 0 &amp; 0 &amp; 0 &amp; 1 \end{bmatrix}\)</span> (size <span class="math inline">\(4 \times 4\)</span>) <span class="math inline">\(\bar{R}=\begin{bmatrix} R &amp; 0 \\ 0 &amp; R \end{bmatrix}=\begin{bmatrix} 0.1 &amp; 0 \\ 0 &amp; 0.1 \end{bmatrix}\)</span> (size <span class="math inline">\(2 \times 2\)</span>)</p>
+<p>Now, let’s compute <span class="math inline">\(H\)</span> (assuming <span class="math inline">\(H = 2(\mathbf{\Gamma}^T \bar{Q} \mathbf{\Gamma} + \bar{R})\)</span> as per the QP formulation): First, <span class="math inline">\(\mathbf{\Gamma}^T \bar{Q}\)</span>: <span class="math display">\[\begin{bmatrix} 0 &amp; 1 &amp; 0 &amp; 1 \\ 0 &amp; 0 &amp; 0 &amp; 1 \end{bmatrix} \begin{bmatrix} 1 &amp; 0 &amp; 0 &amp; 0 \\ 0 &amp; 1 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 1 &amp; 0 \\ 0 &amp; 0 &amp; 0 &amp; 1 \end{bmatrix} = \begin{bmatrix} 0 &amp; 1 &amp; 0 &amp; 1 \\ 0 &amp; 0 &amp; 0 &amp; 1 \end{bmatrix}\]</span> Then, <span class="math inline">\((\mathbf{\Gamma}^T \bar{Q})\mathbf{\Gamma}\)</span>: <span class="math display">\[\begin{bmatrix} 0 &amp; 1 &amp; 0 &amp; 1 \\ 0 &amp; 0 &amp; 0 &amp; 1 \end{bmatrix} \begin{bmatrix} 0 &amp; 0 \\ 1 &amp; 0 \\ 0 &amp; 0 \\ 1 &amp; 1 \end{bmatrix} = \begin{bmatrix} (0)(0)+(1)(1)+(0)(0)+(1)(1) &amp; (0)(0)+(1)(0)+(0)(0)+(1)(1) \\ (0)(0)+(0)(1)+(0)(0)+(1)(1) &amp; (0)(0)+(0)(0)+(0)(0)+(1)(1) \end{bmatrix} = \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 1 \end{bmatrix}\]</span> Finally, <span class="math inline">\(H = 2 \left( \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 1 \end{bmatrix} + \begin{bmatrix} 0.1 &amp; 0 \\ 0 &amp; 0.1 \end{bmatrix} \right) = 2 \begin{bmatrix} 2.1 &amp; 1 \\ 1 &amp; 1.1 \end{bmatrix} = \begin{bmatrix} 4.2 &amp; 2 \\ 2 &amp; 2.2 \end{bmatrix}\)</span></p>
+<p>Now, let’s compute <span class="math inline">\(G\)</span> (assuming <span class="math inline">\(x_{ref}=0, u_{ref}=0\)</span>, so <span class="math inline">\(X_{ref}=0, U_{ref}=0\)</span>). In this case, <span class="math inline">\(G = 2\mathbf{\Gamma}^T \bar{Q} \mathbf{\Phi}x(k)\)</span>. Let <span class="math inline">\(x(k)=\begin{bmatrix} x_1 \\ x_2 \end{bmatrix}\)</span>.</p>
+<p>First, <span class="math inline">\(\mathbf{\Phi}x(k)\)</span>: <span class="math display">\[\begin{bmatrix} 1 &amp; 0 \\ 1 &amp; 1 \\ 1 &amp; 0 \\ 2 &amp; 1 \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \end{bmatrix} = \begin{bmatrix} x_1 \\ x_1+x_2 \\ x_1 \\ 2x_1+x_2 \end{bmatrix}\]</span> Then, <span class="math inline">\(\bar{Q} \mathbf{\Phi}x(k)\)</span>: <span class="math display">\[\begin{bmatrix} 1 &amp; 0 &amp; 0 &amp; 0 \\ 0 &amp; 1 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 1 &amp; 0 \\ 0 &amp; 0 &amp; 0 &amp; 1 \end{bmatrix} \begin{bmatrix} x_1 \\ x_1+x_2 \\ x_1 \\ 2x_1+x_2 \end{bmatrix} = \begin{bmatrix} x_1 \\ x_1+x_2 \\ x_1 \\ 2x_1+x_2 \end{bmatrix}\]</span> Finally, <span class="math inline">\(G = 2\mathbf{\Gamma}^T (\bar{Q} \mathbf{\Phi}x(k))\)</span>: <span class="math display">\[G = 2 \begin{bmatrix} 0 &amp; 1 &amp; 0 &amp; 1 \\ 0 &amp; 0 &amp; 0 &amp; 1 \end{bmatrix} \begin{bmatrix} x_1 \\ x_1+x_2 \\ x_1 \\ 2x_1+x_2 \end{bmatrix} = 2 \begin{bmatrix} (0)x_1 + (1)(x_1+x_2) + (0)x_1 + (1)(2x_1+x_2) \\ (0)x_1 + (0)(x_1+x_2) + (0)x_1 + (1)(2x_1+x_2) \end{bmatrix}\]</span> <span class="math display">\[G = 2 \begin{bmatrix} x_1+x_2 + 2x_1+x_2 \\ 2x_1+x_2 \end{bmatrix} = 2 \begin{bmatrix} 3x_1+2x_2 \\ 2x_1+x_2 \end{bmatrix} = \begin{bmatrix} 6x_1+4x_2 \\ 4x_1+2x_2 \end{bmatrix}\]</span></p>
+<p>The <span class="math inline">\(J_{const}\)</span> term would be <span class="math inline">\(x(k)^T \mathbf{\Phi}^T \bar{Q} \mathbf{\Phi} x(k)\)</span>, which would be a scalar depending only on <span class="math inline">\(x(k)\)</span>.</p>
+<p>This detailed breakdown shows how the matrices <span class="math inline">\(H\)</span> and <span class="math inline">\(G\)</span> are explicitly constructed from the system matrices, weights, and the current state. This allows a standard QP solver to take these numerical matrices and solve for the optimal <span class="math inline">\(U_k\)</span> sequence at each time step.</p>
+</section>
+</section>
+<section id="but-why-do-we-need-to-transform-the-cost-function-into-separated-linear-quadratic-and-jconst-term" class="level3">
+<h3 class="anchored" data-anchor-id="but-why-do-we-need-to-transform-the-cost-function-into-separated-linear-quadratic-and-jconst-term">But why do we need to transform the cost function into separated linear, quadratic and Jconst term?</h3>
+<p>QP solvers are designed to solve problems in a very specific mathematical form. The standard general form of a Quadratic Program is:</p>
+<p><strong>Minimize:</strong> <span class="math display">\[f(z) = \frac{1}{2} z^T H z + g^T z\]</span></p>
+<p><strong>Subject to:</strong> <span class="math display">\[A_{eq} z = b_{eq}\]</span> <span class="math display">\[A_{ineq} z \le b_{ineq}\]</span></p>
+<p>Where: * <span class="math inline">\(z\)</span> is the vector of optimization variables. * <span class="math inline">\(H\)</span> is the Hessian matrix (symmetric). It determines the curvature of the objective function. * <span class="math inline">\(g\)</span> is the linear term vector. * <span class="math inline">\(A_{eq}, b_{eq}, A_{ineq}, b_{ineq}\)</span> define the linear equality and inequality constraints.</p>
+<p>By transforming the MPC objective into the form <span class="math inline">\(\frac{1}{2} U_k^T H U_k + G^T U_k + J_{const}\)</span>:</p>
+<ul>
+<li>Our decision variable <span class="math inline">\(U_k\)</span> maps directly to the generic <span class="math inline">\(z\)</span>.</li>
+<li>Our calculated <span class="math inline">\(H\)</span> matrix maps directly to the generic <span class="math inline">\(H\)</span>.</li>
+<li>Our calculated <span class="math inline">\(G\)</span> vector maps directly to the generic <span class="math inline">\(g\)</span>.</li>
+</ul>
 
 
 
