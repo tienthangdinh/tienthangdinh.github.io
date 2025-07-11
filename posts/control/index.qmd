@@ -228,10 +228,91 @@ $$\mathbf{u}(t) = -\mathbf{K}\mathbf{x}(t)$$
 
 This means the controller takes the current state $\mathbf{x}(t)$, multiplies it by the pre-computed gain matrix $\mathbf{K}$, and applies this as the control input. The negative sign indicates feedback (driving the state towards zero).
 
-## Summary
 
-It moves from a empirical heuristic PID to a rigorous way to design an optimal feedback controller for linear systems (as long as we know the model).
+## Derivation of Linear Optimal Control ($u^* = -Kx$) and Quadratic Value Function ($V(x)=x^T Px$)
 
-**Advantages of LQR:** Optimality Warranty, Rigorous-direct system design, Multivariability
+### Bellman Optimality -> The Value Function (Cost-to-Go):
+if a path from point A to point C is optimal, then any segment of that path (e.g., from point B to point C, where B is on the path) must also be optimal from point B. This motivated the transformation of cost function J to the value function below.
 
-**Disadvantages of LQR:** Linear Model Required, No Explicit Constraint Handling
+**The Cost Function (J):** Our problem statement is to find $u(t)$ that minimizes:
+$$J = \int_{0}^{\infty} (x^T(\tau)Qx(\tau) + u^T(\tau)Ru(\tau))d\tau$$
+
+This is the objective.
+
+**The Value Function (V) is Defined in Terms of J:** The value function V(x(t),t)$, as the minimum possible future cost from the current state $x(t)$ at time $t$ to the end of the control horizon (which is $\infty$ for infinite-horizon LQR).
+$$V(x(t),t) = \min_{u(\tau),\tau \ge t} \int_{t}^{\infty} (x^T(\tau)Qx(\tau) + u^T(\tau)Ru(\tau))d\tau$$
+
+So, $V(x(t),t)$ is literally the minimum value of a section of the integral $J$.
+
+**Time-Invariance of $V(x)$:** For an LTI system with an infinite horizon and constant cost weights, the optimal cost-to-go function $V$ will eventually reach a steady-state. This means it will no longer explicitly depend on time $t$. Therefore, $\frac{\partial V}{\partial t} = 0$.
+$$-\frac{\partial V}{\partial t} = \min_{u} \left[ x^T Q x + u^T R u + \left(\frac{\partial V}{\partial x}\right)^T (Ax + Bu) \right]$$
+
+$$0 = \min_{u} \left[ x^T Q x + u^T R u + \frac{\partial V}{\partial t} + \left(\frac{\partial V}{\partial x}\right)^T (Ax + Bu) \right]$$
+
+
+### Deriving $u^* = -Kx$
+
+Let's focus on the term inside the $\min_{u}$ operator. This is a function of $u$. To find the $u$ that minimizes it, we take the partial derivative with respect to $u$ and set it to zero.
+
+Let $g(u) = x^T Q x + u^T R u + \left(\frac{\partial V}{\partial x}\right)^T (Ax + Bu)$.
+We're minimizing $g(u)$ with respect to $u$. Only terms involving $u$ are relevant:
+
+$$g(u) = u^T R u + \left(\frac{\partial V}{\partial x}\right)^T Bu$$
+
+Taking the derivative with respect to $u$:
+
+$$\frac{\partial g}{\partial u} = 2Ru + B^T \frac{\partial V}{\partial x}$$
+
+Set to zero to find the optimal $u^*$:
+
+$$2Ru^* + B^T \frac{\partial V}{\partial x} = 0$$
+$$u^* = -\frac{1}{2} R^{-1} B^T \frac{\partial V}{\partial x}$$
+
+This is the crucial step: The optimal control is found to be a linear function of the gradient of the value function!
+
+### Deriving $V(x)=x^T Px$
+
+At this point, we have $u^*$ expressed in terms of $\frac{\partial V}{\partial x}$. Now we need to solve for $V(x)$. This is where the specific structure of the LQR problem (linear dynamics, quadratic cost) becomes paramount.
+
+Since the problem is Linear-Quadratic, it is a known property from optimal control theory that the optimal value function $V(x)$ will be a quadratic form of the state. This is not just a guess, but a deduction based on the inherent structure of LQ problems.
+
+* **Why Quadratic?** If $V(x)$ were linear, its second derivative would be zero, which wouldn't match the quadratic terms in the HJB. If it were higher order, the derivatives would lead to more complex non-linear equations, which would contradict the simplicity and linearity that arise from the problem. The quadratic form $x^T Px$ is the lowest-order non-trivial form that is consistent with the problem's structure.
+* **Symmetry:** $P$ is typically chosen to be symmetric ($P=P^T$) because $x^T Px = x^T P^T x$. Any asymmetric part of $P$ cancels out in the quadratic form, so we enforce symmetry for uniqueness and consistency.
+
+So, we propose (or infer) the form:
+
+$$V(x) = x^T Px$$
+
+where $P$ is a symmetric positive definite matrix.
+
+Now, calculate the gradient of $V(x)$ with respect to $x$:
+
+$$\frac{\partial V}{\partial x} = 2Px$$
+
+### Deriving ARE
+
+Substitute $\frac{\partial V}{\partial x} = 2Px$ back into the expression for $u^*$:
+
+$$u^* = -\frac{1}{2} R^{-1} B^T (2Px)$$
+$$u^* = -R^{-1} B^T Px$$
+
+This is our desired linear state feedback law! Here, $K = R^{-1} B^T P$.
+
+Now, substitute $u^*$ and $\frac{\partial V}{\partial x}$ back into the simplified HJB equation:
+
+$$0 = x^T Q x + (-R^{-1} B^T Px)^T R (-R^{-1} B^T Px) + (2Px)^T (Ax + B(-R^{-1} B^T Px))$$
+$$0 = x^T Q x + x^T P^T (B^T)^T (R^{-1})^T R R^{-1} B^T Px + 2x^T P^T (Ax - BR^{-1} B^T Px)$$
+Since $P = P^T$ and $R$ is symmetric ($R=R^T$), $R^{-1}$ is also symmetric ($(R^{-1})^T = R^{-1}$). Also, $(B^T)^T = B$.
+
+$$0 = x^T Q x + x^T P B R^{-1} B^T Px + 2x^T PAx - 2x^T P B R^{-1} B^T Px$$
+$$0 = x^T Q x + 2x^T PAx - x^T P B R^{-1} B^T Px$$
+
+Recognizing that $2x^T PAx = x^T PAx + x^T A^T P^T x = x^T (A^T P + PA)x$ (since $P$ is symmetric):
+
+$$0 = x^T (Q + A^T P + PA - P B R^{-1} B^T P)x$$
+
+For this equation to hold for any state $x$, the matrix in the parenthesis must be identically zero.
+
+$$A^T P + PA - P B R^{-1} B^T P + Q = 0$$
+
+This is the **Algebraic Riccati Equation (ARE)**.
