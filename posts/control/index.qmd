@@ -316,3 +316,302 @@ For this equation to hold for any state $x$, the matrix in the parenthesis must 
 $$A^T P + PA - P B R^{-1} B^T P + Q = 0$$
 
 This is the **Algebraic Riccati Equation (ARE)**.
+
+
+# MPC
+
+## Transformation to a Standard Quadratic Program (QP)
+
+The goal is to eliminate the state variables $x(k+i|k)$ from the optimization problem, leaving only the control input sequence $U_k$ as the decision variables. This is possible because the state evolution is precisely defined by the linear system dynamics, which act as equality constraints.
+
+### 1. Prediction of Future States:
+
+We start by recursively expanding the system dynamics equation: $x(k+i+1|k) = Ax(k+i|k) + Bu(k+i|k)$.
+
+* **Initial State:** $x(k|k) = x(k)$ (the current measured state).
+* **1-step ahead prediction:**
+    $x(k+1|k) = Ax(k|k) + Bu(k|k)$
+* **2-step ahead prediction:**
+    $x(k+2|k) = Ax(k+1|k) + Bu(k+1|k)$
+    Substitute $x(k+1|k)$:
+    $x(k+2|k) = A(Ax(k|k) + Bu(k|k)) + Bu(k+1|k)$
+    $x(k+2|k) = A^2 x(k|k) + ABu(k|k) + Bu(k+1|k)$
+
+And so on, up to $H_p$ steps:
+
+Generalizing, the predicted state at any future time $k+i$ can be expressed as a sum of terms related to the initial state $x(k)$ and the future control inputs $u(k|k), \dots, u(k+i-1|k)$:
+
+$$x(k+i|k) = A^i x(k) + \sum_{j=0}^{i-1} A^{i-1-j} Bu(k+j|k)$$
+
+Now, let's stack all the predicted states and controls into large vectors.
+
+Let $X_k = \begin{bmatrix} x(k+1|k) \\ x(k+2|k) \\ \vdots \\ x(k+H_p|k) \end{bmatrix}$ and $U_k = \begin{bmatrix} u(k|k) \\ u(k+1|k) \\ \vdots \\ u(k+H_c-1|k) \end{bmatrix}$ (remembering the assumption that $u$ is constant after $H_c-1$).
+
+We can write the entire sequence of future states as:
+
+$$X_k = \mathbf{\Phi} x(k) + \mathbf{\Gamma} U_k$$
+
+where:
+
+* $\mathbf{\Phi}$ is a large block matrix derived from powers of $A$.
+* $\mathbf{\Gamma}$ is a large block lower triangular matrix (often called the Toeplitz matrix or controllability matrix) containing terms like $B, AB, A^2 B, \dots$. Its structure reflects how current and past controls affect future states.
+
+### 2. Substituting into the Objective Function:
+
+Recall the objective function:
+
+$$J(U_k, x(k)) = \sum_{i=0}^{H_p-1} \left( \|x(k+i|k) - x_{ref}(k+i)\|_Q^2 + \|u(k+i|k) - u_{ref}(k+i)\|_R^2 \right) + \|x(k+H_p|k) - x_{ref}(k+H_p)\|_P^2$$
+
+We can rewrite this in a compact quadratic form. Let's simplify by assuming $x_{ref}=0$ and $u_{ref}=0$ for now to highlight the structure. The general case simply introduces linear terms.
+
+$$J(U_k, x(k)) = \sum_{i=0}^{H_p-1} x(k+i|k)^T Q x(k+i|k) + \sum_{i=0}^{H_c-1} u(k+i|k)^T R u(k+i|k) + x(k+H_p|k)^T P x(k+H_p|k)$$
+
+By substituting $x(k+i|k) = A^i x(k) + \sum_{j=0}^{i-1} A^{i-1-j} Bu(k+j|k)$ into the expression for $J$, the objective function becomes a quadratic function of $U_k$ and $x(k)$:
+
+$$J(U_k, x(k)) = \frac{1}{2} U_k^T H U_k + G^T U_k + J_{const}$$
+
+where:
+
+* $H$ is a symmetric positive definite matrix (or positive semi-definite, depending on $R$). It encapsulates the weights $Q, R, P$ and system matrices $A, B$.
+* $G$ is a vector that depends on the current state $x(k)$ and the reference trajectories.
+* $J_{const}$ is a term that depends only on $x(k)$ and the reference trajectories, which doesn't affect the minimization with respect to $U_k$.
+
+### 3. Substituting into Constraints:
+
+Similarly, all constraints (input, state, output) are originally expressed in terms of $x(k+i|k)$ and $u(k+i|k)$. By substituting the state prediction equation $x(k+i|k) = \mathbf{\Phi}_i x(k) + \mathbf{\Gamma}_i U_k$ (where $\mathbf{\Phi}_i$ and $\mathbf{\Gamma}_i$ are parts of $\mathbf{\Phi}$ and $\mathbf{\Gamma}$ corresponding to time $k+i$), all constraints can be rewritten purely in terms of $x(k)$ (which is known) and $U_k$ (the decision variables).
+
+For example, a state constraint $x_{min} \le x(k+i|k) \le x_{max}$ becomes:
+
+$$x_{min} \le \mathbf{\Phi}_{i} x(k) + \mathbf{\Gamma}_{i} \mathbf{U}_k \le x_{max}$$
+
+This can be rearranged into the standard inequality form:
+
+$$-\mathbf{\Gamma}_{i} \mathbf{U}_k \le \mathbf{\Phi}_{i} x(k) - x_{min}$$
+$$\mathbf{\Gamma}_{i} \mathbf{U}_k \le x_{max} - \mathbf{\Phi}_{i} x(k)$$
+
+These are stacked for all $i$ and all types of constraints (input, state, output) into the compact form:
+
+$$\mathbf{L} \mathbf{U}_k \le \mathbf{W}$$
+
+where $\mathbf{L}$ and $\mathbf{W}$ are matrices and vectors that encapsulate all the constraint bounds, system matrices, and the current state $x(k)$. Equality constraints (like the dynamics, if kept explicit rather than condensed) would form $\mathbf{M}U_k = \mathbf{V}$.
+
+## The Result: A Standard QP Form
+
+After this transformation, the MPC problem at each time step $k$ is reduced to:
+
+**Minimize:**
+$$\frac{1}{2} U_k^T H U_k + G^T U_k$$
+**Subject to:**
+$$\mathbf{L}U_k \le \mathbf{W} \quad \text{(and possibly } \mathbf{M}U_k = \mathbf{V} \text{ for equality constraints)}$$
+
+This is precisely the standard form of a Quadratic Program (QP), where $U_k$ is the optimization variable (what's called 'z' in a generic QP solver). The matrices $H, G, L, W, M, V$ are updated at each time step based on the current measured state $x(k)$.
+
+
+## Solutions for MPC (Quadratic Programming (QP) Solvers)
+
+* **Active Set Methods:** These methods work by iteratively selecting a subset of the inequality constraints to be "active" (i.e., treated as equality constraints). They solve an equality-constrained QP at each iteration, update the active set, and move towards the optimal solution.
+    * **Pros:** Highly reliable, provide exact solutions (within machine precision), often used for small to medium-sized problems.
+    * **Cons:** Can be slow for large problems, especially if many active set changes are required. Number of iterations can be high.
+* **Interior-Point Methods:** These methods transform the constrained QP into a sequence of unconstrained problems by adding "barrier functions" to the objective that penalize approaching the constraint boundaries. They then use Newton's method to solve these unconstrained problems.
+    * **Pros:** Generally scale much better with problem size (fewer iterations, though each iteration is more complex) and are often faster for large-scale QPs. They work well with warm-starting (using the previous solution as an initial guess).
+    * **Cons:** Can be more complex to implement than active set methods.
+* **Primal-Dual Methods:** A broader class that includes many interior-point methods. They simultaneously solve the primal (original) QP problem and its dual problem.
+
+
+## Derivation
+
+### State Prediction in Compact Matrix Form
+
+**THE POINT: ONLY REPRESENT IN U, YOU CAN SEE IN THE MATRIX BELOW**
+
+**Recap:** We want to express all future predicted states $x(k+i|k)$ as a function of the current state $x(k)$ and the sequence of future control inputs $U_k$.
+
+**System:** $x(k+1)=Ax(k)+Bu(k)$
+**Prediction Horizon:** $H_p$
+**Control Horizon:** $H_c$ (For simplicity, let's assume $H_c=H_p$ for now. The case $H_c<H_p$ just means some $u$s are repeated, which is a minor modification.)
+
+**Step-by-step prediction expansion:**
+
+$x(k+1|k)=Ax(k)+Bu(k|k)$
+$x(k+2|k)=Ax(k+1|k)+Bu(k+1|k)=A(Ax(k)+Bu(k|k))+Bu(k+1|k)=A^2x(k)+ABu(k|k)+Bu(k+1|k)$
+$x(k+3|k)=Ax(k+2|k)+Bu(k+2|k)=A(A^2x(k)+ABu(k|k)+Bu(k+1|k))+Bu(k+2|k)=A^3x(k)+A^2Bu(k|k)+ABu(k+1|k)+Bu(k+2|k)$
+... and so on, up to $x(k+H_p|k)$.
+
+**Stacking the Predictions:**
+
+Now, let's define the stacked vectors:
+
+* **Future States Vector:**
+    $X_k = \begin{bmatrix} x(k+1|k) \\ x(k+2|k) \\ \vdots \\ x(k+H_p|k) \end{bmatrix}$ (size $n \cdot H_p \times 1$)
+* **Control Input Sequence (Decision Variable):**
+    $U_k = \begin{bmatrix} u(k|k) \\ u(k+1|k) \\ \vdots \\ u(k+H_c-1|k) \end{bmatrix}$ (size $m \cdot H_c \times 1$)
+
+Substitute the expanded predictions into $X_k$:
+
+$$X_k = \begin{bmatrix} Ax(k)+Bu(k|k) \\ A^2x(k)+ABu(k|k)+Bu(k+1|k) \\ A^3x(k)+A^2Bu(k|k)+ABu(k+1|k)+Bu(k+2|k) \\ \vdots \\ A^{H_p}x(k)+A^{H_p-1}Bu(k|k)+\dots+Bu(k+H_p-1|k) \end{bmatrix}$$
+
+Now, we separate the terms involving $x(k)$ from the terms involving $U_k$:
+
+$$X_k = \begin{bmatrix} A \\ A^2 \\ A^3 \\ \vdots \\ A^{H_p} \end{bmatrix} x(k) + \begin{bmatrix} B & 0 & 0 & \dots & 0 \\ AB & B & 0 & \dots & 0 \\ A^2B & AB & B & \dots & 0 \\ \vdots & \vdots & \vdots & \ddots & \vdots \\ A^{H_p-1}B & A^{H_p-2}B & A^{H_p-3}B & \dots & B \end{bmatrix} \begin{bmatrix} u(k|k) \\ u(k+1|k) \\ u(k+2|k) \\ \vdots \\ u(k+H_p-1|k) \end{bmatrix}$$
+
+This is exactly the form: $X_k = \mathbf{\Phi} x(k) + \mathbf{\Gamma} U_k$
+
+Where:
+
+* $\mathbf{\Phi}$ (State Contribution Matrix):
+    $$\mathbf{\Phi} = \begin{bmatrix} A \\ A^2 \\ \vdots \\ A^{H_p} \end{bmatrix}$$
+    **Size:** ($n \cdot H_p$) $\times n$. Each block is $n \times n$. This matrix shows how the initial state $x(k)$ propagates to all future states if no control were applied.
+* $\mathbf{\Gamma}$ (Control Contribution Matrix / Block Controllability Matrix):
+    $$\mathbf{\Gamma} = \begin{bmatrix} B & 0 & 0 & \dots & 0 \\ AB & B & 0 & \dots & 0 \\ A^2B & AB & B & \dots & 0 \\ \vdots & \vdots & \vdots & \ddots & \vdots \\ A^{H_p-1}B & A^{H_p-2}B & A^{H_p-3}B & \dots & B \end{bmatrix}$$
+    **Size:** ($n \cdot H_p$) $\times$ ($m \cdot H_p$). Each block is $n \times m$. This lower triangular block matrix (sometimes called a block Toeplitz matrix) shows how the sequence of control inputs $U_k$ influences the future states. The "controllability" aspect comes from the powers of $A$ multiplying $B$, indicating how inputs at different times propagate through the system.
+
+#### Numerical Example
+
+Let's use a very simple system: $x(k+1)=Ax(k)+Bu(k)$
+$A=\begin{bmatrix} 1 & 0 \\ 1 & 1 \end{bmatrix}$, $B=\begin{bmatrix} 0 \\ 1 \end{bmatrix}$ (This is a discrete-time integrator/position system)
+Let $H_p=2$ and $H_c=2$.
+
+**Predictions:**
+
+$x(k+1|k)=Ax(k)+Bu(k|k)$
+$x(k+2|k)=Ax(k+1|k)+Bu(k+1|k)=A^2x(k)+ABu(k|k)+Bu(k+1|k)$
+
+**Calculate powers of A and products with B:**
+$A^2 = \begin{bmatrix} 1 & 0 \\ 1 & 1 \end{bmatrix} \begin{bmatrix} 1 & 0 \\ 1 & 1 \end{bmatrix} = \begin{bmatrix} 1 & 0 \\ 2 & 1 \end{bmatrix}$
+$AB = \begin{bmatrix} 1 & 0 \\ 1 & 1 \end{bmatrix} \begin{bmatrix} 0 \\ 1 \end{bmatrix} = \begin{bmatrix} 0 \\ 1 \end{bmatrix}$
+
+**Stacked Vectors:**
+$X_k = \begin{bmatrix} x(k+1|k) \\ x(k+2|k) \end{bmatrix}$
+$U_k = \begin{bmatrix} u(k|k) \\ u(k+1|k) \end{bmatrix}$
+
+**Forming $\mathbf{\Phi}$ and $\mathbf{\Gamma}$:**
+
+$$X_k = \begin{bmatrix} A \\ A^2 \end{bmatrix} x(k) + \begin{bmatrix} B & 0 \\ AB & B \end{bmatrix} U_k$$
+
+Substitute the numerical matrices:
+
+$$\mathbf{\Phi} = \begin{bmatrix} \begin{bmatrix} 1 & 0 \\ 1 & 1 \end{bmatrix} \\ \begin{bmatrix} 1 & 0 \\ 2 & 1 \end{bmatrix} \end{bmatrix} = \begin{bmatrix} 1 & 0 \\ 1 & 1 \\ 1 & 0 \\ 2 & 1 \end{bmatrix} \quad \text{(size } (2 \cdot 2) \times 2 = 4 \times 2 \text{)}$$
+
+$$\mathbf{\Gamma} = \begin{bmatrix} \begin{bmatrix} 0 \\ 1 \end{bmatrix} & \begin{bmatrix} 0 \\ 0 \end{bmatrix} \\ \begin{bmatrix} 0 \\ 1 \end{bmatrix} & \begin{bmatrix} 0 \\ 1 \end{bmatrix} \end{bmatrix} = \begin{bmatrix} 0 & 0 \\ 1 & 0 \\ 0 & 0 \\ 1 & 1 \end{bmatrix} \quad \text{(size } (2 \cdot 2) \times (1 \cdot 2) = 4 \times 2 \text{)}$$
+
+So, $X_k = \mathbf{\Phi} x(k) + \mathbf{\Gamma} U_k$ where all components are explicitly defined. This is how the state prediction is condensed.
+
+---
+
+### Substituting into the Objective Function (Deriving H, G, J_const)
+
+**Recap:** We want to transform $J(U_k,x(k))$ into $\frac{1}{2}U_k^T H U_k + G^T U_k + J_{const}$.
+
+**Objective Function:**
+
+$$J(U_k,x(k)) = \sum_{i=0}^{H_p-1} (\|x(k+i|k)-x_{ref}(k+i)\|_Q^2 + \|u(k+i|k)-u_{ref}(k+i)\|_R^2) + \|x(k+H_p|k)-x_{ref}(k+H_p)\|_P^2$$
+
+Let $e_x(k+i|k)=x(k+i|k)-x_{ref}(k+i)$ and $e_u(k+i|k)=u(k+i|k)-u_{ref}(k+i)$.
+The term $\|v\|_W^2 = v^T W v$.
+
+Let's adjust the sum for x states to start from $i=1$ to $H_p$ to align with the stacked $X_k$ derived in Part 1 (which starts from $x(k+1|k)$). The terminal cost (with P) is explicitly included at $H_p$.
+
+$$J(U_k,x(k)) = \sum_{i=1}^{H_p} \|x(k+i|k)-x_{ref}(k+i)\|_Q^2 + \sum_{i=0}^{H_c-1} \|u(k+i|k)-u_{ref}(k+i)\|_R^2$$
+*(Note: For clarity, the terminal cost is typically a separate term at $x(k+H_p|k)$ with weight $P$. If $P$ is used as a `Q` for the last state in the sum, then $Q_{H_p}$ is $P$. Let's explicitly keep it in the sum by making $Q_{H_p} = P$ for $i=H_p$.)*
+
+We can write the sums in stacked form:
+
+$$J = E_X^T \bar{Q} E_X + E_U^T \bar{R} E_U$$
+
+Where:
+* $E_X = \begin{bmatrix} e_x(k+1|k) \\ e_x(k+2|k) \\ \vdots \\ e_x(k+H_p|k) \end{bmatrix}$ (size $n \cdot H_p \times 1$)
+* $E_U = \begin{bmatrix} e_u(k|k) \\ e_u(k+1|k) \\ \vdots \\ e_u(k+H_c-1|k) \end{bmatrix}$ (size $m \cdot H_c \times 1$)
+
+* $\bar{Q} = \text{diag}(Q, Q, \dots, Q, P)$ (a block diagonal matrix of size $(n \cdot H_p) \times (n \cdot H_p)$, where the last block is $P$ for $x(k+H_p|k)$ and others are $Q$).
+* $\bar{R} = \text{diag}(R, R, \dots, R)$ ($H_c$ times, block diagonal matrix, size $(m \cdot H_c) \times (m \cdot H_c)$).
+
+Now, substitute $X_k=\mathbf{\Phi}x(k)+\mathbf{\Gamma}U_k$ into the objective. Let's define the full reference vector $X_{ref}=[x_{ref}(k+1)^T \dots x_{ref}(k+H_p)^T]^T$ and $U_{ref}=[u_{ref}(k)^T \dots u_{ref}(k+H_c-1)^T]^T$.
+
+The stacked state error is $E_X = X_k - X_{ref} = (\mathbf{\Phi}x(k)+\mathbf{\Gamma}U_k) - X_{ref}$.
+The stacked input error is $E_U = U_k - U_{ref}$.
+
+Then:
+
+$$J = (\mathbf{\Phi}x(k)+\mathbf{\Gamma}U_k - X_{ref})^T \bar{Q} (\mathbf{\Phi}x(k)+\mathbf{\Gamma}U_k - X_{ref}) + (U_k - U_{ref})^T \bar{R} (U_k - U_{ref})$$
+
+Now, expand and collect terms by powers of $U_k$:
+
+* **Quadratic term in $U_k$ (for $H$):**
+    From the first term: $(\mathbf{\Gamma}U_k)^T \bar{Q} (\mathbf{\Gamma}U_k) = U_k^T \mathbf{\Gamma}^T \bar{Q} \mathbf{\Gamma} U_k$
+    From the second term: $U_k^T \bar{R} U_k$
+    So, the full quadratic term is $U_k^T (\mathbf{\Gamma}^T \bar{Q} \mathbf{\Gamma} + \bar{R}) U_k$.
+    Therefore, $H = 2(\mathbf{\Gamma}^T \bar{Q} \mathbf{\Gamma} + \bar{R})$. (The factor of 2 comes from the standard $\frac{1}{2}z^T H z$ form of QP objective).
+
+* **Linear term in $U_k$ (for $G$):**
+    Let $c_x = \mathbf{\Phi}x(k) - X_{ref}$.
+    From the first term (cross-term $2 c_x^T \bar{Q} \mathbf{\Gamma} U_k$): $2(\mathbf{\Phi}x(k) - X_{ref})^T \bar{Q} \mathbf{\Gamma} U_k$
+    From the second term (cross-term $-2 U_{ref}^T \bar{R} U_k$): $-2U_{ref}^T \bar{R} U_k$
+    So, the full linear term is $2(\mathbf{\Phi}x(k) - X_{ref})^T \bar{Q} \mathbf{\Gamma} U_k - 2U_{ref}^T \bar{R} U_k$.
+    Therefore, $G^T = 2(\mathbf{\Phi}x(k) - X_{ref})^T \bar{Q} \mathbf{\Gamma} - 2U_{ref}^T \bar{R}$.
+    Or, $G = 2\mathbf{\Gamma}^T \bar{Q} (\mathbf{\Phi}x(k) - X_{ref}) - 2\bar{R}^T U_{ref}$. Note that $\bar{R}$ is symmetric, so $\bar{R}^T=\bar{R}$.
+
+* **Constant term (for $J_{const}$):**
+    This term does not depend on $U_k$ and is effectively ignored by the optimizer.
+    It includes: $(\mathbf{\Phi}x(k) - X_{ref})^T \bar{Q} (\mathbf{\Phi}x(k) - X_{ref}) + U_{ref}^T \bar{R} U_{ref}$.
+    This term is important if you want to know the actual minimum cost, but not for finding the optimal $U_k$.
+
+#### Numerical Example
+
+Continue with our previous example: $A=\begin{bmatrix} 1 & 0 \\ 1 & 1 \end{bmatrix}$, $B=\begin{bmatrix} 0 \\ 1 \end{bmatrix}$
+$H_p=2$, $H_c=2$.
+Let $Q=\begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}$ (identity matrix for state penalty), $R=[0.1]$ (scalar for input penalty).
+Let $P=Q$ (for simplicity of $\bar{Q}$ structure), $x_{ref}=0$, $u_{ref}=0$.
+
+From Part 1:
+$\mathbf{\Phi}=\begin{bmatrix} 1 & 0 \\ 1 & 1 \\ 1 & 0 \\ 2 & 1 \end{bmatrix}$
+$\mathbf{\Gamma}=\begin{bmatrix} 0 & 0 \\ 1 & 0 \\ 0 & 0 \\ 1 & 1 \end{bmatrix}$
+
+Also:
+$\bar{Q}=\begin{bmatrix} Q & 0 \\ 0 & P \end{bmatrix} = \begin{bmatrix} \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} & \begin{bmatrix} 0 & 0 \\ 0 & 0 \end{bmatrix} \\ \begin{bmatrix} 0 & 0 \\ 0 & 0 \end{bmatrix} & \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} \end{bmatrix} = \begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \end{bmatrix}$ (size $4 \times 4$)
+$\bar{R}=\begin{bmatrix} R & 0 \\ 0 & R \end{bmatrix}=\begin{bmatrix} 0.1 & 0 \\ 0 & 0.1 \end{bmatrix}$ (size $2 \times 2$)
+
+Now, let's compute $H$ (assuming $H = 2(\mathbf{\Gamma}^T \bar{Q} \mathbf{\Gamma} + \bar{R})$ as per the QP formulation):
+First, $\mathbf{\Gamma}^T \bar{Q}$:
+$$\begin{bmatrix} 0 & 1 & 0 & 1 \\ 0 & 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \end{bmatrix} = \begin{bmatrix} 0 & 1 & 0 & 1 \\ 0 & 0 & 0 & 1 \end{bmatrix}$$
+Then, $(\mathbf{\Gamma}^T \bar{Q})\mathbf{\Gamma}$:
+$$\begin{bmatrix} 0 & 1 & 0 & 1 \\ 0 & 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} 0 & 0 \\ 1 & 0 \\ 0 & 0 \\ 1 & 1 \end{bmatrix} = \begin{bmatrix} (0)(0)+(1)(1)+(0)(0)+(1)(1) & (0)(0)+(1)(0)+(0)(0)+(1)(1) \\ (0)(0)+(0)(1)+(0)(0)+(1)(1) & (0)(0)+(0)(0)+(0)(0)+(1)(1) \end{bmatrix} = \begin{bmatrix} 2 & 1 \\ 1 & 1 \end{bmatrix}$$
+Finally, $H = 2 \left( \begin{bmatrix} 2 & 1 \\ 1 & 1 \end{bmatrix} + \begin{bmatrix} 0.1 & 0 \\ 0 & 0.1 \end{bmatrix} \right) = 2 \begin{bmatrix} 2.1 & 1 \\ 1 & 1.1 \end{bmatrix} = \begin{bmatrix} 4.2 & 2 \\ 2 & 2.2 \end{bmatrix}$
+
+Now, let's compute $G$ (assuming $x_{ref}=0, u_{ref}=0$, so $X_{ref}=0, U_{ref}=0$).
+In this case, $G = 2\mathbf{\Gamma}^T \bar{Q} \mathbf{\Phi}x(k)$.
+Let $x(k)=\begin{bmatrix} x_1 \\ x_2 \end{bmatrix}$.
+
+First, $\mathbf{\Phi}x(k)$:
+$$\begin{bmatrix} 1 & 0 \\ 1 & 1 \\ 1 & 0 \\ 2 & 1 \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \end{bmatrix} = \begin{bmatrix} x_1 \\ x_1+x_2 \\ x_1 \\ 2x_1+x_2 \end{bmatrix}$$
+Then, $\bar{Q} \mathbf{\Phi}x(k)$:
+$$\begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} x_1 \\ x_1+x_2 \\ x_1 \\ 2x_1+x_2 \end{bmatrix} = \begin{bmatrix} x_1 \\ x_1+x_2 \\ x_1 \\ 2x_1+x_2 \end{bmatrix}$$
+Finally, $G = 2\mathbf{\Gamma}^T (\bar{Q} \mathbf{\Phi}x(k))$:
+$$G = 2 \begin{bmatrix} 0 & 1 & 0 & 1 \\ 0 & 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} x_1 \\ x_1+x_2 \\ x_1 \\ 2x_1+x_2 \end{bmatrix} = 2 \begin{bmatrix} (0)x_1 + (1)(x_1+x_2) + (0)x_1 + (1)(2x_1+x_2) \\ (0)x_1 + (0)(x_1+x_2) + (0)x_1 + (1)(2x_1+x_2) \end{bmatrix}$$
+$$G = 2 \begin{bmatrix} x_1+x_2 + 2x_1+x_2 \\ 2x_1+x_2 \end{bmatrix} = 2 \begin{bmatrix} 3x_1+2x_2 \\ 2x_1+x_2 \end{bmatrix} = \begin{bmatrix} 6x_1+4x_2 \\ 4x_1+2x_2 \end{bmatrix}$$
+
+The $J_{const}$ term would be $x(k)^T \mathbf{\Phi}^T \bar{Q} \mathbf{\Phi} x(k)$, which would be a scalar depending only on $x(k)$.
+
+This detailed breakdown shows how the matrices $H$ and $G$ are explicitly constructed from the system matrices, weights, and the current state. This allows a standard QP solver to take these numerical matrices and solve for the optimal $U_k$ sequence at each time step.
+
+### But why do we need to transform the cost function into separated linear, quadratic and Jconst term?
+
+QP solvers are designed to solve problems in a very specific mathematical form. The standard general form of a Quadratic Program is:
+
+**Minimize:**
+$$f(z) = \frac{1}{2} z^T H z + g^T z$$
+
+**Subject to:**
+$$A_{eq} z = b_{eq}$$
+$$A_{ineq} z \le b_{ineq}$$
+
+Where:
+* $z$ is the vector of optimization variables.
+* $H$ is the Hessian matrix (symmetric). It determines the curvature of the objective function.
+* $g$ is the linear term vector.
+* $A_{eq}, b_{eq}, A_{ineq}, b_{ineq}$ define the linear equality and inequality constraints.
+
+By transforming the MPC objective into the form $\frac{1}{2} U_k^T H U_k + G^T U_k + J_{const}$:
+
+* Our decision variable $U_k$ maps directly to the generic $z$.
+* Our calculated $H$ matrix maps directly to the generic $H$.
+* Our calculated $G$ vector maps directly to the generic $g$.
