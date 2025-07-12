@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/autoencoder-dreamer/index.html",
       "/posts/control/index.html",
       "/posts/bayesian-optimization/index.html",
       "/posts/reinforcement-learning/index.html"

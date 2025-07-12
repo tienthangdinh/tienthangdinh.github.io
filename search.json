@@ -1,12 +1,5 @@
 [
   {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "Stalk me",
-    "section": "",
-    "text": "Xin chào tớ là Thắng, tớ thích ăn bánh cuốn nguội tại vì nó thơm"
-  },
-  {
     "objectID": "posts/reinforcement-learning/index.html",
     "href": "posts/reinforcement-learning/index.html",
     "title": "Model-free Reinforcement Learning",
@@ -382,6 +375,6 @@
     "href": "index.html",
     "title": "໒(⊙ᴗ⊙)७✎▤",
     "section": "",
-    "text": "From Control to Model-based Learning\n\n\n\n\n\n\n\n\nJul 7, 2025\n\n\n\n\n\n\n\n\n\n\n\n\nGaussian Process & Bayesian Optimization\n\n\n\n\n\n\n\n\nJul 5, 2025\n\n\n\n\n\n\n\n\n\n\n\n\nModel-free Reinforcement Learning\n\n\n\n\n\n\n\n\nJun 25, 2025\n\n\n\n\n\nNo matching items"
+    "text": "From Autoencoder to Dreamer\n\n\n\n\n\n\n\n\nJul 12, 2025\n\n\n\n\n\n\n\n\n\n\n\n\nFrom Control to Model-based Learning\n\n\n\n\n\n\n\n\nJul 7, 2025\n\n\n\n\n\n\n\n\n\n\n\n\nGaussian Process & Bayesian Optimization\n\n\n\n\n\n\n\n\nJul 5, 2025\n\n\n\n\n\n\n\n\n\n\n\n\nModel-free Reinforcement Learning\n\n\n\n\n\n\n\n\nJun 25, 2025\n\n\n\n\n\nNo matching items"
   }
 ]
