@@ -615,3 +615,176 @@ By transforming the MPC objective into the form $\frac{1}{2} U_k^T H U_k + G^T U
 * Our decision variable $U_k$ maps directly to the generic $z$.
 * Our calculated $H$ matrix maps directly to the generic $H$.
 * Our calculated $G$ vector maps directly to the generic $g$.
+
+## Simple Example: 1D Car Path Following with MPC
+
+**Scenario:** Imagine a car that can only move along a straight line (1D). Its goal is to follow a predefined "path" (a sequence of desired positions) along this line. We want to control its acceleration to achieve this.
+
+### 1. Dynamics Model:
+
+Let's use a very simple discrete-time model for longitudinal motion:
+
+* **States ($x$):**
+    * $p(k)$: Position of the car at time $k$
+    * $v(k)$: Velocity of the car at time $k$
+    So, $x(k)=\begin{bmatrix} p(k) \\ v(k) \end{bmatrix}$
+* **Input ($u$):**
+    * $a(k)$: Acceleration applied by the car at time $k$
+    So, $u(k)=[a(k)]$
+
+**Discrete-Time Equations:**
+Assume a sampling time $\Delta t=1$ second for simplicity.
+$p(k+1)=p(k)+v(k)\Delta t+\frac{1}{2}a(k)(\Delta t)^2$
+$v(k+1)=v(k)+a(k)\Delta t$
+
+Plugging in $\Delta t=1$:
+$p(k+1)=p(k)+v(k)+\frac{1}{2}a(k)$
+$v(k+1)=v(k)+a(k)$
+
+In state-space form $x(k+1)=Ax(k)+Bu(k)$:
+$A=\begin{bmatrix} 1 & 1 \\ 0 & 1 \end{bmatrix}$, $B=\begin{bmatrix} 0.5 \\ 1 \end{bmatrix}$
+*(Self-correction: The position update $p(k+1)=p(k)+v(k)\Delta t$ means the `v(k)` term is in the first row of A. The velocity update $v(k+1)=v(k)+a(k)\Delta t$ means `v(k)` is in the second row of A, and `a(k)` is in the second row of B. The original matrix A was incorrect for this model. The corrected A matrix is $\begin{bmatrix} 1 & 1 \\ 0 & 1 \end{bmatrix}$ and B is $\begin{bmatrix} 0.5 \\ 1 \end{bmatrix}$.)*
+
+### 2. Path Representation & Reference Trajectory:
+
+Let our desired path be a set of target positions. For this 1D example, let the car's goal be to reach position 10 and stop.
+* **Target positions (path):** $p_{ref}=[1,2,3,4,5,6,7,8,9,10,10,10,\dots]$
+* **Target velocities:** $v_{ref}=[0,0,0,0,0,0,0,0,0,0,0,0,\dots]$ (we want it to stop at 10)
+
+So, $x_{ref}(k+i)=\begin{bmatrix} p_{ref}(k+i) \\ v_{ref}(k+i) \end{bmatrix}$
+
+### 3. MPC Parameters:
+
+* **Prediction Horizon ($H_p$):** Let's choose $H_p=3$ steps.
+* **Control Horizon ($H_c$):** Let's choose $H_c=2$ steps. This means we'll optimize $a(k)$ and $a(k+1)$, and assume $a(k+2)$ (and beyond) is zero.
+* **Weights:**
+    * $Q=\begin{bmatrix} 1 & 0 \\ 0 & 0.1 \end{bmatrix}$ (Penalize position error strongly, velocity error lightly)
+    * $R=[0.01]$ (Penalize acceleration lightly to allow motion)
+    * $P=\begin{bmatrix} 5 & 0 \\ 0 & 1 \end{bmatrix}$ (Strong terminal penalty on position at the end of horizon)
+* **Constraints:**
+    * **Acceleration limits:** $-1 \le a(k) \le 1$ ($m/s^2$)
+    * **Velocity limits:** $0 \le v(k) \le 5$ ($m/s$) (Car cannot go backwards, max speed 5 m/s)
+    * **Position limits:** $0 \le p(k) \le 11$ (Stay within a narrow road segment)
+
+### 4. MPC at Time $k=0$ (First Iteration):
+
+Assume current measured state: $x(0)=\begin{bmatrix} p(0) \\ v(0) \end{bmatrix}=\begin{bmatrix} 0 \\ 0 \end{bmatrix}$ (car starts at origin, at rest).
+
+**a) Define Decision Variables:**
+The control sequence we need to find is $U_0=\begin{bmatrix} u(0|0) \\ u(1|0) \end{bmatrix}=\begin{bmatrix} a(0) \\ a(1) \end{bmatrix}$. (Length $m \cdot H_c = 1 \cdot 2 = 2$)
+
+**b) Generate Reference Trajectory for the Horizon:**
+From our path, for $H_p=3$ steps:
+
+$x_{ref}(1)=\begin{bmatrix} 1 \\ 0 \end{bmatrix}$
+$x_{ref}(2)=\begin{bmatrix} 2 \\ 0 \end{bmatrix}$
+$x_{ref}(3)=\begin{bmatrix} 3 \\ 0 \end{bmatrix}$
+
+**c) Formulate Objective Function (QP style):**
+The goal is to find $U_0$ that minimizes:
+
+$$J = \sum_{i=1}^{3} \|x(i|0)-x_{ref}(i)\|_Q^2 + \sum_{i=0}^{1} \|u(i|0)-u_{ref}(i)\|_R^2$$
+
+(Here, $u_{ref}(i)=0$ as we just want to follow the path, not target specific acceleration)
+**Note:** The terminal cost is explicit if $P$ is the $Q$ for the final state in the sum. Let's make it explicit for clarity:
+
+$$J = \|x(1|0)-x_{ref}(1)\|_Q^2 + \|x(2|0)-x_{ref}(2)\|_Q^2 + \|x(3|0)-x_{ref}(3)\|_P^2 + \|u(0|0)\|_R^2 + \|u(1|0)\|_R^2$$
+
+**Condensing into $\frac{1}{2}U_k^T H U_k + G^T U_k + J_{const}$:**
+
+First, state predictions:
+$x(1|0)=Ax(0)+Bu(0|0)$
+$x(2|0)=A^2x(0)+ABu(0|0)+Bu(1|0)$
+$x(3|0)=A^3x(0)+A^2Bu(0|0)+ABu(1|0)+Bu(2|0)$ (Since $H_c=2$, $u(2|0)$ would be zero here or $u(1|0)$)
+Let's assume $u(k+i|k)=0$ for $i \ge H_c$. So $u(2|0)=0$.
+
+Calculate powers of A and products with B:
+$A^2 = \begin{bmatrix} 1 & 1 \\ 0 & 1 \end{bmatrix} \begin{bmatrix} 1 & 1 \\ 0 & 1 \end{bmatrix} = \begin{bmatrix} 1 & 2 \\ 0 & 1 \end{bmatrix}$
+$A^3 = \begin{bmatrix} 1 & 1 \\ 0 & 1 \end{bmatrix} \begin{bmatrix} 1 & 2 \\ 0 & 1 \end{bmatrix} = \begin{bmatrix} 1 & 3 \\ 0 & 1 \end{bmatrix}$
+$B = \begin{bmatrix} 0.5 \\ 1 \end{bmatrix}$
+$AB = \begin{bmatrix} 1 & 1 \\ 0 & 1 \end{bmatrix} \begin{bmatrix} 0.5 \\ 1 \end{bmatrix} = \begin{bmatrix} 1.5 \\ 1 \end{bmatrix}$
+$A^2B = \begin{bmatrix} 1 & 2 \\ 0 & 1 \end{bmatrix} \begin{bmatrix} 0.5 \\ 1 \end{bmatrix} = \begin{bmatrix} 2.5 \\ 1 \end{bmatrix}$
+
+$\mathbf{\Phi} = \begin{bmatrix} A \\ A^2 \\ A^3 \end{bmatrix} = \begin{bmatrix} 1 & 1 \\ 0 & 1 \\ 1 & 2 \\ 0 & 1 \\ 1 & 3 \\ 0 & 1 \end{bmatrix}$ (size $6 \times 2$)
+
+$\mathbf{\Gamma} = \begin{bmatrix} B & 0 \\ AB & B \\ A^2B & AB \end{bmatrix} = \begin{bmatrix} 0.5 & 0 \\ 1 & 0 \\ 1.5 & 0.5 \\ 1 & 1 \\ 2.5 & 1.5 \\ 1 & 1 \end{bmatrix}$ (size $6 \times 2$)
+
+$\bar{Q}_{stacked} = \text{diag}(Q, Q, P) = \begin{bmatrix} 1 & 0 & 0 & 0 & 0 & 0 \\ 0 & 0.1 & 0 & 0 & 0 & 0 \\ 0 & 0 & 1 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0.1 & 0 & 0 \\ 0 & 0 & 0 & 0 & 5 & 0 \\ 0 & 0 & 0 & 0 & 0 & 1 \end{bmatrix}$ (size $6 \times 6$)
+$\bar{R} = \text{diag}(R,R) = \begin{bmatrix} 0.01 & 0 \\ 0 & 0.01 \end{bmatrix}$ (size $2 \times 2$)
+
+Then, $H = 2(\mathbf{\Gamma}^T \bar{Q}_{stacked} \mathbf{\Gamma} + \bar{R})$.
+And $G = 2\mathbf{\Gamma}^T \bar{Q}_{stacked}(\mathbf{\Phi}x(0) - X_{ref}) - 2\bar{R}U_{ref}$.
+Since $x(0) = \begin{bmatrix} 0 \\ 0 \end{bmatrix}$ and $u_{ref}(i)=0$, $U_{ref}=0$.
+$X_{ref} = \begin{bmatrix} 1 \\ 0 \\ 2 \\ 0 \\ 3 \\ 0 \end{bmatrix}$.
+So, $G = 2\mathbf{\Gamma}^T \bar{Q}_{stacked}(\mathbf{\Phi}x(0) - X_{ref})$.
+
+**d) Formulate Constraints (QP style):**
+
+* **Input Constraints:** $-1 \le a(k) \le 1 \implies \begin{bmatrix} 1 \\ -1 \end{bmatrix} a(k) \le \begin{bmatrix} 1 \\ 1 \end{bmatrix}$
+    Stacked for $U_0 = \begin{bmatrix} a(0) \\ a(1) \end{bmatrix}$:
+    $$\begin{bmatrix} 1 & 0 \\ -1 & 0 \\ 0 & 1 \\ 0 & -1 \end{bmatrix} \begin{bmatrix} a(0) \\ a(1) \end{bmatrix} \le \begin{bmatrix} 1 \\ 1 \\ 1 \\ 1 \end{bmatrix}$$
+
+* **State Constraints (Velocity):** $0 \le v(k+i|0) \le 5$ for $i=1,2,3$.
+    $v(k+i|0)$ is the second component of $x(k+i|0)$.
+    $x(k+i|0) = \mathbf{\Phi}_i x(0) + \mathbf{\Gamma}_i U_0$.
+    The constraint can be written as:
+    $\begin{bmatrix} 0 & 1 \end{bmatrix} x(k+i|0) \le 5$
+    $-\begin{bmatrix} 0 & 1 \end{bmatrix} x(k+i|0) \le 0$
+    Substitute $x(k+i|0)$:
+    $\begin{bmatrix} 0 & 1 \end{bmatrix} (\mathbf{\Phi}_i x(0) + \mathbf{\Gamma}_i U_0) \le 5$
+    $-\begin{bmatrix} 0 & 1 \end{bmatrix} (\mathbf{\Phi}_i x(0) + \mathbf{\Gamma}_i U_0) \le 0$
+
+    For $x(0)=\begin{bmatrix} 0 \\ 0 \end{bmatrix}$:
+    $v(1|0) = \begin{bmatrix} 0 & 1 \end{bmatrix} (A x(0) + B u(0|0)) = \begin{bmatrix} 0 & 1 \end{bmatrix} B u(0|0) = 1 \cdot a(0) = a(0)$.
+    So, $0 \le a(0) \le 5$. (This is covered by $-1 \le a(0) \le 1$ limits).
+
+    $v(2|0) = \begin{bmatrix} 0 & 1 \end{bmatrix} (A^2 x(0) + AB u(0|0) + B u(1|0)) = \begin{bmatrix} 0 & 1 \end{bmatrix} (AB u(0|0) + B u(1|0)) = 1 \cdot a(0) + 1 \cdot a(1) = a(0)+a(1)$.
+    So, $0 \le a(0)+a(1) \le 5$.
+
+    $v(3|0) = \begin{bmatrix} 0 & 1 \end{bmatrix} (A^3 x(0) + A^2B u(0|0) + AB u(1|0)) = \begin{bmatrix} 0 & 1 \end{bmatrix} (A^2B u(0|0) + AB u(1|0)) = 1 \cdot a(0) + 1 \cdot a(1) = a(0)+a(1)$.
+    So, $0 \le a(0)+a(1) \le 5$.
+
+* **State Constraints (Position):** $0 \le p(k+i|0) \le 11$ for $i=1,2,3$.
+    $p(k+i|0)$ is the first component of $x(k+i|0)$.
+    $\begin{bmatrix} 1 & 0 \end{bmatrix} x(k+i|0) \le 11$
+    $-\begin{bmatrix} 1 & 0 \end{bmatrix} x(k+i|0) \le 0$
+
+    For $x(0)=\begin{bmatrix} 0 \\ 0 \end{bmatrix}$:
+    $p(1|0) = \begin{bmatrix} 1 & 0 \end{bmatrix} B u(0|0) = 0.5 \cdot a(0)$.
+    So, $0 \le 0.5 a(0) \le 11$.
+
+    $p(2|0) = \begin{bmatrix} 1 & 0 \end{bmatrix} (AB u(0|0) + B u(1|0)) = 1.5 \cdot a(0) + 0.5 \cdot a(1)$.
+    So, $0 \le 1.5 a(0) + 0.5 a(1) \le 11$.
+
+    $p(3|0) = \begin{bmatrix} 1 & 0 \end{bmatrix} (A^2B u(0|0) + AB u(1|0)) = 2.5 \cdot a(0) + 1.5 \cdot a(1)$.
+    So, $0 \le 2.5 a(0) + 1.5 a(1) \le 11$.
+
+You would formulate all of these into the final $\mathbf{L}U_k \le \mathbf{W}$ matrix.
+
+### 5. Solve the QP:
+
+At time $k=0$, a QP solver (like `quadprog` in MATLAB, or `cvxopt` in Python) is given $H, G, L, W$ (and $x(0)$ is embedded in $G$ and $W$).
+The solver would return the optimal $U_0^*=\begin{bmatrix} a^*(0) \\ a^*(1) \end{bmatrix}$.
+
+**Example Output (Illustrative - not numerically solved):**
+Let's assume the solver returns:
+$a^*(0)=1.0$ (accelerate to get moving)
+$a^*(1)=0.8$ (continue accelerating)
+
+### 6. Apply First Control Action:
+
+The car's controller applies only the first element: $a_{applied}(0)=a^*(0)=1.0$.
+
+### 7. Move to Next Timestep ($k=1$):
+
+The car's actual state is measured: $x(1)$. Using $a_{applied}(0)=1.0$:
+$p(1)=p(0)+v(0)+\frac{1}{2}a(0)=0+0+\frac{1}{2}(1.0)=0.5$
+$v(1)=v(0)+a(0)=0+1.0=1.0$
+So, $x(1)=\begin{bmatrix} 0.5 \\ 1.0 \end{bmatrix}$
+
+The entire process repeats:
+* MPC takes $x(1)$ as its new current state.
+* It generates a new reference trajectory for $k=1,2,3$ (e.g., $x_{ref}(2), x_{ref}(3), x_{ref}(4)$ from the path).
+* It re-formulates a new QP with updated $G$ and $W$ matrices (as they depend on $x(1)$).
+* It solves the QP for a new optimal control sequence $U_1^*=\begin{bmatrix} a^*(1) \\ a^*(2) \end{bmatrix}$.
+* Only $a^*(1)$ from this new sequence is applied.
