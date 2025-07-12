@@ -1,0 +1,10 @@
+---
+title: "From Autoencoder to Dreamer"
+date: 2025-07-12
+categories: [Machine Learning, Image Processing, Model-based Learning, Reinforcement Learning]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---

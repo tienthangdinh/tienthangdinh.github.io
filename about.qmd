@@ -1,5 +1,5 @@
 ---
-title: "Stalk me"
+title: "Đinh Tiến Thắng"
 image: profile.jpg
 about:
   template: jolla
@@ -13,4 +13,4 @@ about:
 
 ---
 
-Xin chào tớ là Thắng, tớ thích ăn bánh cuốn nguội tại vì nó thơm
+
