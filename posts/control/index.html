@@ -212,6 +212,16 @@ window.Quarto = {
   <li><a href="#substituting-into-the-objective-function-deriving-h-g-j_const" id="toc-substituting-into-the-objective-function-deriving-h-g-j_const" class="nav-link" data-scroll-target="#substituting-into-the-objective-function-deriving-h-g-j_const">Substituting into the Objective Function (Deriving H, G, J_const)</a></li>
   <li><a href="#but-why-do-we-need-to-transform-the-cost-function-into-separated-linear-quadratic-and-jconst-term" id="toc-but-why-do-we-need-to-transform-the-cost-function-into-separated-linear-quadratic-and-jconst-term" class="nav-link" data-scroll-target="#but-why-do-we-need-to-transform-the-cost-function-into-separated-linear-quadratic-and-jconst-term">But why do we need to transform the cost function into separated linear, quadratic and Jconst term?</a></li>
   </ul></li>
+  <li><a href="#simple-example-1d-car-path-following-with-mpc" id="toc-simple-example-1d-car-path-following-with-mpc" class="nav-link" data-scroll-target="#simple-example-1d-car-path-following-with-mpc">Simple Example: 1D Car Path Following with MPC</a>
+  <ul class="collapse">
+  <li><a href="#dynamics-model" id="toc-dynamics-model" class="nav-link" data-scroll-target="#dynamics-model">1. Dynamics Model:</a></li>
+  <li><a href="#path-representation-reference-trajectory" id="toc-path-representation-reference-trajectory" class="nav-link" data-scroll-target="#path-representation-reference-trajectory">2. Path Representation &amp; Reference Trajectory:</a></li>
+  <li><a href="#mpc-parameters" id="toc-mpc-parameters" class="nav-link" data-scroll-target="#mpc-parameters">3. MPC Parameters:</a></li>
+  <li><a href="#mpc-at-time-k0-first-iteration" id="toc-mpc-at-time-k0-first-iteration" class="nav-link" data-scroll-target="#mpc-at-time-k0-first-iteration">4. MPC at Time <span class="math inline">\(k=0\)</span> (First Iteration):</a></li>
+  <li><a href="#solve-the-qp" id="toc-solve-the-qp" class="nav-link" data-scroll-target="#solve-the-qp">5. Solve the QP:</a></li>
+  <li><a href="#apply-first-control-action" id="toc-apply-first-control-action" class="nav-link" data-scroll-target="#apply-first-control-action">6. Apply First Control Action:</a></li>
+  <li><a href="#move-to-next-timestep-k1" id="toc-move-to-next-timestep-k1" class="nav-link" data-scroll-target="#move-to-next-timestep-k1">7. Move to Next Timestep (<span class="math inline">\(k=1\)</span>):</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 </nav>
@@ -588,6 +598,97 @@ window.Quarto = {
 <li>Our calculated <span class="math inline">\(H\)</span> matrix maps directly to the generic <span class="math inline">\(H\)</span>.</li>
 <li>Our calculated <span class="math inline">\(G\)</span> vector maps directly to the generic <span class="math inline">\(g\)</span>.</li>
 </ul>
+</section>
+</section>
+<section id="simple-example-1d-car-path-following-with-mpc" class="level2">
+<h2 class="anchored" data-anchor-id="simple-example-1d-car-path-following-with-mpc">Simple Example: 1D Car Path Following with MPC</h2>
+<p><strong>Scenario:</strong> Imagine a car that can only move along a straight line (1D). Its goal is to follow a predefined “path” (a sequence of desired positions) along this line. We want to control its acceleration to achieve this.</p>
+<section id="dynamics-model" class="level3">
+<h3 class="anchored" data-anchor-id="dynamics-model">1. Dynamics Model:</h3>
+<p>Let’s use a very simple discrete-time model for longitudinal motion:</p>
+<ul>
+<li><strong>States (<span class="math inline">\(x\)</span>):</strong>
+<ul>
+<li><span class="math inline">\(p(k)\)</span>: Position of the car at time <span class="math inline">\(k\)</span></li>
+<li><span class="math inline">\(v(k)\)</span>: Velocity of the car at time <span class="math inline">\(k\)</span> So, <span class="math inline">\(x(k)=\begin{bmatrix} p(k) \\ v(k) \end{bmatrix}\)</span></li>
+</ul></li>
+<li><strong>Input (<span class="math inline">\(u\)</span>):</strong>
+<ul>
+<li><span class="math inline">\(a(k)\)</span>: Acceleration applied by the car at time <span class="math inline">\(k\)</span> So, <span class="math inline">\(u(k)=[a(k)]\)</span></li>
+</ul></li>
+</ul>
+<p><strong>Discrete-Time Equations:</strong> Assume a sampling time <span class="math inline">\(\Delta t=1\)</span> second for simplicity. <span class="math inline">\(p(k+1)=p(k)+v(k)\Delta t+\frac{1}{2}a(k)(\Delta t)^2\)</span> <span class="math inline">\(v(k+1)=v(k)+a(k)\Delta t\)</span></p>
+<p>Plugging in <span class="math inline">\(\Delta t=1\)</span>: <span class="math inline">\(p(k+1)=p(k)+v(k)+\frac{1}{2}a(k)\)</span> <span class="math inline">\(v(k+1)=v(k)+a(k)\)</span></p>
+<p>In state-space form <span class="math inline">\(x(k+1)=Ax(k)+Bu(k)\)</span>: <span class="math inline">\(A=\begin{bmatrix} 1 &amp; 1 \\ 0 &amp; 1 \end{bmatrix}\)</span>, <span class="math inline">\(B=\begin{bmatrix} 0.5 \\ 1 \end{bmatrix}\)</span> <em>(Self-correction: The position update <span class="math inline">\(p(k+1)=p(k)+v(k)\Delta t\)</span> means the <code>v(k)</code> term is in the first row of A. The velocity update <span class="math inline">\(v(k+1)=v(k)+a(k)\Delta t\)</span> means <code>v(k)</code> is in the second row of A, and <code>a(k)</code> is in the second row of B. The original matrix A was incorrect for this model. The corrected A matrix is <span class="math inline">\(\begin{bmatrix} 1 &amp; 1 \\ 0 &amp; 1 \end{bmatrix}\)</span> and B is <span class="math inline">\(\begin{bmatrix} 0.5 \\ 1 \end{bmatrix}\)</span>.)</em></p>
+</section>
+<section id="path-representation-reference-trajectory" class="level3">
+<h3 class="anchored" data-anchor-id="path-representation-reference-trajectory">2. Path Representation &amp; Reference Trajectory:</h3>
+<p>Let our desired path be a set of target positions. For this 1D example, let the car’s goal be to reach position 10 and stop. * <strong>Target positions (path):</strong> <span class="math inline">\(p_{ref}=[1,2,3,4,5,6,7,8,9,10,10,10,\dots]\)</span> * <strong>Target velocities:</strong> <span class="math inline">\(v_{ref}=[0,0,0,0,0,0,0,0,0,0,0,0,\dots]\)</span> (we want it to stop at 10)</p>
+<p>So, <span class="math inline">\(x_{ref}(k+i)=\begin{bmatrix} p_{ref}(k+i) \\ v_{ref}(k+i) \end{bmatrix}\)</span></p>
+</section>
+<section id="mpc-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="mpc-parameters">3. MPC Parameters:</h3>
+<ul>
+<li><strong>Prediction Horizon (<span class="math inline">\(H_p\)</span>):</strong> Let’s choose <span class="math inline">\(H_p=3\)</span> steps.</li>
+<li><strong>Control Horizon (<span class="math inline">\(H_c\)</span>):</strong> Let’s choose <span class="math inline">\(H_c=2\)</span> steps. This means we’ll optimize <span class="math inline">\(a(k)\)</span> and <span class="math inline">\(a(k+1)\)</span>, and assume <span class="math inline">\(a(k+2)\)</span> (and beyond) is zero.</li>
+<li><strong>Weights:</strong>
+<ul>
+<li><span class="math inline">\(Q=\begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 0.1 \end{bmatrix}\)</span> (Penalize position error strongly, velocity error lightly)</li>
+<li><span class="math inline">\(R=[0.01]\)</span> (Penalize acceleration lightly to allow motion)</li>
+<li><span class="math inline">\(P=\begin{bmatrix} 5 &amp; 0 \\ 0 &amp; 1 \end{bmatrix}\)</span> (Strong terminal penalty on position at the end of horizon)</li>
+</ul></li>
+<li><strong>Constraints:</strong>
+<ul>
+<li><strong>Acceleration limits:</strong> <span class="math inline">\(-1 \le a(k) \le 1\)</span> (<span class="math inline">\(m/s^2\)</span>)</li>
+<li><strong>Velocity limits:</strong> <span class="math inline">\(0 \le v(k) \le 5\)</span> (<span class="math inline">\(m/s\)</span>) (Car cannot go backwards, max speed 5 m/s)</li>
+<li><strong>Position limits:</strong> <span class="math inline">\(0 \le p(k) \le 11\)</span> (Stay within a narrow road segment)</li>
+</ul></li>
+</ul>
+</section>
+<section id="mpc-at-time-k0-first-iteration" class="level3">
+<h3 class="anchored" data-anchor-id="mpc-at-time-k0-first-iteration">4. MPC at Time <span class="math inline">\(k=0\)</span> (First Iteration):</h3>
+<p>Assume current measured state: <span class="math inline">\(x(0)=\begin{bmatrix} p(0) \\ v(0) \end{bmatrix}=\begin{bmatrix} 0 \\ 0 \end{bmatrix}\)</span> (car starts at origin, at rest).</p>
+<p><strong>a) Define Decision Variables:</strong> The control sequence we need to find is <span class="math inline">\(U_0=\begin{bmatrix} u(0|0) \\ u(1|0) \end{bmatrix}=\begin{bmatrix} a(0) \\ a(1) \end{bmatrix}\)</span>. (Length <span class="math inline">\(m \cdot H_c = 1 \cdot 2 = 2\)</span>)</p>
+<p><strong>b) Generate Reference Trajectory for the Horizon:</strong> From our path, for <span class="math inline">\(H_p=3\)</span> steps:</p>
+<p><span class="math inline">\(x_{ref}(1)=\begin{bmatrix} 1 \\ 0 \end{bmatrix}\)</span> <span class="math inline">\(x_{ref}(2)=\begin{bmatrix} 2 \\ 0 \end{bmatrix}\)</span> <span class="math inline">\(x_{ref}(3)=\begin{bmatrix} 3 \\ 0 \end{bmatrix}\)</span></p>
+<p><strong>c) Formulate Objective Function (QP style):</strong> The goal is to find <span class="math inline">\(U_0\)</span> that minimizes:</p>
+<p><span class="math display">\[J = \sum_{i=1}^{3} \|x(i|0)-x_{ref}(i)\|_Q^2 + \sum_{i=0}^{1} \|u(i|0)-u_{ref}(i)\|_R^2\]</span></p>
+<p>(Here, <span class="math inline">\(u_{ref}(i)=0\)</span> as we just want to follow the path, not target specific acceleration) <strong>Note:</strong> The terminal cost is explicit if <span class="math inline">\(P\)</span> is the <span class="math inline">\(Q\)</span> for the final state in the sum. Let’s make it explicit for clarity:</p>
+<p><span class="math display">\[J = \|x(1|0)-x_{ref}(1)\|_Q^2 + \|x(2|0)-x_{ref}(2)\|_Q^2 + \|x(3|0)-x_{ref}(3)\|_P^2 + \|u(0|0)\|_R^2 + \|u(1|0)\|_R^2\]</span></p>
+<p><strong>Condensing into <span class="math inline">\(\frac{1}{2}U_k^T H U_k + G^T U_k + J_{const}\)</span>:</strong></p>
+<p>First, state predictions: <span class="math inline">\(x(1|0)=Ax(0)+Bu(0|0)\)</span> <span class="math inline">\(x(2|0)=A^2x(0)+ABu(0|0)+Bu(1|0)\)</span> <span class="math inline">\(x(3|0)=A^3x(0)+A^2Bu(0|0)+ABu(1|0)+Bu(2|0)\)</span> (Since <span class="math inline">\(H_c=2\)</span>, <span class="math inline">\(u(2|0)\)</span> would be zero here or <span class="math inline">\(u(1|0)\)</span>) Let’s assume <span class="math inline">\(u(k+i|k)=0\)</span> for <span class="math inline">\(i \ge H_c\)</span>. So <span class="math inline">\(u(2|0)=0\)</span>.</p>
+<p>Calculate powers of A and products with B: <span class="math inline">\(A^2 = \begin{bmatrix} 1 &amp; 1 \\ 0 &amp; 1 \end{bmatrix} \begin{bmatrix} 1 &amp; 1 \\ 0 &amp; 1 \end{bmatrix} = \begin{bmatrix} 1 &amp; 2 \\ 0 &amp; 1 \end{bmatrix}\)</span> <span class="math inline">\(A^3 = \begin{bmatrix} 1 &amp; 1 \\ 0 &amp; 1 \end{bmatrix} \begin{bmatrix} 1 &amp; 2 \\ 0 &amp; 1 \end{bmatrix} = \begin{bmatrix} 1 &amp; 3 \\ 0 &amp; 1 \end{bmatrix}\)</span> <span class="math inline">\(B = \begin{bmatrix} 0.5 \\ 1 \end{bmatrix}\)</span> <span class="math inline">\(AB = \begin{bmatrix} 1 &amp; 1 \\ 0 &amp; 1 \end{bmatrix} \begin{bmatrix} 0.5 \\ 1 \end{bmatrix} = \begin{bmatrix} 1.5 \\ 1 \end{bmatrix}\)</span> <span class="math inline">\(A^2B = \begin{bmatrix} 1 &amp; 2 \\ 0 &amp; 1 \end{bmatrix} \begin{bmatrix} 0.5 \\ 1 \end{bmatrix} = \begin{bmatrix} 2.5 \\ 1 \end{bmatrix}\)</span></p>
+<p><span class="math inline">\(\mathbf{\Phi} = \begin{bmatrix} A \\ A^2 \\ A^3 \end{bmatrix} = \begin{bmatrix} 1 &amp; 1 \\ 0 &amp; 1 \\ 1 &amp; 2 \\ 0 &amp; 1 \\ 1 &amp; 3 \\ 0 &amp; 1 \end{bmatrix}\)</span> (size <span class="math inline">\(6 \times 2\)</span>)</p>
+<p><span class="math inline">\(\mathbf{\Gamma} = \begin{bmatrix} B &amp; 0 \\ AB &amp; B \\ A^2B &amp; AB \end{bmatrix} = \begin{bmatrix} 0.5 &amp; 0 \\ 1 &amp; 0 \\ 1.5 &amp; 0.5 \\ 1 &amp; 1 \\ 2.5 &amp; 1.5 \\ 1 &amp; 1 \end{bmatrix}\)</span> (size <span class="math inline">\(6 \times 2\)</span>)</p>
+<p><span class="math inline">\(\bar{Q}_{stacked} = \text{diag}(Q, Q, P) = \begin{bmatrix} 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\ 0 &amp; 0.1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 0 &amp; 0.1 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 0 &amp; 0 &amp; 5 &amp; 0 \\ 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 \end{bmatrix}\)</span> (size <span class="math inline">\(6 \times 6\)</span>) <span class="math inline">\(\bar{R} = \text{diag}(R,R) = \begin{bmatrix} 0.01 &amp; 0 \\ 0 &amp; 0.01 \end{bmatrix}\)</span> (size <span class="math inline">\(2 \times 2\)</span>)</p>
+<p>Then, <span class="math inline">\(H = 2(\mathbf{\Gamma}^T \bar{Q}_{stacked} \mathbf{\Gamma} + \bar{R})\)</span>. And <span class="math inline">\(G = 2\mathbf{\Gamma}^T \bar{Q}_{stacked}(\mathbf{\Phi}x(0) - X_{ref}) - 2\bar{R}U_{ref}\)</span>. Since <span class="math inline">\(x(0) = \begin{bmatrix} 0 \\ 0 \end{bmatrix}\)</span> and <span class="math inline">\(u_{ref}(i)=0\)</span>, <span class="math inline">\(U_{ref}=0\)</span>. <span class="math inline">\(X_{ref} = \begin{bmatrix} 1 \\ 0 \\ 2 \\ 0 \\ 3 \\ 0 \end{bmatrix}\)</span>. So, <span class="math inline">\(G = 2\mathbf{\Gamma}^T \bar{Q}_{stacked}(\mathbf{\Phi}x(0) - X_{ref})\)</span>.</p>
+<p><strong>d) Formulate Constraints (QP style):</strong></p>
+<ul>
+<li><p><strong>Input Constraints:</strong> <span class="math inline">\(-1 \le a(k) \le 1 \implies \begin{bmatrix} 1 \\ -1 \end{bmatrix} a(k) \le \begin{bmatrix} 1 \\ 1 \end{bmatrix}\)</span> Stacked for <span class="math inline">\(U_0 = \begin{bmatrix} a(0) \\ a(1) \end{bmatrix}\)</span>: <span class="math display">\[\begin{bmatrix} 1 &amp; 0 \\ -1 &amp; 0 \\ 0 &amp; 1 \\ 0 &amp; -1 \end{bmatrix} \begin{bmatrix} a(0) \\ a(1) \end{bmatrix} \le \begin{bmatrix} 1 \\ 1 \\ 1 \\ 1 \end{bmatrix}\]</span></p></li>
+<li><p><strong>State Constraints (Velocity):</strong> <span class="math inline">\(0 \le v(k+i|0) \le 5\)</span> for <span class="math inline">\(i=1,2,3\)</span>. <span class="math inline">\(v(k+i|0)\)</span> is the second component of <span class="math inline">\(x(k+i|0)\)</span>. <span class="math inline">\(x(k+i|0) = \mathbf{\Phi}_i x(0) + \mathbf{\Gamma}_i U_0\)</span>. The constraint can be written as: <span class="math inline">\(\begin{bmatrix} 0 &amp; 1 \end{bmatrix} x(k+i|0) \le 5\)</span> <span class="math inline">\(-\begin{bmatrix} 0 &amp; 1 \end{bmatrix} x(k+i|0) \le 0\)</span> Substitute <span class="math inline">\(x(k+i|0)\)</span>: <span class="math inline">\(\begin{bmatrix} 0 &amp; 1 \end{bmatrix} (\mathbf{\Phi}_i x(0) + \mathbf{\Gamma}_i U_0) \le 5\)</span> <span class="math inline">\(-\begin{bmatrix} 0 &amp; 1 \end{bmatrix} (\mathbf{\Phi}_i x(0) + \mathbf{\Gamma}_i U_0) \le 0\)</span></p>
+<p>For <span class="math inline">\(x(0)=\begin{bmatrix} 0 \\ 0 \end{bmatrix}\)</span>: <span class="math inline">\(v(1|0) = \begin{bmatrix} 0 &amp; 1 \end{bmatrix} (A x(0) + B u(0|0)) = \begin{bmatrix} 0 &amp; 1 \end{bmatrix} B u(0|0) = 1 \cdot a(0) = a(0)\)</span>. So, <span class="math inline">\(0 \le a(0) \le 5\)</span>. (This is covered by <span class="math inline">\(-1 \le a(0) \le 1\)</span> limits).</p>
+<p><span class="math inline">\(v(2|0) = \begin{bmatrix} 0 &amp; 1 \end{bmatrix} (A^2 x(0) + AB u(0|0) + B u(1|0)) = \begin{bmatrix} 0 &amp; 1 \end{bmatrix} (AB u(0|0) + B u(1|0)) = 1 \cdot a(0) + 1 \cdot a(1) = a(0)+a(1)\)</span>. So, <span class="math inline">\(0 \le a(0)+a(1) \le 5\)</span>.</p>
+<p><span class="math inline">\(v(3|0) = \begin{bmatrix} 0 &amp; 1 \end{bmatrix} (A^3 x(0) + A^2B u(0|0) + AB u(1|0)) = \begin{bmatrix} 0 &amp; 1 \end{bmatrix} (A^2B u(0|0) + AB u(1|0)) = 1 \cdot a(0) + 1 \cdot a(1) = a(0)+a(1)\)</span>. So, <span class="math inline">\(0 \le a(0)+a(1) \le 5\)</span>.</p></li>
+<li><p><strong>State Constraints (Position):</strong> <span class="math inline">\(0 \le p(k+i|0) \le 11\)</span> for <span class="math inline">\(i=1,2,3\)</span>. <span class="math inline">\(p(k+i|0)\)</span> is the first component of <span class="math inline">\(x(k+i|0)\)</span>. <span class="math inline">\(\begin{bmatrix} 1 &amp; 0 \end{bmatrix} x(k+i|0) \le 11\)</span> <span class="math inline">\(-\begin{bmatrix} 1 &amp; 0 \end{bmatrix} x(k+i|0) \le 0\)</span></p>
+<p>For <span class="math inline">\(x(0)=\begin{bmatrix} 0 \\ 0 \end{bmatrix}\)</span>: <span class="math inline">\(p(1|0) = \begin{bmatrix} 1 &amp; 0 \end{bmatrix} B u(0|0) = 0.5 \cdot a(0)\)</span>. So, <span class="math inline">\(0 \le 0.5 a(0) \le 11\)</span>.</p>
+<p><span class="math inline">\(p(2|0) = \begin{bmatrix} 1 &amp; 0 \end{bmatrix} (AB u(0|0) + B u(1|0)) = 1.5 \cdot a(0) + 0.5 \cdot a(1)\)</span>. So, <span class="math inline">\(0 \le 1.5 a(0) + 0.5 a(1) \le 11\)</span>.</p>
+<p><span class="math inline">\(p(3|0) = \begin{bmatrix} 1 &amp; 0 \end{bmatrix} (A^2B u(0|0) + AB u(1|0)) = 2.5 \cdot a(0) + 1.5 \cdot a(1)\)</span>. So, <span class="math inline">\(0 \le 2.5 a(0) + 1.5 a(1) \le 11\)</span>.</p></li>
+</ul>
+<p>You would formulate all of these into the final <span class="math inline">\(\mathbf{L}U_k \le \mathbf{W}\)</span> matrix.</p>
+</section>
+<section id="solve-the-qp" class="level3">
+<h3 class="anchored" data-anchor-id="solve-the-qp">5. Solve the QP:</h3>
+<p>At time <span class="math inline">\(k=0\)</span>, a QP solver (like <code>quadprog</code> in MATLAB, or <code>cvxopt</code> in Python) is given <span class="math inline">\(H, G, L, W\)</span> (and <span class="math inline">\(x(0)\)</span> is embedded in <span class="math inline">\(G\)</span> and <span class="math inline">\(W\)</span>). The solver would return the optimal <span class="math inline">\(U_0^*=\begin{bmatrix} a^*(0) \\ a^*(1) \end{bmatrix}\)</span>.</p>
+<p><strong>Example Output (Illustrative - not numerically solved):</strong> Let’s assume the solver returns: <span class="math inline">\(a^*(0)=1.0\)</span> (accelerate to get moving) <span class="math inline">\(a^*(1)=0.8\)</span> (continue accelerating)</p>
+</section>
+<section id="apply-first-control-action" class="level3">
+<h3 class="anchored" data-anchor-id="apply-first-control-action">6. Apply First Control Action:</h3>
+<p>The car’s controller applies only the first element: <span class="math inline">\(a_{applied}(0)=a^*(0)=1.0\)</span>.</p>
+</section>
+<section id="move-to-next-timestep-k1" class="level3">
+<h3 class="anchored" data-anchor-id="move-to-next-timestep-k1">7. Move to Next Timestep (<span class="math inline">\(k=1\)</span>):</h3>
+<p>The car’s actual state is measured: <span class="math inline">\(x(1)\)</span>. Using <span class="math inline">\(a_{applied}(0)=1.0\)</span>: <span class="math inline">\(p(1)=p(0)+v(0)+\frac{1}{2}a(0)=0+0+\frac{1}{2}(1.0)=0.5\)</span> <span class="math inline">\(v(1)=v(0)+a(0)=0+1.0=1.0\)</span> So, <span class="math inline">\(x(1)=\begin{bmatrix} 0.5 \\ 1.0 \end{bmatrix}\)</span></p>
+<p>The entire process repeats: * MPC takes <span class="math inline">\(x(1)\)</span> as its new current state. * It generates a new reference trajectory for <span class="math inline">\(k=1,2,3\)</span> (e.g., <span class="math inline">\(x_{ref}(2), x_{ref}(3), x_{ref}(4)\)</span> from the path). * It re-formulates a new QP with updated <span class="math inline">\(G\)</span> and <span class="math inline">\(W\)</span> matrices (as they depend on <span class="math inline">\(x(1)\)</span>). * It solves the QP for a new optimal control sequence <span class="math inline">\(U_1^*=\begin{bmatrix} a^*(1) \\ a^*(2) \end{bmatrix}\)</span>. * Only <span class="math inline">\(a^*(1)\)</span> from this new sequence is applied.</p>
 
 
 
