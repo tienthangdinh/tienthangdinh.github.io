@@ -19,5 +19,8 @@
   },
   "posts/control/index.qmd": {
     "index.html": "3c7b4363"
+  },
+  "posts/autoencoder-dreamer/index.qmd": {
+    "index.html": "2ab11749"
   }
 }
