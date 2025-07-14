@@ -22,5 +22,8 @@
   },
   "posts/autoencoder-dreamer/index.qmd": {
     "index.html": "2ab11749"
+  },
+  "test.md": {
+    "test.html": "f46e35a0"
   }
 }
