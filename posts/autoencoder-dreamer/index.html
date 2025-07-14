@@ -40,7 +40,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-db03927a41f77a8af5287a812d7101f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -162,8 +162,27 @@ window.Quarto = {
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#variational-autoencoders-vaes" id="toc-variational-autoencoders-vaes" class="nav-link active" data-scroll-target="#variational-autoencoders-vaes">Variational Autoencoders (VAEs)</a>
+  <ul class="collapse">
+  <li><a href="#mathematical-formulation-of-vae" id="toc-mathematical-formulation-of-vae" class="nav-link" data-scroll-target="#mathematical-formulation-of-vae">Mathematical Formulation of VAE</a>
+  <ul class="collapse">
+  <li><a href="#derivation-of-elbo" id="toc-derivation-of-elbo" class="nav-link" data-scroll-target="#derivation-of-elbo">Derivation of ELBO:</a></li>
+  <li><a href="#first-component-reconstruction-loss-negative-expected-log-likelihood-mathbbe_q_phimathbfzmathbfx-log-p_thetamathbfxmathbfz" id="toc-first-component-reconstruction-loss-negative-expected-log-likelihood-mathbbe_q_phimathbfzmathbfx-log-p_thetamathbfxmathbfz" class="nav-link" data-scroll-target="#first-component-reconstruction-loss-negative-expected-log-likelihood-mathbbe_q_phimathbfzmathbfx-log-p_thetamathbfxmathbfz">First Component: Reconstruction Loss (Negative Expected Log-Likelihood): <span class="math inline">\(\mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} [\log p_\theta(\mathbf{x}|\mathbf{z})]\)</span></a></li>
+  <li><a href="#second-term-kl-divergence-regularization-term-d_klq_phimathbfzmathbfx-pmathbfz" id="toc-second-term-kl-divergence-regularization-term-d_klq_phimathbfzmathbfx-pmathbfz" class="nav-link" data-scroll-target="#second-term-kl-divergence-regularization-term-d_klq_phimathbfzmathbfx-pmathbfz">Second Term: KL Divergence (Regularization Term): <span class="math inline">\(D_{KL}(q_\phi(\mathbf{z}|\mathbf{x}) || p(\mathbf{z}))\)</span></a></li>
+  </ul></li>
+  <li><a href="#how-two-terms-work-with-each-other-to-ensure-a-smooth-generative-model-for-unseen-data" id="toc-how-two-terms-work-with-each-other-to-ensure-a-smooth-generative-model-for-unseen-data" class="nav-link" data-scroll-target="#how-two-terms-work-with-each-other-to-ensure-a-smooth-generative-model-for-unseen-data">How two terms work with each other to ensure a smooth generative model for unseen data</a>
+  <ul class="collapse">
+  <li><a href="#the-reparameterization-trick" id="toc-the-reparameterization-trick" class="nav-link" data-scroll-target="#the-reparameterization-trick">The Reparameterization Trick:</a></li>
+  </ul></li>
+  <li><a href="#key-points-of-vae" id="toc-key-points-of-vae" class="nav-link" data-scroll-target="#key-points-of-vae">Key Points of VAE</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content">
@@ -172,9 +191,174 @@ window.Quarto = {
 
 
 
+<section id="variational-autoencoders-vaes" class="level1">
+<h1>Variational Autoencoders (VAEs)</h1>
+<p><strong>Key Idea:</strong> Instead of mapping an input to a single point in the latent space, VAE maps it to parameters of a probability distribution (typically a Gaussian distribution) in the latent space:</p>
+<ul>
+<li>An encoder that maps data to a distribution in latent space.</li>
+<li>A decoder that maps samples from this latent distribution back to data space.</li>
+</ul>
+<section id="mathematical-formulation-of-vae" class="level2">
+<h2 class="anchored" data-anchor-id="mathematical-formulation-of-vae">Mathematical Formulation of VAE</h2>
+<p>Let’s denote:</p>
+<ul>
+<li><span class="math inline">\(\mathbf{x}\)</span>: An input data point (e.g., an image)</li>
+<li><span class="math inline">\(\mathbf{z}\)</span>: A latent variable (vector) in the lower-dimensional latent space</li>
+<li><span class="math inline">\(p(\mathbf{x})\)</span>: The true, unknown data distribution we want to model</li>
+<li><span class="math inline">\(p(\mathbf{z})\)</span>: The prior distribution over the latent variables (typically a simple distribution like <span class="math inline">\(\mathcal{N}(0,I)\)</span>)</li>
+<li><span class="math inline">\(p_\theta(\mathbf{x}|\mathbf{z})\)</span>: The decoder (also called generative model or likelihood). This is a neural network parameterized by <span class="math inline">\(\theta\)</span> that outputs the parameters of the distribution over <span class="math inline">\(\mathbf{x}\)</span> given <span class="math inline">\(\mathbf{z}\)</span>.</li>
+<li><span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x})\)</span>: The encoder (also called inference model or approximate posterior). This is a neural network parameterized by <span class="math inline">\(\phi\)</span> that outputs the parameters of the distribution over <span class="math inline">\(\mathbf{z}\)</span> given <span class="math inline">\(\mathbf{x}\)</span>.</li>
+</ul>
+<p><strong>Goal:</strong> is to maximize the marginal likelihood: <span class="math display">\[p(\mathbf{x}) = \frac{p_\theta(\mathbf{x}|\mathbf{z}) p(\mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})}\]</span> which we do not know the other element to compute, or <span class="math display">\[\log p_\theta(\mathbf{x}) = \log \int p_\theta(\mathbf{x}|\mathbf{z}) p(\mathbf{z}) d\mathbf{z}\]</span> which is intractable</p>
+<p>Therefore, VAEs optimize the Evidence Lower Bound (ELBO), which is a lower bound on the log-likelihood of the data, we will derive it now</p>
+<section id="derivation-of-elbo" class="level3">
+<h3 class="anchored" data-anchor-id="derivation-of-elbo">Derivation of ELBO:</h3>
+<p>The log-likelihood of a data point <span class="math inline">\(\mathbf{x}\)</span> can be written as:</p>
+<p><span class="math display">\[\log p_\theta(\mathbf{x}) = \log p_\theta(\mathbf{x})\]</span> <span class="math display">\[= \log p_\theta(\mathbf{x}) \int q_\phi(\mathbf{z}|\mathbf{x}) d\mathbf{z} \quad \text{Multiply by 1}\]</span> <span class="math display">\[= \int q_\phi(\mathbf{z}|\mathbf{x}) \log p_\theta(\mathbf{x}) d\mathbf{z} \quad \text{Bring inside the integral}\]</span> <span class="math display">\[= \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} [\log p_\theta(\mathbf{x})] \quad \text{Definition of expectation}\]</span> <span class="math display">\[= \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}, \mathbf{z})}{p_\theta(\mathbf{z}|\mathbf{x})} \right] \quad \text{Apply the equation } p_\theta(\mathbf{x}) = \frac{p_\theta(\mathbf{x}, \mathbf{z})}{p_\theta(\mathbf{z}|\mathbf{x})}\]</span> <span class="math display">\[= \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}, \mathbf{z}) q_\phi(\mathbf{z}|\mathbf{x})}{p_\theta(\mathbf{z}|\mathbf{x}) q_\phi(\mathbf{z}|\mathbf{x})} \right] \quad \text{Multiply by 1}\]</span> <span class="math display">\[= \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}, \mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})} + \log \frac{q_\phi(\mathbf{z}|\mathbf{x})}{p_\theta(\mathbf{z}|\mathbf{x})} \right] \quad \text{Split the expectation}\]</span> <span class="math display">\[= \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}, \mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})} \right] + D_{KL}(q_\phi(\mathbf{z}|\mathbf{x}) || p_\theta(\mathbf{z}|\mathbf{x})) \quad \text{KL divergence}\]</span></p>
+<p>The second term is the Kullback-Leibler (KL) divergence, it is non-negative, now we only focus on maximizing the first term ELBO:</p>
+<p><span class="math display">\[\log p_\theta(\mathbf{x}) \ge \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}, \mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})} \right] = \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}|\mathbf{z}) p(\mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})} \right] \quad \text{Chain rule of probability}\]</span> <span class="math display">\[= \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} [\log p_\theta(\mathbf{x}|\mathbf{z})] + \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p(\mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})} \right] \quad \text{Split the expectation}\]</span> <span class="math display">\[= \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} [\log p_\theta(\mathbf{x}|\mathbf{z})] - D_{KL}(q_\phi(\mathbf{z}|\mathbf{x}) || p(\mathbf{z})) \quad \text{KL divergence}\]</span></p>
+<p><strong>This is the objective function for the VAE (Loss Function), also the ELBO</strong> to maximize, or minimizing the negative ELBO.</p>
+<p><span class="math display">\[\mathcal{L}(\theta, \phi, \mathbf{x}) = \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}, \mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})} \right] = \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} [\log p_\theta(\mathbf{x}|\mathbf{z})] - D_{KL}(q_\phi(\mathbf{z}|\mathbf{x}) || p(\mathbf{z}))\]</span></p>
+</section>
+<section id="first-component-reconstruction-loss-negative-expected-log-likelihood-mathbbe_q_phimathbfzmathbfx-log-p_thetamathbfxmathbfz" class="level3">
+<h3 class="anchored" data-anchor-id="first-component-reconstruction-loss-negative-expected-log-likelihood-mathbbe_q_phimathbfzmathbfx-log-p_thetamathbfxmathbfz">First Component: Reconstruction Loss (Negative Expected Log-Likelihood): <span class="math inline">\(\mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} [\log p_\theta(\mathbf{x}|\mathbf{z})]\)</span></h3>
+<p>This term encourages the decoder to reconstruct the input <span class="math inline">\(\mathbf{x}\)</span> accurately from a latent sample <span class="math inline">\(\mathbf{z}\)</span> drawn from the encoder’s output distribution.</p>
+<p>We will derive it now</p>
+<section id="assumption-data-is-gaussian-distributed" class="level4">
+<h4 class="anchored" data-anchor-id="assumption-data-is-gaussian-distributed">Assumption: Data is Gaussian Distributed</h4>
+<p>We assume that each data point <span class="math inline">\(\mathbf{x}\)</span> (e.g., an image, where each pixel is a dimension) is drawn from a Gaussian distribution, given the latent variable <span class="math inline">\(\mathbf{z}\)</span> that the decoder outputs. For simplicity, let’s assume the dimensions of <span class="math inline">\(\mathbf{x}\)</span> are independent given <span class="math inline">\(\mathbf{z}\)</span>, and they share a fixed variance <span class="math inline">\(\sigma^2\)</span>.</p>
+<p>So, for each dimension <span class="math inline">\(j\)</span> of <span class="math inline">\(\mathbf{x}\)</span>, <span class="math inline">\(x_j\)</span> is distributed as: <span class="math inline">\(p_\theta(x_j|\mathbf{z}) = \mathcal{N}(x_j; \mu_j(\mathbf{z}), \sigma^2)\)</span></p>
+<p>Here:</p>
+<ul>
+<li><span class="math inline">\(\mu_j(\mathbf{z})\)</span> is the mean for the <span class="math inline">\(j\)</span>-th dimension, which is the output of your decoder network for that dimension when given <span class="math inline">\(\mathbf{z}\)</span>.</li>
+<li><span class="math inline">\(\sigma^2\)</span> is the variance. For simplicity, we often assume a fixed <span class="math inline">\(\sigma^2\)</span> (e.g., <span class="math inline">\(\sigma^2=1\)</span>, or a small constant, or even absorbed into the weights). More advanced VAEs can learn this variance as well (the decoder outputs both mean and variance).</li>
+</ul>
+</section>
+<section id="probability-density-function-pdf-of-a-gaussian" class="level4">
+<h4 class="anchored" data-anchor-id="probability-density-function-pdf-of-a-gaussian">Probability Density Function (PDF) of a Gaussian</h4>
+<p>The PDF for a single-dimensional Gaussian variable <span class="math inline">\(x_j\)</span> is:</p>
+<p><span class="math inline">\(f(x_j) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x_j - \mu_j(\mathbf{z}))^2}{2\sigma^2}\right)\)</span></p>
+</section>
+<section id="log-likelihood-for-a-multi-dimensional-data-point-mathbfx" class="level4">
+<h4 class="anchored" data-anchor-id="log-likelihood-for-a-multi-dimensional-data-point-mathbfx">Log-Likelihood for a Multi-dimensional Data Point <span class="math inline">\(\mathbf{x}\)</span></h4>
+<p>Since we assume the dimensions of <span class="math inline">\(\mathbf{x}\)</span> are independent given <span class="math inline">\(\mathbf{z}\)</span>, the joint probability <span class="math inline">\(p_\theta(\mathbf{x}|\mathbf{z})\)</span> is the product of the individual probabilities:</p>
+<p><span class="math inline">\(p_\theta(\mathbf{x}|\mathbf{z}) = \prod_{j=1}^{D_x} p_\theta(x_j|\mathbf{z})\)</span></p>
+<p>where <span class="math inline">\(D_x\)</span> is the dimensionality of <span class="math inline">\(\mathbf{x}\)</span> (e.g., number of pixels in an image). Now, let’s take the logarithm of this product:</p>
+<p><span class="math display">\[\log p_\theta(\mathbf{x}|\mathbf{z}) = \log \left( \prod_{j=1}^{D_x} \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x_j - \mu_j(\mathbf{z}))^2}{2\sigma^2}\right) \right)\]</span> <span class="math display">\[= \sum_{j=1}^{D_x} \log \left( \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x_j - \mu_j(\mathbf{z}))^2}{2\sigma^2}\right) \right)\]</span> <span class="math display">\[= \sum_{j=1}^{D_x} \left( \log\left(\frac{1}{\sqrt{2\pi\sigma^2}}\right) + \log\left(\exp\left(-\frac{(x_j - \mu_j(\mathbf{z}))^2}{2\sigma^2}\right)\right) \right)\]</span> <span class="math display">\[= \sum_{j=1}^{D_x} \left( -\frac{1}{2}\log(2\pi\sigma^2) - \frac{(x_j - \mu_j(\mathbf{z}))^2}{2\sigma^2} \right)\]</span> <span class="math display">\[= \sum_{j=1}^{D_x} \left( -\frac{1}{2}\log(2\pi\sigma^2) \right) - \sum_{j=1}^{D_x} \left( \frac{(x_j - \mu_j(\mathbf{z}))^2}{2\sigma^2} \right)\]</span>The first term is a constant multiplied by <span class="math inline">\(D_x\)</span>: <span class="math display">\[= -\frac{D_x}{2}\log(2\pi\sigma^2) - \frac{1}{2\sigma^2} \sum_{j=1}^{D_x} (x_j - \mu_j(\mathbf{z}))^2\]</span> <span class="math display">\[\text{MSE} = \frac{1}{D_x} \sum_{j=1}^{D_x} (x_j - \mu_j(\mathbf{z}))^2\]</span></p>
+</section>
+</section>
+<section id="second-term-kl-divergence-regularization-term-d_klq_phimathbfzmathbfx-pmathbfz" class="level3">
+<h3 class="anchored" data-anchor-id="second-term-kl-divergence-regularization-term-d_klq_phimathbfzmathbfx-pmathbfz">Second Term: KL Divergence (Regularization Term): <span class="math inline">\(D_{KL}(q_\phi(\mathbf{z}|\mathbf{x}) || p(\mathbf{z}))\)</span></h3>
+<p>This term acts as a regularizer. It pushes the approximate posterior <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x})\)</span> (the distribution output by the encoder for a given <span class="math inline">\(\mathbf{x}\)</span>) to be close to the prior distribution <span class="math inline">\(p(\mathbf{z})\)</span> (e.g., <span class="math inline">\(\mathcal{N}(0,I)\)</span>).</p>
+<p>If <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x})\)</span> is assumed to be a diagonal Gaussian <span class="math inline">\(\mathcal{N}(\mu, \Sigma)\)</span> (where <span class="math inline">\(\Sigma\)</span> is diagonal) and <span class="math inline">\(p(\mathbf{z})\)</span> is <span class="math inline">\(\mathcal{N}(0,I)\)</span>, the KL divergence has a closed-form solution:</p>
+<p><span class="math display">\[D_{KL}(\mathcal{N}(\mu,\Sigma)||\mathcal{N}(0,I)) = \frac{1}{2} \sum_{j=1}^{D_z} (\exp(\sigma_j) + \mu_j^2 - 1 - \sigma_j)\]</span> where <span class="math inline">\(D_z\)</span> is the dimensionality of <span class="math inline">\(\mathbf{z}\)</span>, and <span class="math inline">\(\mu_j\)</span> and <span class="math inline">\(\sigma_j\)</span> are the mean and log-variance (diagonal elements of <span class="math inline">\(\Sigma\)</span>) for the <span class="math inline">\(j\)</span>-th latent dimension, as output by the encoder.</p>
+<section id="numerical-example-for-q_phimathbfzmathbfx" class="level4">
+<h4 class="anchored" data-anchor-id="numerical-example-for-q_phimathbfzmathbfx">Numerical Example for <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x})\)</span></h4>
+<p>Let’s say our latent space <span class="math inline">\(\mathbf{z}\)</span> is 2-dimensional (<span class="math inline">\(D_z=2\)</span>). Our input is a specific image <span class="math inline">\(\mathbf{x}_{cat}\)</span> (an image of a cat).</p>
+<p>The encoder network takes <span class="math inline">\(\mathbf{x}_{cat}\)</span> as input. Its output layer (after processing through several hidden layers) has two sets of <span class="math inline">\(D_z=2\)</span> nodes:</p>
+<ul>
+<li><strong>Mean Output Nodes:</strong> For <span class="math inline">\(\mu_\phi(\mathbf{x}_{cat})\)</span></li>
+<li><strong>Log-Variance Output Nodes:</strong> For <span class="math inline">\(\log(\sigma_\phi(\mathbf{x}_{cat})^2)\)</span> (we use log-variance for numerical stability, as variance must be positive).</li>
+</ul>
+<p>Suppose for this specific <span class="math inline">\(\mathbf{x}_{cat}\)</span>, the encoder outputs:</p>
+<p><span class="math inline">\(\mu_\phi(\mathbf{x}_{cat})=\begin{bmatrix} 0.8 \\ -1.2 \end{bmatrix}\)</span></p>
+<p><span class="math inline">\(\log(\sigma_\phi(\mathbf{x}_{cat})^2)=\begin{bmatrix} -0.2 \\ 0.1 \end{bmatrix}\)</span></p>
+<p>From the log-variances, we calculate the variances:</p>
+<p><span class="math inline">\(\sigma_1^2 = \exp(-0.2) \approx 0.8187\)</span> <span class="math inline">\(\sigma_2^2 = \exp(0.1) \approx 1.1052\)</span></p>
+<p>So, for this input <span class="math inline">\(\mathbf{x}_{cat}\)</span>, the encoder defines the latent distribution: <span class="math display">\[q_\phi(\mathbf{z}|\mathbf{x}_{cat})=\mathcal{N}\left(\mathbf{z};\begin{bmatrix} 0.8 \\ -1.2 \end{bmatrix},\begin{bmatrix} 0.8187 &amp; 0 \\ 0 &amp; 1.1052 \end{bmatrix}\right)\]</span></p>
+<p>This means:</p>
+<ul>
+<li>The first latent dimension (<span class="math inline">\(z_1\)</span>) is modeled by a Gaussian with mean 0.8 and variance 0.8187.</li>
+<li>The second latent dimension (<span class="math inline">\(z_2\)</span>) is modeled by a Gaussian with mean <span class="math inline">\(-1.2\)</span> and variance 1.1052.</li>
+</ul>
+<p>These two dimensions are assumed to be independent (because the off-diagonal elements of the covariance matrix are zero).</p>
+<p>When we “sample <span class="math inline">\(\mathbf{z}\)</span> from <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_{cat})\)</span>” using the reparameterization trick, we would:</p>
+<ol type="1">
+<li>Sample <span class="math inline">\(\epsilon_1 \sim \mathcal{N}(0,1)\)</span> and <span class="math inline">\(\epsilon_2 \sim \mathcal{N}(0,1)\)</span>.</li>
+<li>Calculate <span class="math inline">\(z_1 = 0.8 + \sqrt{0.8187} \cdot \epsilon_1\)</span></li>
+<li>Calculate <span class="math inline">\(z_2 = -1.2 + \sqrt{1.1052} \cdot \epsilon_2\)</span></li>
+</ol>
+<p>The resulting <span class="math inline">\(\mathbf{z}=\begin{bmatrix} z_1 \\ z_2 \end{bmatrix}\)</span> is then passed to the decoder.</p>
+<p>This formulation allows the VAE to learn a distribution for each input, rather than a single point, enabling the desired properties of a continuous and meaningful latent space.</p>
+</section>
+<section id="numerical-example-regularization-using-kl" class="level4">
+<h4 class="anchored" data-anchor-id="numerical-example-regularization-using-kl">Numerical Example Regularization using KL</h4>
+<p>Imagine a very simplified VAE where our latent space <span class="math inline">\(\mathbf{z}\)</span> is just one-dimensional (<span class="math inline">\(D_z=1\)</span>). Our prior <span class="math inline">\(p(\mathbf{z})\)</span> is <span class="math inline">\(\mathcal{N}(0,1)\)</span> (mean 0, variance 1). The VAE’s job is to learn an encoder (<span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x})\)</span>) and a decoder (<span class="math inline">\(p_\theta(\mathbf{x}|\mathbf{z})\)</span>) such that:</p>
+<ul>
+<li>The decoder can reconstruct <span class="math inline">\(\mathbf{x}_A\)</span> from samples of <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_A)\)</span>.</li>
+<li>The decoder can reconstruct <span class="math inline">\(\mathbf{x}_B\)</span> from samples of <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_B)\)</span>.</li>
+<li>The KL divergence <span class="math inline">\(D_{KL}(q_\phi(\mathbf{z}|\mathbf{x})||p(\mathbf{z}))\)</span> is minimized for both <span class="math inline">\(\mathbf{x}_A\)</span> and <span class="math inline">\(\mathbf{x}_B\)</span>.</li>
+</ul>
+<p><strong>Scenario 1: No KL Regularization (like a vanilla Autoencoder)</strong></p>
+<p>If there were no KL term, the encoder might learn to map <span class="math inline">\(\mathbf{x}_A\)</span> to a specific point <span class="math inline">\(\mathbf{z}_A\)</span> and <span class="math inline">\(\mathbf{x}_B\)</span> to a specific point <span class="math inline">\(\mathbf{z}_B\)</span>.</p>
+<ul>
+<li>Encoder output for <span class="math inline">\(\mathbf{x}_A\)</span>: <span class="math inline">\(\mu_A=-5.0, \sigma_A=0.001\)</span> (a very tight distribution at -5.0)</li>
+<li>Encoder output for <span class="math inline">\(\mathbf{x}_B\)</span>: <span class="math inline">\(\mu_B=+5.0, \sigma_B=0.001\)</span> (a very tight distribution at +5.0)</li>
+</ul>
+<p><strong>Scenario 2: With KL Regularization (VAE)</strong></p>
+<p>Now, the KL term <span class="math inline">\(D_{KL}(q_\phi(\mathbf{z}|\mathbf{x})||\mathcal{N}(0,1))\)</span> is active.</p>
+<p>Let’s say the encoder tries to map <span class="math inline">\(\mathbf{x}_A\)</span> and <span class="math inline">\(\mathbf{x}_B\)</span> far apart again:</p>
+<ul>
+<li>Encoder output for <span class="math inline">\(\mathbf{x}_A\)</span>: <span class="math inline">\(\mu_A=-5.0, \sigma_A=0.1\)</span></li>
+<li>Encoder output for <span class="math inline">\(\mathbf{x}_B\)</span>: <span class="math inline">\(\mu_B=+5.0, \sigma_B=0.1\)</span></li>
+</ul>
+<p>Let’s calculate the KL divergence for <span class="math inline">\(\mathbf{x}_A\)</span>: <span class="math display">\[D_{KL}(\mathcal{N}(-5.0,0.1^2)||\mathcal{N}(0,1)) = \frac{1}{2} (\exp(2\log(0.1))+(-5.0)^2-1-2\log(0.1))\]</span> <span class="math display">\[= \frac{1}{2} (0.01+25-1-(-4.6)) = \frac{1}{2} (24.01+4.6)=14.3\]</span></p>
+<p>This KL value (14.3) is very high! The VAE loss function will strongly penalize this. To minimize this KL term, the encoder is forced to:</p>
+<ul>
+<li>Pull the means towards 0: <span class="math inline">\(\mu_A\)</span> and <span class="math inline">\(\mu_B\)</span> must be closer to 0.</li>
+<li>Push the variances towards 1: <span class="math inline">\(\sigma_A\)</span> and <span class="math inline">\(\sigma_B\)</span> must be closer to 1.</li>
+</ul>
+<p>So, for similar inputs <span class="math inline">\(\mathbf{x}_A\)</span> and <span class="math inline">\(\mathbf{x}_B\)</span>, the trained encoder might output:</p>
+<ul>
+<li>Encoder output for <span class="math inline">\(\mathbf{x}_A\)</span>: <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_A)=\mathcal{N}(\mathbf{z};\mu_A=-0.5,\sigma_A=0.8)\)</span></li>
+<li>Encoder output for <span class="math inline">\(\mathbf{x}_B\)</span>: <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_B)=\mathcal{N}(\mathbf{z};\mu_B=+0.5,\sigma_B=0.8)\)</span></li>
+</ul>
+<p>Now, let’s evaluate the KL divergence again (for <span class="math inline">\(\mathbf{x}_A\)</span>): <span class="math display">\[D_{KL}(\mathcal{N}(-0.5,0.8^2)||\mathcal{N}(0,1)) = \frac{1}{2} (\exp(2\log(0.8))+(-0.5)^2-1-2\log(0.8))\]</span> <span class="math display">\[= \frac{1}{2} (0.64+0.25-1-(-0.446))= \frac{1}{2} (-0.11+0.446)=0.168\]</span></p>
+<p>This KL value (0.168) is much smaller! The KL regularization successfully compressed the latent distributions closer to the prior.</p>
+<p><strong>Why this helps:</strong></p>
+<p>The only way for the encoder to reconstruct accurately AND stay close to the prior when presented with similar inputs is to map them to overlapping distributions.</p>
+</section>
+</section>
+</section>
+<section id="how-two-terms-work-with-each-other-to-ensure-a-smooth-generative-model-for-unseen-data" class="level2">
+<h2 class="anchored" data-anchor-id="how-two-terms-work-with-each-other-to-ensure-a-smooth-generative-model-for-unseen-data">How two terms work with each other to ensure a smooth generative model for unseen data</h2>
+<p>Let’s consider two distinct but very similar input data points, <span class="math inline">\(\mathbf{x}_A\)</span> and <span class="math inline">\(\mathbf{x}_B\)</span>, both from training distribution</p>
+<p><strong>Pressure from KL Divergence: Make them similar</strong></p>
+<ul>
+<li>For <span class="math inline">\(\mathbf{x}_A\)</span>, the encoder will produce <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_A)=\mathcal{N}(\mu_A,\Sigma_A)\)</span>. The KL term wants <span class="math inline">\(\mu_A \approx 0\)</span> and <span class="math inline">\(\Sigma_A \approx I\)</span>.</li>
+<li>For <span class="math inline">\(\mathbf{x}_B\)</span>, the encoder will produce <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_B)=\mathcal{N}(\mu_B,\Sigma_B)\)</span>. The KL term wants <span class="math inline">\(\mu_B \approx 0\)</span> and <span class="math inline">\(\Sigma_B \approx I\)</span>.</li>
+</ul>
+<p>The mathematical consequence of minimizing <span class="math inline">\(D_{KL}(Q||P)\)</span> is that <span class="math inline">\(Q\)</span> is forced to be similar to <span class="math inline">\(P\)</span>. Since <span class="math inline">\(P\)</span> is the same prior for all <span class="math inline">\(\mathbf{x}\)</span>, this means all <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x})\)</span> distributions for any <span class="math inline">\(\mathbf{x}\)</span> are pulled towards the same central region of the latent space (around 0). This inherently forces them to be closer to each other than they might be in a vanilla autoencoder without this regularization.</p>
+<p><strong>Pressure from Reconstruction Loss: Make them distinct</strong></p>
+<p>If the encoder were to map <span class="math inline">\(\mathbf{x}_A\)</span> and <span class="math inline">\(\mathbf{x}_B\)</span> to identical distributions (e.g., <span class="math inline">\(\mu_A=\mu_B=0\)</span> and <span class="math inline">\(\Sigma_A=\Sigma_B=I\)</span>), the reconstruction loss would be high to penalize that.</p>
+<p><strong>The Interplay (The “Dual Pressure”):</strong></p>
+<ol type="1">
+<li>The KL term pushes all latent distributions for different <span class="math inline">\(\mathbf{x}\)</span> towards the same central region of the latent space and encourages them to have a certain “spread” (variance <span class="math inline">\(\approx I\)</span>). This means they will naturally overlap.</li>
+<li>The reconstruction term pulls these distributions slightly apart (or adjusts their means and variances) just enough so that the decoder can distinguish between similar inputs and reconstruct them accurately.</li>
+</ol>
+<p>The balance between these two forces is key. The optimal solution is where the encoder maps similar inputs <span class="math inline">\(\mathbf{x}_A\)</span> and <span class="math inline">\(\mathbf{x}_B\)</span> to latent distributions <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_A)\)</span> and <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_B)\)</span> that are:</p>
+<ul>
+<li>Close to each other (due to KL regularization towards the common prior).</li>
+<li>Significantly overlapping (due to the variances being pushed towards 1 by KL, and their means being close).</li>
+<li>Slightly distinct in their means/variances such that the decoder can still reconstruct <span class="math inline">\(\mathbf{x}_A\)</span> from samples of <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_A)\)</span> and <span class="math inline">\(\mathbf{x}_B\)</span> from samples of <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_B)\)</span> with low reconstruction error.</li>
+</ul>
+<section id="the-reparameterization-trick" class="level3">
+<h3 class="anchored" data-anchor-id="the-reparameterization-trick">The Reparameterization Trick:</h3>
+<p>A challenge arises because sampling <span class="math inline">\(\mathbf{z}\)</span> from <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x})\)</span> is a stochastic operation, which makes backpropagation through the sampling step difficult. The reparameterization trick solves this. Instead of sampling <span class="math inline">\(\mathbf{z} \sim \mathcal{N}(\mu,\Sigma)\)</span>, we sample an auxiliary random variable <span class="math inline">\(\boldsymbol{\epsilon} \sim \mathcal{N}(0,I)\)</span> and then compute:</p>
+<p><span class="math display">\[\mathbf{z} = \mu_\phi(\mathbf{x}) + \sigma_\phi(\mathbf{x}) \odot \boldsymbol{\epsilon}\]</span> (where <span class="math inline">\(\odot\)</span> is element-wise multiplication, and <span class="math inline">\(\sigma_\phi(\mathbf{x})\)</span> is the standard deviation, often computed from log-variance to ensure positivity). Now, the stochasticity is moved to <span class="math inline">\(\boldsymbol{\epsilon}\)</span>, and <span class="math inline">\(\mathbf{z}\)</span> becomes a deterministic function of <span class="math inline">\(\mu\)</span>, <span class="math inline">\(\sigma\)</span>, and <span class="math inline">\(\boldsymbol{\epsilon}\)</span>, allowing gradients to flow back through <span class="math inline">\(\mu_\phi(\mathbf{x})\)</span> and <span class="math inline">\(\sigma_\phi(\mathbf{x})\)</span> to the encoder’s parameters <span class="math inline">\(\phi\)</span>.</p>
+</section>
+</section>
+<section id="key-points-of-vae" class="level2">
+<h2 class="anchored" data-anchor-id="key-points-of-vae">Key Points of VAE</h2>
+<ul>
+<li><p><strong>Generative Model:</strong> By sampling a <span class="math inline">\(\mathbf{z}\)</span> from the simple prior <span class="math inline">\(p(\mathbf{z})\)</span> (e.g., standard normal) and passing it through the decoder <span class="math inline">\(p_\theta(\mathbf{x}|\mathbf{z})\)</span>, we can generate entirely new data that resembles the training data</p></li>
+<li><p><strong>Variational Inference &amp; Trade-off between Reconstruction and Regularization:</strong> The balance between the reconstruction loss and the KL divergence term is critical. If the KL term is too strong, the model might prioritize learning the prior over accurate reconstruction, leading to blurry reconstructions. If too weak, the latent space might not be well-regularized for generation. This balance is often controlled by a weighting factor (beta-VAE).</p></li>
+</ul>
 
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

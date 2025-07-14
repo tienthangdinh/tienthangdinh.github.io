@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://tienthangdinh.github.io/about.html</loc>
-    <lastmod>2025-07-12T10:18:30.283Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/reinforcement-learning/index.html</loc>
-    <lastmod>2025-07-07T14:38:42.160Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/bayesian-optimization/index.html</loc>
-    <lastmod>2025-07-07T14:38:42.159Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/autoencoder-dreamer/index.html</loc>
-    <lastmod>2025-07-12T10:18:05.443Z</lastmod>
+    <loc>https://tienthangdinh.github.io/index.html</loc>
+    <lastmod>2025-07-07T15:16:12.550Z</lastmod>
   </url>
   <url>
     <loc>https://tienthangdinh.github.io/posts/control/index.html</loc>
-    <lastmod>2025-07-12T10:18:27.877Z</lastmod>
+    <lastmod>2025-07-14T09:26:40.274Z</lastmod>
   </url>
   <url>
-    <loc>https://tienthangdinh.github.io/index.html</loc>
-    <lastmod>2025-07-12T10:18:35.437Z</lastmod>
+    <loc>https://tienthangdinh.github.io/posts/reinforcement-learning/index.html</loc>
+    <lastmod>2025-07-07T14:27:21.206Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/autoencoder-dreamer/index.html</loc>
+    <lastmod>2025-07-14T14:05:21.198Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/bayesian-optimization/index.html</loc>
+    <lastmod>2025-07-07T14:18:17.048Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/about.html</loc>
+    <lastmod>2025-07-14T09:26:40.274Z</lastmod>
   </url>
 </urlset>
