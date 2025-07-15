@@ -855,3 +855,8 @@ For $m = 1, \dots, M$:
   
   $$\mathbf{\theta} \leftarrow \mathbf{\theta} + \alpha^{\theta} \gamma^t \delta \nabla \ln \pi(a_t^m|s_t^m, \mathbf{\theta})$$
 
+## Proximal Policy Optimization (PPO)
+It's an on-policy, actor-critic method. Its main innovation lies in its clipped surrogate objective function, which aims to take the largest possible improvement step on a policy without causing a performance collapse.
+
+The PPO policy objective to maximize is:
+$$L^{\text{CLIP}}(\theta) = \mathbb{E}_t\left[\min(r_t(\theta)\hat{A}_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon)\hat{A}_t)\right]$$
