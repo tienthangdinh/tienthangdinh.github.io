@@ -40,7 +40,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-db03927a41f77a8af5287a812d7101f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -230,6 +230,7 @@ window.Quarto = {
   <li><a href="#a-monte-carlo-style-policy-gradient-algorithm" id="toc-a-monte-carlo-style-policy-gradient-algorithm" class="nav-link" data-scroll-target="#a-monte-carlo-style-policy-gradient-algorithm">A Monte Carlo Style Policy Gradient Algorithm</a></li>
   <li><a href="#variance-problem" id="toc-variance-problem" class="nav-link" data-scroll-target="#variance-problem">Variance Problem</a></li>
   <li><a href="#sum-up-reinforce-gradient-policy-with-baseline" id="toc-sum-up-reinforce-gradient-policy-with-baseline" class="nav-link" data-scroll-target="#sum-up-reinforce-gradient-policy-with-baseline">Sum up: REINFORCE Gradient Policy with Baseline</a></li>
+  <li><a href="#proximal-policy-optimization-ppo" id="toc-proximal-policy-optimization-ppo" class="nav-link" data-scroll-target="#proximal-policy-optimization-ppo">Proximal Policy Optimization (PPO)</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -893,6 +894,11 @@ U_t = R_{t+1} + \gamma \hat{q}(S_{t+1}, A_{t+1}, \mathbf{w})
 <p><span class="math display">\[\delta \leftarrow g_t^m - \hat{v}(s_t^m, \mathbf{w})\]</span></p>
 <p><span class="math display">\[\mathbf{w} \leftarrow \mathbf{w} + \alpha^w \delta \nabla_{\mathbf{w}} \hat{v}(s_t^m, \mathbf{w})\]</span></p>
 <p><span class="math display">\[\mathbf{\theta} \leftarrow \mathbf{\theta} + \alpha^{\theta} \gamma^t \delta \nabla \ln \pi(a_t^m|s_t^m, \mathbf{\theta})\]</span></p>
+</section>
+<section id="proximal-policy-optimization-ppo" class="level2">
+<h2 class="anchored" data-anchor-id="proximal-policy-optimization-ppo">Proximal Policy Optimization (PPO)</h2>
+<p>It’s an on-policy, actor-critic method. Its main innovation lies in its clipped surrogate objective function, which aims to take the largest possible improvement step on a policy without causing a performance collapse.</p>
+<p>The PPO policy objective to maximize is: <span class="math display">\[L^{\text{CLIP}}(\theta) = \mathbb{E}_t\left[\min(r_t(\theta)\hat{A}_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon)\hat{A}_t)\right]\]</span></p>
 
 
 
