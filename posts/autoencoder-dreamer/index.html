@@ -181,6 +181,16 @@ window.Quarto = {
   </ul></li>
   <li><a href="#key-points-of-vae" id="toc-key-points-of-vae" class="nav-link" data-scroll-target="#key-points-of-vae">Key Points of VAE</a></li>
   </ul></li>
+  <li><a href="#dreamer" id="toc-dreamer" class="nav-link" data-scroll-target="#dreamer">Dreamer</a>
+  <ul class="collapse">
+  <li><a href="#modules-involved" id="toc-modules-involved" class="nav-link" data-scroll-target="#modules-involved">Modules Involved:</a></li>
+  <li><a href="#training-steps-one-iteration" id="toc-training-steps-one-iteration" class="nav-link" data-scroll-target="#training-steps-one-iteration">Training Steps (One Iteration):</a>
+  <ul class="collapse">
+  <li><a href="#phase-1-data-collection-real-world-interaction" id="toc-phase-1-data-collection-real-world-interaction" class="nav-link" data-scroll-target="#phase-1-data-collection-real-world-interaction">Phase 1: Data Collection (Real-World Interaction)</a></li>
+  <li><a href="#phase-2-model-training-world-model-update" id="toc-phase-2-model-training-world-model-update" class="nav-link" data-scroll-target="#phase-2-model-training-world-model-update">Phase 2: Model Training (World Model Update)</a></li>
+  <li><a href="#phase-3-behavior-learning-policy-value-update-by-imagination" id="toc-phase-3-behavior-learning-policy-value-update-by-imagination" class="nav-link" data-scroll-target="#phase-3-behavior-learning-policy-value-update-by-imagination">Phase 3: Behavior Learning (Policy &amp; Value Update by Imagination)</a></li>
+  </ul></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -354,9 +364,192 @@ window.Quarto = {
 <li><p><strong>Generative Model:</strong> By sampling a <span class="math inline">\(\mathbf{z}\)</span> from the simple prior <span class="math inline">\(p(\mathbf{z})\)</span> (e.g., standard normal) and passing it through the decoder <span class="math inline">\(p_\theta(\mathbf{x}|\mathbf{z})\)</span>, we can generate entirely new data that resembles the training data</p></li>
 <li><p><strong>Variational Inference &amp; Trade-off between Reconstruction and Regularization:</strong> The balance between the reconstruction loss and the KL divergence term is critical. If the KL term is too strong, the model might prioritize learning the prior over accurate reconstruction, leading to blurry reconstructions. If too weak, the latent space might not be well-regularized for generation. This balance is often controlled by a weighting factor (beta-VAE).</p></li>
 </ul>
+</section>
+</section>
+<section id="dreamer" class="level1">
+<h1>Dreamer</h1>
+<p>Dreamer is a MBRL model that learns the model simultaneously with behavior.</p>
+<section id="modules-involved" class="level2">
+<h2 class="anchored" data-anchor-id="modules-involved">Modules Involved:</h2>
+<ul>
+<li><strong>Encoder (Representation Model):</strong> <span class="math inline">\(q_\phi(s_t|h_t,o_t)\)</span> maps observation <span class="math inline">\(o_t\)</span> and recurrent state <span class="math inline">\(h_t\)</span> to posterior distribution parameters (<span class="math inline">\(\mu_{post},\sigma_{post}\)</span>) for <span class="math inline">\(s_t\)</span>.</li>
+<li><strong>Decoder (Observation Model):</strong> <span class="math inline">\(p_\theta(o_t|s_t)\)</span> maps stochastic state <span class="math inline">\(s_t\)</span> to observation reconstruction parameters.</li>
+<li><strong>Reward Model:</strong> <span class="math inline">\(p_\theta(r_t|s_t)\)</span> maps stochastic state <span class="math inline">\(s_t\)</span> to reward prediction parameters.</li>
+<li><strong>Recurrent Model (Deterministic Dynamics):</strong> <span class="math inline">\(f_{recurrent}(h_{t-1},s_{t-1},a_{t-1})\)</span> updates <span class="math inline">\(h_t\)</span>.</li>
+<li><strong>Prior Model (Transition Dynamics):</strong> <span class="math inline">\(p(s_t|h_t)\)</span> maps recurrent state <span class="math inline">\(h_t\)</span> to prior distribution parameters (<span class="math inline">\(\mu_{prior},\sigma_{prior}\)</span>) for <span class="math inline">\(s_t\)</span>.</li>
+<li><strong>Actor (Policy Network):</strong> <span class="math inline">\(p_\psi(a_t|s_t)\)</span> maps stochastic state <span class="math inline">\(s_t\)</span> to action distribution parameters.</li>
+<li><strong>Critic (Value Network):</strong> <span class="math inline">\(V_\psi(s_t)\)</span> predicts the expected future value from state <span class="math inline">\(s_t\)</span>.</li>
+</ul>
+</section>
+<section id="training-steps-one-iteration" class="level2">
+<h2 class="anchored" data-anchor-id="training-steps-one-iteration">Training Steps (One Iteration):</h2>
+<section id="phase-1-data-collection-real-world-interaction" class="level3">
+<h3 class="anchored" data-anchor-id="phase-1-data-collection-real-world-interaction">Phase 1: Data Collection (Real-World Interaction)</h3>
+<ol type="1">
+<li><strong>Observe Current State:</strong> The agent receives the current observation <span class="math inline">\(o_t\)</span> from the real environment.</li>
+<li><strong>Infer Latent State (Encoder):</strong> Using the Encoder and Recurrent Model, infer the current stochastic latent state <span class="math inline">\(s_t\)</span> and update the deterministic hidden state <span class="math inline">\(h_t\)</span>:
+<ul>
+<li><span class="math inline">\(h_t=f_{recurrent}(h_{t-1},s_{t-1},a_{t-1})\)</span> (using the last actual state and action from the environment)</li>
+<li><span class="math inline">\(q(s_t|h_t,o_t)\)</span> is computed by the Encoder. A sample <span class="math inline">\(s_t\)</span> is drawn (using the reparameterization trick) from this posterior distribution.</li>
+</ul></li>
+<li><strong>Choose Action (Actor):</strong> Feed the inferred latent state <span class="math inline">\(s_t\)</span> to the Actor (Policy Network) <span class="math inline">\(p_\psi(a_t|s_t)\)</span> to get an action distribution. Sample an action <span class="math inline">\(a_t\)</span> from this distribution (e.g., using <span class="math inline">\(\epsilon\)</span>-greedy for exploration or pure sampling for stochastic policies).</li>
+<li><strong>Execute Action:</strong> Execute action <span class="math inline">\(a_t\)</span> in the real environment.</li>
+<li><strong>Receive Feedback:</strong> Get the next observation <span class="math inline">\(o_{t+1}\)</span> and reward <span class="math inline">\(r_{t+1}\)</span> from the environment.</li>
+<li><strong>Store Experience:</strong> Store the tuple <span class="math inline">\((o_t,a_t,r_{t+1},o_{t+1})\)</span> in a replay buffer.</li>
+</ol>
+</section>
+<section id="phase-2-model-training-world-model-update" class="level3">
+<h3 class="anchored" data-anchor-id="phase-2-model-training-world-model-update">Phase 2: Model Training (World Model Update)</h3>
+<p>This phase happens after collecting a batch of new experiences (e.g., a short trajectory or a few steps) or can be done continuously from the replay buffer.</p>
+<ol type="1">
+<li><strong>Sample Batch:</strong> Sample a batch of (e.g., 50-step) sequences from the replay buffer.</li>
+<li><strong>Process Sequence (RSSM Pass):</strong> For each sequence in the batch, process it through the Recurrent State-Space Model (RSSM):
+<ul>
+<li>For each step <span class="math inline">\(t\)</span> in the sequence:
+<ul>
+<li><strong>Update Recurrent State:</strong> <span class="math inline">\(h_t=f_{recurrent}(h_{t-1},s_{t-1},a_{t-1})\)</span></li>
+<li><strong>Compute Prior:</strong> <span class="math inline">\(p(s_t|h_t)\)</span> (using the Prior Model)</li>
+<li><strong>Compute Posterior:</strong> <span class="math inline">\(q(s_t|h_t,o_t)\)</span> (using the Encoder and the observed <span class="math inline">\(o_t\)</span>)</li>
+<li><strong>Sample Latent State:</strong> Sample <span class="math inline">\(s_t\)</span> from the posterior <span class="math inline">\(q(s_t|h_t,o_t)\)</span> (using reparameterization trick for gradients).</li>
+</ul></li>
+</ul></li>
+<li><strong>Calculate World Model Loss:</strong> The total world model loss is calculated for the entire batch. It typically combines three terms for each step <span class="math inline">\(t\)</span>:
+<ul>
+<li><strong>Reconstruction Loss:</strong> <span class="math inline">\(Loss_{obs} = -\log p_\theta(o_t|s_t)\)</span> (from Decoder). This encourages <span class="math inline">\(s_t\)</span> to contain enough information to reconstruct the observation.</li>
+<li><strong>Reward Loss:</strong> <span class="math inline">\(Loss_{reward} = -\log p_\theta(r_t|s_t)\)</span> (from Reward Model). This encourages <span class="math inline">\(s_t\)</span> to contain enough information to predict the reward.</li>
+<li><strong>KL Divergence (Consistency Loss):</strong> <span class="math inline">\(Loss_{KL} = D_{KL}(q(s_t|h_t,o_t)||p(s_t|h_t))\)</span>. This is crucial:
+<ul>
+<li>It regularizes the posterior <span class="math inline">\(q\)</span> towards the prior <span class="math inline">\(p\)</span>.</li>
+<li>It also forces the Prior Model to learn to accurately predict the next stochastic state before seeing the actual observation, by pulling it closer to the posterior that does see the observation. This is key for effective imagination.</li>
+</ul></li>
+<li><strong>Total World Model Loss:</strong> <span class="math inline">\(L_{WM} = \sum_t (Loss_{obs} + Loss_{reward} + \beta \cdot Loss_{KL})\)</span> (where <span class="math inline">\(\beta\)</span> is a KL weight, often 1 or adjusted).</li>
+</ul></li>
+<li><strong>Optimize World Model:</strong> Perform an optimization step (e.g., Adam) to update the parameters of the Encoder, Decoder, Reward Model, Recurrent Model, and Prior Model based on <span class="math inline">\(L_{WM}\)</span>.</li>
+</ol>
+</section>
+<section id="phase-3-behavior-learning-policy-value-update-by-imagination" class="level3">
+<h3 class="anchored" data-anchor-id="phase-3-behavior-learning-policy-value-update-by-imagination">Phase 3: Behavior Learning (Policy &amp; Value Update by Imagination)</h3>
+<p>This phase also happens concurrently with World Model training, typically after a few world model updates. It leverages the current learned world model.</p>
+<ol type="1">
+<li><strong>Sample Initial States:</strong> Sample a batch of latent states <span class="math inline">\(s_k\)</span> from recent past experiences in the replay buffer. These serve as starting points for imagined trajectories.</li>
+<li><strong>Imagine Trajectories:</strong> For each sampled <span class="math inline">\(s_k\)</span>:
+<ul>
+<li><strong>Rollout:</strong> Use the learned Prior Model (<span class="math inline">\(p(s_{t+1}|h_{t+1})\)</span>) and Recurrent Model (<span class="math inline">\(h_{t+1}=f_{recurrent}(\dots)\)</span>) to simulate forward in the latent space for <span class="math inline">\(H\)</span> steps (the imagination horizon).</li>
+<li><strong>Act in Imagination:</strong> At each step <span class="math inline">\(t'\)</span> in the imagination, the Actor <span class="math inline">\(p_\psi(a_{t'}|s_{t'})\)</span> chooses an action <span class="math inline">\(a_{t'}\)</span>.</li>
+<li><strong>Predict Reward:</strong> The Reward Model <span class="math inline">\(p_\theta(r_{t'}|s_{t'})\)</span> predicts the reward for that step.</li>
+<li><strong>Predict Value:</strong> The Critic <span class="math inline">\(V_\psi(s_{t'})\)</span> predicts the value of the future state.</li>
+<li>This generates an imagined trajectory of states (<span class="math inline">\(s_k,s'_{k+1},\dots,s'_{k+H}\)</span>) and rewards (<span class="math inline">\(r'_k,\dots,r'_{k+H}\)</span>).</li>
+</ul></li>
+<li><strong>Calculate Policy Loss:</strong>
+<ul>
+<li><strong>Value Target:</strong> Calculate value targets (e.g., GAE-lambda returns or N-step returns) using the predicted imagined rewards <span class="math inline">\(r'_{t'}\)</span> and the Critic’s predicted values <span class="math inline">\(V_\psi(s'_{t'})\)</span> along the imagined trajectory.</li>
+<li><strong>Actor Loss:</strong> Optimize the Actor to maximize the expected value from imagined trajectories. This typically involves maximizing the expected return from actions chosen by the policy. Gradients flow back through the entire imagined sequence and the dynamics of the world model.</li>
+<li><strong>Critic Loss:</strong> Optimize the Critic to accurately predict the value of imagined states, typically using an MSE loss between its prediction and the calculated value targets.</li>
+<li><strong>Total Policy Loss:</strong> <span class="math inline">\(L_{Policy} = \text{Actor Loss} + \text{Critic Loss}\)</span></li>
+</ul></li>
+<li><strong>Optimize Policy &amp; Value Networks:</strong> Perform an optimization step (e.g., Adam) to update the parameters of the Actor and Critic Networks based on <span class="math inline">\(L_{Policy}\)</span>.</li>
+</ol>
+<section id="parameters-we-are-trying-to-learn-the-psi-parameters" class="level4">
+<h4 class="anchored" data-anchor-id="parameters-we-are-trying-to-learn-the-psi-parameters">1. Parameters We Are Trying to Learn (The <span class="math inline">\(\psi\)</span> Parameters)</h4>
+<p>In the behavior learning phase, we are trying to learn the parameters of two distinct neural networks:</p>
+<ul>
+<li><strong>Actor Network (Policy Network):</strong> <span class="math inline">\(p_\psi(a_t|s_t)\)</span>
+<ul>
+<li><strong>Parameters:</strong> These are the weights and biases of the neural network that takes a latent state <span class="math inline">\(s_t\)</span> as input and outputs a distribution over actions <span class="math inline">\(a_t\)</span>. Let’s denote these specific parameters as <span class="math inline">\(\psi_{actor}\)</span>.</li>
+<li><strong>Purpose:</strong> To learn a policy that chooses actions which maximize expected future rewards within the imagined world.</li>
+</ul></li>
+<li><strong>Critic Network (Value Network):</strong> <span class="math inline">\(V_\psi(s_t)\)</span>
+<ul>
+<li><strong>Parameters:</strong> These are the weights and biases of the neural network that takes a latent state <span class="math inline">\(s_t\)</span> as input and outputs a single scalar value, representing the estimated expected future return (value) from that state. Let’s denote these specific parameters as <span class="math inline">\(\psi_{critic}\)</span>.</li>
+<li><strong>Purpose:</strong> To learn to accurately predict the “goodness” (value) of a given latent state. This value prediction is then used as a baseline and target for training the Actor.</li>
+</ul></li>
+</ul>
+<p>So, when we talk about optimizing <span class="math inline">\(\psi\)</span>, we are jointly optimizing <span class="math inline">\(\psi_{actor}\)</span> and <span class="math inline">\(\psi_{critic}\)</span>.</p>
+</section>
+<section id="loss-functions-summed-up-mathematical-formulation" class="level4">
+<h4 class="anchored" data-anchor-id="loss-functions-summed-up-mathematical-formulation">2. Loss Functions Summed Up (Mathematical Formulation)</h4>
+<p>The total policy loss, <span class="math inline">\(L_{Policy}(\psi)\)</span>, is composed of two main parts, each designed to update its respective network:</p>
+<p><span class="math display">\[L_{Policy}(\psi) = \underbrace{L_{Critic}(\psi_{critic})}_{\text{Value Estimation Loss}} + \underbrace{L_{Actor}(\psi_{actor})}_{\text{Policy Improvement Loss}}\]</span></p>
+<p>Let’s detail each:</p>
+<section id="critic-loss-l_criticpsi_critic" class="level5">
+<h5 class="anchored" data-anchor-id="critic-loss-l_criticpsi_critic">Critic Loss: <span class="math inline">\(L_{Critic}(\psi_{critic})\)</span></h5>
+<p><strong>Goal:</strong> Make the Critic’s value predictions <span class="math inline">\(V_{\psi_{critic}}(s''_{t'})\)</span> as accurate as possible for the imagined states <span class="math inline">\(s''_{t'}\)</span>. “Accurate” here means matching the calculated value targets (or <span class="math inline">\(\lambda\)</span>-returns) <span class="math inline">\(V_{target}(s''_{t'})\)</span>.</p>
+<p><strong>Formulation:</strong> It’s a standard Mean Squared Error (MSE) loss.</p>
+<p><span class="math display">\[L_{Critic}(\psi_{critic}) = \frac{1}{M} \sum_{m=1}^{M} (V_{\psi_{critic}}(s_m'') - V_{target}(s_m''))^2\]</span></p>
+<p>Where:</p>
+<ul>
+<li><p><span class="math inline">\(M\)</span> is the total number of (state, target) pairs from all imagined trajectories in the current batch.</p></li>
+<li><p><span class="math inline">\(s_m''\)</span> is an imagined latent state at some time step <span class="math inline">\(t'\)</span> from an imagined trajectory.</p></li>
+<li><p><span class="math inline">\(V_{\psi_{critic}}(s_m'')\)</span>: The Critic’s Prediction (The Thing We Want to Improve)</p>
+<ul>
+<li><strong>What it is:</strong> This is the current output of your Critic neural network. It’s the network’s best guess or estimate of the expected sum of future discounted rewards that the agent will receive if it starts from the imagined latent state <span class="math inline">\(s_m''\)</span> and then follows its current policy <span class="math inline">\(p_{\psi_{actor}}\)</span> thereafter.</li>
+<li><strong>Source:</strong> It comes directly from the forward pass of the Critic network (<span class="math inline">\(V_{\psi_{critic}}\)</span>) with <span class="math inline">\(s_m''\)</span> as input.</li>
+<li><strong>Purpose in Loss:</strong> This is the value that we are trying to adjust during training. The Critic loss will compute how “wrong” this prediction is compared to the target, and then use that error to update the Critic’s parameters <span class="math inline">\(\psi_{critic}\)</span> via backpropagation. We want to make this prediction get closer to the target value.</li>
+</ul></li>
+<li><p><span class="math inline">\(V_{target}(s_m'')\)</span> is the computed target value for <span class="math inline">\(s_m''\)</span> (Ground Truth). This target is crucial and calculated using the imagined rewards <span class="math inline">\(r''_{t'+1}\)</span> and the bootstrapped value predictions from the Critic itself, specifically the <span class="math inline">\(\lambda\)</span>-return (or GAE-based target): <span class="math display">\[ V_{target}(s_{t'}' ) = \sum_{j=0}^{H-t'-1} (\gamma\lambda)^j r_{t'+j+1}' + (\gamma\lambda)^{H-t'} V_{\psi_{critic}}(s_{k+H}') \quad \text{(simplified } \lambda\text{-return)}\]</span> More robustly, using GAE: <span class="math display">\[ V_{target}(s_{t'}' ) = V_{\psi_{critic}}(s_{t'}' ) + A_{t'}^{\text{GAE}(\gamma, \lambda)}\]</span> where <span class="math inline">\(A_{t'}^{\text{GAE}(\gamma,\lambda)} = \sum_{j=0}^{H-t'-1} (\gamma\lambda)^j \delta''_{t'+j}\)</span> and <span class="math inline">\(\delta''_{t'} = r''_{t'+1} + \gamma V_{\psi_{critic}}(s''_{t'+1}) - V_{\psi_{critic}}(s''_{t'})\)</span>.</p></li>
+</ul>
+</section>
+<section id="actor-loss-l_actorpsi_actor" class="level5">
+<h5 class="anchored" data-anchor-id="actor-loss-l_actorpsi_actor">Actor Loss: <span class="math inline">\(L_{Actor}(\psi_{actor})\)</span></h5>
+<p><strong>Goal:</strong> Adjust the Actor’s policy parameters <span class="math inline">\(\psi_{actor}\)</span> so that actions that lead to higher rewards (higher advantages) become more probable. Also, encourage exploration (entropy).</p>
+<p><strong>Formulation:</strong> This is a policy gradient loss, typically based on the REINFORCE algorithm but with the addition of a value baseline (the Critic’s prediction) and entropy regularization.</p>
+<p><span class="math display">\[L_{Actor}(\psi_{actor}) = -\frac{1}{M} \sum_{m=1}^{M} (A_m^{\text{GAE}(\gamma,\lambda)} \cdot \log p_{\psi_{actor}}(a_m''|s_m'') + \beta_H \cdot H(p_{\psi_{actor}}(a_m''|s_m'')))\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(M\)</span> is the total number of (state, action, advantage) triples from all imagined trajectories.</li>
+<li><span class="math inline">\(A_m^{\text{GAE}(\gamma,\lambda)}\)</span> is the calculated Generalized Advantage Estimate for the imagined state <span class="math inline">\(s_m''\)</span> and action <span class="math inline">\(a_m''\)</span>. This term serves as the “credit assignment” for the action.</li>
+<li><span class="math inline">\(\log p_{\psi_{actor}}(a_m''|s_m'')\)</span> is the log-probability of the imagined action <span class="math inline">\(a_m''\)</span> under the current policy <span class="math inline">\(p_{\psi_{actor}}\)</span>. This is the standard policy gradient term.</li>
+<li><span class="math inline">\(H(p_{\psi_{actor}}(a_m''|s_m''))\)</span> is the entropy of the action distribution at state <span class="math inline">\(s_m''\)</span>.</li>
+<li><span class="math inline">\(\beta_H\)</span> is a hyperparameter for entropy regularization. A positive <span class="math inline">\(\beta_H\)</span> means we add a negative entropy term to the loss, which encourages maximizing entropy (more exploration).</li>
+</ul>
+<p>I will explain more down here</p>
+<section id="the-thing-we-want-to-improve-log-p_psi_actora_ms_m-the-policy-itself" class="level6">
+<h6 class="anchored" data-anchor-id="the-thing-we-want-to-improve-log-p_psi_actora_ms_m-the-policy-itself">1. The Thing We Want to Improve: <span class="math inline">\(\log p_{\psi_{actor}}(a_m''|s_m'')\)</span> (The Policy Itself)</h6>
+<ul>
+<li><strong>What it is:</strong> This term represents the log-probability of the action <span class="math inline">\(a_m''\)</span> that was actually chosen by the Actor (policy) network for the imagined latent state <span class="math inline">\(s_m''\)</span>. The Actor network <span class="math inline">\(p_{\psi_{actor}}(a|s)\)</span> outputs an action distribution, and this is the log-likelihood of a specific action under that distribution.</li>
+<li><strong>Source:</strong> It comes directly from a forward pass of the Actor network <span class="math inline">\(p_{\psi_{actor}}\)</span> given input <span class="math inline">\(s_m''\)</span>, and then evaluating the log-probability of <span class="math inline">\(a_m''\)</span>.</li>
+<li><strong>Purpose in Loss:</strong> This is the core part of the policy that we are trying to adjust. By optimizing the Actor loss, we are trying to change the parameters <span class="math inline">\(\psi_{actor}\)</span> such that the probability of “good” actions increases, and the probability of “bad” actions decreases.</li>
+</ul>
+</section>
+<section id="the-ground-truth-the-guidance-signal-a_mtextgaegammalambda-the-advantage" class="level6">
+<h6 class="anchored" data-anchor-id="the-ground-truth-the-guidance-signal-a_mtextgaegammalambda-the-advantage">2. The “Ground Truth” (The Guidance Signal): <span class="math inline">\(A_m^{\text{GAE}(\gamma,\lambda)}\)</span> (The Advantage)</h6>
+<ul>
+<li><strong>What it is:</strong> This is the Generalized Advantage Estimate (GAE) for the imagined state-action pair (<span class="math inline">\(s_m'',a_m''\)</span>). The advantage function tells us how much better (or worse) a specific action <span class="math inline">\(a_m''\)</span> taken in state <span class="math inline">\(s_m''\)</span> was compared to the average expected value of that state <span class="math inline">\(V_{\psi_{critic}}(s_m'')\)</span>.
+<ul>
+<li>If <span class="math inline">\(A_m^{\text{GAE}} &gt; 0\)</span>: The action <span class="math inline">\(a_m''\)</span> led to better-than-expected rewards.</li>
+<li>If <span class="math inline">\(A_m^{\text{GAE}} &lt; 0\)</span>: The action <span class="math inline">\(a_m''\)</span> led to worse-than-expected rewards.</li>
+</ul></li>
+<li><strong>Source:</strong> This is computed based on the imagined rewards <span class="math inline">\(r''_{t'}\)</span> (from the Reward Model) and the Critic’s value predictions <span class="math inline">\(V_{\psi_{critic}}(s''_{t'})\)</span> (from the Critic Network).</li>
+<li><strong>Purpose in Loss:</strong> This is the signal that tells the Actor whether the action it just took (in imagination) was good or bad. It serves as the “ground truth” in the sense that it’s the target direction and magnitude for policy improvement. We want to increase the likelihood of actions associated with positive advantages and decrease the likelihood of actions associated with negative advantages.</li>
+</ul>
+</section>
+<section id="the-entropy-term-beta_h-cdot-hp_psi_actora_ms_m" class="level6">
+<h6 class="anchored" data-anchor-id="the-entropy-term-beta_h-cdot-hp_psi_actora_ms_m">3. The Entropy Term: <span class="math inline">\(\beta_H \cdot H(p_{\psi_{actor}}(a_m''|s_m''))\)</span></h6>
+<ul>
+<li><strong>What it is:</strong> This is the entropy of the action distribution output by the Actor for state <span class="math inline">\(s_m''\)</span>. It measures the “randomness” or “predictability” of the policy. High entropy means the policy is more exploratory (less confident in a single action), low entropy means it’s more deterministic.</li>
+<li><strong>Source:</strong> It’s calculated directly from the action distribution output by the Actor network.</li>
+<li><strong>Purpose in Loss:</strong> This is a regularization term. It’s not about “improving a prediction” in the same way as the other terms. Instead, we typically want to maximize entropy (hence the negative sign in the loss formulation) to encourage exploration and prevent the policy from collapsing to a single action too quickly. This helps the agent continue to discover better strategies.</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="how-the-loss-helps-learn-psi_actor" class="level4">
+<h4 class="anchored" data-anchor-id="how-the-loss-helps-learn-psi_actor">How the Loss Helps Learn <span class="math inline">\(\psi_{actor}\)</span></h4>
+<p>The Actor loss, when minimized, works as follows:</p>
+<ul>
+<li><strong>Policy Gradient:</strong> The core term <span class="math inline">\(A_m^{\text{GAE}(\gamma,\lambda)} \cdot \log p_{\psi_{actor}}(a_m''|s_m'')\)</span> is the standard policy gradient component. When we minimize the negative of this term:
+<ul>
+<li>If <span class="math inline">\(A_m^{\text{GAE}} &gt; 0\)</span> (good action): We want to increase <span class="math inline">\(\log p_{\psi_{actor}}(a_m''|s_m'')\)</span>, meaning we increase the probability of taking action <span class="math inline">\(a_m''\)</span> in state <span class="math inline">\(s_m''\)</span>.</li>
+<li>If <span class="math inline">\(A_m^{\text{GAE}} &lt; 0\)</span> (bad action): We want to decrease <span class="math inline">\(\log p_{\psi_{actor}}(a_m''|s_m'')\)</span>, meaning we decrease the probability of taking action <span class="math inline">\(a_m''\)</span> in state <span class="math inline">\(s_m''\)</span>.</li>
+<li>The magnitude of the advantage dictates the strength of this probability adjustment.</li>
+</ul></li>
+<li><strong>Entropy Regularization:</strong> The <span class="math inline">\(-\beta_H \cdot H(\dots)\)</span> term ensures that even while the policy is being pushed towards high-advantage actions, it doesn’t become overly deterministic. It retains some level of randomness, which is beneficial for continued exploration.</li>
+</ul>
 
 
 
+</section>
+</section>
 </section>
 </section>
 
