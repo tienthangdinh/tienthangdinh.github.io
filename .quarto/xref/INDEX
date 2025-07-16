@@ -25,5 +25,8 @@
   },
   "test.md": {
     "test.html": "f46e35a0"
+  },
+  "posts/learning-from-demonstration/index.qmd": {
+    "index.html": "4d35b187"
   }
 }

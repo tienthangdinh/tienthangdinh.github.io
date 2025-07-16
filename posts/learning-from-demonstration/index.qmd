@@ -1,0 +1,171 @@
+---
+title: "Learning from Demonstration"
+date: 2025-07-16
+categories: [Machine Learning, Reinforcement Learning, Behavioral Cloning, Imitation Learning]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+# Learning from Demonstration: Core Concepts and Algorithms
+
+## 1. Imitation Learning (IL)
+
+**What it is:**
+Imitation Learning, also known as Learning from Demonstration (LfD) or Apprenticeship Learning, is a machine learning paradigm where an agent learns to perform a task by observing and mimicking the behavior of an expert (typically a human). Instead of relying on a reward function and trial-and-error (like in Reinforcement Learning), the agent is provided with demonstrations (e.g., recorded state-action pairs) and learns a policy that maps observed states to appropriate actions, attempting to replicate the expert's decisions.
+
+**Why use it?**
+* **No Reward Function Needed:** Many robotic tasks are difficult to define with precise, hand-engineered reward functions (e.g., "tie a shoelace" or "do surgery"). IL bypasses this problem.
+* **Safety:** It can be safer than pure trial-and-error RL, especially in real-world robotics where random exploration could cause damage.
+* **Human Intuition:** Leverages human intuition and dexterity for complex tasks that are easy for humans but hard to program explicitly.
+
+**Basic Approach: Behavioral Cloning (BC)**
+The simplest form of imitation learning is Behavioral Cloning. It treats the problem as a supervised learning task:
+
+* **Data:** Collect a dataset of $(s,a)$ pairs where $s$ is an observed state and $a$ is the action taken by the expert in that state.
+* **Training:** Train a policy (e.g., a neural network) to predict the expert's action $a$ given a state $s$. This is typically done by minimizing the difference between the policy's predicted action and the expert's action (e.g., MSE for continuous actions, cross-entropy for discrete actions).
+
+**Key Challenge of BC: Distribution Shift**
+Behavioral cloning suffers from a critical problem called "covariate shift" or "distribution shift". If the learned policy makes even a tiny mistake and deviates slightly from the expert's trajectory, it might find itself in a state that was never seen in the expert demonstrations. Since it hasn't been trained on what to do in such unseen states, its performance can quickly degrade, leading to compounding errors and failure. Imagine a self-driving car trained only on perfect lane-keeping; if it drifts slightly, it might not know how to correct because it's never seen "slightly off-center" states in the training data.
+
+## 2. DAgger (Dataset Aggregation)
+
+**What it is:**
+DAgger (Dataset Aggregation) is an iterative imitation learning algorithm designed to mitigate the distribution shift problem of Behavioral Cloning. It was proposed by Ross, Gordon, and Bagnell in 2011.
+
+**How it works (Iterative Process):**
+DAgger operates in a loop:
+
+1.  **Initial Policy Training:** Train an initial policy $\pi_i$ using standard Behavioral Cloning on the current aggregated dataset $D=\{(s,a_{\text{expert}})_j\}$. Initially, $D$ contains only the original expert demonstrations.
+2.  **Policy Rollout:** Deploy the current learned policy $\pi_i$ in the environment. The agent executes actions dictated by $\pi_i$ and collects a new trajectory of observations $s_t$.
+3.  **Expert Intervention (Labeling):** For every state $s_t$ encountered during the policy's rollout (even if the policy performed badly and got into an unseen state), query the human expert for the optimal action $a_{\text{expert},t}$ that the expert would have taken in that specific state $s_t$.
+4.  **Dataset Aggregation:** Add these new $(s_t,a_{\text{expert},t})$ pairs to the aggregated dataset $D$. The crucial part is that $s_t$ includes states the learner visited, not just states the expert initially demonstrated.
+5.  **Re-train Policy:** Go back to step 1 and train a new policy $\pi_{i+1}$ on the expanded dataset $D$.
+
+This process repeats for several iterations.
+
+**Key Difference from Pure BC:**
+DAgger continuously adds data from states that the learner itself visits, with expert labels. This ensures that the policy gets explicit training on how to recover from its own mistakes and navigate states that are slightly off the expert trajectory, thus addressing the distribution shift problem. It makes the training distribution match the policy's execution distribution over time.
+
+**Drawback of DAgger:**
+It requires online human supervision during the policy rollout phase. The expert needs to be available to label actions for potentially many states encountered by the struggling policy, which can be time-consuming and labor-intensive, especially for long-horizon tasks or real-time robotics.
+
+## 3. Action Chunk Transformation (ACT)
+
+**What it is:**
+Action Chunking with Transformers (ACT) is a more recent imitation learning approach (2022) specifically designed for robotic manipulation, that leverages the power of Transformers and a technique called action chunking.
+
+**Key Ideas:**
+
+* **Action Chunking:** Instead of predicting a single action at a time, ACT predicts a sequence or "chunk" of future actions ($k$ actions) given the current observation. This is an open-loop prediction for $k$ steps.
+    * **Benefit 1: Reduced Horizon:** By predicting multiple steps, it effectively reduces the "effective horizon" of the control problem, making it easier for the model to capture temporal dependencies and long-term consequences.
+    * **Benefit 2: Handles Non-Markovian Behavior:** Human demonstrations can often be non-Markovian (meaning the optimal action depends on past context, not just the current state). By predicting a chunk, ACT implicitly incorporates more context.
+    * **Benefit 3: Lower Inference Frequency:** The policy can run at a lower frequency (e.g., predict 50 actions every 1 second instead of 1 action every 20ms), which is more practical for complex visuomotor policies.
+* **Transformer Architecture:** It uses a Transformer (often a Conditional Variational Autoencoder - CVAE - with a Transformer backbone) to predict these action chunks. Transformers are excellent at modeling sequences and capturing long-range dependencies, which is well-suited for predicting future action sequences.
+* **Temporal Ensembling:** To mitigate jerkiness from open-loop chunk execution, ACT uses temporal ensembling: if there are overlapping predictions from multiple chunks, it averages them to produce smoother actions.
+
+**How it's different from DAgger:**
+
+* **Data Collection Paradigm:** ACT is primarily a Behavioral Cloning-like approach. It trains on a fixed dataset of expert demonstrations (usually collected offline). It doesn't inherently have DAgger's interactive, iterative data aggregation loop with online expert labeling.
+* **Addressing Distribution Shift:** DAgger explicitly solves distribution shift by querying the expert for out-of-distribution states. ACT addresses temporal aspects and complex behaviors through action chunking and Transformer's sequential modeling capabilities, which helps with robustness, but it still fundamentally relies on the initial expert data. If ACT encounters truly novel, far-off-distribution states, it can still struggle, similar to pure BC.
+* **Output:** DAgger outputs a single action per state, iteratively refining it. ACT outputs a sequence of actions per state (chunking).
+* **Complexity:** ACT uses a more complex neural network architecture (Transformers/CVAE) compared to the potentially simpler policies used in DAgger's BC steps.
+
+## 4. Diffusion Policy
+
+**What it is:**
+Diffusion Policy (2023) is a cutting-edge approach to visuomotor policy learning that frames the problem of action generation as a conditional denoising diffusion process. Inspired by generative AI models (like DALL-E or Stable Diffusion for images), it learns to gradually refine a noisy action proposal into a coherent, expert-like action.
+
+**Key Ideas:**
+
+* **Generative Model:** Diffusion models are generative models that learn a data distribution by training to reverse a diffusion process (gradually adding noise). In Diffusion Policy, this means they learn the distribution of expert actions given a visual observation.
+* **Iterative Denoising:** During inference, the policy starts with a random noise vector (representing an initial "noisy" action) and iteratively refines it over several steps, guided by the learned diffusion model, to produce the final action.
+* **Multimodal Action Distributions:** A significant advantage is its ability to elegantly handle multimodal action distributions. For example, if an expert can perform a task in multiple valid ways (e.g., pick up an object from left or right), a diffusion policy can learn to represent all these modes, rather than just averaging them out (which can happen in BC) or collapsing to a single mode.
+* **High-Dimensional Actions:** They are well-suited for high-dimensional action spaces (e.g., controlling a complex robot arm with many joints).
+* **Training Stability:** Diffusion models are known for their stable training properties.
+
+**How it's different from DAgger and ACT:**
+
+* **Underlying Mechanism:** This is the biggest difference. DAgger and ACT are based on direct regression (BC-like, predicting actions directly). Diffusion Policy is a generative model that iteratively denoises actions.
+* **Data Collection Paradigm:** Diffusion Policy, like ACT, is primarily an offline imitation learning method. It learns from a fixed dataset of expert demonstrations. It does not inherently involve the online expert querying loop of DAgger.
+* **Addressing Multimodality:** Diffusion Policy's core strength is its ability to handle multimodal actions. DAgger and ACT (especially vanilla BC) can struggle if the expert has multiple ways of solving a task, as they might try to average actions or pick an arbitrary mode.
+* **Temporal Aspects:** While ACT explicitly predicts chunks of actions for temporal consistency, Diffusion Policy can also be extended to predict sequences of actions (receding horizon control), leveraging the generative nature of diffusion models to ensure temporal coherence.
+* **Online vs. Offline:** DAgger is fundamentally an online algorithm that requires iterative interaction. ACT and Diffusion Policy are primarily offline methods that learn from pre-recorded datasets, although variants like Diff-DAgger try to combine them.
+
+## Summary of Differences:
+
+| Feature                   | DAgger                                                                 | Action Chunk Transformation (ACT)                                        | Diffusion Policy                                                                              |
+| :------------------------ | :--------------------------------------------------------------------- | :----------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| **Core Idea** | Iterative data aggregation with online expert labeling to combat distribution shift. | Predicts chunks of future actions using Transformers for temporal consistency. | Generative model that denoises action proposals, learning multimodal action distributions.    |
+| **Learning Type** | Online, Interactive IL (iterative BC)                                  | Offline IL (advanced BC)                                                 | Offline IL (generative model for actions)                                                     |
+| **Primary Output** | Single action per state                                                | Chunk (sequence) of actions per state                                    | Single action (after denoising iterations) or a sequence of actions                           |
+| **Handles OOD** | Explicitly, by querying expert in encountered OOD states.                | Indirectly, through chunking and Transformer's capacity for sequential patterns; still susceptible to large OOD shifts. | Better generalization due to learning the distribution of actions, and robust to noise, but not inherently designed for OOD correction like DAgger. (However, Diff-DAgger explicitly combines them). |
+| **Human Effort** | High (online supervision)                                              | Low (offline data collection)                                            | Low (offline data collection)                                                                 |
+| **Network Type** | Any policy network (often MLPs/CNNs)                                   | Transformer (often CVAE-based)                                           | Diffusion model (often U-Net or Transformer backbone)                                         |
+| **Multimodality** | Can handle, but relies on expert to explicitly demonstrate all modes.    | Can struggle, might average modes.                                       | Excellent at handling and generating from multimodal action distributions.                   |
+
+In short, DAgger addresses the core online interaction and distribution shift problem. ACT focuses on improving long-term temporal coherence and learning from limited demonstrations through action chunking. Diffusion Policy tackles learning complex, often multimodal, action distributions by leveraging powerful generative models. Recent research (like Diff-DAgger) is exploring ways to combine the strengths of these different approaches.
+
+# DAgger Example: Robot Arm Reaching a Target
+
+**Task:** Control a 2-DOF robot arm to reach a specific target position ($x_T,y_T$) from a random starting position.
+* **State ($s$):** ($q_1,q_2,\dot{q}_1,\dot{q}_2,x_{target},y_{target}$) (joint angles, velocities, target coordinates).
+* **Action ($a$):** ($\tau_1,\tau_2$) (joint torques).
+* **Expert ($\pi^*$):** A human operator teleoperating the robot or a pre-programmed optimal controller.
+
+**Setup:**
+
+* $N=3$ (for simplicity, usually much higher in practice).
+* $T=10$ (each trajectory is 10 steps long).
+* $\beta_i$ schedule: $\beta_1=1.0, \beta_2=0.5, \beta_3=0.0$.
+* Initial $\hat{\pi}_1$: A randomly initialized neural network.
+* **Original Expert Demos** (let's say we have 1 original 10-step expert trajectory):
+    $D_{\text{initial}}=\{(s_{0,\text{exp}},a_{0,\text{exp}}),(s_{1,\text{exp}},a_{1,\text{exp}}),\dots,(s_{9,\text{exp}},a_{9,\text{exp}})\}$
+
+Let's run through the DAgger loop:
+
+**Iteration $i=1$:**
+
+* **Mixing Policy:** $\pi_1 = \beta_1 \pi^* + (1-\beta_1) \hat{\pi}_1 = 1.0 \cdot \pi^* + 0.0 \cdot \hat{\pi}_1 = \pi^*$.
+    * The agent will follow the expert's policy entirely for data collection in this first iteration. (This effectively collects more pure expert data if $\hat{\pi}_1$ wasn't pre-trained).
+* **Sample Trajectory:** The agent (following $\pi^*$) collects a 10-step trajectory.
+    * Let's say it visited states: $s^a_0,s^a_1,\dots,s^a_9$. These are exactly what the expert would have visited.
+* **Expert Intervention:** For each $s^a_j$, the expert provides the label $\pi^*(s^a_j)$.
+    * $D_1=\{(s^a_0,\pi^*(s^a_0)),\dots,(s^a_9,\pi^*(s^a_9))\}$.
+* **Aggregate:** $D \leftarrow D \cup D_1$. Now $D$ contains $D_{\text{initial}}$ and $D_1$. If $D_{\text{initial}}$ was empty, it now contains the expert's first 10 steps.
+* **Train:** Train $\hat{\pi}_2$ on the aggregated dataset $D$.
+    * $\hat{\pi}_2$ is now a policy that has seen (at least) 20 expert-labeled state-action pairs. It's likely better than a random policy.
+
+**Iteration $i=2$:**
+
+* **Mixing Policy:** $\pi_2 = \beta_2 \pi^* + (1-\beta_2) \hat{\pi}_2 = 0.5 \cdot \pi^* + 0.5 \cdot \hat{\pi}_2$.
+    * The agent will now use a mix: 50% expert, 50% its own (imperfect) policy. This is where DAgger starts addressing distribution shift. If $\hat{\pi}_2$ makes a mistake and goes to a state $s_{\text{off-dist}}$ that the expert never visited (e.g., arm slightly too high), that state will now be visited.
+* **Sample Trajectory:** The agent (following $\pi_2$) collects a 10-step trajectory.
+    * States visited: $s^b_0,s^b_1,\dots,s^b_9$. Some of these states might be "off-distribution" (not on the expert's original path) because $\hat{\pi}_2$ isn't perfect yet.
+    * **Example:** Suppose at step 3, $\hat{\pi}_2$ caused the arm to slightly overshoot the target, leading to state $s^b_3$ which the original expert trajectory never had.
+* **Expert Intervention:** For each $s^b_j$ (including $s^b_3$), the human expert is queried: "If you were in $s^b_j$ right now, what action would you take?" The expert provides $\pi^*(s^b_j)$.
+    * $D_2=\{(s^b_0,\pi^*(s^b_0)),\dots,(s^b_9,\pi^*(s^b_9))\}$. Crucially, this $D_2$ includes the pair ($s^b_3,\pi^*(s^b_3)$), teaching the learner how to recover from overshooting.
+* **Aggregate:** $D \leftarrow D \cup D_2$. $D$ now has 30 (state, expert\_action) pairs.
+* **Train:** Train $\hat{\pi}_3$ on the expanded dataset $D$.
+    * $\hat{\pi}_3$ is now explicitly trained on some of its own mistakes, learning how the expert corrects them.
+
+**Iteration $i=3$:**
+
+* **Mixing Policy:** $\pi_3 = \beta_3 \pi^* + (1-\beta_3) \hat{\pi}_3 = 0.0 \cdot \pi^* + 1.0 \cdot \hat{\pi}_3 = \hat{\pi}_3$.
+    * The agent now relies entirely on its own policy $\hat{\pi}_3$ for data collection. This is the ultimate test.
+* **Sample Trajectory:** The agent (following $\hat{\pi}_3$) collects a 10-step trajectory.
+    * States visited: $s^c_0,s^c_1,\dots,s^c_9$. These are the states the learner itself visits.
+* **Expert Intervention:** For each $s^c_j$, the expert provides $\pi^*(s^c_j)$.
+    * $D_3=\{(s^c_0,\pi^*(s^c_0)),\dots,(s^c_9,\pi^*(s^c_9))\}$.
+* **Aggregate:** $D \leftarrow D \cup D_3$. $D$ now has 40 (state, expert\_action) pairs.
+* **Train:** Train $\hat{\pi}_4$ on the expanded dataset $D$.
+
+**End of Loop:**
+
+The algorithm ends. $\hat{\pi}_4$ has been trained on a dataset that increasingly reflects the states the learner itself is likely to encounter.
+The "Return best $\hat{\pi}_i$ on validation" step implies that throughout these iterations, you'd periodically evaluate $\hat{\pi}_1,\hat{\pi}_2,\hat{\pi}_3,\hat{\pi}_4$ on a separate validation set (or by letting them run for a full task execution) and pick the one that performed best.
+
+**Result:** The final policy $\hat{\pi}_{\text{best}}$ will be much more robust to distribution shift compared to a policy trained with pure Behavioral Cloning, because it has learned how to behave not just on the expert's ideal path, but also in states that result from its own (inevitable) deviations.
+
+The main takeaway from the numerical example is how the dataset $D$ grows with states visited by the learner's policy (or a mix), and how the expert then provides labels for those specific states, even the "off-track" ones.
