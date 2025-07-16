@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-07-16">
+
+<title>Learning from Demonstration – Đinh Tiến Thắng</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Đinh Tiến Thắng</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Đinh Tiến Thắng</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Learning from Demonstration</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">Machine Learning</div>
+                <div class="quarto-category">Reinforcement Learning</div>
+                <div class="quarto-category">Behavioral Cloning</div>
+                <div class="quarto-category">Imitation Learning</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">July 16, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#learning-from-demonstration-core-concepts-and-algorithms" id="toc-learning-from-demonstration-core-concepts-and-algorithms" class="nav-link active" data-scroll-target="#learning-from-demonstration-core-concepts-and-algorithms">Learning from Demonstration: Core Concepts and Algorithms</a>
+  <ul class="collapse">
+  <li><a href="#imitation-learning-il" id="toc-imitation-learning-il" class="nav-link" data-scroll-target="#imitation-learning-il">1. Imitation Learning (IL)</a></li>
+  <li><a href="#dagger-dataset-aggregation" id="toc-dagger-dataset-aggregation" class="nav-link" data-scroll-target="#dagger-dataset-aggregation">2. DAgger (Dataset Aggregation)</a></li>
+  <li><a href="#action-chunk-transformation-act" id="toc-action-chunk-transformation-act" class="nav-link" data-scroll-target="#action-chunk-transformation-act">3. Action Chunk Transformation (ACT)</a></li>
+  <li><a href="#diffusion-policy" id="toc-diffusion-policy" class="nav-link" data-scroll-target="#diffusion-policy">4. Diffusion Policy</a></li>
+  <li><a href="#summary-of-differences" id="toc-summary-of-differences" class="nav-link" data-scroll-target="#summary-of-differences">Summary of Differences:</a></li>
+  </ul></li>
+  <li><a href="#dagger-example-robot-arm-reaching-a-target" id="toc-dagger-example-robot-arm-reaching-a-target" class="nav-link" data-scroll-target="#dagger-example-robot-arm-reaching-a-target">DAgger Example: Robot Arm Reaching a Target</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="learning-from-demonstration-core-concepts-and-algorithms" class="level1">
+<h1>Learning from Demonstration: Core Concepts and Algorithms</h1>
+<section id="imitation-learning-il" class="level2">
+<h2 class="anchored" data-anchor-id="imitation-learning-il">1. Imitation Learning (IL)</h2>
+<p><strong>What it is:</strong> Imitation Learning, also known as Learning from Demonstration (LfD) or Apprenticeship Learning, is a machine learning paradigm where an agent learns to perform a task by observing and mimicking the behavior of an expert (typically a human). Instead of relying on a reward function and trial-and-error (like in Reinforcement Learning), the agent is provided with demonstrations (e.g., recorded state-action pairs) and learns a policy that maps observed states to appropriate actions, attempting to replicate the expert’s decisions.</p>
+<p><strong>Why use it?</strong> * <strong>No Reward Function Needed:</strong> Many robotic tasks are difficult to define with precise, hand-engineered reward functions (e.g., “tie a shoelace” or “do surgery”). IL bypasses this problem. * <strong>Safety:</strong> It can be safer than pure trial-and-error RL, especially in real-world robotics where random exploration could cause damage. * <strong>Human Intuition:</strong> Leverages human intuition and dexterity for complex tasks that are easy for humans but hard to program explicitly.</p>
+<p><strong>Basic Approach: Behavioral Cloning (BC)</strong> The simplest form of imitation learning is Behavioral Cloning. It treats the problem as a supervised learning task:</p>
+<ul>
+<li><strong>Data:</strong> Collect a dataset of <span class="math inline">\((s,a)\)</span> pairs where <span class="math inline">\(s\)</span> is an observed state and <span class="math inline">\(a\)</span> is the action taken by the expert in that state.</li>
+<li><strong>Training:</strong> Train a policy (e.g., a neural network) to predict the expert’s action <span class="math inline">\(a\)</span> given a state <span class="math inline">\(s\)</span>. This is typically done by minimizing the difference between the policy’s predicted action and the expert’s action (e.g., MSE for continuous actions, cross-entropy for discrete actions).</li>
+</ul>
+<p><strong>Key Challenge of BC: Distribution Shift</strong> Behavioral cloning suffers from a critical problem called “covariate shift” or “distribution shift”. If the learned policy makes even a tiny mistake and deviates slightly from the expert’s trajectory, it might find itself in a state that was never seen in the expert demonstrations. Since it hasn’t been trained on what to do in such unseen states, its performance can quickly degrade, leading to compounding errors and failure. Imagine a self-driving car trained only on perfect lane-keeping; if it drifts slightly, it might not know how to correct because it’s never seen “slightly off-center” states in the training data.</p>
+</section>
+<section id="dagger-dataset-aggregation" class="level2">
+<h2 class="anchored" data-anchor-id="dagger-dataset-aggregation">2. DAgger (Dataset Aggregation)</h2>
+<p><strong>What it is:</strong> DAgger (Dataset Aggregation) is an iterative imitation learning algorithm designed to mitigate the distribution shift problem of Behavioral Cloning. It was proposed by Ross, Gordon, and Bagnell in 2011.</p>
+<p><strong>How it works (Iterative Process):</strong> DAgger operates in a loop:</p>
+<ol type="1">
+<li><strong>Initial Policy Training:</strong> Train an initial policy <span class="math inline">\(\pi_i\)</span> using standard Behavioral Cloning on the current aggregated dataset <span class="math inline">\(D=\{(s,a_{\text{expert}})_j\}\)</span>. Initially, <span class="math inline">\(D\)</span> contains only the original expert demonstrations.</li>
+<li><strong>Policy Rollout:</strong> Deploy the current learned policy <span class="math inline">\(\pi_i\)</span> in the environment. The agent executes actions dictated by <span class="math inline">\(\pi_i\)</span> and collects a new trajectory of observations <span class="math inline">\(s_t\)</span>.</li>
+<li><strong>Expert Intervention (Labeling):</strong> For every state <span class="math inline">\(s_t\)</span> encountered during the policy’s rollout (even if the policy performed badly and got into an unseen state), query the human expert for the optimal action <span class="math inline">\(a_{\text{expert},t}\)</span> that the expert would have taken in that specific state <span class="math inline">\(s_t\)</span>.</li>
+<li><strong>Dataset Aggregation:</strong> Add these new <span class="math inline">\((s_t,a_{\text{expert},t})\)</span> pairs to the aggregated dataset <span class="math inline">\(D\)</span>. The crucial part is that <span class="math inline">\(s_t\)</span> includes states the learner visited, not just states the expert initially demonstrated.</li>
+<li><strong>Re-train Policy:</strong> Go back to step 1 and train a new policy <span class="math inline">\(\pi_{i+1}\)</span> on the expanded dataset <span class="math inline">\(D\)</span>.</li>
+</ol>
+<p>This process repeats for several iterations.</p>
+<p><strong>Key Difference from Pure BC:</strong> DAgger continuously adds data from states that the learner itself visits, with expert labels. This ensures that the policy gets explicit training on how to recover from its own mistakes and navigate states that are slightly off the expert trajectory, thus addressing the distribution shift problem. It makes the training distribution match the policy’s execution distribution over time.</p>
+<p><strong>Drawback of DAgger:</strong> It requires online human supervision during the policy rollout phase. The expert needs to be available to label actions for potentially many states encountered by the struggling policy, which can be time-consuming and labor-intensive, especially for long-horizon tasks or real-time robotics.</p>
+</section>
+<section id="action-chunk-transformation-act" class="level2">
+<h2 class="anchored" data-anchor-id="action-chunk-transformation-act">3. Action Chunk Transformation (ACT)</h2>
+<p><strong>What it is:</strong> Action Chunking with Transformers (ACT) is a more recent imitation learning approach (2022) specifically designed for robotic manipulation, that leverages the power of Transformers and a technique called action chunking.</p>
+<p><strong>Key Ideas:</strong></p>
+<ul>
+<li><strong>Action Chunking:</strong> Instead of predicting a single action at a time, ACT predicts a sequence or “chunk” of future actions (<span class="math inline">\(k\)</span> actions) given the current observation. This is an open-loop prediction for <span class="math inline">\(k\)</span> steps.
+<ul>
+<li><strong>Benefit 1: Reduced Horizon:</strong> By predicting multiple steps, it effectively reduces the “effective horizon” of the control problem, making it easier for the model to capture temporal dependencies and long-term consequences.</li>
+<li><strong>Benefit 2: Handles Non-Markovian Behavior:</strong> Human demonstrations can often be non-Markovian (meaning the optimal action depends on past context, not just the current state). By predicting a chunk, ACT implicitly incorporates more context.</li>
+<li><strong>Benefit 3: Lower Inference Frequency:</strong> The policy can run at a lower frequency (e.g., predict 50 actions every 1 second instead of 1 action every 20ms), which is more practical for complex visuomotor policies.</li>
+</ul></li>
+<li><strong>Transformer Architecture:</strong> It uses a Transformer (often a Conditional Variational Autoencoder - CVAE - with a Transformer backbone) to predict these action chunks. Transformers are excellent at modeling sequences and capturing long-range dependencies, which is well-suited for predicting future action sequences.</li>
+<li><strong>Temporal Ensembling:</strong> To mitigate jerkiness from open-loop chunk execution, ACT uses temporal ensembling: if there are overlapping predictions from multiple chunks, it averages them to produce smoother actions.</li>
+</ul>
+<p><strong>How it’s different from DAgger:</strong></p>
+<ul>
+<li><strong>Data Collection Paradigm:</strong> ACT is primarily a Behavioral Cloning-like approach. It trains on a fixed dataset of expert demonstrations (usually collected offline). It doesn’t inherently have DAgger’s interactive, iterative data aggregation loop with online expert labeling.</li>
+<li><strong>Addressing Distribution Shift:</strong> DAgger explicitly solves distribution shift by querying the expert for out-of-distribution states. ACT addresses temporal aspects and complex behaviors through action chunking and Transformer’s sequential modeling capabilities, which helps with robustness, but it still fundamentally relies on the initial expert data. If ACT encounters truly novel, far-off-distribution states, it can still struggle, similar to pure BC.</li>
+<li><strong>Output:</strong> DAgger outputs a single action per state, iteratively refining it. ACT outputs a sequence of actions per state (chunking).</li>
+<li><strong>Complexity:</strong> ACT uses a more complex neural network architecture (Transformers/CVAE) compared to the potentially simpler policies used in DAgger’s BC steps.</li>
+</ul>
+</section>
+<section id="diffusion-policy" class="level2">
+<h2 class="anchored" data-anchor-id="diffusion-policy">4. Diffusion Policy</h2>
+<p><strong>What it is:</strong> Diffusion Policy (2023) is a cutting-edge approach to visuomotor policy learning that frames the problem of action generation as a conditional denoising diffusion process. Inspired by generative AI models (like DALL-E or Stable Diffusion for images), it learns to gradually refine a noisy action proposal into a coherent, expert-like action.</p>
+<p><strong>Key Ideas:</strong></p>
+<ul>
+<li><strong>Generative Model:</strong> Diffusion models are generative models that learn a data distribution by training to reverse a diffusion process (gradually adding noise). In Diffusion Policy, this means they learn the distribution of expert actions given a visual observation.</li>
+<li><strong>Iterative Denoising:</strong> During inference, the policy starts with a random noise vector (representing an initial “noisy” action) and iteratively refines it over several steps, guided by the learned diffusion model, to produce the final action.</li>
+<li><strong>Multimodal Action Distributions:</strong> A significant advantage is its ability to elegantly handle multimodal action distributions. For example, if an expert can perform a task in multiple valid ways (e.g., pick up an object from left or right), a diffusion policy can learn to represent all these modes, rather than just averaging them out (which can happen in BC) or collapsing to a single mode.</li>
+<li><strong>High-Dimensional Actions:</strong> They are well-suited for high-dimensional action spaces (e.g., controlling a complex robot arm with many joints).</li>
+<li><strong>Training Stability:</strong> Diffusion models are known for their stable training properties.</li>
+</ul>
+<p><strong>How it’s different from DAgger and ACT:</strong></p>
+<ul>
+<li><strong>Underlying Mechanism:</strong> This is the biggest difference. DAgger and ACT are based on direct regression (BC-like, predicting actions directly). Diffusion Policy is a generative model that iteratively denoises actions.</li>
+<li><strong>Data Collection Paradigm:</strong> Diffusion Policy, like ACT, is primarily an offline imitation learning method. It learns from a fixed dataset of expert demonstrations. It does not inherently involve the online expert querying loop of DAgger.</li>
+<li><strong>Addressing Multimodality:</strong> Diffusion Policy’s core strength is its ability to handle multimodal actions. DAgger and ACT (especially vanilla BC) can struggle if the expert has multiple ways of solving a task, as they might try to average actions or pick an arbitrary mode.</li>
+<li><strong>Temporal Aspects:</strong> While ACT explicitly predicts chunks of actions for temporal consistency, Diffusion Policy can also be extended to predict sequences of actions (receding horizon control), leveraging the generative nature of diffusion models to ensure temporal coherence.</li>
+<li><strong>Online vs.&nbsp;Offline:</strong> DAgger is fundamentally an online algorithm that requires iterative interaction. ACT and Diffusion Policy are primarily offline methods that learn from pre-recorded datasets, although variants like Diff-DAgger try to combine them.</li>
+</ul>
+</section>
+<section id="summary-of-differences" class="level2">
+<h2 class="anchored" data-anchor-id="summary-of-differences">Summary of Differences:</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 26%">
+<col style="width: 27%">
+<col style="width: 35%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">DAgger</th>
+<th style="text-align: left;">Action Chunk Transformation (ACT)</th>
+<th style="text-align: left;">Diffusion Policy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Core Idea</strong></td>
+<td style="text-align: left;">Iterative data aggregation with online expert labeling to combat distribution shift.</td>
+<td style="text-align: left;">Predicts chunks of future actions using Transformers for temporal consistency.</td>
+<td style="text-align: left;">Generative model that denoises action proposals, learning multimodal action distributions.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Learning Type</strong></td>
+<td style="text-align: left;">Online, Interactive IL (iterative BC)</td>
+<td style="text-align: left;">Offline IL (advanced BC)</td>
+<td style="text-align: left;">Offline IL (generative model for actions)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Primary Output</strong></td>
+<td style="text-align: left;">Single action per state</td>
+<td style="text-align: left;">Chunk (sequence) of actions per state</td>
+<td style="text-align: left;">Single action (after denoising iterations) or a sequence of actions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Handles OOD</strong></td>
+<td style="text-align: left;">Explicitly, by querying expert in encountered OOD states.</td>
+<td style="text-align: left;">Indirectly, through chunking and Transformer’s capacity for sequential patterns; still susceptible to large OOD shifts.</td>
+<td style="text-align: left;">Better generalization due to learning the distribution of actions, and robust to noise, but not inherently designed for OOD correction like DAgger. (However, Diff-DAgger explicitly combines them).</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Human Effort</strong></td>
+<td style="text-align: left;">High (online supervision)</td>
+<td style="text-align: left;">Low (offline data collection)</td>
+<td style="text-align: left;">Low (offline data collection)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Network Type</strong></td>
+<td style="text-align: left;">Any policy network (often MLPs/CNNs)</td>
+<td style="text-align: left;">Transformer (often CVAE-based)</td>
+<td style="text-align: left;">Diffusion model (often U-Net or Transformer backbone)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Multimodality</strong></td>
+<td style="text-align: left;">Can handle, but relies on expert to explicitly demonstrate all modes.</td>
+<td style="text-align: left;">Can struggle, might average modes.</td>
+<td style="text-align: left;">Excellent at handling and generating from multimodal action distributions.</td>
+</tr>
+</tbody>
+</table>
+<p>In short, DAgger addresses the core online interaction and distribution shift problem. ACT focuses on improving long-term temporal coherence and learning from limited demonstrations through action chunking. Diffusion Policy tackles learning complex, often multimodal, action distributions by leveraging powerful generative models. Recent research (like Diff-DAgger) is exploring ways to combine the strengths of these different approaches.</p>
+</section>
+</section>
+<section id="dagger-example-robot-arm-reaching-a-target" class="level1">
+<h1>DAgger Example: Robot Arm Reaching a Target</h1>
+<p><strong>Task:</strong> Control a 2-DOF robot arm to reach a specific target position (<span class="math inline">\(x_T,y_T\)</span>) from a random starting position. * <strong>State (<span class="math inline">\(s\)</span>):</strong> (<span class="math inline">\(q_1,q_2,\dot{q}_1,\dot{q}_2,x_{target},y_{target}\)</span>) (joint angles, velocities, target coordinates). * <strong>Action (<span class="math inline">\(a\)</span>):</strong> (<span class="math inline">\(\tau_1,\tau_2\)</span>) (joint torques). * <strong>Expert (<span class="math inline">\(\pi^*\)</span>):</strong> A human operator teleoperating the robot or a pre-programmed optimal controller.</p>
+<p><strong>Setup:</strong></p>
+<ul>
+<li><span class="math inline">\(N=3\)</span> (for simplicity, usually much higher in practice).</li>
+<li><span class="math inline">\(T=10\)</span> (each trajectory is 10 steps long).</li>
+<li><span class="math inline">\(\beta_i\)</span> schedule: <span class="math inline">\(\beta_1=1.0, \beta_2=0.5, \beta_3=0.0\)</span>.</li>
+<li>Initial <span class="math inline">\(\hat{\pi}_1\)</span>: A randomly initialized neural network.</li>
+<li><strong>Original Expert Demos</strong> (let’s say we have 1 original 10-step expert trajectory): <span class="math inline">\(D_{\text{initial}}=\{(s_{0,\text{exp}},a_{0,\text{exp}}),(s_{1,\text{exp}},a_{1,\text{exp}}),\dots,(s_{9,\text{exp}},a_{9,\text{exp}})\}\)</span></li>
+</ul>
+<p>Let’s run through the DAgger loop:</p>
+<p><strong>Iteration <span class="math inline">\(i=1\)</span>:</strong></p>
+<ul>
+<li><strong>Mixing Policy:</strong> <span class="math inline">\(\pi_1 = \beta_1 \pi^* + (1-\beta_1) \hat{\pi}_1 = 1.0 \cdot \pi^* + 0.0 \cdot \hat{\pi}_1 = \pi^*\)</span>.
+<ul>
+<li>The agent will follow the expert’s policy entirely for data collection in this first iteration. (This effectively collects more pure expert data if <span class="math inline">\(\hat{\pi}_1\)</span> wasn’t pre-trained).</li>
+</ul></li>
+<li><strong>Sample Trajectory:</strong> The agent (following <span class="math inline">\(\pi^*\)</span>) collects a 10-step trajectory.
+<ul>
+<li>Let’s say it visited states: <span class="math inline">\(s^a_0,s^a_1,\dots,s^a_9\)</span>. These are exactly what the expert would have visited.</li>
+</ul></li>
+<li><strong>Expert Intervention:</strong> For each <span class="math inline">\(s^a_j\)</span>, the expert provides the label <span class="math inline">\(\pi^*(s^a_j)\)</span>.
+<ul>
+<li><span class="math inline">\(D_1=\{(s^a_0,\pi^*(s^a_0)),\dots,(s^a_9,\pi^*(s^a_9))\}\)</span>.</li>
+</ul></li>
+<li><strong>Aggregate:</strong> <span class="math inline">\(D \leftarrow D \cup D_1\)</span>. Now <span class="math inline">\(D\)</span> contains <span class="math inline">\(D_{\text{initial}}\)</span> and <span class="math inline">\(D_1\)</span>. If <span class="math inline">\(D_{\text{initial}}\)</span> was empty, it now contains the expert’s first 10 steps.</li>
+<li><strong>Train:</strong> Train <span class="math inline">\(\hat{\pi}_2\)</span> on the aggregated dataset <span class="math inline">\(D\)</span>.
+<ul>
+<li><span class="math inline">\(\hat{\pi}_2\)</span> is now a policy that has seen (at least) 20 expert-labeled state-action pairs. It’s likely better than a random policy.</li>
+</ul></li>
+</ul>
+<p><strong>Iteration <span class="math inline">\(i=2\)</span>:</strong></p>
+<ul>
+<li><strong>Mixing Policy:</strong> <span class="math inline">\(\pi_2 = \beta_2 \pi^* + (1-\beta_2) \hat{\pi}_2 = 0.5 \cdot \pi^* + 0.5 \cdot \hat{\pi}_2\)</span>.
+<ul>
+<li>The agent will now use a mix: 50% expert, 50% its own (imperfect) policy. This is where DAgger starts addressing distribution shift. If <span class="math inline">\(\hat{\pi}_2\)</span> makes a mistake and goes to a state <span class="math inline">\(s_{\text{off-dist}}\)</span> that the expert never visited (e.g., arm slightly too high), that state will now be visited.</li>
+</ul></li>
+<li><strong>Sample Trajectory:</strong> The agent (following <span class="math inline">\(\pi_2\)</span>) collects a 10-step trajectory.
+<ul>
+<li>States visited: <span class="math inline">\(s^b_0,s^b_1,\dots,s^b_9\)</span>. Some of these states might be “off-distribution” (not on the expert’s original path) because <span class="math inline">\(\hat{\pi}_2\)</span> isn’t perfect yet.</li>
+<li><strong>Example:</strong> Suppose at step 3, <span class="math inline">\(\hat{\pi}_2\)</span> caused the arm to slightly overshoot the target, leading to state <span class="math inline">\(s^b_3\)</span> which the original expert trajectory never had.</li>
+</ul></li>
+<li><strong>Expert Intervention:</strong> For each <span class="math inline">\(s^b_j\)</span> (including <span class="math inline">\(s^b_3\)</span>), the human expert is queried: “If you were in <span class="math inline">\(s^b_j\)</span> right now, what action would you take?” The expert provides <span class="math inline">\(\pi^*(s^b_j)\)</span>.
+<ul>
+<li><span class="math inline">\(D_2=\{(s^b_0,\pi^*(s^b_0)),\dots,(s^b_9,\pi^*(s^b_9))\}\)</span>. Crucially, this <span class="math inline">\(D_2\)</span> includes the pair (<span class="math inline">\(s^b_3,\pi^*(s^b_3)\)</span>), teaching the learner how to recover from overshooting.</li>
+</ul></li>
+<li><strong>Aggregate:</strong> <span class="math inline">\(D \leftarrow D \cup D_2\)</span>. <span class="math inline">\(D\)</span> now has 30 (state, expert_action) pairs.</li>
+<li><strong>Train:</strong> Train <span class="math inline">\(\hat{\pi}_3\)</span> on the expanded dataset <span class="math inline">\(D\)</span>.
+<ul>
+<li><span class="math inline">\(\hat{\pi}_3\)</span> is now explicitly trained on some of its own mistakes, learning how the expert corrects them.</li>
+</ul></li>
+</ul>
+<p><strong>Iteration <span class="math inline">\(i=3\)</span>:</strong></p>
+<ul>
+<li><strong>Mixing Policy:</strong> <span class="math inline">\(\pi_3 = \beta_3 \pi^* + (1-\beta_3) \hat{\pi}_3 = 0.0 \cdot \pi^* + 1.0 \cdot \hat{\pi}_3 = \hat{\pi}_3\)</span>.
+<ul>
+<li>The agent now relies entirely on its own policy <span class="math inline">\(\hat{\pi}_3\)</span> for data collection. This is the ultimate test.</li>
+</ul></li>
+<li><strong>Sample Trajectory:</strong> The agent (following <span class="math inline">\(\hat{\pi}_3\)</span>) collects a 10-step trajectory.
+<ul>
+<li>States visited: <span class="math inline">\(s^c_0,s^c_1,\dots,s^c_9\)</span>. These are the states the learner itself visits.</li>
+</ul></li>
+<li><strong>Expert Intervention:</strong> For each <span class="math inline">\(s^c_j\)</span>, the expert provides <span class="math inline">\(\pi^*(s^c_j)\)</span>.
+<ul>
+<li><span class="math inline">\(D_3=\{(s^c_0,\pi^*(s^c_0)),\dots,(s^c_9,\pi^*(s^c_9))\}\)</span>.</li>
+</ul></li>
+<li><strong>Aggregate:</strong> <span class="math inline">\(D \leftarrow D \cup D_3\)</span>. <span class="math inline">\(D\)</span> now has 40 (state, expert_action) pairs.</li>
+<li><strong>Train:</strong> Train <span class="math inline">\(\hat{\pi}_4\)</span> on the expanded dataset <span class="math inline">\(D\)</span>.</li>
+</ul>
+<p><strong>End of Loop:</strong></p>
+<p>The algorithm ends. <span class="math inline">\(\hat{\pi}_4\)</span> has been trained on a dataset that increasingly reflects the states the learner itself is likely to encounter. The “Return best <span class="math inline">\(\hat{\pi}_i\)</span> on validation” step implies that throughout these iterations, you’d periodically evaluate <span class="math inline">\(\hat{\pi}_1,\hat{\pi}_2,\hat{\pi}_3,\hat{\pi}_4\)</span> on a separate validation set (or by letting them run for a full task execution) and pick the one that performed best.</p>
+<p><strong>Result:</strong> The final policy <span class="math inline">\(\hat{\pi}_{\text{best}}\)</span> will be much more robust to distribution shift compared to a policy trained with pure Behavioral Cloning, because it has learned how to behave not just on the expert’s ideal path, but also in states that result from its own (inevitable) deviations.</p>
+<p>The main takeaway from the numerical example is how the dataset <span class="math inline">\(D\)</span> grows with states visited by the learner’s policy (or a mix), and how the expert then provides labels for those specific states, even the “off-track” ones.</p>
+
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
