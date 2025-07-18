@@ -1,0 +1,159 @@
+---
+title: "Exam: Touch Sensing"
+date: 2025-07-18
+categories: [Exam]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+# Importance of Touch Sensing
+## Why is it important?
+**Human** to feel the emotion & grasp objects
+
+**Robotics**complement sensor at local scale e.g: 
+
+* precise direct local scale force+position+direction: grasping needs a sense of a correct force and direction applying on an object, too soft, will slip, too strong and not correct direction will also apply forces wrongly => also slip. Soley relying on visual might not be able to detect that because just 1-2 pixels.
+* avoid vision occlusion and noise: in dark environment, human rely on touching surrounding things in room
+
+=> actually not widely yet because we havent had much proofs and experiment to demonstrate its proficiency but some works have been done. e.g:
+
+* The Feeling of Success 2017: complement 2 RGB-D cameras by 2 GelSight sensors -> get object position from RGB-D, labels based on success lift or not-> 83% success, only-vision only 56%
+* General In-hand Rotation with Vision and Touch 2023: rotation reward X,Y,Z
+
+
+
+
+# Human Touch Sensing
+## Mechanoreceptors
+force, position, pressure, vibration, stretch. Everything is in **Dermis**, but **Epidermis** is outer layer to protect, re-generating and healing:
+
+* Merkel's disk: skin upper layer, slowly adapting (at presence of static stimulus), balance structure => good for shape+texture identification & light touch
+* Meissner's corpuscle: also upper layer, but rapid adapting (at stimulus change, gradient of touch), vertical structure => good for pressure sensing + low frequency
+* Pacinian corpuscle: deep in skin layer, and also rapid adapting, BUT the round shape  => high frequency sensing
+* Ruffini Endings: deep in skin layer, slow adapting, vertical structure => good for stretch detection
+
+## Thermoreceptors, Nocireceptors (pain), Proprioreceptors (IMU), Chemoreceptors
+
+## Difficult to reconstruct
+Spatial Resolution + Normal Force Resolution currently human finger finer
+
+# Touch Sensing Hardware
+## Requirements
+* small => more challenging grasping tasks like surgery
+* reliability => precise & robust
+* manufacture & affordable => more approachable for research and use
+
+## Technology
+* **Capacitive:** touch represent a parallel capacitor to ground (multiple touch possible), but in many cases this would be wrongly intepreted (e.g: any conductive material noise but without any force like water)
+* **Ressistive:** material bend create change in resistance R = ro * l / S => widely used, cheap, insensitive to liquid, but no multi-touch
+* **Piezoelectric** generates electrical field at mechanical change because of breaking out balance state of + & - ions => electric movements => good for vibration
+* **Magnetic** interparticle position changes => changes in magnetic field
+
+
+# VBTS
+* Advantage 1: high spatial resolution & feature, utilizing well-studied techniques to analyze & process data captured
+* Challenge 1: unifying VBTS: 
+    * currently no set of uniform sensor configuration, each sensor has different outcome (GelSight, DIGIT, change Elastomer) => cannot compare or benchmark
+    * each situation needs different form factor (flat, curved) => so difficult to unify
+* Challenge 2: Robust high precision & complexity at small size:
+    * electronics problem about heat, computation limit, bandwidth, latency, ...
+    * Camera & optical system has to be very durable & precise
+* Challenge 3: Slow temporal resolution. No vibration bc of elastomer damping and camera framerate
+
+* Design factors:
+    * Elastomer for recognizing touch features (it has a durability problem that it will wear out after sometimes so needs re-calibrate or change, because it cannot re-generate like human skin)
+    * Lighting needs correct calibration depending on position, because it can create shadows
+    * Camera & optical system has to be very high resolution
+
+# Touch Simulation
+* **Purpose** quickly generate a lot of data for analyse and processing, and a rough study of behavior in real world before really working on expensive real model
+* **Multi-Body Dynamics Modelling**
+    * well studied
+    * but high computation cost on complex environment
+
+# Perception in Touch
+mostly start by using Markers. It is simple but good, we can track the position by time easily. The only designing factor is to calibrate the initial marker distortion. Because the camera see from a singular perspective.
+
+## Depth Estimation & 3D Reconstruction
+Color gradient (change in color by time) + Bend in markers
+
+## Image to Video
+one image cannot do anything, mostly what we care is a change detection (force, slip) => 
+
+* RNN
+* Transformer
+* Optical Flow
+
+## Force detection
+* Touch detection was in exercise 3. input 2 digit images: => use simple ResNet or Vision Transformer:
+    * many way to implement: either concatenate 2 images in the same input then feed into one network, but I was afraid the network has to learn differentiating 2 images separately, so I input each of them in separate CNN network, after that concatenate them into linear layers.
+
+## Object/Material Classification
+* Coin: coin classification in the exercise 2, I used vision transformer for image
+* Hardness: LSTM, each timeframe a CNN, if the frame features involve with bolder change by time => it is harder
+
+## Object property regression
+
+## Slip detection
+* LSTM using 2 inputs at each frame (GelSight + external image), each frame and each input goes through a separate CNN
+
+## Pose Estimation & Prediction
+* Tac2Pose: mkeypoint is feature matching of real tactile image with the closest simulated data collected, this kinda needs to know the objece model in advance
+* Slip Prediction: seems to not yet well-studied
+
+## Multi-modal Transfer
+* Goal: use of multiple sensor: 
+* Method: learning based, inputs are e.g. GelSight, external iamge and go through CNN layers separately, then concatenate them in the same linear laers, output is just a classification of are they the same 1 or 0 (sigmoid cross entropy loss)
+* this is important so that in future we can utilize them in more complex system utilizing multiple sensor:
+    * across sensors: DIGIT, GelSight,...
+    * across tasks
+
+# Control using Touch
+## Grasping
+* The Feeling of Success 2017: input GelSight + external camera
+* More than a Feeling 2018 add temporal aspect + action input (at each timestep predicts the next timestep success rate), it is also where you figured out that applying more force does not always means better
+
+## Manipulation
+* DIGIT 2020: MBRL similar to Dreamer, from my unterstanding only goal at one of 2 sensors
+* General In-Hand Rotation 2023: 
+* Learning to play Piano with touch 2022: MIDI converter+tactilesensing+proprioperceptive sensor RL
+
+## Locomotion
+* provide information about force & contact, but not so many works
+
+
+
+
+
+# Why is touch an important sense?
+* Which parameters can it detect? (Contact Position, Intensity)
+# Which touch receptors has a human?
+* What do Proprioceptors detect? (Touch Position)
+* Which Mechanoreceptors do exist and what do they detect?
+
+# Explain 3 hardware technologies (except vision-based) for sensing touch.
+* How do they work (basic principle)?
+* Advantages/Disadvantages?
+
+# How do Vision-based Tactile Sensors work?
+* Mention the three components: Elastomer, LEDs, Camera; Explain their relation
+    * Advantages compared to classical hardware methods? (Modularity, high resolution, ...)
+    * Spatial Resolution? (Better than human skin, refer to the diagram of the lecture)
+    * Temporal Resolution? (Not good, high bandwidth diminishes framerate -> effectively no vibration detectable)
+
+# Why is simulating touch hard?
+* (Soft Body Physics)
+
+# What forces can markers detect?
+* (Shear Forces)
+    * How is a marker-based flow field created? (Mention frame-to-frame tracking to create vectors)
+*	Why is Touch important in humans and robotics?
+*	What are differences between Touch and Vision? What information can we get from Touch which we cannot get from Vision?
+*	What are the different receptors of the skin?
+*	What are the different cells/corpuscles of mechanorecptors? What are they used for?
+*	What are advantages and disadvantages of VBTS?
+*	What kind of models in ML can be used to process images from VBTS? (CNN + LSTM, 3D CNN, Transformers) What are disadvantages of the 3D CNN approach?
+
+
