@@ -1,0 +1,63 @@
+---
+title: "Exam ML4R"
+date: 2025-07-19
+categories: [Machine Learning, Model-based Learning, Reinforcement Learning]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+
+
+# Control
+```
+mj_model = mujoco.mjModel(XML)
+mj_data = mujoco.mjData(mj_model)
+mj_renderer = mujoco.Renderer(mj_model)
+u = mj_data.ctrl = - np.clip(np.dot(gain, state_around_target), -1, 1) # u = -K*(s-st)
+
+```
+$$J = \text{cost\_state\_diff} + \text{cost\_control}$$
+$$J = \sum_{k=0}^{N-1} (\mathbf{s}_k^T \mathbf{Q} \mathbf{s}_k + R \cdot u_k^2)$$
+
+$$\text{cost\_control} = \sum_{k=0}^{N-1} 0.1 \cdot u_k^2$$
+
+Given the state vector $\mathbf{s}_k = \begin{bmatrix} x_k \\ \theta_k \\ \dot{x}_k \\ \dot{\theta}_k \\ I_{x,k} \\ I_{\theta,k} \end{bmatrix}$ and the $\mathbf{Q}$ matrix, the term $\mathbf{s}_k^T \mathbf{Q} \mathbf{s}_k$ expands to:
+$$ \mathbf{s}_k^T \mathbf{Q} \mathbf{s}_k = 1 \cdot x_k^2 + 10 \cdot \theta_k^2 + 0 \cdot \dot{x}_k^2 + 0 \cdot \dot{\theta}_k^2 + 0 \cdot I_{x,k}^2 + 0 \cdot I_{\theta,k}^2 $$
+Therefore:
+$$\text{cost\_state\_diff} = \sum_{k=0}^{N-1} (1 \cdot x_k^2 + 10 \cdot \theta_k^2 + 0 \cdot \dot{x}_k^2 + 0 \cdot \dot{\theta}_k^2 + 0 \cdot I_{x,k}^2 + 0 \cdot I_{\theta,k}^2)$$
+
+LQR:
+
+then we use Lagrange by hand to define matrices A and B manually
+then put in 
+```
+gain = control.lqr(A,B,Q,R)[0][0]
+LQR gain: [ -3.16227766 -16.16201957  -3.08776552  -2.75139594]
+```
+
+$$u(t) = - \mathbf{K}\mathbf{s}(t)$$
+
+This control law minimizes the cost function $J$ subject to the system dynamics. The negative sign indicates negative feedback, meaning the control action is applied to reduce the error.
+
+The gain matrix $\mathbf{K}$ is obtained by solving the continuous-time Algebraic Riccati Equation (ARE):
+
+$$\mathbf{A}^T \mathbf{P} + \mathbf{P} \mathbf{A} - \mathbf{P} \mathbf{B} R^{-1} \mathbf{B}^T \mathbf{P} + \mathbf{Q} = \mathbf{0}$$
+
+where $\mathbf{P}$ is a symmetric positive definite matrix. Once $\mathbf{P}$ is found, the optimal gain $\mathbf{K}$ is calculated as:
+
+$$\mathbf{K} = R^{-1} \mathbf{B}^T \mathbf{P}$$
+
+**In your code:**
+The `control.lqr(A, B, Q, R)` function (presumably from the `python-control` library) performs these calculations (solves the ARE and computes $\mathbf{K}$) to provide the optimal LQR gain.
+
+The output `gain = control.lqr(A,B,Q,R)[0][0]` suggests that the function returns a tuple, and you are extracting the first element of the first array, which will be the row vector $\mathbf{K}$.
+
+For your specific system and weights, the output `gain` will be a row vector:
+
+$$\mathbf{K} = \begin{bmatrix} K_x & K_\theta & K_{\dot{x}} & K_{\dot{\theta}} \end{bmatrix}$$
+
+And the control law will be:
+
+$$u(t) = - (K_x x(t) + K_\theta \theta(t) + K_{\dot{x}} \dot{x}(t) + K_{\dot{\theta}} \dot{\theta}(t))$$
