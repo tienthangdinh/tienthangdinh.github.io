@@ -11,6 +11,8 @@ format:
 
 
 # Control
+
+## Exploring a linear feedback-state control
 ```
 mj_model = mujoco.mjModel(XML)
 mj_data = mujoco.mjData(mj_model)
@@ -18,46 +20,315 @@ mj_renderer = mujoco.Renderer(mj_model)
 u = mj_data.ctrl = - np.clip(np.dot(gain, state_around_target), -1, 1) # u = -K*(s-st)
 
 ```
-$$J = \text{cost\_state\_diff} + \text{cost\_control}$$
-$$J = \sum_{k=0}^{N-1} (\mathbf{s}_k^T \mathbf{Q} \mathbf{s}_k + R \cdot u_k^2)$$
+$$u(t) = K e(t) = K_x (x(t) - x_{\text{target}}(t)) + K_\theta \theta(t) + K_{\dot{x}} \dot{x}(t) + K_{\dot{\theta}} \dot{\theta}(t)$$
 
-$$\text{cost\_control} = \sum_{k=0}^{N-1} 0.1 \cdot u_k^2$$
+we just adapt the gain K to see which one is good, but this is a manual work, so we can find an optimal using LQR method
 
-Given the state vector $\mathbf{s}_k = \begin{bmatrix} x_k \\ \theta_k \\ \dot{x}_k \\ \dot{\theta}_k \\ I_{x,k} \\ I_{\theta,k} \end{bmatrix}$ and the $\mathbf{Q}$ matrix, the term $\mathbf{s}_k^T \mathbf{Q} \mathbf{s}_k$ expands to:
-$$ \mathbf{s}_k^T \mathbf{Q} \mathbf{s}_k = 1 \cdot x_k^2 + 10 \cdot \theta_k^2 + 0 \cdot \dot{x}_k^2 + 0 \cdot \dot{\theta}_k^2 + 0 \cdot I_{x,k}^2 + 0 \cdot I_{\theta,k}^2 $$
-Therefore:
-$$\text{cost\_state\_diff} = \sum_{k=0}^{N-1} (1 \cdot x_k^2 + 10 \cdot \theta_k^2 + 0 \cdot \dot{x}_k^2 + 0 \cdot \dot{\theta}_k^2 + 0 \cdot I_{x,k}^2 + 0 \cdot I_{\theta,k}^2)$$
-
-LQR:
+## Now we structure the control to LQR
 
 then we use Lagrange by hand to define matrices A and B manually
 then put in 
+
+Here's the mathematical formulation of A, B, Q, R, and K for your LQR example in Markdown:
+
+### 1. System Dynamics Matrices:
+
+These matrices define the linearized, continuous-time state-space model of the cart-pole system:
+
+$\dot{\mathbf{s}}(t) = \mathbf{A}\mathbf{s}(t) + \mathbf{B}u(t)$
+
+* **A (State Matrix):**
+    This matrix describes how the system's current state affects its future state *without* any control input. It represents the inherent dynamics of the system.
+    In your example:
+    $$\mathbf{A} = \begin{bmatrix} 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \\ 0 & -\frac{g m}{M} & 0 & 0 \\ 0 & \frac{g}{l}\left(1 + \frac{m}{M}\right) & 0 & 0 \end{bmatrix}$$
+    Where:
+    * $g$: acceleration due to gravity
+    * $m$: mass of the pendulum (pole)
+    * $M$: mass of the cart
+    * $l$: length from the pivot to the center of mass of the pendulum
+
+* **B (Input Matrix):**
+    This matrix describes how the control input $u(t)$ affects the system's state.
+    In your example:
+    $$\mathbf{B} = \begin{bmatrix} 0 \\ 0 \\ \frac{k}{M} \\ -\frac{k}{M l} \end{bmatrix}$$
+    Where:
+    * $k$: gear ratio, converting the control signal $u$ into a physical force $F = k \cdot u$ applied to the cart.
+    * $M$: mass of the cart
+    * $l$: length from the pivot to the center of mass of the pendulum
+
+### 2. Cost Function Matrices:
+
+These matrices define the quadratic cost function that the LQR controller aims to minimize. The cost function penalizes deviations from the desired state and the control effort.
+
+$J = \int_{0}^{\infty} (\mathbf{s}(t)^T \mathbf{Q} \mathbf{s}(t) + u(t)^T R u(t)) \, dt$
+
+* **Q (State Weighting Matrix):**
+    This is a symmetric positive semi-definite matrix that assigns penalties to deviations of each state variable from its desired value (typically zero for stabilization). A larger value on the diagonal means a higher penalty for deviation in that specific state component.
+    In your example:
+    $$\mathbf{Q} = \text{diag}([1, 10, 0, 0]) = \begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 10 & 0 & 0 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \end{bmatrix}$$
+    This means:
+    * You penalize the square of the cart's position ($x^2$) with a weight of 1.
+    * You heavily penalize the square of the pendulum's angle ($\theta^2$) with a weight of 10, indicating it's crucial to keep the pendulum upright.
+    * You do not directly penalize the squared cart velocity ($\dot{x}^2$) or pendulum angular velocity ($\dot{\theta}^2$) in the cost function.
+
+* **R (Control Weighting Matrix/Scalar):**
+    This is a symmetric positive definite matrix (or a scalar for a single control input) that penalizes the magnitude of the control input. A larger $R$ implies that you want to use less control effort, which might lead to slower system response or larger state deviations.
+    In your example:
+    $$R = 0.1$$
+    This means the square of the control input ($u^2$) is penalized with a weight of 0.1.
+
+### 3. Optimal Gain Matrix:
+
+* **K (State Feedback Gain Matrix):**
+    This is the constant gain matrix calculated by the LQR algorithm. It defines the optimal control law:
+    $u(t) = - \mathbf{K}\mathbf{s}(t)$
+    This matrix tells you how much to adjust the control input $u(t)$ based on the current values of each state variable to minimize the defined cost function $J$.
+    The `control.lqr(A,B,Q,R)` function computes this $\mathbf{K}$.
+    In your example, `gain` will be a row vector of 4 elements:
+    $$\mathbf{K} = \begin{bmatrix} K_x & K_\theta & K_{\dot{x}} & K_{\dot{\theta}} \end{bmatrix}$$
+    So, the control force applied is:
+    $$u(t) = - (K_x x(t) + K_\theta \theta(t) + K_{\dot{x}} \dot{x}(t) + K_{\dot{\theta}} \dot{\theta}(t))$$
+    This $\mathbf{K}$ is designed to bring the cart to $x=0$ and the pendulum to $\theta=0$ (upright) while respecting the balance between state deviations and control effort defined by $\mathbf{Q}$ and $R$.
+
+For an LTI system with an infinite horizon, K is constant.
+
+For an LTI system with a finite horizon, K is time-varying (calculated via DRE).
+
+For a nonlinear system, if you linearize around a fixed equilibrium, you get a constant K (local control).
+
+For a nonlinear system, if you linearize around a time-varying trajectory (e.g., for tracking) or re-linearize at each step (as in MPC), then the underlying A(t) and B(t) matrices change, and thus the effective feedback gain K will be time-varying.
+
+
+| Feature            | Finite-Horizon LQR (Example)                                                                                                                                                                                                                                                                                                                        | Model Predictive Control (MPC)                                                                                                                                                                                                                                                                                                    |
+| :----------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Calculation** | Solved **once, offline** | Solved **repeatedly, online** at each time step                                                                                                                                                                                                                                                                           |
+| **Gain K** | Pre-computed **time-varying schedule** $\mathbf{K}(t)$ for the full horizon.                                                                                                                                                                                                                                                                     | **No explicit $\mathbf{K}(t)$ schedule is used for control application**. Instead, a sequence of open-loop controls is generated, and only the first is applied. The underlying optimization at each step might use an LQR-like calculation, where an internal, temporary $\mathbf{K}$ might be derived for that specific horizon, but it's not directly applied as a time-varying feedback law over the *entire* system operation. |
+| **Horizon** | Fixed starting point ($t_0$), fixed end point ($T$)                                                                                                                                                                                                                                                                                              | **Receding horizon**: Always looks $N$ steps ahead from current time                                                                                                                                                                                                                                                  |
+| **Adaptivity** | Less adaptive to unmodeled disturbances or errors (relies on pre-computed plan).                                                                                                                                                                                                                                                                  | Highly adaptive to disturbances and model inaccuracies because it re-optimizes at every step using the latest state.                                                                                                                                                                                              |
+| **Computational Load** | Low online computational load (just lookup)                                                                                                                                                                                                                                                                                                       | High online computational load (solves an optimization problem at each step)                                                                                                                                                                                                                                      |
+| **Nonlinear Systems** | Limited to local linearization around an equilibrium.                                                                                                                                                                                                                                                                                               | Can handle nonlinearities directly by including them in the optimization, though it often involves linearization at each step for computational tractability.                                                                                                                                                    |
+
+So, while LQR for a finite horizon is a building block for understanding the optimization part of MPC, MPC adds the crucial "receding horizon" and "re-optimization at each step" features that make it distinct and powerful for complex, real-time control problems.
+
+
+## MPC
+* step 1: taking dynamics A, B as input, formulate finite horizont stateinput sequences in a dynamic programmed (matrix) way $X_k = \mathbf{\Phi} x(k) + \mathbf{\Gamma} U_k$
+* step 2: substituting into J cost function (just the same as LQR), now we have $J(U_k,x(k))$ into $\frac{1}{2}U_k^T H U_k + G^T U_k + J_{const}$.
+* using QP solver, because this is the format that the solution method is known
+* only apply the first one, and next step reapply MPC
+
+
+# Introduction to RL
+* MBRL: using Dynamic Programming
+* Model-free: Monte Carlo --(improve)--- Temporal Difference (SARSA (on policy) vs Q-Learning (off-policy))
+
+Monte Carlo: 
+
+* epsilon-greedy => Q* != Q_pi. epsilon greedy to sample actions, which are mostly only suboptimal and actually leads to longer trajectory
+  
+Q-Learning:
+
+* even epsilon-greedy, Q* = Q_pi, because it is off-policy. BUT epsilon-greedy still leads to suboptimal longer trajectory like above in MC
+
+How do V* and Q* relate? 
+$$Q^*(s,a)=R(s,a)+\gamma \mathbb{E}_{s' \sim P(s,a)}[V^*(s')]$$
+for each Q slot in the environment (4, 4, 4), there are 4 Q(s,a)
+
+$$V^*(s) = \max_{a} Q^*(s, a)$$
+$$V^*(s) = \average_{a} Q^*(s, a)$$
+just need to sum over all Q(s, a) mentioned above, because V is environment of (4, 4)
+
+## Model-based 
+
+### Bellman Optimally using Value Iteration
 ```
-gain = control.lqr(A,B,Q,R)[0][0]
-LQR gain: [ -3.16227766 -16.16201957  -3.08776552  -2.75139594]
+policy = lambda s: [0.25,0.25,0.25,0.25]
+V = np.zeros((4,4))
+Q_pi = np.zeros((4,4,4))
+
+for steps in range(200):
+    for state_idx in range(16):
+        action_probs = policy(state)
+        subseq_states = np.clip(state+directions,0,3)
+        V_subseq_states = np.array([V_pi[tuple(idx)] for idx in subseq_states])
+        V_pi[state] = np.sum(action_probs*(rewards+gamma*V_subseq_states))
+        Q_pi[state] = rewards + gamma * V_subseq_states
+```
+The goal in reinforcement learning is to find a policy that maximizes the discounted future return that the agent can expect. In other words, we want to find a policy $\pi^*$ that dominates all other policies: $V^{\pi^*} := V^* \ge V^\pi$ for all $\pi$. It turns out that there is always at least one policy that achieves the optimum. The Bellman optimality equations express this via the recurrence:
+
+$$V^*(s) = \max_{a \in \mathcal{A}} \left[ R(s, a) + \gamma \sum_{s' \in \mathcal{S}} P(s, a)(s') V^*(s') \right]$$
+
+The state-action value function can be defined in a similar way as above:
+
+$$Q^*(s, a) = R(s, a) + \gamma \mathbb{E}_{s' \sim P(s,a)}[V^*(s')]$$
+
+Once we know $Q^*$ we can find a deterministic $\pi^*(s)$ via:
+
+$$\pi^*(s) = \arg\max_{a \in \mathcal{A}} Q^*(s, a)$$
+
+We can obtain $V^*$ and $Q^*$ by an algorithm called value iteration, that repeatedly applies the Bellman optimality equation to all states/state-action pairs.
+
+## Model-free
+every model-free algorithms has to work based on Monte Carlo for trajectory sampling.
+
+### Learning V* and Q* from data from Monte Carlo Samples
+
+So far we have used the Bellman Optimality Equation and our exact knowledge of R and P to compute V and Q. However, in the real world, we usually do not have access to these functions. One possible approach is Monte Carlo simulation, which estimates the value of actions or states through sampling full episodes. Monte Carlo methods sample multiple episodes of experience to approximate the expected return.
+
+The state value function of a given state under a policy $\pi$ is then the average return that was obtained when starting in that state:
+
+$$V^\pi(s) \approx \frac{1}{N(s)} \sum_{i=1}^{N(s)} G_i$$
+
+where $G_i$ is the obtained discounted episode return. $Q^\pi$ is defined analogously.
+
+We will here use an $\epsilon$-greedy Q-policy. The policy is therefore changing over the course of our trial. We thus use an update equation:
+
+$$V(s) \leftarrow (1-\alpha) \cdot V(s) + \alpha \cdot G_i$$
+
+where $\alpha$ is called the learning rate.
+```
+for episode in range(total_episodes):
+  while step<max_steps_pr_episode:
+    states.append(s)
+    a = epsilon_greedy_Q_policy(s, Q_pi_hat)  # Pick action.
+    actions.append(a)
+    next_s, r, terminal, _ = env.step(a)  # Take a step in the environment.
+
+  while (step goes backward):
+    G = gamma * G + rewards[-1]
+    rewards = rewards[:-1] #pop out the last step
+    s = states[-1]
+    states = states[:-1]
+    a = actions[-1]
+    actions = actions[:-1]
+    Q_pi_hat[tuple(s)][a] = (1-alpha)*Q_pi_hat[tuple(s)][a] + alpha * G #kinda an average between old and new
+
 ```
 
-$$u(t) = - \mathbf{K}\mathbf{s}(t)$$
+### MC Upgrade to Temporal Difference (specifically Q-Learning)
 
-This control law minimizes the cost function $J$ subject to the system dynamics. The negative sign indicates negative feedback, meaning the control action is applied to reduce the error.
+Q-Learning process resembles dynamic programming's iterative refinement of value functions. However, Q-learning diverges by employing sample-based updates akin to Monte Carlo simulation, where experiences from interactions with the environment inform the value estimates, a.k.a. bootstrapping
 
-The gain matrix $\mathbf{K}$ is obtained by solving the continuous-time Algebraic Riccati Equation (ARE):
+$$Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left( r_{t+1} + \gamma \max_{a} Q(s_{t+1}, a) - Q(s_t, a_t) \right)$$
 
-$$\mathbf{A}^T \mathbf{P} + \mathbf{P} \mathbf{A} - \mathbf{P} \mathbf{B} R^{-1} \mathbf{B}^T \mathbf{P} + \mathbf{Q} = \mathbf{0}$$
+* Different from Value Iteration (Bellman Equation) because it does SAMPLE TRAJECTORY like MC
+* But why do not we use that Bellman Equation here? because it has sth to do with transition probability, we cannot simply sample all transition same probability
+* Therefore, sampling also means that we indirectly find this reward with this probability, like what is the expected ($r_{t+1} + \gamma \max_{a} Q(s_{t+1}, a)$), instead of the probability we already knew
+* it updates NOT IN REVERSE ORDER. It updates in forward order.
+* utilizes the reward of the next step IN THAT TRAJECTORY + its maximum expected value - previously past experienced of the current state
+* the one near the terminal will directly rewarded the most with the most weight, because the term $\gamma \max_{a} Q(s_{t+1}, a)$ is then the terminal reward. Sometimes people actually expand this TD(n) so that we could get more from the terminal state.
 
-where $\mathbf{P}$ is a symmetric positive definite matrix. Once $\mathbf{P}$ is found, the optimal gain $\mathbf{K}$ is calculated as:
+```
+for i_episode in range(total_episodes):
+    while step<max_steps_per_episode:
+      a = epsilon_greedy_Q_policy(s_disc, Q=Q, eps=eps)  # Pick action.
+      next_s, r, terminal, truncated, _ = env.step(a)  # Take a step in the environment.
+      score += r
+      delta = r + gamma * max(Q[tuple(next_s_disc)]) - Q[tuple(s_disc)][a]
+      Q[tuple(s_disc)][a] += alpha * delta  # Q-learning update.
 
-$$\mathbf{K} = R^{-1} \mathbf{B}^T \mathbf{P}$$
+```
 
-**In your code:**
-The `control.lqr(A, B, Q, R)` function (presumably from the `python-control` library) performs these calculations (solves the ARE and computes $\mathbf{K}$) to provide the optimal LQR gain.
+### DQN Representing state using theta
+**Goal: Deterministic argmax Policy**
 
-The output `gain = control.lqr(A,B,Q,R)[0][0]` suggests that the function returns a tuple, and you are extracting the first element of the first array, which will be the row vector $\mathbf{K}$.
+Now the network takes care of pivoting known Q-state to create a function that can apply for continuous interpolated range of states, just like linear regression. MSE Loss function involved to minimize loss between observed from sampled trajectory (using Bellman Equation bootstrapping value of the next state in trajectory as ground truth) vs network Q-values
 
-For your specific system and weights, the output `gain` will be a row vector:
+BUT, simply replacing Q-table with the network not efficient => technical tricks:
 
-$$\mathbf{K} = \begin{bmatrix} K_x & K_\theta & K_{\dot{x}} & K_{\dot{\theta}} \end{bmatrix}$$
+* replay buffer stores each transition (s, a, s+1, r+1, done?), so that when training we treat each transition separately, instead of being in a consecutive sequence like from sampling
+* inferencetarget network is a weight frozen copy of the learning network and only update after 1000 steps, because learning network when changes weight might shift a little other weights
 
-And the control law will be:
+```
+class QNetwork(nn.Module):
+  # input n_states, output n_actions
 
-$$u(t) = - (K_x x(t) + K_\theta \theta(t) + K_{\dot{x}} \dot{x}(t) + K_{\dot{\theta}} \dot{\theta}(t))$$
+for i_episode in range(1, n_episodes+1):
+    for t in range(max_t):
+        action = agent.act(state, eps)
+        next_state, reward, terminated, truncated, _ = env.step(action)
+        agent.step(state, action, reward, next_state, terminated)
+
+where:
+    def act(self, state, eps=0.):
+        action_values = self.qnetwork_local(state) #find out the probability for each action
+        # Epsilon-greedy action selection
+        if random.random() > eps:
+            return np.argmax(action_values.cpu().data.numpy())
+        else:
+            return random.choice(np.arange(self.action_size))
+
+    def step(self, state, action, reward, next_state, done):
+        self.memory.add(state, action, reward, next_state, done)
+        self.t_step = (self.t_step + 1) % learn update_every timestep
+            if (enough samples for a batch):
+                experiences = self.memory.sample()
+                self.learn(experiences, gamma)
+
+    def learn(self, experiences, gamma):
+        states, actions, rewards, next_states, dones = experiences
+        q_targets_next = self.qnetwork_target(next_states).detach().max(1)[0].unsqueeze(1)
+        ### Calculate target value from bellman equation bootstrapping the next state value in this trajectory
+        q_targets = rewards + gamma * q_targets_next * (1 - dones)
+        ### Calculate expected value from local network
+        q_expected = self.qnetwork_local(states).gather(1, actions)
+
+        ### Loss calculation (we used Mean squared error)
+        loss = F.mse_loss(q_expected, q_targets)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+```
+
+### Policy Gradients Representing policy using theta
+**Goal: Stochastic Policy instead of Deterministic argmax Policy as DQN**
+**This one is Monte Carlo style, it waits until the end**
+This time theta is used to directly learn the behavior instead of state-action value => better for high dimensional or continuous space. It samples trajectories, computing their returns, and adjusting the policy parameters based on these returns. It updates theta
+
+$$
+\mathbf{\theta} \leftarrow \mathbf{\theta} + \alpha \gamma^t g_t^m \nabla_{\mathbf{\theta}} \ln \pi(a_t^m|s_t^m, \mathbf{\theta})
+$$
+
+implementation similar to Q-learning
+```
+class Policy_Network(nn.Module):
+  #input observation space, output action space
+
+for episode in range(total_num_episodes):
+	while not done:
+		action = agent.act(obs)
+		obs, reward, terminated, truncated, info = env.step(action)
+		agent.rewards.append(reward)
+		score += reward
+		done = terminated or truncated
+	agent.learn()
+
+where:
+    def act(self, state: np.ndarray) -> float:
+        action_means, action_stddevs = self.net(state)
+        # create a normal distribution from the predicted mean and standard deviation and sample an action
+        distrib = Normal(action_means[0] + self.eps, action_stddevs[0] + self.eps)
+        action = distrib.sample()
+        prob = distrib.log_prob(action)  # used for update
+        self.probs.append(prob)
+        return action
+
+    def learn(self):
+        #calculate G for each timestep in the trajectory
+        #calculate G backwards in Monte Carlo style
+        for R in self.rewards[::-1]:
+            running_g = R + self.gamma * running_g
+            gs.insert(0, running_g)
+        deltas = torch.tensor(gs)
+
+        loss = 0
+        # this time we define loss by ourselves
+        # now loss for each timestep in the trajectory
+        for log_prob, delta in zip(self.probs, deltas):
+            loss += log_prob.mean() * delta * (-1)
+
+        # Update the policy network
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+```

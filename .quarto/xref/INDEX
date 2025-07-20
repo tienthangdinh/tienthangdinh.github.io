@@ -31,5 +31,8 @@
   },
   "posts/exam-touchsensing/index.qmd": {
     "index.html": "c6917f86"
+  },
+  "posts/exam-ml4r/index.qmd": {
+    "index.html": "daafe4d1"
   }
 }
