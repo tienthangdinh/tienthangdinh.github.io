@@ -1,35 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://tienthangdinh.github.io/about.html</loc>
-    <lastmod>2025-07-12T10:18:30.283Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/reinforcement-learning/index.html</loc>
-    <lastmod>2025-07-15T19:07:39.880Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/exam-touchsensing/index.html</loc>
-    <lastmod>2025-07-18T21:19:08.040Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/bayesian-optimization/index.html</loc>
-    <lastmod>2025-07-07T14:38:42.159Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/autoencoder-dreamer/index.html</loc>
-    <lastmod>2025-07-15T19:00:34.251Z</lastmod>
+    <loc>https://tienthangdinh.github.io/index.html</loc>
+    <lastmod>2025-07-07T15:16:12.550Z</lastmod>
   </url>
   <url>
     <loc>https://tienthangdinh.github.io/posts/learning-from-demonstration/index.html</loc>
-    <lastmod>2025-07-16T19:52:27.997Z</lastmod>
+    <lastmod>2025-07-19T20:34:23.897Z</lastmod>
   </url>
   <url>
     <loc>https://tienthangdinh.github.io/posts/control/index.html</loc>
-    <lastmod>2025-07-12T10:18:27.877Z</lastmod>
+    <lastmod>2025-07-14T09:26:40.274Z</lastmod>
   </url>
   <url>
-    <loc>https://tienthangdinh.github.io/index.html</loc>
-    <lastmod>2025-07-12T10:18:35.437Z</lastmod>
+    <loc>https://tienthangdinh.github.io/posts/reinforcement-learning/index.html</loc>
+    <lastmod>2025-07-19T20:34:23.897Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/exam-ml4r/index.html</loc>
+    <lastmod>2025-07-20T21:26:22.335Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/autoencoder-dreamer/index.html</loc>
+    <lastmod>2025-07-15T10:59:00.437Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/bayesian-optimization/index.html</loc>
+    <lastmod>2025-07-07T14:18:17.048Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/exam-touchsensing/index.html</loc>
+    <lastmod>2025-07-19T20:34:23.897Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/about.html</loc>
+    <lastmod>2025-07-14T09:26:40.274Z</lastmod>
   </url>
 </urlset>

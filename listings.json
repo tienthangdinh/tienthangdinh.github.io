@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/exam-ml4r/index.html",
       "/posts/exam-touchsensing/index.html",
       "/posts/learning-from-demonstration/index.html",
       "/posts/autoencoder-dreamer/index.html",
