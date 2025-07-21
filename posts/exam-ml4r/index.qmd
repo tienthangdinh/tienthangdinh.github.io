@@ -332,3 +332,38 @@ where:
         loss.backward()
         self.optimizer.step()
 ```
+
+#### Difference between Value-based & Gradient Policy based
+* Value based: try to update Q -> argmax Q deterministic -> action
+* Policy Gradient based: try to update a stochastic distribution of action | given state. -> directly action
+
+# Bayesian Optimization & Gaussian Processes
+* Given seen data samples of a function, want to find that funciton's min/max but cannot use gradient descent => surrogate function Gaussian Process (GP)
+* GP is a probability distribution over all possible function, all seen sampled data create together a join distribution
+  * Goal  Problem setup: posterior mean & variance of a new datapoint!!!
+  * Key Knowledge to lean on: Formulate jointly multivariate Gaussian distribution A|B where we already know how to calculate posterior mean and covariance
+  * Formulate covariance matrix (yt,f*) and try to arrange in that same structure / format => we know how to calculate these posterior mean/covariance
+  * covariance matrix based on the kernel function saying how far two points from each other (RBF for Gaussian, or also be Euclidian distance) K_ij = k(xi, xj), calculate these for all pair of points and put it in the cov matrix
+  * Now plug in all these covariance matrix, kernel function into the A|B jointly Gaussian distribution to calculate a new unseen datapoint
+  * BUT... where to take a datapoint? sample about 1000 datapoints use of acquisition function (balance exploitation & exploration)! (EI: where variance & mean are the highest)
+  * Multiple Objective BO actually easy, (e.g. best material: each fixed theta give different function with different max on the graph, test many theta to find many max points for each function => use Pareto)
+
+```
+for i in range(1):
+    y_next = true_function(x_next)
+    bayes_opt.update_model(x_next, y_next)
+    x_next = bayes_opt.get_candidate(aq_func)
+
+def update_model(self, x, y):
+    self.x_samples = np.append(self.x_samples, x)
+    self.y_samples = np.append(self.y_samples, y)
+    self.surrogate_model.fit(self.x_samples, self.y_samples) #using true function to update the GP covariance matrix
+
+self.surrogate_model = GaussianProcess(kernel=lambda x1, x2: np.exp(-.5 * np.subtract.outer(x1, x2)**2))
+
+def get_candidate(self, acquisition_function, num_candidates=1000):
+    x_canditates = np.linspace(self.bounds[0], self.bounds[1], num_candidates)
+    mu,sigma = self.surrogate_model.predict(x_canditates) #calculate variance and mean from all other data
+    aqf_values = acquisition_function(mu, sigma, np.max(self.y_samples))
+    best_index = np.argmax(aqf_values)
+```

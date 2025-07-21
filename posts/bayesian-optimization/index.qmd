@@ -19,7 +19,7 @@ $P(f | \mathcal{D}) \propto P(\mathcal{D} | f) P(f)$ is a real multiplication of
 The key to the GP's tractability is that while it's a distribution over infinite-dimensional functions, any **finite collection of function values** drawn from a GP jointly follow a multivariate Gaussian distribution.
 
 Consider our observed input points $\mathbf{X}_t = \{\mathbf{x}_1, \dots, \mathbf{x}_t\}$ and a new test input point $\mathbf{x}^*$.
-Under the GP prior, the vector of true (but unobserved) function values at these points, $\mathbf{f}_t = [f(\mathbf{x}_1), \dots, f(\mathbf{x}_t)]^T$ and $f^* = f(\mathbf{x}^*)$, has a joint multivariate Gaussian distribution:
+Under the GP prior, the vector of true function values at these points, $\mathbf{f}_t = [f(\mathbf{x}_1), \dots, f(\mathbf{x}_t)]^T$ and unobserved $f^* = f(\mathbf{x}^*)$, has a joint multivariate Gaussian distribution:
 
 $$\begin{pmatrix} \mathbf{f}_t \\ f^* \end{pmatrix} \sim \mathcal{N} \left( \begin{pmatrix} \mathbf{m}_t \\ m(\mathbf{x}^*) \end{pmatrix}, \begin{pmatrix} \mathbf{K}_t & \mathbf{k}_* \\ \mathbf{k}_*^T & k(\mathbf{x}^*, \mathbf{x}^*) \end{pmatrix} \right)$$
 
