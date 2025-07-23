@@ -633,3 +633,48 @@ def act(self, state, explore=False): #either random or just take the most reward
         ...
 ```
 
+# Learning from Demonstration
+## Imitation Learning / Behavior CLoning
+* DNN (input:state) -> (output:action)
+```
+self.model = nn.Sequential(
+			nn.Linear(self.dataset.observation_space.shape[0], 64),
+			nn.ReLU(),
+			nn.Linear(64, 64),
+			nn.ReLU(),
+			nn.Linear(64, self.dataset.action_space.shape[0]),
+			nn.Tanh() 
+		).to(device)
+		self.optimizer = optim.Adam(self.model.parameters(), lr=0.001)
+		self.loss = nn.MSELoss() 
+
+for epoch in range(num_epochs):
+        for batch in self.replay_buffer:
+            observations, target_actions = batch['observations'], batch['actions'] #sample input & output from dataset
+            actions = self.model(observations)
+            loss = self.loss(actions, target_actions)
+            self.optimizer.zero_grad()
+            loss.backward()
+```
+* but, can we use this data to do a reinforcement learning? - No, because we should let RL **explore** to regularize the environment, just learning from this data makes it does not know what to do in unseen state (dsitributional shift), it infact overestimate because it has never seen a bad example before 
+* => Dagger
+
+## Offline Reinforcement Learning with BCQ
+* the same, use Variational Autoencoder, using 2 networks:
+* VAE to propose actions (input: state, action) -> modified action
+* modified Q-network to evaluate these actions using expected future reward
+
+Vorgehen:
+* act: generates multiple plausible actions (from the VAE), perturbs them slightly (with the Actor), and then chooses the best among those constrained options using its Q-function. This is the "batch-constrained" part in action, preventing the agent from selecting highly uncertain, out-of-distribution actions.
+    * at each state, sample 100 candidate actions
+    * VAE generates each similar version of them
+    * weiterleiten to Actor: pertube actions
+    * Critic network Q-value
+    * choose the best action from 100
+
+* train:
+    * VAE (the core): takes a (state, action) from dataset to reconstruct a recon, then MSE (recon, action), this pack action more semantically in latent space (also use reconstruction loss + KL divergence)
+    * Critic: estimate Q-values for (state, action) pairs from the dataset, while avoiding overestimation for out-of-distribution actions
+    * Actor: aim to find slightly better actions within the constrained space
+
+
