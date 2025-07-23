@@ -239,6 +239,13 @@ for i_episode in range(total_episodes):
 **Goal: Deterministic argmax Policy**
 (state, action) -> (value) (no dynamics - no Model)
 
+* Q-Learning: The ground-truth is based on the max of the next step from the table
+
+  $$
+  Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \max_a Q(s_{t+1}, a) - Q(s_t, a_t) \right]
+  $$
+
+
 * update separately each transition without chronological order
 
 Now the network takes care of pivoting known Q-state to create a function that can apply for continuous interpolated range of states, just like linear regression. MSE Loss function involved to minimize loss between observed from sampled trajectory (using Bellman Equation bootstrapping value of the next state in trajectory as ground truth) vs network Q-values
@@ -547,3 +554,82 @@ class ForwardDynamicsModel(nn.Module):
         * It repeats steps 2-6 for several iterations (e.g., 5-10 iterations), refining the distribution.
         * Finally, it takes the first action from the best sequence found by this iterative optimization process.
     * **Computational Cost:** This entire process (sampling, many forward model rollouts, evaluation, statistical updates, multiple iterations) must happen every single time the agent needs to choose an action. This is computationally expensive and takes significantly longer than a single forward pass of a neural network.
+
+
+# VAE
+**Goal:**
+$$\mathcal{L}(\theta, \phi, \mathbf{x}) = \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}, \mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})} \right] = \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} [\log p_\theta(\mathbf{x}|\mathbf{z})] - D_{KL}(q_\phi(\mathbf{z}|\mathbf{x}) || p(\mathbf{z}))$$
+
+The VAE loss combines two terms:
+
+* Reconstruction Loss: Measures how well the decoder reconstructs the input from the latent code (actually MSE derived from Gaussian distribution loss).
+* KL Divergence: Bringing learned latent distribution to be close to each other (and also standard normal distribution) => smoothness and no holes 
+
+# End-to-end Learning
+
+End-to-end learning can potentially capture complex relationships between images and actions, offers simplicity but requires more data and computational resources, while separating perception and control provides interpretability and efficiency but requires explicit transfer between modules and engineering efforts.
+
+## Dreamer
+**Goal:** 2 network to learn: 
+
+* Q-Network (image)->(action): actually the same as Q-Network, but the input is not state, it is image (env observation), Ground Truth taken from table as below (Loss can be MSE)
+  $$
+  Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \max_a Q(s_{t+1}, a) - Q(s_t, a_t) \right]
+  $$
+
+* Reconstruction-Network (VAE): just to make sure the latent space we learned was correct, reconstruction loss also MSE for each pixel
+
+```
+for step in pbar:
+    pbar.set_description(f"Episode {episode+1:>3}/{num_episodes} - Reward: {episode_reward:>10.2f}, Epsilon: {vae_dqn_agent.epsilon:<.4f}")
+    # Choose an action based on the current state
+    action = vae_dqn_agent.act(state, explore=True)
+    # Take the chosen action in the environment
+    next_state, reward, terminal, truncated, _ = env.step(action)
+    # Store the experience in the agent's replay buffer
+    tensordict = TensorDict({'pixels': torch.tensor(state).to(torch.float32),
+                                'action': torch.tensor(action).to(torch.int64),
+                                'reward': torch.tensor(reward).to(torch.float32),
+                                'next_pixels': torch.tensor(next_state).to(torch.float32),
+                                'done': torch.tensor(terminal or truncated).to(torch.float32)
+                                })	
+    vae_dqn_agent.store_experience(tensordict)
+    # Update the agent's Q-network
+    vae_dqn_agent.update()
+
+def act(self, state, explore=False): #either random or just take the most rewarded action from Q-network
+    if explore and torch.rand(1) < self.epsilon:
+        return self.action_space.sample()
+    else:
+        with torch.no_grad():
+            state_norm = torch.tensor(self.normalize_state(state)).unsqueeze(0).permute(0, 3, 1, 2).to(self.device, torch.float32)
+            latent_vector = self.vae.encode(state_norm)[0]
+            q_values = self.q_network(latent_vector) 
+            return torch.argmax(q_values, dim=1).squeeze().cpu().numpy()
+
+	def update(self): #update both networks at the same time
+        self.update_vae()
+		self.update_dqn()
+
+	def update_vae(self):
+		# Encode states using VAE
+		mu, log_var = self.vae.encode(states_norm)
+		z = self.vae.reparameterize(mu, log_var)
+		
+		reconstructed_states = self.vae.decode(z)
+
+		loss = self.vae_loss_fn(states_norm, reconstructed_states, mu, log_var)
+        # then update using optimize
+        ...
+
+	def update_dqn(self):
+        ...
+		q_values = self.q_network(latent_states).gather(1, actions.unsqueeze(1))
+		next_q_values = self.target_network(latent_next_states).max(1)[0].detach()
+		target_q_values = rewards + self.gamma * next_q_values * (1 - dones)
+
+		loss = self.q_loss_fn(q_values, target_q_values.unsqueeze(1))
+        # then update using optimizer
+        ...
+```
+
