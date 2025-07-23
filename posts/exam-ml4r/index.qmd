@@ -570,9 +570,9 @@ The VAE loss combines two terms:
 End-to-end learning can potentially capture complex relationships between images and actions, offers simplicity but requires more data and computational resources, while separating perception and control provides interpretability and efficiency but requires explicit transfer between modules and engineering efforts.
 
 ## Dreamer
-**Goal:** 2 network to learn: 
-
-* Q-Network (image)->(action): actually the same as Q-Network, but the input is not state, it is image (env observation), Ground Truth taken from table as below (Loss can be MSE)
+**Goal:** Encode the state into sth informative then act from that latent space (semantically structured packed space)
+* everytime acting, bring to a new encoded space, then take that encoded space to continue 2 networks as below.
+* Q-Network (encoded latent space)->(action): actually the same as Q-Network, but the input is not state, it is encoded image (env observation), Ground Truth taken from table as below (Loss can be MSE). That is how we could **generalized the STATE**
   $$
   Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \max_a Q(s_{t+1}, a) - Q(s_t, a_t) \right]
   $$
