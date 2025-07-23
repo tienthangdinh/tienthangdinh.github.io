@@ -29,7 +29,6 @@ we just adapt the gain K to see which one is good, but this is a manual work, so
 then we use Lagrange by hand to define matrices A and B manually
 then put in 
 
-Here's the mathematical formulation of A, B, Q, R, and K for your LQR example in Markdown:
 
 ### 1. System Dynamics Matrices:
 
@@ -172,8 +171,12 @@ We can obtain $V^*$ and $Q^*$ by an algorithm called value iteration, that repea
 every model-free algorithms has to work based on Monte Carlo for trajectory sampling.
 
 ### Learning V* and Q* from data from Monte Carlo Samples
+(state, action) -> (value) (no dynamics - no Model) 
+
+* update at the end of each trajectory in reverse
 
 So far we have used the Bellman Optimality Equation and our exact knowledge of R and P to compute V and Q. However, in the real world, we usually do not have access to these functions. One possible approach is Monte Carlo simulation, which estimates the value of actions or states through sampling full episodes. Monte Carlo methods sample multiple episodes of experience to approximate the expected return.
+
 
 The state value function of a given state under a policy $\pi$ is then the average return that was obtained when starting in that state:
 
@@ -206,6 +209,9 @@ for episode in range(total_episodes):
 ```
 
 ### MC Upgrade to Temporal Difference (specifically Q-Learning)
+(state, action) -> (value) (no dynamics - no Model) ---> argmax for action (2 steps)
+
+* update in between directly
 
 Q-Learning process resembles dynamic programming's iterative refinement of value functions. However, Q-learning diverges by employing sample-based updates akin to Monte Carlo simulation, where experiences from interactions with the environment inform the value estimates, a.k.a. bootstrapping
 
@@ -231,6 +237,9 @@ for i_episode in range(total_episodes):
 
 ### DQN Representing state using theta
 **Goal: Deterministic argmax Policy**
+(state, action) -> (value) (no dynamics - no Model)
+
+* update separately each transition without chronological order
 
 Now the network takes care of pivoting known Q-state to create a function that can apply for continuous interpolated range of states, just like linear regression. MSE Loss function involved to minimize loss between observed from sampled trajectory (using Bellman Equation bootstrapping value of the next state in trajectory as ground truth) vs network Q-values
 
@@ -238,10 +247,11 @@ BUT, simply replacing Q-table with the network not efficient => technical tricks
 
 * replay buffer stores each transition (s, a, s+1, r+1, done?), so that when training we treat each transition separately, instead of being in a consecutive sequence like from sampling
 * inferencetarget network is a weight frozen copy of the learning network and only update after 1000 steps, because learning network when changes weight might shift a little other weights
-
+* the rewards come from the environment, Gymnasium give the reward directly
+* then use this reward to calculate the ground truth then update the DQN
 ```
 class QNetwork(nn.Module):
-  # input n_states, output n_actions
+  # input state space representation, output action space representation
 
 for i_episode in range(1, n_episodes+1):
     for t in range(max_t):
@@ -282,7 +292,8 @@ where:
 
 ### Policy Gradients Representing policy using theta
 **Goal: Stochastic Policy instead of Deterministic argmax Policy as DQN**
-**This one is Monte Carlo style, it waits until the end**
+(state)->(probabilistic action policy) (1 step)
+**This one is Monte Carlo style, it waits until the end then also learn backwards**
 This time theta is used to directly learn the behavior instead of state-action value => better for high dimensional or continuous space. It samples trajectories, computing their returns, and adjusting the policy parameters based on these returns. It updates theta
 
 $$
@@ -292,7 +303,7 @@ $$
 implementation similar to Q-learning
 ```
 class Policy_Network(nn.Module):
-  #input observation space, output action space
+  #input state space, output action space
 
 for episode in range(total_num_episodes):
 	while not done:
@@ -301,7 +312,7 @@ for episode in range(total_num_episodes):
 		agent.rewards.append(reward)
 		score += reward
 		done = terminated or truncated
-	agent.learn()
+	agent.learn() #finish the trajectory then start to learn
 
 where:
     def act(self, state: np.ndarray) -> float:
@@ -367,3 +378,172 @@ def get_candidate(self, acquisition_function, num_candidates=1000):
     aqf_values = acquisition_function(mu, sigma, np.max(self.y_samples))
     best_index = np.argmax(aqf_values)
 ```
+
+## Apply on the CartPole like above solutions
+### parameter search grid
+**GOal: find the set of gain K**
+* we knew it is not a dynamic problem like above (each state a different action)
+* its a fixed linear state feedback controller, like a LQR, but we just do not know the K
+* use Bayesian to search in parameter space, each time choosing, we run sample the controller environment and see which parameter sets get the best rewards
+
+### Multi-objective 
+* similar above, it is just they all will work, but what set of parameter we want (independent from just the cost)
+
+# MPC Model-based Learning (Planning with a Forward Model)
+
+## Linear model and quadratic cost function => similar to LQR
+**Goal: transform into a function of only U, no X related like in LQR**
+* stack all the action states and outputs by time into vectors, and X can be represented by only U as variable using a linear equation system
+* why can we do that? because we have a model given
+* the goal of this step is that we can substitue this format (all sequential action input, states) into the cost function of only variable U, and represent it in a quadratic function format that we know how to solve (find U) numerically
+* we can also add some edge constraints
+* linear or non-linear model
+
+## Non-linear model vs Non-quadratic cost function
+* just give in the dynamic model, and then sample (try out different input with that dynamic model in the future)
+* can simply be solved by sampling or gradient method, then choose the one argmin the quadratic cost (easy: desired states = zeros - actually computed)^2
+* CEM: In each iteration, it samples action sequences from the distribution, evaluates them using the cost function, and then fits the distribution to the best performing sequences. This process is repeated until convergence.
+
+Discuss the differences of LQR and MPC.
+
+- LQR:
+LQR provides an analytic solution for linear systems with quadratic costs. It assumes fixed dynamics and works well near a specific operating point, but cannot handle nonlinear systems or constraints.
+
+- MPC:
+MPC solves an optimization problem over a finite horizon at each time step, allowing it to handle nonlinear dynamics and constraints. It is more flexible and robust but requires more computation.
+
+```
+## Solution
+# Sampling-Based Planner
+def plan(state, desired_state, dynamics_model, objective_function, cost_weights, horizon = 50, num_candidates=20000):
+	action_sequences = torch.distributions.uniform.Uniform(-1,1).sample((num_candidates,horizon)).to(state.device)
+	costs = evaluate_action_sequences(state, action_sequences, desired_state, dynamics_model, objective_function, cost_weights)
+	best_cand = costs.argmin()
+	return action_sequences[best_cand,0]
+
+# predict a trajectory and evaluate it using the given objective function
+def evaluate_action_sequences(state, action_sequences, desired_state=torch.zeros(4), dynamics_model=predict_next_states, objective_function=quadratic_cost, cost_weights = torch.tensor([1.,2.,0.,0.])):
+    trajectories= predict_trajectories(torch.tile(state,(len(action_sequences),1)), action_sequences, dynamics_model)
+    return objective_function(trajectories, desired_state, cost_weights).sum(dim=1)
+
+# Objective function
+def quadratic_cost(trajectory, desired_state = torch.zeros(4), weight = torch.tensor([1.,2.,0.,0.])):
+	with torch.no_grad():
+		return torch.square(trajectory-desired_state)@weight
+
+def predict_trajectories(states, action_sequences, dynamics_model):
+    trajectories = torch.zeros((len(action_sequences), len(action_sequences[0]), len(states[0])), device=states.device)
+    for i, actions in enumerate(action_sequences.T):
+        states = dynamics_model(states, actions) # just give the function predict_next_states in
+        trajectories[:,i,:] = states
+    return trajectories
+
+def predict_next_states(states, actions):
+	m = 2
+	M = 5
+	l = 0.5
+	g = 9.81
+	k = 100
+	dt = 0.02
+	xs, thetas, xs_dot, thetas_dot = states.T
+	actions = actions.squeeze()
+
+	# Non-linear equations of motion for the cart-pole system
+	def equations_of_motion(xs, thetas, xs_dot, thetas_dot, actions):
+		sin_thetas = torch.sin(thetas)
+		cos_thetas = torch.cos(thetas)
+		xs_dot_dot = (k * actions + m * l * thetas_dot**2 * sin_thetas - m * g * sin_thetas * cos_thetas) / (M + m - m * cos_thetas**2)
+		thetas_dot_dot = 1/l * (g * sin_thetas - cos_thetas * xs_dot_dot)
+		return xs_dot, thetas_dot, xs_dot_dot, thetas_dot_dot
+
+	# Integrate the equations of motion using simple Euler's method
+	xs_dot, thetas_dot, xs_dot_dot, thetas_dot_dot = equations_of_motion(xs, thetas, xs_dot, thetas_dot, actions)
+	xs_dot += xs_dot_dot * dt
+	thetas_dot += thetas_dot_dot * dt
+	xs += xs_dot * dt
+	thetas += thetas_dot * dt
+
+	return torch.stack([xs, thetas, xs_dot, thetas_dot]).T    
+```
+
+# Model-based Learning in general
+Compare the performance of Model-Based RL and Model-Free RL agents (DQN, REINFORCE, AC,... are Model-Free) in terms of wall-clock time and data-efficiency.
+
+- Wall-clock time:
+Model-Free RL often requires less computation per step but needs many environment interactions, leading to long training times overall. Model-Based RL can be slower per step (due to planning) but may converge faster.
+
+- Data-efficiency:
+Model-Based RL is generally more data-efficient, as it learns from simulated rollouts using the model. Model-Free methods typically need much more experience to learn effective policies.
+
+- Problem setup:
+MB needs a dynamic model in advance, which is very difficult to have!
+
+## What if we do not have dynamic model? We learn
+* similar to DQN, but input (state, action) -> output (next state)
+```
+for i in range(100):
+    state,_ = env.reset()
+    score = 0
+    done = False
+    while not done:
+        action = agent.act(state)
+        next_state, reward, terminal, truncated, _ = env.step(action)
+        done = terminal or truncated
+        agent.step(state.astype(np.float32), action.astype(np.float32), reward, next_state.astype(np.float32), done)
+        state = next_state
+
+    def step(self, state, action, reward, next_state, done): #next_state is ground truth, input is current state, action
+        self.replay_buffer.add(
+            TensorDict({
+                'state': torch.from_numpy(state),
+                'action': torch.from_numpy(action),
+                'next_state': torch.from_numpy(next_state)
+                }
+            ),
+        )
+        # Learn every update_every time steps.
+        if self.t_step % self.update_every == 0:
+            if self.t_step > self.init_period:
+                for _ in range(self.update_steps):
+                    self.learn()
+        self.t_step += 1
+
+    def learn(self): # mean squared error to learn the (next state)
+        self.model.train()
+        td = self.replay_buffer.sample(self.batch_size)
+        next_state_predcited = self.model(td['state'], td['action'])
+        loss = F.mse_loss(next_state_predcited, td['next_state'])
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+
+# Neural Network as forward dynamics and reward model
+class ForwardDynamicsModel(nn.Module):
+    def __init__(self, state_dim, action_dim, hidden_dim = 256):
+        super(ForwardDynamicsModel, self).__init__()
+        self.fc1 = nn.Linear(state_dim+action_dim, hidden_dim)
+        self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(hidden_dim, state_dim)
+```
+
+## Why do we need CEMPlanner?
+1.  **Neural Network (NN) Policy Inference:**
+
+    * **How it works:** An NN policy (as seen in methods like DQN or direct policy gradient methods) is a learned function that directly maps an input state to an output action (or a distribution over actions).
+        * For a Q-network, given a state $\mathbf{s}$, the network outputs estimated Q-values for all possible actions: $Q(\mathbf{s}, a_0)$, $Q(\mathbf{s}, a_1)$, …. The agent then simply picks the action with the highest Q-value ($\arg\max_a Q(\mathbf{s}, a)$).
+        * For a direct policy network, given a state $\mathbf{s}$, the network directly outputs the recommended action $\mathbf{u}$ or probabilities for discrete actions.
+    * **Computational Cost:** To get an action, the neural network only needs to perform a single forward pass. This involves a series of matrix multiplications and non-linear activations. Modern hardware (like GPUs) is highly optimized for these operations, making them incredibly fast, often in the order of milliseconds or microseconds.
+    * **Speed:** Very fast, constant time per decision.
+
+2.  **CEM Planner Inference:**
+
+    * **How it works:** A CEM planner (as you saw in the `MBRLAgent` code) does not have a direct learned mapping from state to action. Instead, at each decision point (i.e., every time the agent needs to select an action):
+        * It starts with a probability distribution over potential future action sequences (e.g., for the next 20 timesteps).
+        * It samples many (e.g., 1000) different action sequences from this distribution.
+        * For each sampled sequence, it uses its forward model (`self.model` in your code) to simulate what would happen if that sequence of actions were executed over the planning horizon (e.g., 20 timesteps). This means running the `predict_next_states` function repeatedly for each sample.
+        * It evaluates the cumulative reward (or cost) for each simulated trajectory.
+        * It selects the top-performing "elite" sequences.
+        * It updates its probability distribution to focus on those elite sequences.
+        * It repeats steps 2-6 for several iterations (e.g., 5-10 iterations), refining the distribution.
+        * Finally, it takes the first action from the best sequence found by this iterative optimization process.
+    * **Computational Cost:** This entire process (sampling, many forward model rollouts, evaluation, statistical updates, multiple iterations) must happen every single time the agent needs to choose an action. This is computationally expensive and takes significantly longer than a single forward pass of a neural network.
