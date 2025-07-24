@@ -1,5 +1,5 @@
 ---
-title: "Exam: Touch Sensing"
+title: "Touch Sensing"
 date: 2025-07-18
 categories: [Exam]
 format:
@@ -31,7 +31,7 @@ force, position, pressure, vibration, stretch. Everything is in **Dermis**, but 
 
 * Merkel's disk: skin upper layer, slowly adapting (at presence of static stimulus), balance structure => good for shape+texture identification & light touch
 * Meissner's corpuscle: also upper layer, but rapid adapting (at stimulus change, gradient of touch), vertical structure => good for pressure sensing + low frequency
-* Pacinian corpuscle: deep in skin layer, and also rapid adapting, BUT the round shape  => high frequency sensing
+* Pacinian corpuscle: deep in skin layer, rapid adapting, BUT the round shape  => high frequency sensing
 * Ruffini Endings: deep in skin layer, slow adapting, vertical structure => good for stretch detection
 
 ## Thermoreceptors, Nocireceptors (pain), Proprioreceptors (IMU), Chemoreceptors
@@ -46,10 +46,10 @@ Spatial Resolution + Normal Force Resolution currently human finger finer
 * manufacture & affordable => more approachable for research and use
 
 ## Technology
-* **Capacitive:** touch represent a parallel capacitor to ground (multiple touch possible), but in many cases this would be wrongly intepreted (e.g: any conductive material noise but without any force like water)
-* **Ressistive:** material bend create change in resistance R = ro * l / S => widely used, cheap, insensitive to liquid, but no multi-touch
-* **Piezoelectric** generates electrical field at mechanical change because of breaking out balance state of + & - ions => electric movements => good for vibration
-* **Magnetic** interparticle position changes => changes in magnetic field
+* **Capacitive:** **Conductive touch** represent a parallel capacitor to ground (multiple touch possible), but in many cases this would be wrongly intepreted (e.g: any conductive material noise but without any force like water)
+* **Ressistive:** **material bend** create change in resistance R = ro * l / S => widely used, cheap, insensitive to liquid, but no multi-touch
+* **Piezoelectric** **ion Breaking out** generates electrical field at mechanical change because of breaking out balance state of + & - ions => electric movements => good for vibration
+* **Magnetic** **Magnetic Field change** interparticle position changes => changes in magnetic field
 
 
 # VBTS
@@ -61,20 +61,27 @@ Spatial Resolution + Normal Force Resolution currently human finger finer
     * electronics problem about heat, computation limit, bandwidth, latency, ...
     * Camera & optical system has to be very durable & precise
 * Challenge 3: Slow temporal resolution. No vibration bc of elastomer damping and camera framerate
+* Challenge 4: does not directly measure force/pressure like pressure gauge
 
 * Design factors:
     * Elastomer for recognizing touch features (it has a durability problem that it will wear out after sometimes so needs re-calibrate or change, because it cannot re-generate like human skin)
     * Lighting needs correct calibration depending on position, because it can create shadows
     * Camera & optical system has to be very high resolution
+    * Very high frequency!!! 30 FPS is not enough
 
 # Touch Simulation
 * **Purpose** quickly generate a lot of data for analyse and processing, and a rough study of behavior in real world before really working on expensive real model
 * **Multi-Body Dynamics Modelling**
     * well studied
     * but high computation cost on complex environment
+* **Difficulties in Simulation**
+    * Trade-off between high quality and computation effort
+    * Currently only rigid-body, soft-body is still in research meanwhile touch sensing is mostly about soft-body (Elastomer has highly complex deformation, we could see that from TACTO)
 
 # Perception in Touch
-mostly start by using Markers. It is simple but good, we can track the position by time easily. The only designing factor is to calibrate the initial marker distortion. Because the camera see from a singular perspective.
+* Very precise, high spatial resolution
+* Implementation: Markers, CNN, time-optical flow
+* Design challenge: calibrate the initial marker distortion. Because the camera see from a singular perspective.
 
 ## Depth Estimation & 3D Reconstruction
 Color gradient (change in color by time) + Bend in markers

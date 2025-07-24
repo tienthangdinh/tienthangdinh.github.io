@@ -1,5 +1,5 @@
 ---
-title: "Exam ML4R"
+title: "Machine Learning 4 Robotics"
 date: 2025-07-19
 categories: [Machine Learning, Model-based Learning, Reinforcement Learning]
 format:
@@ -11,135 +11,123 @@ format:
 
 
 # Control
+* Forward dynamics: given torque vector -> angular position, velocity, acceleration at each joint
+* Backward dynamics: the inverse is more interesting
 
-## Exploring a linear feedback-state control
-```
-mj_model = mujoco.mjModel(XML)
-mj_data = mujoco.mjData(mj_model)
-mj_renderer = mujoco.Renderer(mj_model)
-u = mj_data.ctrl = - np.clip(np.dot(gain, state_around_target), -1, 1) # u = -K*(s-st)
+## PID
+3 terms: Proportional Gain (Kp), Integral (Ki), Differential (Kd)
+* Proportional: we all know, current error strong -> more gas, weak->less gas
+* Integral? for gradual decaying system (like car) -> continuously effort a little more gas to compensate the persistent decay, otherwise P controller keep chasing it and never reach. BUT, it needs careful choose, because it is slow reaction, this is a drawback, and a term to overcome this drawback is...
+* Differential: fast change in error: it will correct! -> can react on time (sharp turn, break,...), BUT from my experience this should not be too high bc it can be noisy
 
-```
+## Dynamics System ID
+* just generate bunch of data, then fit this data with any type regression model
+* linear or non-linear (then needs linearization around interested equilibrium like the cart pole)
+
+## Exploring a linear feedback-state control in LTI-System
+
+General idea is like this, implemented by a dot product:
 $$u(t) = K e(t) = K_x (x(t) - x_{\text{target}}(t)) + K_\theta \theta(t) + K_{\dot{x}} \dot{x}(t) + K_{\dot{\theta}} \dot{\theta}(t)$$
+```
+u = mj_data.ctrl = - np.dot(gain, error)
+```
+we just adapt the gain K to see which one is good, but this is a manual work, so how to find the optimal gain automatically? LQR
 
-we just adapt the gain K to see which one is good, but this is a manual work, so we can find an optimal using LQR method
+## LQR
 
-## Now we structure the control to LQR
-
-then we use Lagrange by hand to define matrices A and B manually
-then put in 
-
-
-### 1. System Dynamics Matrices:
-
-These matrices define the linearized, continuous-time state-space model of the cart-pole system:
-
-$\dot{\mathbf{s}}(t) = \mathbf{A}\mathbf{s}(t) + \mathbf{B}u(t)$
-
-* **A (State Matrix):**
-    This matrix describes how the system's current state affects its future state *without* any control input. It represents the inherent dynamics of the system.
-    In your example:
-    $$\mathbf{A} = \begin{bmatrix} 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \\ 0 & -\frac{g m}{M} & 0 & 0 \\ 0 & \frac{g}{l}\left(1 + \frac{m}{M}\right) & 0 & 0 \end{bmatrix}$$
-    Where:
-    * $g$: acceleration due to gravity
-    * $m$: mass of the pendulum (pole)
-    * $M$: mass of the cart
-    * $l$: length from the pivot to the center of mass of the pendulum
-
-* **B (Input Matrix):**
-    This matrix describes how the control input $u(t)$ affects the system's state.
-    In your example:
-    $$\mathbf{B} = \begin{bmatrix} 0 \\ 0 \\ \frac{k}{M} \\ -\frac{k}{M l} \end{bmatrix}$$
-    Where:
-    * $k$: gear ratio, converting the control signal $u$ into a physical force $F = k \cdot u$ applied to the cart.
-    * $M$: mass of the cart
-    * $l$: length from the pivot to the center of mass of the pendulum
-
-### 2. Cost Function Matrices:
-
-These matrices define the quadratic cost function that the LQR controller aims to minimize. The cost function penalizes deviations from the desired state and the control effort.
+### THE GOAL: Cost Function to minimize:
 
 $J = \int_{0}^{\infty} (\mathbf{s}(t)^T \mathbf{Q} \mathbf{s}(t) + u(t)^T R u(t)) \, dt$
 
 * **Q (State Weighting Matrix):**
-    This is a symmetric positive semi-definite matrix that assigns penalties to deviations of each state variable from its desired value (typically zero for stabilization). A larger value on the diagonal means a higher penalty for deviation in that specific state component.
-    In your example:
+    Penalize state deviation
     $$\mathbf{Q} = \text{diag}([1, 10, 0, 0]) = \begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 10 & 0 & 0 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \end{bmatrix}$$
+
     This means:
-    * You penalize the square of the cart's position ($x^2$) with a weight of 1.
-    * You heavily penalize the square of the pendulum's angle ($\theta^2$) with a weight of 10, indicating it's crucial to keep the pendulum upright.
-    * You do not directly penalize the squared cart velocity ($\dot{x}^2$) or pendulum angular velocity ($\dot{\theta}^2$) in the cost function.
+
+    *  penalize the square of the cart's position ($x^2$) with a weight of 1.
+    *  heavily penalize the square of the pendulum's angle ($\theta^2$) with a weight of 10, indicating it's crucial to keep the pendulum upright.
+    *  do not directly penalize the squared cart velocity ($\dot{x}^2$) or pendulum angular velocity ($\dot{\theta}^2$) in the cost function.
 
 * **R (Control Weighting Matrix/Scalar):**
-    This is a symmetric positive definite matrix (or a scalar for a single control input) that penalizes the magnitude of the control input. A larger $R$ implies that you want to use less control effort, which might lead to slower system response or larger state deviations.
-    In your example:
+    penalizes the magnitude of the control input. A larger $R$ encourage smoother control, but slower. smaller $R$ canverges faster, but may not always good for human and gearbox
     $$R = 0.1$$
     This means the square of the control input ($u^2$) is penalized with a weight of 0.1.
 
-### 3. Optimal Gain Matrix:
+### Key Knowledge 1: Linear System Dynamics:
+we use Lagrange dynamics by hand to define matrices A and B manually
+then put in 
 
-* **K (State Feedback Gain Matrix):**
-    This is the constant gain matrix calculated by the LQR algorithm. It defines the optimal control law:
-    $u(t) = - \mathbf{K}\mathbf{s}(t)$
-    This matrix tells you how much to adjust the control input $u(t)$ based on the current values of each state variable to minimize the defined cost function $J$.
-    The `control.lqr(A,B,Q,R)` function computes this $\mathbf{K}$.
-    In your example, `gain` will be a row vector of 4 elements:
+$\dot{\mathbf{s}}(t) = \mathbf{A}\mathbf{s}(t) + \mathbf{B}u(t)$
+
+* **A (State Matrix):**
+    $$\mathbf{A} = \begin{bmatrix} 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \\ 0 & -\frac{g m}{M} & 0 & 0 \\ 0 & \frac{g}{l}\left(1 + \frac{m}{M}\right) & 0 & 0 \end{bmatrix}$$
+
+* **B (Input Matrix):**
+    $$\mathbf{B} = \begin{bmatrix} 0 \\ 0 \\ \frac{k}{M} \\ -\frac{k}{M l} \end{bmatrix}$$
+
+ Where:
+
+    * $g$: acceleration due to gravity
+    * $m$: mass of the pendulum (pole)
+    * $M$: mass of the cart
+    * $l$: length from the pivot to the center of mass of the pendulum
+    * $k$: gear ratio, converting the control signal $u$ into a physical force $F = k \cdot u$ applied to the cart.
+
+
+### Key Knowledge 2: Linear Controller
+**K (State Feedback Gain Matrix):**
+
+* For a LTI-System with infinite horizon, we can set derivation of cost function = 0 and find out that $u(t) = - \mathbf{K}\mathbf{s}(t)$ at every time point the same $K$.
+* For an LTI system with a finite horizon, K is time-varying because we set extra another cost at the end of horizont(calculated via DRE).
+* This is achieved by rephrasing the cost function above, then we end up with a function including two terms, both are quadratic terms (first one totally dependent on x, the second term where x and u are involved).
+
+* From the first one we found out that x and u are in linear relationship 
+$$\mathbf{u}^*(t) = -\mathbf{R}^{-1}\mathbf{B}^T\mathbf{P}\mathbf{x}(t)$$
+
+* But since we do not know how much is this K gain, so we also set the first term to 0, which is Algebraic Ricatti Equation, to find $P$, and eventually find $K = \mathbf{R}^{-1}\mathbf{B}^T\mathbf{P}$
+
+
+    The `control.lqr(A,B,Q,R)` computes this:
     $$\mathbf{K} = \begin{bmatrix} K_x & K_\theta & K_{\dot{x}} & K_{\dot{\theta}} \end{bmatrix}$$
-    So, the control force applied is:
     $$u(t) = - (K_x x(t) + K_\theta \theta(t) + K_{\dot{x}} \dot{x}(t) + K_{\dot{\theta}} \dot{\theta}(t))$$
-    This $\mathbf{K}$ is designed to bring the cart to $x=0$ and the pendulum to $\theta=0$ (upright) while respecting the balance between state deviations and control effort defined by $\mathbf{Q}$ and $R$.
-
-For an LTI system with an infinite horizon, K is constant.
-
-For an LTI system with a finite horizon, K is time-varying (calculated via DRE).
-
-For a nonlinear system, if you linearize around a fixed equilibrium, you get a constant K (local control).
-
-For a nonlinear system, if you linearize around a time-varying trajectory (e.g., for tracking) or re-linearize at each step (as in MPC), then the underlying A(t) and B(t) matrices change, and thus the effective feedback gain K will be time-varying.
+    
 
 
-| Feature            | Finite-Horizon LQR (Example)                                                                                                                                                                                                                                                                                                                        | Model Predictive Control (MPC)                                                                                                                                                                                                                                                                                                    |
+| Feature            | Finite-Horizon LQR | Model Predictive Control (MPC) |
 | :----------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Calculation** | Solved **once, offline** | Solved **repeatedly, online** at each time step                                                                                                                                                                                                                                                                           |
-| **Gain K** | Pre-computed **time-varying schedule** $\mathbf{K}(t)$ for the full horizon.                                                                                                                                                                                                                                                                     | **No explicit $\mathbf{K}(t)$ schedule is used for control application**. Instead, a sequence of open-loop controls is generated, and only the first is applied. The underlying optimization at each step might use an LQR-like calculation, where an internal, temporary $\mathbf{K}$ might be derived for that specific horizon, but it's not directly applied as a time-varying feedback law over the *entire* system operation. |
-| **Horizon** | Fixed starting point ($t_0$), fixed end point ($T$)                                                                                                                                                                                                                                                                                              | **Receding horizon**: Always looks $N$ steps ahead from current time                                                                                                                                                                                                                                                  |
-| **Adaptivity** | Less adaptive to unmodeled disturbances or errors (relies on pre-computed plan).                                                                                                                                                                                                                                                                  | Highly adaptive to disturbances and model inaccuracies because it re-optimizes at every step using the latest state.                                                                                                                                                                                              |
-| **Computational Load** | Low online computational load (just lookup)                                                                                                                                                                                                                                                                                                       | High online computational load (solves an optimization problem at each step)                                                                                                                                                                                                                                      |
-| **Nonlinear Systems** | Limited to local linearization around an equilibrium.                                                                                                                                                                                                                                                                                               | Can handle nonlinearities directly by including them in the optimization, though it often involves linearization at each step for computational tractability.                                                                                                                                                    |
-
-So, while LQR for a finite horizon is a building block for understanding the optimization part of MPC, MPC adds the crucial "receding horizon" and "re-optimization at each step" features that make it distinct and powerful for complex, real-time control problems.
+| **Systems** | Limited to local linearization around an equilibrium.| Can handle non-linear system, because it is mostly just sampling different trajectories at each timestemp and choose the most optimal one |
+| **Calculation** | Calculate **once, offline** | Calculate **repeatedly, online** at each time step |
+| **Gain K** | Pre-computed **time-varying schedule** $\mathbf{K}(t)$ for the full horizon. Even for finite horizont, at K(0), can calculate K(1), K(2), K(3),... arranging recursive relationship in a linear equation system, then substitue back into cost function, we can even solve it using either DRE or transforming in Quadratic Format | a sequence of open-loop controls is generated, and only the first is applied. If the system is linear, can apply LQR easily then no need trajectory sampling, but if not we need sampling |
+                                                        
+| **Computational Load** | Low online load (just lookup) | High (solves an optimization problem at each step)                                                                                                                                          
 
 
-## MPC
+## Finite Horizont LQR (can also be an MPC)
 * step 1: taking dynamics A, B as input, formulate finite horizont stateinput sequences in a dynamic programmed (matrix) way $X_k = \mathbf{\Phi} x(k) + \mathbf{\Gamma} U_k$
 * step 2: substituting into J cost function (just the same as LQR), now we have $J(U_k,x(k))$ into $\frac{1}{2}U_k^T H U_k + G^T U_k + J_{const}$.
 * using QP solver, because this is the format that the solution method is known
-* only apply the first one, and next step reapply MPC
+* (only difference in MPC) - only apply first one, then re-calculate at the next step
 
 
 # Introduction to RL
+* Environment: Markov Decision Process: chain of states and their relationship of actions, rewards, based on Markov Chain Property (only based on last state is MDP), but other properties like POMDP, or n-step DP.
 * MBRL: using Dynamic Programming
 * Model-free: Monte Carlo --(improve)--- Temporal Difference (SARSA (on policy) vs Q-Learning (off-policy))
 
-Monte Carlo: 
+**Goal**
+ find a policy $\pi^*$  that maximizes the discounted future return.
+$$
+\max_\pi \, \mathbb{E}_\pi \left[ \sum_{k = t+1}^{T} \gamma^{k - t - 1} R_k \right]
+$$
 
-* epsilon-greedy => Q* != Q_pi. epsilon greedy to sample actions, which are mostly only suboptimal and actually leads to longer trajectory
-  
-Q-Learning:
+# Model-free RL
+## Value-based (2 steps)
+### Value Iteration approach (we have $p(s', r \mid s, a)$)
 
-* even epsilon-greedy, Q* = Q_pi, because it is off-policy. BUT epsilon-greedy still leads to suboptimal longer trajectory like above in MC
+Each state value $V$, or state-action value $Q$ can be represented **RECURSIVELY** by **immediate reward R + neighboring state-action values weighted by transition actions propability distribution.**
 
-How do V* and Q* relate? 
-$$Q^*(s,a)=R(s,a)+\gamma \mathbb{E}_{s' \sim P(s,a)}[V^*(s')]$$
-for each Q slot in the environment (4, 4, 4), there are 4 Q(s,a)
-
-$$V^*(s) = \max_{a} Q^*(s, a)$$
-$$V^*(s) = \average_{a} Q^*(s, a)$$
-just need to sum over all Q(s, a) mentioned above, because V is environment of (4, 4)
-
-## Model-based 
-
-### Bellman Optimally using Value Iteration
+**Keypoint** Utilizing this **Bellman optimality recursion**, **immediate reward R**, they can help us converging to optimal $V^*$ and $Q^*$ by  **Value Iteration**: that starts with random $V$, $Q$, but repeatedly sweeping Bellman optimality equation to all states/state-action pairs.
 ```
 policy = lambda s: [0.25,0.25,0.25,0.25]
 V = np.zeros((4,4))
@@ -153,42 +141,54 @@ for steps in range(200):
         V_pi[state] = np.sum(action_probs*(rewards+gamma*V_subseq_states))
         Q_pi[state] = rewards + gamma * V_subseq_states
 ```
-The goal in reinforcement learning is to find a policy that maximizes the discounted future return that the agent can expect. In other words, we want to find a policy $\pi^*$ that dominates all other policies: $V^{\pi^*} := V^* \ge V^\pi$ for all $\pi$. It turns out that there is always at least one policy that achieves the optimum. The Bellman optimality equations express this via the recurrence:
 
 $$V^*(s) = \max_{a \in \mathcal{A}} \left[ R(s, a) + \gamma \sum_{s' \in \mathcal{S}} P(s, a)(s') V^*(s') \right]$$
 
-The state-action value function can be defined in a similar way as above:
-
 $$Q^*(s, a) = R(s, a) + \gamma \mathbb{E}_{s' \sim P(s,a)}[V^*(s')]$$
 
-Once we know $Q^*$ we can find a deterministic $\pi^*(s)$ via:
+In the end when $Q^*$ are converged, we can find a deterministic $\pi^*(s)$ via:
 
 $$\pi^*(s) = \arg\max_{a \in \mathcal{A}} Q^*(s, a)$$
 
-We can obtain $V^*$ and $Q^*$ by an algorithm called value iteration, that repeatedly applies the Bellman optimality equation to all states/state-action pairs.
 
-## Model-free
+### Sampling Approach (no access to $p(s', r \mid s, a)$)
+**2 steps:** (state, action) -> (value) -> argmax deterministic (action)
+
 every model-free algorithms has to work based on Monte Carlo for trajectory sampling.
 
-### Learning V* and Q* from data from Monte Carlo Samples
-(state, action) -> (value) (no dynamics - no Model) 
+#### 1. Monte Carlo
 
+* sample full trajectories
 * update at the end of each trajectory in reverse
+* epsilon-greedy => Q* != Q_pi. epsilon greedy to sample actions, which are mostly only suboptimal and actually leads to longer trajectory
 
-So far we have used the Bellman Optimality Equation and our exact knowledge of R and P to compute V and Q. However, in the real world, we usually do not have access to these functions. One possible approach is Monte Carlo simulation, which estimates the value of actions or states through sampling full episodes. Monte Carlo methods sample multiple episodes of experience to approximate the expected return.
 
+**Start** with a random value function: $V(s) = \frac{1}{|S|}$
 
-The state value function of a given state under a policy $\pi$ is then the average return that was obtained when starting in that state:
+**Collect sampling trajectories** $M$ trajectory samples:
+$$
+s_0^m \quad r_1^m \quad s_1^m \quad \cdots \quad s_{T_m}^m \qquad m = 1, \ldots, M
+$$
 
-$$V^\pi(s) \approx \frac{1}{N(s)} \sum_{i=1}^{N(s)} G_i$$
+* For each trajectory
 
-where $G_i$ is the obtained discounted episode return. $Q^\pi$ is defined analogously.
+    * For each state in that trajectory
 
-We will here use an $\epsilon$-greedy Q-policy. The policy is therefore changing over the course of our trial. We thus use an update equation:
+    * **slowly update along that trajectory using learning rate**: 
+    $$
+    V(s_t^m) \leftarrow V(s_t^m) + \alpha \left( g_t^m - V(s_t^m) \right)
+    $$
+    return is calculated backward and trace back + adding gamma:
 
-$$V(s) \leftarrow (1-\alpha) \cdot V(s) + \alpha \cdot G_i$$
+    $$
+    g_\tau^m = R_{t+1}^m + \gamma R_{t+2}^m + \gamma^2 R_{t+3}^m + \dots + \gamma^{T - t - 1} R_T^m
+    $$
 
-where $\alpha$ is called the learning rate.
+**Downside:** 
+
+* **nearer to the beginning of a trajectory gets higher return** but it should be the opposite, where nearer states (more correlative) to terminal state. Because looking closely at return $G$ is actually just like $v_\pi(s)$, but $G$ is exclusively binded to the trajectory
+* **Update rules not generalized enough** because the reward could only update within the trajectory. For e.g. there is a state that is very near the goal, but somehow random sampling only sample it leading to negative terminal => not correctly negatively updated
+
 ```
 for episode in range(total_episodes):
   while step<max_steps_pr_episode:
@@ -208,21 +208,29 @@ for episode in range(total_episodes):
 
 ```
 
-### MC Upgrade to Temporal Difference (specifically Q-Learning)
-(state, action) -> (value) (no dynamics - no Model) ---> argmax for action (2 steps)
+#### 2. Temporal Difference (Q-Learning, SARSA)
+* similar to Monte Carlo by sampling a lot of trajectories, but update:
+    * in between directly without waiting for trajectory end
+    * bootstrapping the action-state value of the successor state
 
-* update in between directly
-
-Q-Learning process resembles dynamic programming's iterative refinement of value functions. However, Q-learning diverges by employing sample-based updates akin to Monte Carlo simulation, where experiences from interactions with the environment inform the value estimates, a.k.a. bootstrapping
-
+##### Off-policy (Q-Learning) (use Bellman Optimality)
+Update rule: immediate reward + difference between the best next successor state-action value and current
 $$Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left( r_{t+1} + \gamma \max_{a} Q(s_{t+1}, a) - Q(s_t, a_t) \right)$$
 
-* Different from Value Iteration (Bellman Equation) because it does SAMPLE TRAJECTORY like MC
-* But why do not we use that Bellman Equation here? because it has sth to do with transition probability, we cannot simply sample all transition same probability
-* Therefore, sampling also means that we indirectly find this reward with this probability, like what is the expected ($r_{t+1} + \gamma \max_{a} Q(s_{t+1}, a)$), instead of the probability we already knew
-* it updates NOT IN REVERSE ORDER. It updates in forward order.
-* utilizes the reward of the next step IN THAT TRAJECTORY + its maximum expected value - previously past experienced of the current state
-* the one near the terminal will directly rewarded the most with the most weight, because the term $\gamma \max_{a} Q(s_{t+1}, a)$ is then the terminal reward. Sometimes people actually expand this TD(n) so that we could get more from the terminal state.
+The main keypoint here is that: the best next successor state-action value might not be the one chosen from that sampled trajectory => update policy != sampling policy
+
+##### On-policy (SARSA) (not use Bellman Optimality)
+Update rule: immediate reward + difference between the actual next successor state-action from that sampled trajectory => update binded to sampling policy
+$$
+Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \right]
+$$
+
+
+**End effect of Temporal Difference:** 
+
+* Update not trajectory dependent like MC => more balanced update
+* Can update realtime (no need reverse order)
+* the one near the terminal will directly rewarded the most with the most weight, because the term $\gamma \max_{a} Q(s_{t+1}, a)$ is then the terminal reward. Sometimes people actually expand this TD(n) so that the last n-states could get even directly to terminal state.
 
 ```
 for i_episode in range(total_episodes):
@@ -235,77 +243,89 @@ for i_episode in range(total_episodes):
 
 ```
 
-### DQN Representing state using theta
-**Goal: Deterministic argmax Policy**
-(state, action) -> (value) (no dynamics - no Model)
+#### 3. Function Approximation DQN
 
-* Q-Learning: The ground-truth is based on the max of the next step from the table
+**Goal: Interpolating Q-Values using a DNN**
+
+* MSE Loss function between the network calculation and (linear regression)
+* The ground-truth from bootstrapping the max of the next step from the table (Bellman-Optimality)
 
   $$
   Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \max_a Q(s_{t+1}, a) - Q(s_t, a_t) \right]
   $$
 
+Technical tricks in implementation:
 
-* update separately each transition without chronological order
+* **Each transition separately using replay buffer** stores each transition (s, a, s+1, r+1, done?), instead of training in a consecutive sequence like from sampling
+*  **Rewards come from the environment**, Gymnasium give the reward directly => use this in Bellman Optimality to calculate Ground Truth
 
-Now the network takes care of pivoting known Q-state to create a function that can apply for continuous interpolated range of states, just like linear regression. MSE Loss function involved to minimize loss between observed from sampled trajectory (using Bellman Equation bootstrapping value of the next state in trajectory as ground truth) vs network Q-values
-
-BUT, simply replacing Q-table with the network not efficient => technical tricks:
-
-* replay buffer stores each transition (s, a, s+1, r+1, done?), so that when training we treat each transition separately, instead of being in a consecutive sequence like from sampling
-* inferencetarget network is a weight frozen copy of the learning network and only update after 1000 steps, because learning network when changes weight might shift a little other weights
-* the rewards come from the environment, Gymnasium give the reward directly
-* then use this reward to calculate the ground truth then update the DQN
 ```
 class QNetwork(nn.Module):
   # input state space representation, output action space representation
 
 for i_episode in range(1, n_episodes+1):
     for t in range(max_t):
-        action = agent.act(state, eps)
+        action = agent.act(state, eps) # Epsilon-greedy
         next_state, reward, terminated, truncated, _ = env.step(action)
         agent.step(state, action, reward, next_state, terminated)
 
-where:
-    def act(self, state, eps=0.):
-        action_values = self.qnetwork_local(state) #find out the probability for each action
-        # Epsilon-greedy action selection
-        if random.random() > eps:
-            return np.argmax(action_values.cpu().data.numpy())
-        else:
-            return random.choice(np.arange(self.action_size))
+def step(self, state, action, reward, next_state, done):
+    self.memory.add(state, action, reward, next_state, done)
+    # learn update_every timestep
+    self.t_step = (self.t_step + 1)  
+        if (enough samples for a batch):
+            experiences = self.memory.sample()
+            self.learn(experiences, gamma)
 
-    def step(self, state, action, reward, next_state, done):
-        self.memory.add(state, action, reward, next_state, done)
-        self.t_step = (self.t_step + 1) % learn update_every timestep
-            if (enough samples for a batch):
-                experiences = self.memory.sample()
-                self.learn(experiences, gamma)
+def learn(self, experiences, gamma):
+    states, actions, rewards, next_states, dones = experiences
 
-    def learn(self, experiences, gamma):
-        states, actions, rewards, next_states, dones = experiences
-        q_targets_next = self.qnetwork_target(next_states).detach().max(1)[0].unsqueeze(1)
-        ### Calculate target value from bellman equation bootstrapping the next state value in this trajectory
-        q_targets = rewards + gamma * q_targets_next * (1 - dones)
-        ### Calculate expected value from local network
-        q_expected = self.qnetwork_local(states).gather(1, actions)
+    ### Calculate target value from bellman equation bootstrapping the next state value in this trajectory
+    q_targets_next = self.qnetwork_target(next_states)
+    q_targets = rewards + gamma * q_targets_next * (1 - dones)
 
-        ### Loss calculation (we used Mean squared error)
-        loss = F.mse_loss(q_expected, q_targets)
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
+    ### Calculate expected value from local network
+    q_expected = self.qnetwork_local(states).gather(1, actions)
+
+    loss = F.mse_loss(q_expected, q_targets)
+    # update
 ```
 
-### Policy Gradients Representing policy using theta
-**Goal: Stochastic Policy instead of Deterministic argmax Policy as DQN**
-(state)->(probabilistic action policy) (1 step)
-**This one is Monte Carlo style, it waits until the end then also learn backwards**
-This time theta is used to directly learn the behavior instead of state-action value => better for high dimensional or continuous space. It samples trajectories, computing their returns, and adjusting the policy parameters based on these returns. It updates theta
+## Policy Search (1 step)
+**1 Step:** (state)->(probabilistic action policy)
 
-$$
-\mathbf{\theta} \leftarrow \mathbf{\theta} + \alpha \gamma^t g_t^m \nabla_{\mathbf{\theta}} \ln \pi(a_t^m|s_t^m, \mathbf{\theta})
-$$
+### Policy Gradients (First Order)
+
+**This one is Monte Carlo style, it waits until the end then update $\pi(a_t^m|s_t^m, \mathbf{\theta})$ backwards**
+
+Objective function is still in general for every (action|state).
+
+ 
+For each sampled trajectory:
+
+  For each (state,action) in the trajectory:
+
+  Calculate return backward:
+  $$g_t^m \leftarrow r_{t+1}^m + \gamma r_{t+2}^m + \dots$$
+
+  Advantage function to avoid variance problem:  
+  $$\delta \leftarrow g_t^m - \hat{v}(s_t^m, \mathbf{w})$$
+  
+  But update only Update this specific policy for that (state,action) $\pi(a_t^m|s_t^m, \mathbf{\theta})$ using gradient descent. Plug in (state,action) to quantize and update theta:
+  $$\mathbf{\theta} \leftarrow \mathbf{\theta} + \alpha^{\theta} \gamma^t \delta \nabla \ln \pi(a_t^m|s_t^m, \mathbf{\theta})$$
+
+
+**End effect:** 
+
+* directly learn the behavior instead of state-action value => more data efficient? because only 1 step directly to calculate action
+* using gradient descent is classic (can use all relevant techniques)
+
+**Disadvantage:**
+
+* local minimum
+* on-policy
+
+* PPO adding clipping into loss function to avoid learning too much
 
 implementation similar to Q-learning
 ```
@@ -317,60 +337,58 @@ for episode in range(total_num_episodes):
 		action = agent.act(obs)
 		obs, reward, terminated, truncated, info = env.step(action)
 		agent.rewards.append(reward)
-		score += reward
-		done = terminated or truncated
+
 	agent.learn() #finish the trajectory then start to learn
 
-where:
-    def act(self, state: np.ndarray) -> float:
-        action_means, action_stddevs = self.net(state)
-        # create a normal distribution from the predicted mean and standard deviation and sample an action
-        distrib = Normal(action_means[0] + self.eps, action_stddevs[0] + self.eps)
-        action = distrib.sample()
-        prob = distrib.log_prob(action)  # used for update
-        self.probs.append(prob)
-        return action
+def learn(self):
+    #calculate G for each timestep in the trajectory
+    #calculate G backwards in Monte Carlo style
+    for R in self.rewards[::-1]:
+        running_g = R + self.gamma * running_g
+        gs.insert(0, running_g)
+    deltas = torch.tensor(gs)
 
-    def learn(self):
-        #calculate G for each timestep in the trajectory
-        #calculate G backwards in Monte Carlo style
-        for R in self.rewards[::-1]:
-            running_g = R + self.gamma * running_g
-            gs.insert(0, running_g)
-        deltas = torch.tensor(gs)
+    loss = 0
+    # this time we define loss by ourselves
+    # now loss for each timestep in the trajectory
+    for log_prob, delta in zip(self.probs, deltas):
+        loss += log_prob.mean() * delta * (-1)
 
-        loss = 0
-        # this time we define loss by ourselves
-        # now loss for each timestep in the trajectory
-        for log_prob, delta in zip(self.probs, deltas):
-            loss += log_prob.mean() * delta * (-1)
-
-        # Update the policy network
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
+    # Update the policy network
 ```
 
-#### Difference between Value-based & Gradient Policy based
-* Value based: try to update Q -> argmax Q deterministic -> action
-* Policy Gradient based: try to update a stochastic distribution of action | given state. -> directly action
+### Bayesian Optimization & Gaussian Processes (Zero-order)
 
-# Bayesian Optimization & Gaussian Processes
-* Given seen data samples of a function, want to find that funciton's min/max but cannot use gradient descent => surrogate function Gaussian Process (GP)
-* GP is a probability distribution over all possible function, all seen sampled data create together a join distribution
-  * Goal  Problem setup: posterior mean & variance of a new datapoint!!!
-  * Key Knowledge to lean on: Formulate jointly multivariate Gaussian distribution A|B where we already know how to calculate posterior mean and covariance
-  * Formulate covariance matrix (yt,f*) and try to arrange in that same structure / format => we know how to calculate these posterior mean/covariance
-  * covariance matrix based on the kernel function saying how far two points from each other (RBF for Gaussian, or also be Euclidian distance) K_ij = k(xi, xj), calculate these for all pair of points and put it in the cov matrix
-  * Now plug in all these covariance matrix, kernel function into the A|B jointly Gaussian distribution to calculate a new unseen datapoint
-  * BUT... where to take a datapoint? sample about 1000 datapoints use of acquisition function (balance exploitation & exploration)! (EI: where variance & mean are the highest)
+* Objective function as above, **Goal: find theta that funciton's min/max** but:
+    * Many optimum => cannot use gradient descent
+    * Each evaluation step is expensive (could not sample so much)
+
+* **Solution:** GP is a probability distribution over all possible function, all seen sampled data build together a join distribution
+  * Goal: posterior mean & variance of a new datapoint given prior some limited samples!!!
+  * Key Knowledge to lean on: Covariance Matrix of jointly multivariate Gaussian distribution A,B where we already know how to calculate posterior mean and covariance of (A|B)
+  * Formulate (yt,f*) in that same covariance matrix structure => we can calculate these posterior mean/covariance of (f*|yt) in exactly the same way
+  * Covariance matrix based on the kernel function (RBF for Gaussian, or also be Euclidian distance) K_ij = k(xi, xj), calculate these for all pair of points and put it in the cov matrix
+
+  * BUT... where to take a new datapoint?  apply acquisition function on random 1000 new datapoints (balance exploitation & exploration)! (EI: where variance & mean are the highest)
   * Multiple Objective BO actually easy, (e.g. best material: each fixed theta give different function with different max on the graph, test many theta to find many max points for each function => use Pareto)
+
+Pro:
+
+* Many optimum => cannot use gradient descent
+* Each evaluation step is expensive (could not sample so much)
+
+Cons:
+
+* Difficult to scale to high-dimensional input space
+* Computationally expensive
+* Quality of the model dependent from use of appropriate kernel
+* No guarrantee a REAL max
 
 ```
 for i in range(1):
-    y_next = true_function(x_next)
-    bayes_opt.update_model(x_next, y_next)
-    x_next = bayes_opt.get_candidate(aq_func)
+    y_next = true_function(x_next) #evaluate/sample
+    bayes_opt.update_model(x_next, y_next) #update gaussian process
+    x_next = bayes_opt.get_candidate(aq_func) #choose next data to sample
 
 def update_model(self, x, y):
     self.x_samples = np.append(self.x_samples, x)
@@ -383,44 +401,30 @@ def get_candidate(self, acquisition_function, num_candidates=1000):
     x_canditates = np.linspace(self.bounds[0], self.bounds[1], num_candidates)
     mu,sigma = self.surrogate_model.predict(x_canditates) #calculate variance and mean from all other data
     aqf_values = acquisition_function(mu, sigma, np.max(self.y_samples))
-    best_index = np.argmax(aqf_values)
+    best_index = np.argmax(aqf_values) #choose the one with highest EI
 ```
 
-## Apply on the CartPole like above solutions
-### parameter search grid
-**GOal: find the set of gain K**
-* we knew it is not a dynamic problem like above (each state a different action)
-* its a fixed linear state feedback controller, like a LQR, but we just do not know the K
-* use Bayesian to search in parameter space, each time choosing, we run sample the controller environment and see which parameter sets get the best rewards
+**CartPole Example: find the set of gain K, each time evaluate in environment, and keep finding**
 
-### Multi-objective 
-* similar above, it is just they all will work, but what set of parameter we want (independent from just the cost)
+# MBRL
+## MPC (known Forward Dynamics)
 
-# MPC Model-based Learning (Planning with a Forward Model)
-
-## Linear model and quadratic cost function => similar to LQR
-**Goal: transform into a function of only U, no X related like in LQR**
-* stack all the action states and outputs by time into vectors, and X can be represented by only U as variable using a linear equation system
+### LQR-based MPC for Linear model and quadratic cost function
+**Goal: Bring back to LQR problem to solve as QR**
+* We have to know desired states
+* stack all sequences of action states and outputs into vectors
 * why can we do that? because we have a model given
-* the goal of this step is that we can substitue this format (all sequential action input, states) into the cost function of only variable U, and represent it in a quadratic function format that we know how to solve (find U) numerically
-* we can also add some edge constraints
-* linear or non-linear model
+* Substitue back into the cost function, and represent it in a quadratic function format that we know how to solve (find U) numerically
+* Solve Quadratic Function
 
-## Non-linear model vs Non-quadratic cost function
-* just give in the dynamic model, and then sample (try out different input with that dynamic model in the future)
-* can simply be solved by sampling or gradient method, then choose the one argmin the quadratic cost (easy: desired states = zeros - actually computed)^2
+### General MPC for Non-linear model vs Non-quadratic cost function
+* We have to know desired states
+* Sampling (try out different input with that dynamic model in the future) using the given dynamics
+* Choose the one argmin the quadratic cost using gradient descent or Gaussian Processes (easy: desired states = zeros - actually computed)^2
 * CEM: In each iteration, it samples action sequences from the distribution, evaluates them using the cost function, and then fits the distribution to the best performing sequences. This process is repeated until convergence.
 
-Discuss the differences of LQR and MPC.
-
-- LQR:
-LQR provides an analytic solution for linear systems with quadratic costs. It assumes fixed dynamics and works well near a specific operating point, but cannot handle nonlinear systems or constraints.
-
-- MPC:
-MPC solves an optimization problem over a finite horizon at each time step, allowing it to handle nonlinear dynamics and constraints. It is more flexible and robust but requires more computation.
 
 ```
-## Solution
 # Sampling-Based Planner
 def plan(state, desired_state, dynamics_model, objective_function, cost_weights, horizon = 50, num_candidates=20000):
 	action_sequences = torch.distributions.uniform.Uniform(-1,1).sample((num_candidates,horizon)).to(state.device)
@@ -428,42 +432,19 @@ def plan(state, desired_state, dynamics_model, objective_function, cost_weights,
 	best_cand = costs.argmin()
 	return action_sequences[best_cand,0]
 
-# predict a trajectory and evaluate it using the given objective function
+# calculate a trajectory and evaluate it using the given objective function (quadratic cost)
 def evaluate_action_sequences(state, action_sequences, desired_state=torch.zeros(4), dynamics_model=predict_next_states, objective_function=quadratic_cost, cost_weights = torch.tensor([1.,2.,0.,0.])):
-    trajectories= predict_trajectories(torch.tile(state,(len(action_sequences),1)), action_sequences, dynamics_model)
+    trajectories= calculate_trajectories(torch.tile(state,(len(action_sequences),1)), action_sequences, dynamics_model)
     return objective_function(trajectories, desired_state, cost_weights).sum(dim=1)
 
-# Objective function
-def quadratic_cost(trajectory, desired_state = torch.zeros(4), weight = torch.tensor([1.,2.,0.,0.])):
-	with torch.no_grad():
-		return torch.square(trajectory-desired_state)@weight
-
-def predict_trajectories(states, action_sequences, dynamics_model):
-    trajectories = torch.zeros((len(action_sequences), len(action_sequences[0]), len(states[0])), device=states.device)
-    for i, actions in enumerate(action_sequences.T):
-        states = dynamics_model(states, actions) # just give the function predict_next_states in
-        trajectories[:,i,:] = states
-    return trajectories
-
 def predict_next_states(states, actions):
-	m = 2
-	M = 5
-	l = 0.5
-	g = 9.81
-	k = 100
-	dt = 0.02
-	xs, thetas, xs_dot, thetas_dot = states.T
-	actions = actions.squeeze()
 
-	# Non-linear equations of motion for the cart-pole system
+	# Non-linear dynamics for the cart-pole system
 	def equations_of_motion(xs, thetas, xs_dot, thetas_dot, actions):
-		sin_thetas = torch.sin(thetas)
-		cos_thetas = torch.cos(thetas)
-		xs_dot_dot = (k * actions + m * l * thetas_dot**2 * sin_thetas - m * g * sin_thetas * cos_thetas) / (M + m - m * cos_thetas**2)
-		thetas_dot_dot = 1/l * (g * sin_thetas - cos_thetas * xs_dot_dot)
+		# define all the dynamics in here
 		return xs_dot, thetas_dot, xs_dot_dot, thetas_dot_dot
 
-	# Integrate the equations of motion using simple Euler's method
+	# find the next state using simple Euler's method
 	xs_dot, thetas_dot, xs_dot_dot, thetas_dot_dot = equations_of_motion(xs, thetas, xs_dot, thetas_dot, actions)
 	xs_dot += xs_dot_dot * dt
 	thetas_dot += thetas_dot_dot * dt
@@ -473,41 +454,40 @@ def predict_next_states(states, actions):
 	return torch.stack([xs, thetas, xs_dot, thetas_dot]).T    
 ```
 
-# Model-based Learning in general
-Compare the performance of Model-Based RL and Model-Free RL agents (DQN, REINFORCE, AC,... are Model-Free) in terms of wall-clock time and data-efficiency.
+## Model-based Learning in general
+Compare the performance of Model-Based RL and Model-Free RL agents (DQN, REINFORCE, AC,... are Model-Free)
 
-- Wall-clock time:
-Model-Free RL often requires less computation per step but needs many environment interactions, leading to long training times overall. Model-Based RL can be slower per step (due to planning) but may converge faster.
+Model-free:
 
-- Data-efficiency:
-Model-Based RL is generally more data-efficient, as it learns from simulated rollouts using the model. Model-Free methods typically need much more experience to learn effective policies.
+* converge guarrantee
+* simple implementation
+* light computation
+* BUT needs A LOT of interaction to learn => converge slower
+
+Model-based:
+
+* not converge guarrantee, because sampling
+* but can converge quickly
+* A LOT of computation
 
 - Problem setup:
 MB needs a dynamic model in advance, which is very difficult to have!
 
-## What if we do not have dynamic model? We learn
+## Learn Dynamics (unknown Dynamics)
+### Simple Dynamics Network
+
 * similar to DQN, but input (state, action) -> output (next state)
+* also similar, each transition of the trajectory is saved into replay buffer, then learn each transition separately
+* So yeah: Plan => separate transition to replay buffer => learn each
 ```
 for i in range(100):
-    state,_ = env.reset()
-    score = 0
-    done = False
     while not done:
         action = agent.act(state)
         next_state, reward, terminal, truncated, _ = env.step(action)
-        done = terminal or truncated
         agent.step(state.astype(np.float32), action.astype(np.float32), reward, next_state.astype(np.float32), done)
         state = next_state
 
     def step(self, state, action, reward, next_state, done): #next_state is ground truth, input is current state, action
-        self.replay_buffer.add(
-            TensorDict({
-                'state': torch.from_numpy(state),
-                'action': torch.from_numpy(action),
-                'next_state': torch.from_numpy(next_state)
-                }
-            ),
-        )
         # Learn every update_every time steps.
         if self.t_step % self.update_every == 0:
             if self.t_step > self.init_period:
@@ -533,30 +513,8 @@ class ForwardDynamicsModel(nn.Module):
         self.fc2 = nn.Linear(hidden_dim, state_dim)
 ```
 
-## Why do we need CEMPlanner?
-1.  **Neural Network (NN) Policy Inference:**
 
-    * **How it works:** An NN policy (as seen in methods like DQN or direct policy gradient methods) is a learned function that directly maps an input state to an output action (or a distribution over actions).
-        * For a Q-network, given a state $\mathbf{s}$, the network outputs estimated Q-values for all possible actions: $Q(\mathbf{s}, a_0)$, $Q(\mathbf{s}, a_1)$, …. The agent then simply picks the action with the highest Q-value ($\arg\max_a Q(\mathbf{s}, a)$).
-        * For a direct policy network, given a state $\mathbf{s}$, the network directly outputs the recommended action $\mathbf{u}$ or probabilities for discrete actions.
-    * **Computational Cost:** To get an action, the neural network only needs to perform a single forward pass. This involves a series of matrix multiplications and non-linear activations. Modern hardware (like GPUs) is highly optimized for these operations, making them incredibly fast, often in the order of milliseconds or microseconds.
-    * **Speed:** Very fast, constant time per decision.
-
-2.  **CEM Planner Inference:**
-
-    * **How it works:** A CEM planner (as you saw in the `MBRLAgent` code) does not have a direct learned mapping from state to action. Instead, at each decision point (i.e., every time the agent needs to select an action):
-        * It starts with a probability distribution over potential future action sequences (e.g., for the next 20 timesteps).
-        * It samples many (e.g., 1000) different action sequences from this distribution.
-        * For each sampled sequence, it uses its forward model (`self.model` in your code) to simulate what would happen if that sequence of actions were executed over the planning horizon (e.g., 20 timesteps). This means running the `predict_next_states` function repeatedly for each sample.
-        * It evaluates the cumulative reward (or cost) for each simulated trajectory.
-        * It selects the top-performing "elite" sequences.
-        * It updates its probability distribution to focus on those elite sequences.
-        * It repeats steps 2-6 for several iterations (e.g., 5-10 iterations), refining the distribution.
-        * Finally, it takes the first action from the best sequence found by this iterative optimization process.
-    * **Computational Cost:** This entire process (sampling, many forward model rollouts, evaluation, statistical updates, multiple iterations) must happen every single time the agent needs to choose an action. This is computationally expensive and takes significantly longer than a single forward pass of a neural network.
-
-
-# VAE
+### VAE-based (Dreamer)
 **Goal:**
 $$\mathcal{L}(\theta, \phi, \mathbf{x}) = \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}, \mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})} \right] = \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} [\log p_\theta(\mathbf{x}|\mathbf{z})] - D_{KL}(q_\phi(\mathbf{z}|\mathbf{x}) || p(\mathbf{z}))$$
 
@@ -565,116 +523,80 @@ The VAE loss combines two terms:
 * Reconstruction Loss: Measures how well the decoder reconstructs the input from the latent code (actually MSE derived from Gaussian distribution loss).
 * KL Divergence: Bringing learned latent distribution to be close to each other (and also standard normal distribution) => smoothness and no holes 
 
-# End-to-end Learning
 
-End-to-end learning can potentially capture complex relationships between images and actions, offers simplicity but requires more data and computational resources, while separating perception and control provides interpretability and efficiency but requires explicit transfer between modules and engineering efforts.
+#### Actual Dreamer (2 networks)
+**Goal:** plan => separate transition => bring to a new encoded space, train on 2 networks:
 
-## Dreamer
-**Goal:** Encode the state into sth informative then act from that latent space (semantically structured packed space)
-* everytime acting, bring to a new encoded space, then take that encoded space to continue 2 networks as below.
-* Q-Network (encoded latent space)->(action): actually the same as Q-Network, but the input is not state, it is encoded image (env observation), Ground Truth taken from table as below (Loss can be MSE). That is how we could **generalized the STATE**
+1. Q-Network (encoded latent space)->(action): Purpose to **generalized the STATE** actually the same as Q-Network, but the input is not state, it is encoded image (env observation), Ground Truth taken from table as below (Loss can be MSE).
   $$
   Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \max_a Q(s_{t+1}, a) - Q(s_t, a_t) \right]
   $$
 
-* Reconstruction-Network (VAE): just to make sure the latent space we learned was correct, reconstruction loss also MSE for each pixel
+2. Reconstruction-Network (VAE): MSE loss to make sure the latent space we learned was correct, reconstruction loss also MSE for each pixel
 
 ```
 for step in pbar:
-    pbar.set_description(f"Episode {episode+1:>3}/{num_episodes} - Reward: {episode_reward:>10.2f}, Epsilon: {vae_dqn_agent.epsilon:<.4f}")
     # Choose an action based on the current state
     action = vae_dqn_agent.act(state, explore=True)
     # Take the chosen action in the environment
     next_state, reward, terminal, truncated, _ = env.step(action)
     # Store the experience in the agent's replay buffer
-    tensordict = TensorDict({'pixels': torch.tensor(state).to(torch.float32),
-                                'action': torch.tensor(action).to(torch.int64),
-                                'reward': torch.tensor(reward).to(torch.float32),
-                                'next_pixels': torch.tensor(next_state).to(torch.float32),
-                                'done': torch.tensor(terminal or truncated).to(torch.float32)
-                                })	
-    vae_dqn_agent.store_experience(tensordict)
+    vae_dqn_agent.store_experience(tensordict of action, reward, next_pixel, dont)
     # Update the agent's Q-network
     vae_dqn_agent.update()
 
-def act(self, state, explore=False): #either random or just take the most rewarded action from Q-network
-    if explore and torch.rand(1) < self.epsilon:
-        return self.action_space.sample()
-    else:
-        with torch.no_grad():
-            state_norm = torch.tensor(self.normalize_state(state)).unsqueeze(0).permute(0, 3, 1, 2).to(self.device, torch.float32)
-            latent_vector = self.vae.encode(state_norm)[0]
-            q_values = self.q_network(latent_vector) 
-            return torch.argmax(q_values, dim=1).squeeze().cpu().numpy()
+def act(self, state, explore=False): 
+    #either random or just take the most rewarded action from Q-network
 
-	def update(self): #update both networks at the same time
-        self.update_vae()
-		self.update_dqn()
+def update(self): #update both 2 networks at the same time
+    self.update_vae()
+    self.update_dqn()
 
-	def update_vae(self):
-		# Encode states using VAE
-		mu, log_var = self.vae.encode(states_norm)
-		z = self.vae.reparameterize(mu, log_var)
-		
-		reconstructed_states = self.vae.decode(z)
+def update_vae(self):
+    # Encode states using VAE
+    mu, log_var = self.vae.encode(states_norm)
+    z = self.vae.reparameterize(mu, log_var)
+    
+    reconstructed_states = self.vae.decode(z)
 
-		loss = self.vae_loss_fn(states_norm, reconstructed_states, mu, log_var)
-        # then update using optimize
-        ...
+    loss = self.vae_loss_fn(states_norm, reconstructed_states, mu, log_var)
+    # then update using optimize
+    ...
 
-	def update_dqn(self):
-        ...
-		q_values = self.q_network(latent_states).gather(1, actions.unsqueeze(1))
-		next_q_values = self.target_network(latent_next_states).max(1)[0].detach()
-		target_q_values = rewards + self.gamma * next_q_values * (1 - dones)
+def update_dqn(self):
+    ...
+    q_values = self.q_network(latent_states).gather(1, actions.unsqueeze(1))
+    next_q_values = self.target_network(latent_next_states).max(1)[0].detach()
+    target_q_values = rewards + self.gamma * next_q_values * (1 - dones)
 
-		loss = self.q_loss_fn(q_values, target_q_values.unsqueeze(1))
-        # then update using optimizer
-        ...
+    loss = self.q_loss_fn(q_values, target_q_values.unsqueeze(1))
+    # then update using optimizer
+    ...
 ```
 
 # Learning from Demonstration
-## Imitation Learning / Behavior CLoning
-* DNN (input:state) -> (output:action)
-```
-self.model = nn.Sequential(
-			nn.Linear(self.dataset.observation_space.shape[0], 64),
-			nn.ReLU(),
-			nn.Linear(64, 64),
-			nn.ReLU(),
-			nn.Linear(64, self.dataset.action_space.shape[0]),
-			nn.Tanh() 
-		).to(device)
-		self.optimizer = optim.Adam(self.model.parameters(), lr=0.001)
-		self.loss = nn.MSELoss() 
+* No exploration (as in RL), just demonstrate => fast
+* Works well in the real world!
+* BUT (Optimal) Demonstrations are not always available
+* BUT can get stuck in unseen states
 
+## Imitation Learning / Behavior CLoning
+* Actually a Supervised DNN (input:state) -> (output:action), kinda easy
+* We can also extend this network to VAE+Actor+Critic Networks, which I think that is BCQ does
+```
 for epoch in range(num_epochs):
         for batch in self.replay_buffer:
             observations, target_actions = batch['observations'], batch['actions'] #sample input & output from dataset
             actions = self.model(observations)
-            loss = self.loss(actions, target_actions)
+            loss = self.loss(actions, target_actions) #MSELoss
             self.optimizer.zero_grad()
             loss.backward()
 ```
-* but, can we use this data to do a reinforcement learning? - No, because we should let RL **explore** to regularize the environment, just learning from this data makes it does not know what to do in unseen state (dsitributional shift), it infact overestimate because it has never seen a bad example before 
+* but, can we use this data to do a reinforcement learning? - No, because we should let RL **explore** to regularize the environment, just learning from this data makes it does not know what to do in unseen state **distributional shift**, it infact overestimate because it has never seen a bad example before 
 * => Dagger
 
-## Offline Reinforcement Learning with BCQ
-* the same, use Variational Autoencoder, using 2 networks:
-* VAE to propose actions (input: state, action) -> modified action
-* modified Q-network to evaluate these actions using expected future reward
 
-Vorgehen:
-* act: generates multiple plausible actions (from the VAE), perturbs them slightly (with the Actor), and then chooses the best among those constrained options using its Q-function. This is the "batch-constrained" part in action, preventing the agent from selecting highly uncertain, out-of-distribution actions.
-    * at each state, sample 100 candidate actions
-    * VAE generates each similar version of them
-    * weiterleiten to Actor: pertube actions
-    * Critic network Q-value
-    * choose the best action from 100
-
-* train:
-    * VAE (the core): takes a (state, action) from dataset to reconstruct a recon, then MSE (recon, action), this pack action more semantically in latent space (also use reconstruction loss + KL divergence)
-    * Critic: estimate Q-values for (state, action) pairs from the dataset, while avoiding overestimation for out-of-distribution actions
-    * Actor: aim to find slightly better actions within the constrained space
-
-
+## Inversed RL
+* given demonstration
+* learn rewards function
+* then RL back to explore and find optimal policy
