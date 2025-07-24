@@ -8,7 +8,7 @@
 
 <meta name="dcterms.date" content="2025-07-18">
 
-<title>Exam: Touch Sensing – Đinh Tiến Thắng</title>
+<title>Touch Sensing – Đinh Tiến Thắng</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -40,7 +40,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-db03927a41f77a8af5287a812d7101f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -134,7 +134,7 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Exam: Touch Sensing</h1>
+      <h1 class="title">Touch Sensing</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">Exam</div>
               </div>
@@ -238,7 +238,7 @@ window.Quarto = {
 <ul>
 <li>Merkel’s disk: skin upper layer, slowly adapting (at presence of static stimulus), balance structure =&gt; good for shape+texture identification &amp; light touch</li>
 <li>Meissner’s corpuscle: also upper layer, but rapid adapting (at stimulus change, gradient of touch), vertical structure =&gt; good for pressure sensing + low frequency</li>
-<li>Pacinian corpuscle: deep in skin layer, and also rapid adapting, BUT the round shape =&gt; high frequency sensing</li>
+<li>Pacinian corpuscle: deep in skin layer, rapid adapting, BUT the round shape =&gt; high frequency sensing</li>
 <li>Ruffini Endings: deep in skin layer, slow adapting, vertical structure =&gt; good for stretch detection</li>
 </ul>
 </section>
@@ -263,10 +263,10 @@ window.Quarto = {
 <section id="technology" class="level2">
 <h2 class="anchored" data-anchor-id="technology">Technology</h2>
 <ul>
-<li><strong>Capacitive:</strong> touch represent a parallel capacitor to ground (multiple touch possible), but in many cases this would be wrongly intepreted (e.g: any conductive material noise but without any force like water)</li>
-<li><strong>Ressistive:</strong> material bend create change in resistance R = ro * l / S =&gt; widely used, cheap, insensitive to liquid, but no multi-touch</li>
-<li><strong>Piezoelectric</strong> generates electrical field at mechanical change because of breaking out balance state of + &amp; - ions =&gt; electric movements =&gt; good for vibration</li>
-<li><strong>Magnetic</strong> interparticle position changes =&gt; changes in magnetic field</li>
+<li><strong>Capacitive:</strong> <strong>Conductive touch</strong> represent a parallel capacitor to ground (multiple touch possible), but in many cases this would be wrongly intepreted (e.g: any conductive material noise but without any force like water)</li>
+<li><strong>Ressistive:</strong> <strong>material bend</strong> create change in resistance R = ro * l / S =&gt; widely used, cheap, insensitive to liquid, but no multi-touch</li>
+<li><strong>Piezoelectric</strong> <strong>ion Breaking out</strong> generates electrical field at mechanical change because of breaking out balance state of + &amp; - ions =&gt; electric movements =&gt; good for vibration</li>
+<li><strong>Magnetic</strong> <strong>Magnetic Field change</strong> interparticle position changes =&gt; changes in magnetic field</li>
 </ul>
 </section>
 </section>
@@ -285,11 +285,13 @@ window.Quarto = {
 <li>Camera &amp; optical system has to be very durable &amp; precise</li>
 </ul></li>
 <li><p>Challenge 3: Slow temporal resolution. No vibration bc of elastomer damping and camera framerate</p></li>
+<li><p>Challenge 4: does not directly measure force/pressure like pressure gauge</p></li>
 <li><p>Design factors:</p>
 <ul>
 <li>Elastomer for recognizing touch features (it has a durability problem that it will wear out after sometimes so needs re-calibrate or change, because it cannot re-generate like human skin)</li>
 <li>Lighting needs correct calibration depending on position, because it can create shadows</li>
 <li>Camera &amp; optical system has to be very high resolution</li>
+<li>Very high frequency!!! 30 FPS is not enough</li>
 </ul></li>
 </ul>
 </section>
@@ -302,11 +304,20 @@ window.Quarto = {
 <li>well studied</li>
 <li>but high computation cost on complex environment</li>
 </ul></li>
+<li><strong>Difficulties in Simulation</strong>
+<ul>
+<li>Trade-off between high quality and computation effort</li>
+<li>Currently only rigid-body, soft-body is still in research meanwhile touch sensing is mostly about soft-body (Elastomer has highly complex deformation, we could see that from TACTO)</li>
+</ul></li>
 </ul>
 </section>
 <section id="perception-in-touch" class="level1">
 <h1>Perception in Touch</h1>
-<p>mostly start by using Markers. It is simple but good, we can track the position by time easily. The only designing factor is to calibrate the initial marker distortion. Because the camera see from a singular perspective.</p>
+<ul>
+<li>Very precise, high spatial resolution</li>
+<li>Implementation: Markers, CNN, time-optical flow</li>
+<li>Design challenge: calibrate the initial marker distortion. Because the camera see from a singular perspective.</li>
+</ul>
 <section id="depth-estimation-3d-reconstruction" class="level2">
 <h2 class="anchored" data-anchor-id="depth-estimation-3d-reconstruction">Depth Estimation &amp; 3D Reconstruction</h2>
 <p>Color gradient (change in color by time) + Bend in markers</p>
