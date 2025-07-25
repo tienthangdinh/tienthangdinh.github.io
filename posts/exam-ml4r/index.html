@@ -203,7 +203,6 @@ window.Quarto = {
   <li><a href="#model-based-learning-in-general" id="toc-model-based-learning-in-general" class="nav-link" data-scroll-target="#model-based-learning-in-general">Model-based Learning in general</a></li>
   <li><a href="#learn-dynamics-unknown-dynamics" id="toc-learn-dynamics-unknown-dynamics" class="nav-link" data-scroll-target="#learn-dynamics-unknown-dynamics">Learn Dynamics (unknown Dynamics)</a>
   <ul class="collapse">
-  <li><a href="#simple-dynamics-network" id="toc-simple-dynamics-network" class="nav-link" data-scroll-target="#simple-dynamics-network">Simple Dynamics Network</a></li>
   <li><a href="#vae-based-dreamer" id="toc-vae-based-dreamer" class="nav-link" data-scroll-target="#vae-based-dreamer">VAE-based (Dreamer)</a></li>
   </ul></li>
   </ul></li>
@@ -556,6 +555,7 @@ def learn(self):
 <ul>
 <li>Many optimum =&gt; cannot use gradient descent</li>
 <li>Each evaluation step is expensive (could not sample so much)</li>
+<li>Goal of GP: find posterior mean, variance</li>
 </ul></li>
 <li><strong>Solution:</strong> GP is a probability distribution over all possible function, all seen sampled data build together a join distribution
 <ul>
@@ -575,7 +575,7 @@ def learn(self):
 <p>Cons:</p>
 <ul>
 <li>Difficult to scale to high-dimensional input space</li>
-<li>Computationally expensive</li>
+<li>Computationally expensive because (distance function, acquisition function sampling, covariance matrix, needs to calculate a lot)</li>
 <li>Quality of the model dependent from use of appropriate kernel</li>
 <li>No guarrantee a REAL max</li>
 </ul>
@@ -652,25 +652,26 @@ def predict_next_states(states, actions):
 <ul>
 <li>converge guarrantee</li>
 <li>simple implementation</li>
-<li>light computation</li>
-<li>BUT needs A LOT of interaction to learn =&gt; converge slower</li>
+<li>light computation (lighter iteration)</li>
+<li>BUT needs A LOT of interaction to learn (not data efficient)=&gt; converge slower (many iteration)</li>
 </ul>
 <p>Model-based:</p>
 <ul>
-<li><p>not converge guarrantee, because sampling</p></li>
-<li><p>but can converge quickly</p></li>
-<li><p>A LOT of computation</p></li>
-<li><p>Problem setup: MB needs a dynamic model in advance, which is very difficult to have!</p></li>
+<li>more data efficient, it learns from every data it rolled out</li>
+<li>but can converge quickly (not many iteration) (data efficient)</li>
+<li>BUT: A LOT of computation at each timestep (bc of rollout sampling planner (longer iteration))</li>
+<li>BUT: MB needs a dynamic model in advance, which is very difficult to have!</li>
+<li>BUT converge guarrantee, because sampled planning</li>
 </ul>
 </section>
 <section id="learn-dynamics-unknown-dynamics" class="level2">
 <h2 class="anchored" data-anchor-id="learn-dynamics-unknown-dynamics">Learn Dynamics (unknown Dynamics)</h2>
-<section id="simple-dynamics-network" class="level3">
-<h3 class="anchored" data-anchor-id="simple-dynamics-network">Simple Dynamics Network</h3>
 <ul>
-<li>similar to DQN, but input (state, action) -&gt; output (next state)</li>
-<li>also similar, each transition of the trajectory is saved into replay buffer, then learn each transition separately</li>
-<li>So yeah: Plan =&gt; separate transition to replay buffer =&gt; learn each</li>
+<li><p>Problem: there are many states that can be presented differently, but in the sense of the task it is the same, so we do not want to overfit or learn irrelevant things =&gt; wrong behavior</p></li>
+<li><p>Solution: Autoencoder, pack information ### Simple Dynamics Network</p></li>
+<li><p>similar to DQN, but input (state, action) -&gt; output (next state)</p></li>
+<li><p>also similar, each transition of the trajectory is saved into replay buffer, then learn each transition separately</p></li>
+<li><p>So yeah: Plan =&gt; separate transition to replay buffer =&gt; learn each</p></li>
 </ul>
 <pre><code>for i in range(100):
     while not done:
@@ -703,7 +704,6 @@ class ForwardDynamicsModel(nn.Module):
         self.fc1 = nn.Linear(state_dim+action_dim, hidden_dim)
         self.relu = nn.ReLU()
         self.fc2 = nn.Linear(hidden_dim, state_dim)</code></pre>
-</section>
 <section id="vae-based-dreamer" class="level3">
 <h3 class="anchored" data-anchor-id="vae-based-dreamer">VAE-based (Dreamer)</h3>
 <p><strong>Goal:</strong> <span class="math display">\[\mathcal{L}(\theta, \phi, \mathbf{x}) = \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}, \mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})} \right] = \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} [\log p_\theta(\mathbf{x}|\mathbf{z})] - D_{KL}(q_\phi(\mathbf{z}|\mathbf{x}) || p(\mathbf{z}))\]</span></p>
