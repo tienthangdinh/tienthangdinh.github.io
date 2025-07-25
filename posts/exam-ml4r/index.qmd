@@ -362,6 +362,7 @@ def learn(self):
 * Objective function as above, **Goal: find theta that funciton's min/max** but:
     * Many optimum => cannot use gradient descent
     * Each evaluation step is expensive (could not sample so much)
+    * Goal of GP: find posterior mean, variance
 
 * **Solution:** GP is a probability distribution over all possible function, all seen sampled data build together a join distribution
   * Goal: posterior mean & variance of a new datapoint given prior some limited samples!!!
@@ -380,7 +381,7 @@ Pro:
 Cons:
 
 * Difficult to scale to high-dimensional input space
-* Computationally expensive
+* Computationally expensive because (distance function, acquisition function sampling, covariance matrix, needs to calculate a lot)
 * Quality of the model dependent from use of appropriate kernel
 * No guarrantee a REAL max
 
@@ -461,19 +462,20 @@ Model-free:
 
 * converge guarrantee
 * simple implementation
-* light computation
-* BUT needs A LOT of interaction to learn => converge slower
+* light computation (lighter iteration)
+* BUT needs A LOT of interaction to learn (not data efficient)=> converge slower (many iteration)
 
 Model-based:
 
-* not converge guarrantee, because sampling
-* but can converge quickly
-* A LOT of computation
-
-- Problem setup:
-MB needs a dynamic model in advance, which is very difficult to have!
+* more data efficient, it learns from every data it rolled out
+* but can converge quickly (not many iteration) (data efficient)
+* BUT: A LOT of computation at each timestep (bc of rollout sampling planner (longer iteration))
+* BUT: MB needs a dynamic model in advance, which is very difficult to have!
+* BUT converge guarrantee, because sampled planning
 
 ## Learn Dynamics (unknown Dynamics)
+* Problem: there are many states that can be presented differently, but in the sense of the task it is the same, so we do not want to overfit or learn irrelevant things => wrong behavior
+* Solution: Autoencoder, pack information
 ### Simple Dynamics Network
 
 * similar to DQN, but input (state, action) -> output (next state)
@@ -600,3 +602,6 @@ for epoch in range(num_epochs):
 * given demonstration
 * learn rewards function
 * then RL back to explore and find optimal policy
+
+
+
