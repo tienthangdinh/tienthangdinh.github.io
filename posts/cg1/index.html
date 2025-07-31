@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-07-30">
+
+<title>Computer Graphics Foundation – Đinh Tiến Thắng</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Đinh Tiến Thắng</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Đinh Tiến Thắng</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Computer Graphics Foundation</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">Computer Graphics</div>
+                <div class="quarto-category">Mesh Processing</div>
+                <div class="quarto-category">GPU real-time Rendering</div>
+                <div class="quarto-category">Accelerated Data Structure</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">July 30, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#polygonal-meshes" id="toc-polygonal-meshes" class="nav-link active" data-scroll-target="#polygonal-meshes">Polygonal Meshes</a>
+  <ul class="collapse">
+  <li><a href="#basics" id="toc-basics" class="nav-link" data-scroll-target="#basics">Basics</a>
+  <ul class="collapse">
+  <li><a href="#obj---a-data-structure" id="toc-obj---a-data-structure" class="nav-link" data-scroll-target="#obj---a-data-structure">OBJ - a Data Structure</a></li>
+  <li><a href="#manifold-topology" id="toc-manifold-topology" class="nav-link" data-scroll-target="#manifold-topology">Manifold Topology</a></li>
+  <li><a href="#triangulation-of-polygons-using-ear-cutting" id="toc-triangulation-of-polygons-using-ear-cutting" class="nav-link" data-scroll-target="#triangulation-of-polygons-using-ear-cutting">Triangulation of Polygons using Ear-Cutting</a></li>
+  <li><a href="#triangle-meshes-simplified-polygon-mesh" id="toc-triangle-meshes-simplified-polygon-mesh" class="nav-link" data-scroll-target="#triangle-meshes-simplified-polygon-mesh">Triangle Meshes (Simplified Polygon Mesh)</a></li>
+  </ul></li>
+  <li><a href="#geometry-analysis" id="toc-geometry-analysis" class="nav-link" data-scroll-target="#geometry-analysis">Geometry Analysis</a>
+  <ul class="collapse">
+  <li><a href="#face-normals-polygon-area" id="toc-face-normals-polygon-area" class="nav-link" data-scroll-target="#face-normals-polygon-area">Face Normals = Polygon Area</a></li>
+  <li><a href="#volume-enclosed-by-triangle-mesh" id="toc-volume-enclosed-by-triangle-mesh" class="nav-link" data-scroll-target="#volume-enclosed-by-triangle-mesh">Volume Enclosed by Triangle Mesh</a></li>
+  <li><a href="#volume-gradient" id="toc-volume-gradient" class="nav-link" data-scroll-target="#volume-gradient">Volume Gradient</a></li>
+  <li><a href="#vertex-normal-from-incidents-faces" id="toc-vertex-normal-from-incidents-faces" class="nav-link" data-scroll-target="#vertex-normal-from-incidents-faces">Vertex Normal from incidents faces</a></li>
+  <li><a href="#centroid-of-one-ring" id="toc-centroid-of-one-ring" class="nav-link" data-scroll-target="#centroid-of-one-ring">Centroid of One-Ring</a></li>
+  </ul></li>
+  <li><a href="#connectivity-analysis" id="toc-connectivity-analysis" class="nav-link" data-scroll-target="#connectivity-analysis">Connectivity Analysis</a>
+  <ul class="collapse">
+  <li><a href="#shells-loops" id="toc-shells-loops" class="nav-link" data-scroll-target="#shells-loops">Shells &amp; Loops</a></li>
+  <li><a href="#union-find-ds" id="toc-union-find-ds" class="nav-link" data-scroll-target="#union-find-ds">Union-Find DS</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#halfedge" id="toc-halfedge" class="nav-link" data-scroll-target="#halfedge">Halfedge</a>
+  <ul class="collapse">
+  <li><a href="#ds-construction" id="toc-ds-construction" class="nav-link" data-scroll-target="#ds-construction">DS Construction</a>
+  <ul class="collapse">
+  <li><a href="#vertex-circulator" id="toc-vertex-circulator" class="nav-link" data-scroll-target="#vertex-circulator">Vertex Circulator:</a></li>
+  <li><a href="#inverse-matching" id="toc-inverse-matching" class="nav-link" data-scroll-target="#inverse-matching">Inverse Matching</a></li>
+  </ul></li>
+  <li><a href="#mesh-analysis" id="toc-mesh-analysis" class="nav-link" data-scroll-target="#mesh-analysis">Mesh Analysis</a>
+  <ul class="collapse">
+  <li><a href="#design-pattern-for-design-mesh-processing-algorithm" id="toc-design-pattern-for-design-mesh-processing-algorithm" class="nav-link" data-scroll-target="#design-pattern-for-design-mesh-processing-algorithm">Design Pattern for Design Mesh Processing Algorithm</a></li>
+  <li><a href="#why-use-triangle-strips-for-rendering" id="toc-why-use-triangle-strips-for-rendering" class="nav-link" data-scroll-target="#why-use-triangle-strips-for-rendering">Why use Triangle Strips for Rendering?</a></li>
+  <li><a href="#how-to-compute-triangle-strip" id="toc-how-to-compute-triangle-strip" class="nav-link" data-scroll-target="#how-to-compute-triangle-strip">How to compute Triangle Strip?</a></li>
+  <li><a href="#how-to-do-orientability-check" id="toc-how-to-do-orientability-check" class="nav-link" data-scroll-target="#how-to-do-orientability-check">How to do Orientability Check?</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="polygonal-meshes" class="level1">
+<h1>Polygonal Meshes</h1>
+<section id="basics" class="level2">
+<h2 class="anchored" data-anchor-id="basics">Basics</h2>
+<ul>
+<li>mesh 𝑀 is defined as a tripel (𝑉, 𝐸, 𝐹)</li>
+<li>Topological type using betti numbers</li>
+<li>incident: different type, adjacent: same type</li>
+<li>valence (given a vertex: number of incident edge/traingles?)</li>
+<li>degree (given a face: number of incident edges?)</li>
+<li><span class="math inline">\(\sum valences = 2edges = \sum degrees\)</span> (because mostly one edge is shared by 2 vertices and 2 faces)</li>
+<li>winding order is used for backface culling (when we add into the program)</li>
+</ul>
+<section id="obj---a-data-structure" class="level3">
+<h3 class="anchored" data-anchor-id="obj---a-data-structure">OBJ - a Data Structure</h3>
+<pre><code>v -1 -1 1
+v 1 -1 1
+v -1 1 1
+...
+vt u1 v1
+vt u2 v2
+vt u3 v3
+...
+vn -1 0 0
+vn 1 0 0
+vn 0 -1 0
+...
+f 1/1/1 3/3/1 7/?/1 5/?/1
+f 2/2/2 6/6/2 8//2 4//2
+...</code></pre>
+<ul>
+<li>deep in hardware could be saved as:
+<ul>
+<li>array: very fast for linear traversal, add and delete slower</li>
+<li>double linked-list: add and delete faster, but linear traversal slower</li>
+</ul></li>
+</ul>
+</section>
+<section id="manifold-topology" class="level3">
+<h3 class="anchored" data-anchor-id="manifold-topology">Manifold Topology</h3>
+<p>Goal idea: resembling 2D plane everywhere on the surface:</p>
+<ul>
+<li>each edge is incident to 1 or 2 faces (if less: no face, if more: no clear surface definition, if 1: boundary)</li>
+<li>each edge is incident to 2 vertices (no rounded edge with its face in itself)</li>
+<li>each face is bounded by 1 loop over incident edges (if not: its a hole)</li>
+<li>each vertex: the incident faces and edges form a <strong>single</strong> “fan” which is either open (on the boundary) or a closed disk (in the interior of the mesh), but not multiple fans.</li>
+</ul>
+<p>DS are mostly restricted on this because:</p>
+<ul>
+<li>Reliably deterministic in operation (e.g.&nbsp;each edge only has 1,2 faces at 2 sides which create a clear surface for traversal) =&gt; avoid ambigioiusity</li>
+<li>Naturally it is able to model most of 3D shapes</li>
+</ul>
+</section>
+<section id="triangulation-of-polygons-using-ear-cutting" class="level3">
+<h3 class="anchored" data-anchor-id="triangulation-of-polygons-using-ear-cutting">Triangulation of Polygons using Ear-Cutting</h3>
+<ul>
+<li>classify all corners in convex or concave (already knew from internal angles)</li>
+<li>repeat n-3 times: (n loop)
+<ul>
+<li>one ear-cut: iterate all convex corners (corner hear means vertex and the edges at two sides): (n loop)
+<ul>
+<li>check, if corner is an ear (if it contains no concave inside the border line)</li>
+<li>if yes, cut-off ear, reclassify adjacent corners, break this loop to go to the next eat-cut</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="triangle-meshes-simplified-polygon-mesh" class="level3">
+<h3 class="anchored" data-anchor-id="triangle-meshes-simplified-polygon-mesh">Triangle Meshes (Simplified Polygon Mesh)</h3>
+<ul>
+<li>Triangulated using Ear-Cutting</li>
+<li><span class="math inline">\(2e = 3f\)</span> or <span class="math inline">\(\frac{3}{2} f = e\)</span> bc each faces has 3 edges, but each edge is used double</li>
+<li>Euler formula: <span class="math inline">\(v-e+f=X\)</span>, for X very small =&gt; <span class="math inline">\(v = \frac{1}{3} e = \frac{1}{2} f\)</span></li>
+<li>valence: <span class="math inline">\(\sum valences = 2e = 6v\)</span></li>
+</ul>
+</section>
+</section>
+<section id="geometry-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="geometry-analysis">Geometry Analysis</h2>
+<section id="face-normals-polygon-area" class="level3">
+<h3 class="anchored" data-anchor-id="face-normals-polygon-area">Face Normals = Polygon Area</h3>
+<ul>
+<li>For triangle: <span class="math inline">\(\hat{n} = (p_1 - p_0) \times (p_2 - p_0)\)</span> and <span class="math inline">\(A = \frac{1}{2} \left| p_0 \times p_1 + p_1 \times p_2 + p_2 \times p_0 \right|\)</span></li>
+<li>For Polygon: <span class="math inline">\(\hat{n} \propto (p_0 \times p_1) + (p_1 \times p_2) + \ldots + (p_{d-1} \times p_0)\)</span> and <span class="math inline">\(A = \frac{1}{2} \left| (p_0 \times p_1) + (p_1 \times p_2) + \ldots + (p_{d-1} \times p_0) \right|\)</span></li>
+</ul>
+<p>General idea for Area:</p>
+<ol type="1">
+<li>Choose a reference point, typically the origin (0, 0).</li>
+<li>Iterate through each directed edges (p_i, p_j) of the polygon, calculate the signed area of the triangle it forms with the origin using the z-component of the cross product: <span class="math inline">\(\Delta A = \frac{1}{2} (x_i y_j - x_j y_i)\)</span>. (It is represented by a normal pointing inside in the winding order aka right-hand rule, some shorter, some longer will sum up to the correct direction)</li>
+<li>Sum all these signed areas <span class="math inline">\(A = \sum \Delta A\)</span>. Concave (negative area) and Convex (positive area)</li>
+</ol>
+<p>Advantage:</p>
+<ul>
+<li>No need ear-cutting: O(n²)</li>
+<li>Taking care of concave triangles</li>
+</ul>
+</section>
+<section id="volume-enclosed-by-triangle-mesh" class="level3">
+<h3 class="anchored" data-anchor-id="volume-enclosed-by-triangle-mesh">Volume Enclosed by Triangle Mesh</h3>
+<p>Idea comes from Divergence Theorem: sum of all the “sources” and “sinks” within a volume equal to the total amount of “stuff” flowing out (or in) through the surface boundary of that volume. <span class="math inline">\(\iint_S \mathbf{F} \cdot d\mathbf{S} = \iiint_V (\nabla \cdot \mathbf{F}) dV\)</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(\mathbf{F}\)</span> is the vector field.</li>
+<li><span class="math inline">\(S\)</span> is a closed surface.</li>
+<li><span class="math inline">\(V\)</span> is the volume enclosed by <span class="math inline">\(S\)</span>.</li>
+<li><span class="math inline">\(d\mathbf{S}\)</span> is an infinitesimal outward normal vector element of the surface.</li>
+<li><span class="math inline">\(\nabla \cdot \mathbf{F}\)</span> is the divergence of the vector field <span class="math inline">\(\mathbf{F}\)</span>.</li>
+</ul>
+<p>In simpler terms:</p>
+<ul>
+<li><strong>Flux (<span class="math inline">\(\iint_S \mathbf{F} \cdot d\mathbf{S}\)</span>):</strong> This represents the “flow” of the vector field out of the enclosed volume through its boundary surface. Imagine a fluid flowing; the flux would be the amount of fluid passing through the surface per unit time.</li>
+<li><strong>Divergence (<span class="math inline">\(\nabla \cdot \mathbf{F}\)</span>):</strong> This measures the “source” or “sink” density of the vector field at each point within the volume. A positive divergence indicates a source (where the field is originating or expanding), and a negative divergence indicates a sink (where the field is converging or disappearing).</li>
+</ul>
+<p>Now we apply that to Volume, each tetrahedron volume created by each triangle <span class="math inline">\(\frac{1}{6} \mathbf{p}_i \cdot (\mathbf{p}_j \times \mathbf{p}_k)\)</span> (also called triple product)</p>
+<p>Then the total volume <span class="math inline">\(V\)</span> is sum of tetrahedron volume: <span class="math inline">\(V = \frac{1}{6} \sum_{(ijk) \in T} [\mathbf{p}_i, \mathbf{p}_j, \mathbf{p}_k]\)</span></p>
+</section>
+<section id="volume-gradient" class="level3">
+<h3 class="anchored" data-anchor-id="volume-gradient">Volume Gradient</h3>
+<p>Let’s start with the <strong>volume contribution</strong> of a tetrahedron formed by the origin and a triangle <span class="math inline">\((\mathbf{p}_i, \mathbf{p}_j, \mathbf{p}_k)\)</span>:</p>
+<p><span class="math inline">\(V_{ijk} = \frac{1}{6} \mathbf{p}_k \cdot (\mathbf{p}_i \times \mathbf{p}_j)\)</span></p>
+<p><span class="math inline">\(\frac{\partial V_{ijk}}{\partial \mathbf{p}_k} = \frac{\partial}{\partial \mathbf{p}_k} \left( \frac{1}{6} \mathbf{p}_i \cdot (\mathbf{p}_j \times \mathbf{p}_k) \right)\)</span> (volume with respect to the coordinates of a specific vertex <span class="math inline">\(\frac{\partial V}{\partial \mathbf{p}_k}\)</span>)</p>
+<p><span class="math inline">\(\frac{\partial V_{ijk}}{\partial \mathbf{p}_k} = \frac{1}{6} (\mathbf{p}_i \times \mathbf{p}_j)\)</span></p>
+<p>Until now what this means?</p>
+<ul>
+<li>It means much the volume of that specific tetrahedron changes if we move vertex <span class="math inline">\(\mathbf{p}_k\)</span> by a small amount.</li>
+<li>The result, <span class="math inline">\(\frac{1}{6} (\mathbf{p}_i \times \mathbf{p}_j)\)</span>, is a vector. This vector is normal to the plane formed by <span class="math inline">\(\mathbf{p}_i\)</span> and <span class="math inline">\(\mathbf{p}_j\)</span>, and its magnitude is related to the area of the triangle formed by <span class="math inline">\(\mathbf{p}_i\)</span>, <span class="math inline">\(\mathbf{p}_j\)</span>, and the origin.</li>
+</ul>
+<p>For the total volume <span class="math inline">\(V\)</span>, the gradient with respect to a vertex <span class="math inline">\(\mathbf{p}_k\)</span> is the <strong>sum of the gradients of all tetrahedra one-ring</strong> around <span class="math inline">\(\mathbf{p}_k\)</span>:</p>
+<p><span class="math inline">\(\nabla_{\mathbf{p}_k} V = \sum_{\text{one-ring } (\mathbf{p}_i, \mathbf{p}_j, \mathbf{p}_k)} \frac{1}{6} (\mathbf{p}_i \times \mathbf{p}_j)\)</span></p>
+<p>This gradient indicates the direction in which moving the vertex would most effectively increase the total mesh volume.</p>
+</section>
+<section id="vertex-normal-from-incidents-faces" class="level3">
+<h3 class="anchored" data-anchor-id="vertex-normal-from-incidents-faces">Vertex Normal from incidents faces</h3>
+<p><span class="math inline">\(\hat{n}_v \propto \sum_i w_i \hat{n}_i\)</span></p>
+<p>Implementation is interestingly reversed: because faces and vertices are jointly incident to each other</p>
+<pre><code>normals.resize(positions.size()); // init normals array with length equal to number of vertices
+foreach (fi in meshfaces) // iterate over all faces
+  nml = get_face_normal(fi); // get the normal for this face
+  foreach (corner ci in face fi) // iterate over all vertices of this face
+    normals[vi(ci)] += nml *compute_corner_weight(ci); // add the weighted normal to the corresponding normal array index</code></pre>
+</section>
+<section id="centroid-of-one-ring" class="level3">
+<h3 class="anchored" data-anchor-id="centroid-of-one-ring">Centroid of One-Ring</h3>
+<p><span class="math inline">\(c_v = \frac{1}{n_{onering}} \sum_i p_i\)</span> Implementaton also a little reversed, hell yeah, because all vertices are adjacent to each other</p>
+<pre><code>centroids.resize(positions.size()); //init
+valences.resize(positions.size());
+foreach (fi in meshfaces) //for each face
+  foreach (halfedge vi,vj in face fi) // iterate three halfedges (vi,vj)
+    centroids[vi] += positions[vj];
+    valences[vi] += 1;</code></pre>
+</section>
+</section>
+<section id="connectivity-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="connectivity-analysis">Connectivity Analysis</h2>
+<section id="shells-loops" class="level3">
+<h3 class="anchored" data-anchor-id="shells-loops">Shells &amp; Loops</h3>
+<ul>
+<li>Shells are connected components</li>
+<li>Boundary Loops are border/edges</li>
+</ul>
+</section>
+<section id="union-find-ds" class="level3">
+<h3 class="anchored" data-anchor-id="union-find-ds">Union-Find DS</h3>
+<p>This DS can be used to find shells three operations: * initialize UF-DS such that each element forms its own subset * union(element1, element2): Merges the sets containing the two elements. * find(element): Returns a unique identifier for the set that the element belongs to.</p>
+<p>Algorithm to find shells and count shells</p>
+<pre><code>int nr_comp = vertices.size(); 
+UF.init(vertices.size()); // init to component/set per vertex
+foreach (fi) // iterate face
+  foreach (halfedge vi,vj in face fi) //iterate HE
+  if (UF.find(vi) != UF.find(vj))
+    UF.union(vi,vj); //unite
+    nr_comp -= 1; //reduce comp by 1</code></pre>
+</section>
+</section>
+</section>
+<section id="halfedge" class="level1">
+<h1>Halfedge</h1>
+<p><strong>Goal</strong> Always in winding order so that:</p>
+<ul>
+<li>Manifold: 2 HE of the same edge are always opposite to each other</li>
+<li>Non-manifold: this invalid</li>
+</ul>
+<section id="ds-construction" class="level2">
+<h2 class="anchored" data-anchor-id="ds-construction">DS Construction</h2>
+<ul>
+<li>Adjacent relationship: next, prev, inv</li>
+<li>Incident relationship: origin, loop/face, edge</li>
+</ul>
+<pre><code>struct vertex {
+  vec3d position;
+  int halfedge;  //stores only 1 HE, the rest can be found by inv(next) like below
+};
+struct halfedge {
+  int origin,ni,ti; (pointer-based trade off sequential access vs single access vs memory)
+  int next,inv,li;
+};
+struct loop {
+  int halfedge; //stores only 1 HE, the rest can be found by next
+  bool is_border;
+};
+struct halfedge_mesh {
+vector&lt;vertex&gt; vertices;
+vector&lt;vec3d&gt; normals;
+vector&lt;vec2d&gt; texCoords;
+vector&lt;halfedge&gt; halfedges;
+vector&lt;loop&gt; loops;
+};</code></pre>
+<ul>
+<li>So, from an OBJ. file, what of these relationship can be directly inferred?
+<ul>
+<li>actually everything when reading the face: origin, next, loop BUT EXCEPT FOR inv, that neads to find what face adjacent to current face</li>
+</ul></li>
+</ul>
+<section id="vertex-circulator" class="level3">
+<h3 class="anchored" data-anchor-id="vertex-circulator">Vertex Circulator:</h3>
+<pre><code>int h0 = inv(vertexHalfEdge(vi)); //usually start with the inverse
+int hi = h0;
+do {
+  useNeighbor(origin(hi));
+  hi = inv(next(hi)); //always inv(next)
+} while (hi != h0); //until back to beginning</code></pre>
+</section>
+<section id="inverse-matching" class="level3">
+<h3 class="anchored" data-anchor-id="inverse-matching">Inverse Matching</h3>
+<ul>
+<li>Goal: finding the inv pointer for every halfedge in the mesh by placing them next to each other</li>
+<li>Idea: Easy:
+<ol type="1">
+<li>Sort internally v1 -&gt; v2 vs v2 -&gt; v1 in format smaller-&gt;bigger</li>
+<li>Sort the indices along the smaller column</li>
+<li>End effect:</li>
+</ol>
+<ul>
+<li>HE exists twice are matched, they are internal</li>
+<li>HE exists once are boundary</li>
+<li>HE exists more than twice are non-manifold</li>
+</ul></li>
+<li>This way we can extract Boundary Loop by for each unmatched HE, define all the inverse, and the inverse keep traversing next until it come back to the beginning</li>
+</ul>
+</section>
+</section>
+<section id="mesh-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="mesh-analysis">Mesh Analysis</h2>
+<section id="design-pattern-for-design-mesh-processing-algorithm" class="level3">
+<h3 class="anchored" data-anchor-id="design-pattern-for-design-mesh-processing-algorithm">Design Pattern for Design Mesh Processing Algorithm</h3>
+<ul>
+<li>Circulator (around vertex, face, vertex in face)</li>
+<li>Tagging (mark processed elements or store id/flag)</li>
+<li>Region Growing (triangle strip, compressed segmentation)</li>
+</ul>
+</section>
+<section id="why-use-triangle-strips-for-rendering" class="level3">
+<h3 class="anchored" data-anchor-id="why-use-triangle-strips-for-rendering">Why use Triangle Strips for Rendering?</h3>
+<ul>
+<li>Transfer: only need to transfer n+2 vertices for a strip of n triangles (the first one all 3, after that only 1 for each new triangle)</li>
+<li>Access: for triangle mesh we all know <span class="math inline">\(f = 2v\)</span>, triangle strip can utilize this optimum, but without strip, each face individually require separate 3 times access to their vertices. So <span class="math inline">\(f = 2.3v\)</span></li>
+<li>Downside? The algorithm is not always perfect (its just greedy)</li>
+</ul>
+</section>
+<section id="how-to-compute-triangle-strip" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-compute-triangle-strip">How to compute Triangle Strip?</h3>
+<p>Output Goal: strip index per face 1. Sample some seed 2. For each seed, generate a stripification 3. Here is how to stripification: * 2 types of HE, (even - odd) using parity (0-1) depending on how the origin aligned. * Forward: prev(inv(vi)) or next(inv(vi)) * Backward: … This run alternatively…change parity 0-1-0-1-0-1 Until Border or Comeback to beginning 4. Choose the longest strip from seed 5. Repeat with new set of seeds</p>
+</section>
+<section id="how-to-do-orientability-check" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-orientability-check">How to do Orientability Check?</h3>
+<p>Region Growing: Start at a seed to queue 1. Take the first face from queue 2. Check if orientable? 1. check if all neighboring processed faces have consistent orientation 2. If no, give up. But if yes, swap next and inv 3. Add all neighbors to queue</p>
+
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
