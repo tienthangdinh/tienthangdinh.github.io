@@ -1,0 +1,1279 @@
+---
+title: "Mesh Geometry Processing"
+date: 2025-07-30
+categories: [Computer Graphics, Mesh Processing]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+# Polygonal Meshes
+## Basics
+* mesh 𝑀 is defined as a tripel (𝑉, 𝐸, 𝐹)
+* Topological type using betti numbers 
+* incident: different type, adjacent: same type
+* valence (given a vertex: number of incident edge/traingles?)
+* degree (given a face: number of incident edges?)
+* $\sum valences = 2edges = \sum degrees$ (because mostly one edge is shared by 2 vertices and 2 faces)
+* winding order is used for backface culling (when we add into the program)
+
+### OBJ - a Data Structure
+```
+v -1 -1 1
+v 1 -1 1
+v -1 1 1
+...
+vt u1 v1
+vt u2 v2
+vt u3 v3
+...
+vn -1 0 0
+vn 1 0 0
+vn 0 -1 0
+...
+f 1/1/1 3/3/1 7/?/1 5/?/1
+f 2/2/2 6/6/2 8//2 4//2
+...
+```
+* deep in hardware could be saved as:
+  * array: very fast for linear traversal, add and delete slower
+  * double linked-list: add and delete faster, but linear traversal slower
+
+### Manifold Topology
+Goal idea: resembling 2D plane everywhere on the surface:
+
+* each edge is incident to 1 or 2 faces (if less: no face, if more: no clear surface definition, if 1: boundary)
+* each edge is incident to 2 vertices (no rounded edge with its face in itself)
+* each face is bounded by 1 loop over incident edges (if not: its a hole)
+* each vertex: the incident faces and edges form a **single** "fan" which is either open (on the boundary) or a closed disk (in the interior of the mesh), but not multiple fans.
+
+DS are mostly restricted on this because:
+
+* Reliably deterministic in operation (e.g. each edge only has 1,2 faces at 2 sides which create a clear surface for traversal) => avoid ambigioiusity
+* Naturally it is able to model most of 3D shapes
+
+### Triangulation of Polygons using Ear-Cutting
+* classify all corners in convex or concave (already knew from internal angles)
+* repeat n-3 times: (n loop)
+  * one ear-cut: iterate all convex corners (corner hear means vertex and the edges at two sides): (n loop)
+    * check, if corner is an ear (if it contains no concave inside the border line)
+    * if yes, cut-off ear, reclassify adjacent corners, break this loop to go to the next eat-cut
+
+### Triangle Meshes (Simplified Polygon Mesh)
+* Triangulated using Ear-Cutting
+* $2e = 3f$ or $\frac{3}{2} f = e$ bc each faces has 3 edges, but each edge is used double
+* Euler formula: $v-e+f=X$, for X very small => $v = \frac{1}{3} e = \frac{1}{2} f$
+* valence: $\sum valences = 2e = 6v$
+
+
+## Geometry Analysis
+### Face Normals = Polygon Area
+* For triangle: $\hat{n} = (p_1 - p_0) \times (p_2 - p_0)$ and $A = \frac{1}{2} \left| p_0 \times p_1 + p_1 \times p_2 + p_2 \times p_0 \right|$
+* For Polygon: $\hat{n} \propto (p_0 \times p_1) + (p_1 \times p_2) + \ldots + (p_{d-1} \times p_0)$ and $A = \frac{1}{2} \left| (p_0 \times p_1) + (p_1 \times p_2) + \ldots + (p_{d-1} \times p_0) \right|$
+
+General idea for Area: 
+
+1. Choose a reference point, typically the origin (0, 0).
+2. Iterate through each directed edges (p_i, p_j) of the polygon, calculate the signed area of the triangle it forms with the origin using the z-component of the cross product: $\Delta A = \frac{1}{2} (x_i y_j - x_j y_i)$. (It is represented by a normal pointing inside in the winding order aka right-hand rule, some shorter, some longer will sum up to the correct direction)
+3. Sum all these signed areas $A = \sum \Delta A$. Concave (negative area) and Convex (positive area) 
+
+Advantage:
+
+* No need ear-cutting: O(n²)
+* Taking care of concave triangles
+
+### Volume Enclosed by Triangle Mesh
+Idea comes from Divergence Theorem: sum of all the "sources" and "sinks" within a volume equal to the total amount of "stuff" flowing out (or in) through the surface boundary of that volume.
+$\iint_S \mathbf{F} \cdot d\mathbf{S} = \iiint_V (\nabla \cdot \mathbf{F}) dV$
+
+Where:
+
+* $\mathbf{F}$ is the vector field.
+* $S$ is a closed surface.
+* $V$ is the volume enclosed by $S$.
+* $d\mathbf{S}$ is an infinitesimal outward normal vector element of the surface.
+* $\nabla \cdot \mathbf{F}$ is the divergence of the vector field $\mathbf{F}$.
+
+In simpler terms:
+
+* **Flux ($\iint_S \mathbf{F} \cdot d\mathbf{S}$):** This represents the "flow" of the vector field out of the enclosed volume through its boundary surface. Imagine a fluid flowing; the flux would be the amount of fluid passing through the surface per unit time.
+* **Divergence ($\nabla \cdot \mathbf{F}$):** This measures the "source" or "sink" density of the vector field at each point within the volume. A positive divergence indicates a source (where the field is originating or expanding), and a negative divergence indicates a sink (where the field is converging or disappearing).
+
+Now we apply that to Volume, each tetrahedron volume created by each triangle $\frac{1}{6} \mathbf{p}_i \cdot (\mathbf{p}_j \times \mathbf{p}_k)$ (also called triple product)
+
+Then the total volume $V$ is sum of tetrahedron volume: $V = \frac{1}{6} \sum_{(ijk) \in T} [\mathbf{p}_i, \mathbf{p}_j, \mathbf{p}_k]$
+
+### Volume Gradient
+Let's start with the **volume contribution** of a tetrahedron formed by the origin and a triangle $(\mathbf{p}_i, \mathbf{p}_j, \mathbf{p}_k)$:
+
+$V_{ijk} = \frac{1}{6} \mathbf{p}_k \cdot (\mathbf{p}_i \times \mathbf{p}_j)$
+
+$\frac{\partial V_{ijk}}{\partial \mathbf{p}_k} = \frac{\partial}{\partial \mathbf{p}_k} \left( \frac{1}{6} \mathbf{p}_i \cdot (\mathbf{p}_j \times \mathbf{p}_k) \right)$ (volume with respect to the coordinates of a specific vertex $\frac{\partial V}{\partial \mathbf{p}_k}$)
+
+$\frac{\partial V_{ijk}}{\partial \mathbf{p}_k} = \frac{1}{6} (\mathbf{p}_i \times \mathbf{p}_j)$
+
+Until now what this means?
+
+* It means much the volume of that specific tetrahedron changes if we move vertex $\mathbf{p}_k$ by a small amount.
+* The result, $\frac{1}{6} (\mathbf{p}_i \times \mathbf{p}_j)$, is a vector. This vector is normal to the plane formed by $\mathbf{p}_i$ and $\mathbf{p}_j$, and its magnitude is related to the area of the triangle formed by $\mathbf{p}_i$, $\mathbf{p}_j$, and the origin.
+
+For the total volume $V$, the gradient with respect to a vertex $\mathbf{p}_k$ is the **sum of the gradients of all tetrahedra one-ring** around $\mathbf{p}_k$:
+
+$\nabla_{\mathbf{p}_k} V = \sum_{\text{one-ring } (\mathbf{p}_i, \mathbf{p}_j, \mathbf{p}_k)} \frac{1}{6} (\mathbf{p}_i \times \mathbf{p}_j)$
+
+This gradient indicates the direction in which moving the vertex would most effectively increase the total mesh volume.
+
+### Vertex Normal from incidents faces
+$\hat{n}_v \propto \sum_i w_i \hat{n}_i$
+
+Implementation is interestingly reversed: because faces and vertices are jointly incident to each other
+```
+normals.resize(positions.size()); // init normals array with length equal to number of vertices
+foreach (fi in meshfaces) // iterate over all faces
+  nml = get_face_normal(fi); // get the normal for this face
+  foreach (corner ci in face fi) // iterate over all vertices of this face
+    normals[vi(ci)] += nml *compute_corner_weight(ci); // add the weighted normal to the corresponding normal array index
+```
+
+### Centroid of One-Ring
+$c_v = \frac{1}{n_{onering}} \sum_i p_i$
+Implementaton also a little reversed, hell yeah, because all vertices are adjacent to each other
+```
+centroids.resize(positions.size()); //init
+valences.resize(positions.size());
+foreach (fi in meshfaces) //for each face
+  foreach (halfedge vi,vj in face fi) // iterate three halfedges (vi,vj)
+    centroids[vi] += positions[vj];
+    valences[vi] += 1;
+```
+
+## Connectivity Analysis
+### Shells & Loops
+* Shells are connected components
+* Boundary Loops are border/edges
+
+### Union-Find DS
+This DS can be used to find shells
+three operations:
+* initialize UF-DS such that each element forms its own subset
+* union(element1, element2): Merges the sets containing the two elements.
+* find(element): Returns a unique identifier for the set that the element belongs to.
+
+Algorithm to find shells and count shells
+```
+int nr_comp = vertices.size(); 
+UF.init(vertices.size()); // init to component/set per vertex
+foreach (fi) // iterate face
+  foreach (halfedge vi,vj in face fi) //iterate HE
+  if (UF.find(vi) != UF.find(vj))
+    UF.union(vi,vj); //unite
+    nr_comp -= 1; //reduce comp by 1
+```
+
+# Halfedge
+**Goal** Always in winding order so that:
+
+* Manifold: 2 HE of the same edge are always opposite to each other
+* Non-manifold: this invalid
+
+## DS Construction 
+
+* Adjacent relationship: next, prev, inv
+* Incident relationship: origin, loop/face, edge
+```
+struct vertex {
+  vec3d position;
+  int halfedge;  //stores only 1 HE, the rest can be found by inv(next) like below
+};
+struct halfedge {
+  int origin,ni,ti; (pointer-based trade off sequential access vs single access vs memory)
+  int next,inv,li;
+};
+struct loop {
+  int halfedge; //stores only 1 HE, the rest can be found by next
+  bool is_border;
+};
+struct halfedge_mesh {
+vector<vertex> vertices;
+vector<vec3d> normals;
+vector<vec2d> texCoords;
+vector<halfedge> halfedges;
+vector<loop> loops;
+};
+```
+
+* So, from an OBJ. file, what of these relationship can be directly inferred?
+  * actually everything when reading the face: origin, next, loop BUT EXCEPT FOR inv, that neads to find what face adjacent to current face
+
+### Vertex Circulator:
+```
+int h0 = inv(vertexHalfEdge(vi)); //usually start with the inverse
+int hi = h0;
+do {
+  useNeighbor(origin(hi));
+  hi = inv(next(hi)); //always inv(next)
+} while (hi != h0); //until back to beginning
+```
+
+### Inverse Matching
+* Goal: finding the inv pointer for every halfedge in the mesh by placing them next to each other
+* Idea: Easy:
+  1. Sort internally v1 -> v2 vs v2 -> v1 in format smaller->bigger
+  2. Sort the indices along the smaller column
+  3. End effect: 
+    * HE exists twice are matched, they are internal
+    * HE exists once are boundary
+    * HE exists more than twice are non-manifold
+
+* This way we can extract Boundary Loop by for each unmatched HE, define all the inverse, and the inverse keep traversing next until it come back to the beginning
+
+## Mesh Analysis
+### Design Pattern for Design Mesh Processing Algorithm
+* Circulator (around vertex, face, vertex in face)
+* Tagging (mark processed elements or store id/flag)
+* Region Growing (triangle strip, compressed segmentation)
+
+### Why use Triangle Strips for Rendering?
+* Transfer: only need to transfer n+2 vertices for a strip of n triangles (the first one all 3, after that only 1 for each new triangle)
+* Access: for triangle mesh we all know $f = 2v$, triangle strip can utilize this optimum, but without strip, each face individually require separate 3 times access to their vertices. So $f = 2.3v$
+* Downside? The algorithm is not always perfect (its just greedy)
+
+### How to compute Triangle Strip?
+Output Goal: strip index per face
+1. Sample some seed
+2. For each seed, generate a stripification
+3. Here is how to stripification:
+  * 2 types of HE, (even - odd) using parity (0-1) depending on how the origin aligned.
+  * Forward: prev(inv(vi)) or next(inv(vi))
+  * Backward: ...
+  This run alternatively...change parity 0-1-0-1-0-1
+  Until Border or Comeback to beginning
+4. Choose the longest strip from seed
+5. Repeat with new set of seeds
+
+### How to do Orientability Check?
+Region Growing: Start at a seed to queue
+1. Take the first face from queue
+2. Check if orientable?
+  1. check if all neighboring processed faces have consistent orientation 
+  2. If no, give up. But if yes, swap next and inv
+3. Add all neighbors to queue
+
+# Surface Analysis
+## Representation
+There are three main ways to represent an analytic surface:
+
+### 1. (Multivariate Function) Height Field $A^2 \to R$
+at any given $(x,y)$ coordinate, the function gives a surface's height ($z$). Downside that only for surface that doesnt overlap the z value more than once.
+
+* **Equation:** $z=f(x,y)$
+* **Example:** A plane $z=ax+by+c$.
+
+### 2. (Multivariate) Vector-Valued Function - Parametric Surface $A^2 \to A^3$
+This is a vector-valued function that maps a 2D parameter space (defined by parameters like $u$ and $v$) to a 3D surface. This is a very flexible representation that can describe a wide range of shapes, including closed surfaces, so we focus on this. 
+
+* **Equation:** $\mathbf{S}(u,v)=\begin{pmatrix} x(u,v) \\ y(u,v) \\ z(u,v) \end{pmatrix}$
+* **Example:** A sphere defined by the equations:
+    * $x=r\cos\theta\sin\phi$ (Basically each element in the target vector has their own function x, y, z)
+    * $y=r\sin\theta\sin\phi$
+    * $z=r\cos\phi$
+
+### 3. (Multivariate Function) Implicit Surface $A^3 \to R$
+This is a function that defines a surface as the set of all points that satisfy a specific equation, where the function equals a constant (often zero). Implicit surfaces can represent complex, closed shapes and are useful for collision detection and boolean operations.
+
+* **Equation:** $f(x,y,z)=0$
+* **Example:** A sphere with radius $r$ centered at the origin $x^2+y^2+z^2-r^2=0$.
+
+## Taylor Expansion
+How much order we take is the function of that order (first-order is a linear function, second order is a quadratic function (parabol go across point p))
+
+**Univariate scalar:**
+
+$$f(x+\delta) = f(x) + f'(x)\cdot\delta + \frac{1}{2}f''(x)\cdot\delta^2 + \mathcal{O}(\delta^3)$$
+
+**Multivariate scalar:**
+
+$$f(\mathbf{x}+\boldsymbol{\delta}) = f(\mathbf{x}) + f'_{\mathbf{x}}(\mathbf{x})\cdot\boldsymbol{\delta} + \frac{1}{2}\boldsymbol{\delta}^T H_f^\dagger(\mathbf{x})\boldsymbol{\delta} + \mathcal{O}(\left\|\boldsymbol{\delta}\right\|^3)$$
+
+**Multivariate vector-valued:**
+$$\mathbf{f}(\mathbf{x}+\boldsymbol{\delta}) = \mathbf{f}(\mathbf{x}) + J_{\mathbf{f}_{\boldsymbol{\delta}}}(\mathbf{x})\boldsymbol{\delta} + \mathcal{O}(\left\|\boldsymbol{\delta}\right\|^2)$$
+
+### Multivariate Functions
+
+$$f: \mathbb{R}^n \to \mathbb{R}$$
+e.g. height field $h = f(\mathbf{x}) = f(x,y)$
+
+Derivation w.r.t. any of the variables gives partial derivatives:
+
+$$\frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}: \mathbb{R}^n \to \mathbb{R}$$
+
+Short forms: $f_x = \frac{\partial f}{\partial x}, f_y = \frac{\partial f}{\partial y}$
+
+2nd deriv.: $f_{xx} = \frac{\partial^2 f}{\partial x^2}, f_{yy} = \frac{\partial^2 f}{\partial y^2}, f_{xy} = \frac{\partial^2 f}{\partial x \partial y}$
+
+The gradient of a function at a given point is the (row)-vector (in direction of steepest ascent) of partial derivatives ($\nabla_{\mathbf{x}} f: \mathbb{R}^n \to \mathbb{R}^{1\times n}$):
+
+$\nabla_{\mathbf{x}} f = f_{\mathbf{x}} = (f_x, f_y, \ldots)$ (it points in direction of steepest ascent)
+
+### Vector-Valued Functions
+$$f: \mathbb{R} \to \mathbb{R}^m$$
+
+E.g. a curve:
+
+$$\mathbf{f}(t) = \begin{pmatrix} x(t) \\ y(t) \end{pmatrix} = \begin{pmatrix} \cos t \\ \sin t \end{pmatrix}$$
+
+Derivatives are computed per component independently
+
+$$\frac{d\mathbf{f}}{dt}: \mathbb{R} \to \mathbb{R}^2$$
+$$\mathbf{f}'(t) = \begin{pmatrix} x'(t) \\ y'(t) \end{pmatrix}$$
+
+Where:
+
+* The derivative is a tangent vector to the surface
+* Its length represents the speed of change.
+
+### Multivariate Vector-Valued Functions
+$$f: \mathbb{R}^n \to \mathbb{R}^m$$
+
+E.g. a surface:
+
+$$\mathbf{s}(\boldsymbol{\tau}) = \mathbf{s}\begin{pmatrix} u \\ v \end{pmatrix} = \begin{pmatrix} x(\boldsymbol{\tau}) \\ y(\boldsymbol{\tau}) \\ z(\boldsymbol{\tau}) \end{pmatrix} = \begin{pmatrix} x(u,v) \\ y(u,v) \\ z(u,v) \end{pmatrix} = \begin{pmatrix} \cos u \cos v \\ \sin u \cos v \\ \sin v \end{pmatrix}$$
+
+The partial derivatives are tangent vectors:
+
+$$\frac{\partial \mathbf{s}}{\partial u} = \mathbf{s}_u = \begin{pmatrix} x_u \\ y_u \\ z_u \end{pmatrix}$$
+
+The row-vector of partial derivatives is now a matrix says how changes in u and v affect the coordinate x,y,z:
+
+$$J_{\mathbf{s}_{\boldsymbol{\tau}}} = \mathbf{s}_{\boldsymbol{\tau}} = \begin{pmatrix} \mathbf{s}_u & \mathbf{s}_v \end{pmatrix} = \begin{pmatrix} x_u & x_v \\ y_u & y_v \\ z_u & z_v \end{pmatrix}$$
+
+This matrix is called the Jacobian. Basically a transformation matrix that map direction from parameter space to value space. The Jacobian's columns are the tangent vectors s_u and s_v in value space.
+
+### Directional Derivative
+We can calculate the derivative in a **specific direction** $\boldsymbol{\delta}$ ($\left\|\boldsymbol{\delta}\right\|=1$).
+
+In the scalar case, just do the dot product with the gradien, it projects on it:
+
+$$\frac{\partial f}{\partial \boldsymbol{\delta}}(\mathbf{x}) = f_{\mathbf{x}}(\mathbf{x})\cdot\boldsymbol{\delta} = f_x \cdot \delta[x] + f_y \cdot \delta[y] + \ldots$$
+
+This generalizes to vector-valued functions:
+
+$$\frac{\partial \mathbf{f}}{\partial \boldsymbol{\delta}}(\mathbf{x}) = \mathbf{f}_{\mathbf{x}}\cdot\boldsymbol{\delta} = \mathbf{f}_x \cdot \delta[x] + \mathbf{f}_y \cdot \delta[y] + \ldots$$
+
+As said above: The Jacobian's columns are the tangent vectors s_u and s_v in value space.
+
+### Vector-valued Derivative conversion
+
+The transformation chain can be represented as:
+
+$$
+\begin{align*}
+\vec{\tau} = \begin{pmatrix} u \\ v \end{pmatrix} 
+\xrightarrow{s} \vec{p} = \begin{pmatrix} x \\ y \\ z \end{pmatrix} 
+\xrightarrow{\tilde{c}} \vec{c} = \begin{pmatrix} r \\ g \\ b \\ a \end{pmatrix}
+\end{align*}
+$$
+
+Chain rule:
+
+$$
+[ \dot{c}(s(\vec{\tau})) ]_{\vec{\tau}} = 
+[ \dot{c}_{\vec{p}}(s(\vec{\tau})) ] s_{\vec{\tau}}(\vec{\tau})
+$$
+
+$$\frac{\partial \mathbf{c}}{\partial \boldsymbol{\tau}} = \frac{\partial \mathbf{c}}{\partial \mathbf{p}} \frac{\partial \mathbf{p}}{\partial \boldsymbol{\tau}}$$
+
+Expressed in component form:
+
+$$
+\begin{pmatrix} 
+r_u & r_v \\ 
+g_u & g_v \\ 
+b_u & b_v \\ 
+a_u & a_v 
+\end{pmatrix} = 
+\begin{pmatrix} 
+r_x & r_y & r_z \\ 
+g_x & g_y & g_z \\ 
+b_x & b_y & b_z \\ 
+a_x & a_y & a_z 
+\end{pmatrix} 
+\begin{pmatrix} 
+x_u & x_v \\ 
+y_u & y_v \\ 
+z_u & z_v 
+\end{pmatrix}
+$$
+
+$$\begin{pmatrix} \frac{\partial c_r}{\partial u} & \frac{\partial c_r}{\partial v} \\ \frac{\partial c_g}{\partial u} & \frac{\partial c_g}{\partial v} \\ \frac{\partial c_b}{\partial u} & \frac{\partial c_b}{\partial v} \\ \frac{\partial c_a}{\partial u} & \frac{\partial c_a}{\partial v} \end{pmatrix} = \begin{pmatrix} \frac{\partial c_r}{\partial x} & \frac{\partial c_r}{\partial y} & \frac{\partial c_r}{\partial z} \\ \frac{\partial c_g}{\partial x} & \frac{\partial c_g}{\partial y} & \frac{\partial c_g}{\partial z} \\ \frac{\partial c_b}{\partial x} & \frac{\partial c_b}{\partial y} & \frac{\partial c_b}{\partial z} \\ \frac{\partial c_a}{\partial x} & \frac{\partial c_a}{\partial y} & \frac{\partial c_a}{\partial z} \end{pmatrix} \begin{pmatrix} \frac{\partial x}{\partial u} & \frac{\partial x}{\partial v} \\ \frac{\partial y}{\partial u} & \frac{\partial y}{\partial v} \\ \frac{\partial z}{\partial u} & \frac{\partial z}{\partial v} \end{pmatrix}$$
+
+## Differential Geometry in 1st Fundamental Form
+### Length of Curve
+Core idea: Discrete Approximation by densely sampling points along it:
+$$
+s \approx \sum_i \Delta s_i = \sum_i \| c(h \cdot (i + 1)) - c(h \cdot i) \|
+$$
+
+Where:
+
+- $c(t)$ is the curve parameterized by $t \in [0,1]$
+- $h$ is the step size between samples
+- $\Delta s_i$ represents the straight-line distance between consecutive points
+
+Using first-order Taylor expansion around each sampled point:
+$$
+c(h \cdot i + h) \approx c(h \cdot i) + c'(h \cdot i) \cdot h
+$$
+
+$$
+s \approx \sum_i \| c'(h \cdot i) \| \cdot h
+$$
+
+
+#### Continuous presentation
+Taking the limit as $h \to 0$ gives us the exact arc length formula:
+
+$$
+s = \int_0^1 \| c'(t) \| dt
+$$
+
+Key concepts:
+
+1. The discrete sum becomes a Riemann integral
+2. $\| c'(t) \|$ represents the instantaneous "speed" along the curve
+3. This works for curves in any dimension (2D, 3D, etc.)
+
+#### 2D Example
+
+We consider a parametric curve in 2D space:
+
+$$
+\underline{c}(t) = \frac{1}{2} \begin{pmatrix}
+\cos(2\pi t) + 1 \\
+\sin(2\pi t) + 1
+\end{pmatrix}, \quad t \in [0,1]
+$$
+
+**Properties**:
+
+- This describes a circle with radius ½ centered at (½, ½)
+- The parameter $t$ completes one full revolution as it goes from 0 to 1
+
+First, we compute the derivative (velocity vector) by time:
+
+$$
+\underline{c}^{\prime}(t) = \begin{pmatrix}
+-\pi \sin(2\pi t) \\
+\pi \cos(2\pi t)
+\end{pmatrix}
+$$
+
+The speed (magnitude of velocity) is interestingly constant for every t, so we just need to calculate once:
+
+$$
+\begin{aligned}
+\| \underline{c}^{\prime}(t) \| &= \sqrt{(-\pi \sin(2\pi t))^2 + (\pi \cos(2\pi t))^2} \\
+&= \sqrt{\pi^2 (\sin^2 (2\pi t) + \cos^2 (2\pi t))} \\
+&= \sqrt{\pi^2} = \pi
+\end{aligned}
+$$
+
+
+Total arc-length of the curve:
+
+$$
+s = \int_{0}^{1} \| \underline{c}^{\prime}(t) \| \, dt =  \int_{0}^{1} \pi \, dt = \pi
+$$
+
+**Goal:** now make sure the velocity by length should also be constant (also claled arclength parameterization)
+
+1. Cumulative length function:
+   $$ s(t) = \int_{0}^{t} \pi \, dt = \pi t $$
+
+2. Inverse relationship: This tells us the time t needed to travel a distance s along the curve.
+   $$ t(s) = \frac{s}{\pi} $$
+
+3. Substitute $t(s)$ to original $c(t)$ tells the curve's position after travel a distance s:
+   $$
+   \underline{c}(t) = \underline{c}(t(s)) = \underline{c}(s) = \frac{1}{2} \begin{pmatrix}
+   \cos(2s) + 1 \\
+   \sin(2s) + 1
+   \end{pmatrix}, \quad s \in [0,\pi]
+   $$
+
+**Why this matters**: This ensures $\| \underline{c}^{\prime}(t) \| = 1$ everywhere, means the curve travel at constant speed.
+
+### Length of Curve Mapped to a Surface (Stretch Mapping)
+
+**Basically just a stretched velocity, implemented by mapping** A curve $\underline{c}(t)$ in parameter space (e.g., texture coordinates) is mapped to a 3D surface (liek a deformable fabric) $\underline{x}(\underline{\tau})$:
+$$
+\underline{x}(\underline{\tau}) = \underline{x}(\underline{c}(t))
+$$
+The physical length on deformable fabric becomes, now we also account this deformable stretching surface:
+$$
+s = \int_{0}^{1} \left\| \frac{d}{dt} \underline{x}(\underline{c}(t)) \right\| dt
+$$
+The derivative decomposes into surface and curve components (Chain Rule Application (remember above?)):
+$$
+\frac{d}{dt} \underline{x}(\underline{c}(t)) = \underbrace{\nabla_{\underline{\tau}} \underline{x}}_{\text{Surface Jacobian}} \cdot \underbrace{\frac{d\underline{c}}{dt}}_{\text{Curve velocity}}
+$$
+
+Component dimensions:
+
+- $\nabla_{\underline{\tau}} \underline{x}$: $3 \times 2$ matrix (tangent vectors)
+- $\frac{d\underline{c}}{dt}$: $2 \times 1$ vector
+
+**Finally the general form:**
+
+$$
+s = \int_{0}^{1} \left\| \nabla_{\underline{\tau}} \underline{x}(\underline{c}(t)) \cdot \underline{c}'(t) \right\| dt
+$$
+
+
+- The integrand $\left\| J \cdot \underline{c}'(t) \right\|$ is the *stretched speed*:
+  - $J$ encodes how the surface stretches/compresses space
+  - $\underline{c}'(t)$ is the original curve's velocity
+
+### Length of a Curve on a Surface: Worked Example
+
+#### 1. We start with the Curve 
+Center at $(0.5, 0.5)$ with radius 0.5 in parameter space:
+$$
+\underline{c}(t) = \frac{1}{2} \begin{pmatrix}
+\cos(2\pi t) + 1 \\ 
+\sin(2\pi t) + 1
+\end{pmatrix}, \quad t \in [0,1]
+$$
+
+**Derivative (velocity)**:
+$$
+\underline{c}'(t) = \begin{pmatrix}
+-\pi \sin(2\pi t) \\ 
+\pi \cos(2\pi t)
+\end{pmatrix}
+$$
+
+#### 2. We have a stretched surface
+A surface that is stretched as a parabol:
+$$
+\underline{x}(\underline{\tau}) = \underline{x}(u,v) = \begin{pmatrix}
+u \\ 
+v \\ 
+u^2 + v^2
+\end{pmatrix}
+$$
+
+**Surface Jacobian** (tangential vectors):
+$$
+\nabla_{\underline{\tau}} \underline{x} = \begin{pmatrix}
+1 & 0 \\ 
+0 & 1 \\ 
+2u & 2v
+\end{pmatrix}
+$$
+
+**Interpretation**:
+
+- The last row shows how the surface "bends" in the z-direction
+- First two rows maintain the identity mapping in x and y
+
+#### 3. Mapping the Curve to the Surface
+Evaluate the Jacobian at $\underline{c}(t)$:
+$$
+\nabla_{\underline{\tau}} \underline{x}(\underline{c}(t)) = \begin{pmatrix}
+1 & 0 \\ 
+0 & 1 \\ 
+\cos(2\pi t) + 1 & \sin(2\pi t) + 1
+\end{pmatrix}
+$$
+**Key observation**: The z-component now varies with the curve's position
+
+#### 4. Velocity on Surface
+Multiply Jacobian by curve velocity:
+$$
+\nabla_{\underline{\tau}} \underline{x} \cdot \underline{c}'(t) = \begin{pmatrix}
+1 & 0 \\ 
+0 & 1 \\ 
+\cos(2\pi t) + 1 & \sin(2\pi t) + 1
+\end{pmatrix} \begin{pmatrix}
+-\pi \sin(2\pi t) \\ 
+\pi \cos(2\pi t)
+\end{pmatrix}
+$$
+$$
+\nabla_{\underline{\tau}} \underline{x} \cdot \underline{c}'(t) = \begin{pmatrix}
+-\pi \sin(2\pi t) \\ 
+\pi \cos(2\pi t) \\ 
+\pi (\cos(2\pi t) - \sin(2\pi t))
+\end{pmatrix}
+$$
+
+Compute the magnitude:
+$$
+\begin{aligned}
+\left\| \nabla_{\underline{\tau}} \underline{x} \cdot \underline{c}'(t) \right\| &= \pi \sqrt{\sin^2(2\pi t) + \cos^2(2\pi t) + (\cos(2\pi t) - \sin(2\pi t))^2} \\ 
+&= \pi \sqrt{1 + 1 - 2\sin(2\pi t)\cos(2\pi t)} \\ 
+&= \pi \sqrt{2 - \sin(4\pi t)}
+\end{aligned}
+$$
+
+Final total length becomes:
+$$
+s = \pi \int_{0}^{1} \sqrt{2 - \sin(4\pi t)} \, dt \approx 1.39\pi
+$$
+
+**Numerical insight**:
+
+- The integral evaluates to ≈1.39 (requires numerical methods)
+- Compare to flat case (where $s=\pi$)
+- The surface curvature adds ~39% more length
+
+## First Fundamental Form: Measuring Lengths and Angles on Surfaces
+
+### Study the relationship btw Parameter & Surface Space Changes by finding the First Fundamental Form $I_{\underline{\tau}}^S$
+
+#### 1. Starting Point: Surface Parameterization
+Consider a surface $S$ parameterized by:
+$$
+\underline{x}(u,v) : \mathbb{R}^2 \rightarrow \mathbb{R}^3
+$$
+where $\underline{\tau} = (u,v)$ are the 2D parameter coordinates.
+
+#### 2. Tangent Vectors
+The partial derivatives form a basis for the tangent plane:
+$$
+\underline{x}_u = \frac{\partial \underline{x}}{\partial u}, \quad 
+\underline{x}_v = \frac{\partial \underline{x}}{\partial v}
+$$
+
+**Physical meaning**: These vectors span the plane "tangent" to the surface at point $\underline{\tau}$.
+
+#### 3. **For a small change in parameter space (du, dv), how big is that change in surface dx**
+For an infinitesimal displacement $d\underline{\tau} = (du, dv)^T$ in parameter space, the corresponding 3D displacement on the surface is:
+$$
+d\underline{x} = \underline{x}_u du + \underline{x}_v dv = \begin{pmatrix} \underline{x}_u & \underline{x}_v \end{pmatrix} \begin{pmatrix} du \\ dv \end{pmatrix}
+$$
+
+The squared length in 3D is:
+$$
+\|d\underline{x}\|^2 = \langle d\underline{x}, d\underline{x} \rangle = \langle \underline{x}_u du + \underline{x}_v dv, \underline{x}_u du + \underline{x}_v dv \rangle
+$$
+$$
+\|d\underline{x}\|^2 = \underbrace{\langle \underline{x}_u, \underline{x}_u \rangle}_{E} du^2 + 2 \underbrace{\langle \underline{x}_u, \underline{x}_v \rangle}_{F} dudv + \underbrace{\langle \underline{x}_v, \underline{x}_v \rangle}_{G} dv^2
+$$
+
+We can eventually write this quadratic form as a matrix:
+$$
+\|d\underline{x}\|^2 = \begin{pmatrix} du & dv \end{pmatrix} 
+\underbrace{\begin{pmatrix} E & F \\ F & G \end{pmatrix}}_{I_{\underline{\tau}}^S} 
+\begin{pmatrix} du \\ dv \end{pmatrix}
+$$
+
+Thus, the First Fundamental Form emerges naturally as the matrix:
+$$
+I_{\underline{\tau}}^S = \begin{pmatrix} E & F \\ F & G \end{pmatrix} = \begin{pmatrix} \underline{x}_u^T \underline{x}_u & \underline{x}_u^T \underline{x}_v \\ \underline{x}_u^T \underline{x}_v & \underline{x}_v^T \underline{x}_v \end{pmatrix}
+$$
+
+**Components**:
+
+- $E = \|\underline{s}_u\|^2$: Squared length of u-tangent vector
+- $G = \|\underline{s}_v\|^2$: Squared length of v-tangent vector  
+- $F = \langle \underline{s}_u, \underline{s}_v \rangle$: Cosine similarity between tangent vectors
+
+The FFF is the basically just quadratic the Jacobian:
+$$
+I_{\underline{\tau}}^S = J^T J \quad \text{where} \quad J = [\underline{x}_u \ \underline{x}_v] \ \text{(Jacobian)}
+$$
+
+### Apply this Relationship to find Length of Curve on Surface
+#### Original Rules
+For any vectors in parameter space $\mathbb{R}^3$ where we draw the curve originally on, the length of this vector on parameter surface is:
+$$ \|\vec{v}\|^2 = \langle \vec{v}, \vec{v} \rangle $$
+
+#### Length of that parameter space vector $\vec{v} = (u,v)$ BUT NOW mapped on Surface using FFF
+$$
+\|\vec{v}\|_{I_{\underline{\tau}}^S} = \sqrt{\langle \vec{v}, \vec{v} \rangle_{I_{\underline{\tau}}^S}} = \sqrt{\vec{v}^T I_{\underline{\tau}}^S \vec{v}}
+$$
+
+#### Extend to length of the whole curve on Surface: 
+
+Well, simply add all small displacement that together, remember that **each point $\underline{\tau}$ or $(u,v)$ from parameter space will have a totally different stretch $I_{\underline{\tau}}^S$ on the surface, so the stretch at each point is different.**
+  $$s = \int_0^1 \|\underline{c}'(t)\|_{I_{\underline{\tau}}^S} dt = \int_0^1 \sqrt{ \langle \underline{c}'(t), \underline{c}'(t) \rangle_{I_{\underline{\tau}}^S}} dt = \int_0^1 \sqrt{ \underline{c}'(t) {I_{\underline{\tau}}^S} \underline{c}'(t)} dt$$
+
+
+#### Stretch Analysis
+
+We can also decompose in eigenvalues:
+
+$$
+I_{\underline{\tau}}^S = \begin{pmatrix}
+E & F \\
+F & G
+\end{pmatrix} = \lambda_1 \hat{v}_1 \hat{v}_1^T + \lambda_2 \hat{v}_2 \hat{v}_2^T
+$$
+
+#### Geometric Meaning:
+- $\lambda_i$: Principal stretching factors
+- $\hat{v}_i$: Principal directions in **parameter space**
+- **Orthonormal basis**: The eigenvectors form a coordinate system for the surface at point $\underline{\tau}$ or $(u,v)$
+
+For each vector $W = (w_1, w_2)^T$ in the eigenbasis at point $\underline{\tau}$ aka $(u,v)$, it will be stretched like this:
+
+$$
+\|W\|_{I_{\underline{\tau}}^S} = \sqrt{\lambda_1 w_1^2 + \lambda_2 w_2^2}
+$$
+
+
+### Apply FFF to Calculate Angle
+For any vectors in parameter space $\mathbb{R}^3$ where we draw the curve originally on:
+$$ \cos \theta(\vec{v}, \vec{w}) = \frac{\langle \vec{v}, \vec{w} \rangle}{\|\vec{v}\|\|\vec{w}\|} $$
+
+Now we **MAP ON THE SURFACE** with surface parameterization $\underline{s}(\vec{t})$, the upper part is:
+$$ \langle \underline{s}_{\vec{t}} \vec{v}, \underline{s}_{\vec{t}} \vec{w} \rangle = \vec{v}^T \underbrace{(\underline{s}_{\vec{t}}^T \underline{s}_{\vec{t}})}_{\text{FFF Matrix } \Gamma} \vec{w} $$
+
+We can also write it like this:
+$$
+\langle \vec{v}, \vec{w} \rangle_{I_{\underline{\tau}}^S} = \vec{v}^T I_{\underline{\tau}}^S \vec{w}
+$$
+
+And the bottom part is yeah actually we just learned from above:
+$$
+\|\vec{v}\|_{I_{\underline{\tau}}^S} = \sqrt{\langle \vec{v}, \vec{v} \rangle_{I_{\underline{\tau}}^S}} = \sqrt{\vec{v}^T I_{\underline{\tau}}^S \vec{v}}
+$$
+
+To assemble we will have:
+$$
+\cos \theta = \frac{\langle \vec{v}, \vec{w} \rangle_{I_{\underline{\tau}}^S}}{\|\vec{v}\|_{I_{\underline{\tau}}^S} \|\vec{w}\|_{I_{\underline{\tau}}^S}} = \frac{\vec{v}^T I_{\underline{\tau}}^S \vec{w}}{\sqrt{\vec{v}^T I_{\underline{\tau}}^S \vec{v}} \sqrt{\vec{w}^T I_{\underline{\tau}}^S \vec{w}}}
+$$
+Angle $\theta$ between two directions $d\vec{t}_1$, $d\vec{t}_2$:
+$$ \cos \theta = \frac{Edu_1du_2 + F(du_1dv_2 + du_2dv_1) + Gdv_1dv_2}{\sqrt{Edu_1^2 + 2Fdu_1dv_1 + Gdv_1^2}\sqrt{Edu_2^2 + 2Fdu_2dv_2 + Gdv_2^2}} $$
+
+### Apply to calculate very small infinitesmal Area on Surfaces
+Cross Product area of an infinitesimal parallelogram spanned by $\underline{s}_u du$ and $\underline{s}_v dv$ is:
+$$
+dA = \|(\underline{s}_u du) \times (\underline{s}_v dv)\| = \|\underline{s}_u \times \underline{s}_v\| du dv
+$$
+
+We can express this purely in terms of the FFF coefficients:
+
+1. Start with the cross product magnitude identity:
+   $$
+   \|\underline{s}_u \times \underline{s}_v\|^2 = \|\underline{s}_u\|^2 \|\underline{s}_v\|^2 - \langle \underline{s}_u, \underline{s}_v \rangle^2
+   $$
+2. Recognize this matches the determinant of $I_{\underline{\tau}}^S$:
+   $$
+   \det(I_{\underline{\tau}}^S) = EG - F^2
+   $$
+3. Thus:
+   $$
+   dA = \sqrt{EG - F^2} du dv
+   $$
+
+
+#### Please explain
+$$
+\|\vec{a} \times \vec{b}\|^2 + |\vec{a} \cdot \vec{b}|^2 = \|\vec{a}\|^2 \|\vec{b}\|^2
+$$
+
+##### Because
+
+1. **Cross Product Definition**  
+   Measures "perpendicularity" (the area of the parallelogram formed)
+   $$
+   \|\vec{a} \times \vec{b}\| = \|\vec{a}\|\|\vec{b}\|\sin\theta
+   $$
+   $$
+   \|\vec{a} \times \vec{b}\|^2 = \|\vec{a}\|^2\|\vec{b}\|^2\sin^2\theta
+   $$
+
+2. **Dot Product Definition**  Measures "perpendicularity" (the area of the parallelogram formed)
+   Measures "parallelism" (how aligned the vectors are)
+   $$
+   \vec{a} \cdot \vec{b} = \|\vec{a}\|\|\vec{b}\|\cos\theta
+   $$
+   $$
+   |\vec{a} \cdot \vec{b}|^2 = \|\vec{a}\|^2\|\vec{b}\|^2\cos^2\theta
+   $$
+
+3. **Combining Both Terms**  
+   Represents the total magnitude regardless of angle
+   $$
+   \|\vec{a} \times \vec{b}\|^2 + |\vec{a} \cdot \vec{b}|^2 = \|\vec{a}\|^2\|\vec{b}\|^2(\sin^2\theta + \cos^2\theta) = \|\vec{a}\|^2\|\vec{b}\|^2
+   $$
+
+### Surface Area of a Sphere Using First Fundamental Form
+
+#### 1. Sphere Parameterization
+We start with the spherical coordinates parameterization:
+$$
+\underline{S}(u,v) = r \begin{pmatrix}
+\cos u \cos v \\
+\sin u \cos v \\
+\sin v
+\end{pmatrix}, \quad 
+\begin{cases}
+u \in [-\pi, \pi] \ (\text{longitude}) \\
+v \in [-\frac{\pi}{2}, \frac{\pi}{2}] \ (\text{latitude})
+\end{cases}
+$$
+
+#### 2. Compute Tangent Vectors
+**Partial derivatives** form the tangent basis:
+$$
+\underline{S}_u = r \begin{pmatrix}
+-\sin u \cos v \\
+\cos u \cos v \\
+0
+\end{pmatrix}, \quad 
+\underline{S}_v = r \begin{pmatrix}
+-\cos u \sin v \\
+-\sin u \sin v \\
+\cos v
+\end{pmatrix}
+$$
+
+#### 3. First Fundamental Form Components
+Calculate the metric tensor coefficients:
+$$
+\begin{aligned}
+E &= \|\underline{S}_u\|^2 = r^2 \cos^2 v (\sin^2 u + \cos^2 u) = r^2 \cos^2 v \\
+F &= \langle \underline{S}_u, \underline{S}_v \rangle = 0 \quad \text{(orthogonal coordinates)} \\
+G &= \|\underline{S}_v\|^2 = r^2 (\cos^2 u \sin^2 v + \sin^2 u \sin^2 v + \cos^2 v) = r^2
+\end{aligned}
+$$
+
+Thus, the metric tensor is:
+$$
+I = \begin{pmatrix}
+r^2 \cos^2 v & 0 \\
+0 & r^2
+\end{pmatrix}
+$$
+
+#### 4. Infinitesimal Area Element
+The area element derives from the metric determinant:
+$$
+\begin{aligned}
+dA &= \sqrt{\det I} \, du dv = \sqrt{r^4 \cos^2 v} \, du dv \\
+&= r^2 |\cos v| \, du dv
+\end{aligned}
+$$
+
+#### 5. Compute Total Surface Area
+Integrate over the parameter domain:
+$$
+\begin{aligned}
+A &= \int_{-\pi}^{\pi} \int_{-\frac{\pi}{2}}^{\frac{\pi}{2}} r^2 |\cos v| \, dv du \\
+&= r^2 \int_{-\pi}^{\pi} du \cdot 2 \int_{0}^{\frac{\pi}{2}} \cos v \, dv \quad \text{(by symmetry)} \\
+&= r^2 (2\pi) \cdot 2 \left[ \sin v \right]_0^{\frac{\pi}{2}} \\
+&= 4\pi r^2
+\end{aligned}
+$$
+
+## Optimal Curve Design in 2D
+
+### 1. Problem Statement
+The method ([Gum '04]) designs smooth curves through control points by optimizing a combined length-curvature functional:
+
+$$
+F_{simp}(c, \lambda) = \int_{s=0}^{L(c)} \underbrace{(1 - \lambda)q}_{\text{length term}} + \underbrace{\lambda |\kappa L_0|^2}_{\text{curvature term}} ds
+$$
+
+where:
+
+- $c$: Curve parameterization
+- $\lambda \in [0,1]$: Blending parameter
+- $L_0$: Length of control polygon
+- $q = 5000$: Normalization constant
+- $\kappa$: Curvature at each point
+
+### 2. Key Components
+
+**Optimization Objective**:
+$$
+\text{C}_{simp}(\lambda) = \min_{\mathbf{c}: \mathbf{c}(x_i) = \mathbf{p}_i} F_{simp}(\mathbf{c}, \lambda)
+$$
+
+**Behavioral Spectrum**:
+
+- $\lambda = 0$: Pure length minimization → yields control polygon (blue curve)
+- $\lambda = 1$: Pure curvature minimization → yields smoothest curve (red curve)
+- Intermediate $\lambda$: Balanced trade-off
+
+## Minimal Energy Interpolating Curves
+
+### Core Objective
+Find a curve $\mathbf{c}(s)$ that:
+
+1. **Exactly interpolates** given control points $\{\mathbf{p}_i\}_{i=0}^n$
+2. **Minimizes** the hybrid energy functional:
+   $$
+   F_{simp}(\mathbf{c}, \lambda) = \int \underbrace{(1-\lambda)q}_{\text{length term}} + \underbrace{\lambda|\kappa(s)L_0|^2}_{\text{curvature term}} ds
+   $$
+
+### Mathematical Framework
+
+#### 1. Curve Representation
+Use **piecewise cubic Hermite splines** between each $\mathbf{p}_i$ and $\mathbf{p}_{i+1}$:
+$$
+\mathbf{c}_i(t) = \mathbf{a}_i t^3 + \mathbf{b}_i t^2 + \mathbf{c}_i t + \mathbf{d}_i, \quad t \in [0,1]
+$$
+
+#### 2. Interpolation Constraints
+- **Position**: 
+  $$\mathbf{c}_i(0) = \mathbf{p}_i, \quad \mathbf{c}_i(1) = \mathbf{p}_{i+1}$$
+- **Tangent continuity** (with $\mathbf{m}_i$ as unknown tangent vectors):
+  $$\mathbf{c}_i'(0) = \mathbf{m}_i, \quad \mathbf{c}_i'(1) = \mathbf{m}_{i+1}$$
+
+#### 3. Energy Functional Components
+Expressed in terms of curve derivatives:
+$$
+F_{simp} = \sum_{i=0}^{n-1} \int_0^1 \left[ 
+(1-\lambda)q \|\mathbf{c}_i'(t)\| + 
+\lambda L_0^2 \left(\frac{\|\mathbf{c}_i'(t) \times \mathbf{c}_i''(t)\|}{\|\mathbf{c}_i'(t)\|^3}\right)^2 
+\right] dt
+$$
+
+### Solution Procedure
+
+#### Step 1: Coefficient-Tangent Relationship
+Express cubic coefficients using control points and tangents:
+$$
+\begin{aligned}
+\mathbf{a}_i &= 2(\mathbf{p}_i - \mathbf{p}_{i+1}) + \mathbf{m}_i + \mathbf{m}_{i+1} \\
+\mathbf{b}_i &= -3(\mathbf{p}_i - \mathbf{p}_{i+1}) - 2\mathbf{m}_i - \mathbf{m}_{i+1} \\
+\mathbf{c}_i &= \mathbf{m}_i \\
+\mathbf{d}_i &= \mathbf{p}_i
+\end{aligned}
+$$
+
+#### Step 2: Compute Derivatives
+For energy calculation:
+$$
+\begin{aligned}
+\mathbf{c}_i'(t) &= 3\mathbf{a}_i t^2 + 2\mathbf{b}_i t + \mathbf{c}_i \\
+\mathbf{c}_i''(t) &= 6\mathbf{a}_i t + 2\mathbf{b}_i
+\end{aligned}
+$$
+
+#### Step 3: Nonlinear Optimization
+1. **Initial guess**: Set $\mathbf{m}_i = \frac{\mathbf{p}_{i+1} - \mathbf{p}_{i-1}}{2}$ (central differences)
+2. **Gradient descent**:
+   $$
+   \mathbf{m}_i^{(k+1)} = \mathbf{m}_i^{(k)} - \gamma \frac{\partial F_{simp}}{\partial \mathbf{m}_i}
+   $$
+   where the gradient involves:
+   $$
+   \frac{\partial F_{simp}}{\partial \mathbf{m}_i} = \int_0^1 \left[
+   (1-\lambda)q \frac{\partial \|\mathbf{c}_i'\|}{\partial \mathbf{m}_i} + 
+   2\lambda L_0^2 \kappa \frac{\partial \kappa}{\partial \mathbf{m}_i}
+   \right] dt
+   $$
+
+### Practical Example (3-Point Case)
+
+Given $\mathbf{p}_0, \mathbf{p}_1, \mathbf{p}_2$ with $\mathbf{p}_1$ at $t^*=0.5$:
+
+1. Single cubic segment with constraint $\mathbf{c}(0.5) = \mathbf{p}_1$
+2. Solve for $\mathbf{m}_0, \mathbf{m}_1, \mathbf{m}_2$ minimizing $F_{simp}$
+3. Final curve guarantees:
+   - $\mathbf{c}(0) = \mathbf{p}_0$, $\mathbf{c}(0.5) = \mathbf{p}_1$, $\mathbf{c}(1) = \mathbf{p}_2$
+   - Minimal energy for chosen $\lambda$
+
+## Curvature Formula Deep Dive: Why $\kappa = \frac{\|\vec{c}_t \times \vec{c}_{tt}\|}{\|\vec{c}_t\|^3}$?
+
+### 1. The Core Idea
+Curvature measures **how fast the tangent vector turns** per unit distance traveled. We need to:
+
+1. Track how much the tangent direction changes (numerator)
+2. Normalize by how fast we're moving (denominator)
+
+### 2. Step-by-Step Derivation
+
+#### Step 1: Tangent Vector
+Define the unit tangent vector:
+$$
+\vec{T}(t) = \frac{\vec{c}_t(t)}{\|\vec{c}_t(t)\|}
+$$
+(Note: $\vec{c}_t = \frac{d\vec{c}}{dt}$ is the velocity vector)
+
+#### Step 2: Rate of Tangent Change
+The curvature comes from $\frac{d\vec{T}}{ds}$ (how $\vec{T}$ changes with arc length $s$). 
+
+First, apply chain rule:
+$$
+\frac{d\vec{T}}{dt} = \frac{d}{dt}\left(\frac{\vec{c}_t}{\|\vec{c}_t\|}\right) = \frac{\vec{c}_{tt}\|\vec{c}_t\| - \vec{c}_t(\vec{c}_t \cdot \vec{c}_{tt})/\|\vec{c}_t\|}{\|\vec{c}_t\|^2}
+$$
+
+#### Step 3: Keep Only Normal Component
+Curvature only cares about **perpendicular** changes to $\vec{T}$ (lateral bending). The tangential component affects speed, not shape.
+
+The perpendicular part is:
+$$
+\left(\frac{d\vec{T}}{dt}\right)_{\perp} = \frac{\vec{c}_{tt}}{\|\vec{c}_t\|} - \frac{\vec{c}_t (\vec{c}_t \cdot \vec{c}_{tt})}{\|\vec{c}_t\|^3}
+$$
+
+#### Step 4: Magnitude Calculation
+Compute $\|\frac{d\vec{T}}{dt}\|$ using vector identity $\|\vec{a}\| = \sqrt{\vec{a} \cdot \vec{a}}$:
+$$
+\left\|\left(\frac{d\vec{T}}{dt}\right)_{\perp}\right\| = \frac{\|\vec{c}_t \times \vec{c}_{tt}\|}{\|\vec{c}_t\|^2}
+$$
+
+#### Step 5: Convert to Arc Length
+Since curvature is $\kappa = \|\frac{d\vec{T}}{ds}\|$ and $ds = \|\vec{c}_t\|dt$:
+$$
+\kappa = \left\|\frac{d\vec{T}}{ds}\right\| = \frac{\|\frac{d\vec{T}}{dt}\|}{ds/dt} = \frac{\|\vec{c}_t \times \vec{c}_{tt}\|/\|\vec{c}_t\|^2}{\|\vec{c}_t\|} = \frac{\|\vec{c}_t \times \vec{c}_{tt}\|}{\|\vec{c}_t\|^3}
+$$
+
+### 3. Why the $\|\vec{c}_t\|^3$?
+The denominator accounts for:
+1. **One $\|\vec{c}_t\|$**: Converts time derivative to arc-length derivative ($ds = \|\vec{c}_t\|dt$)
+2. **Two more $\|\vec{c}_t\|$ terms**: 
+
+   - One from normalizing the tangent vector ($\vec{T} = \vec{c}_t/\|\vec{c}_t\|$)
+   - One from isolating the perpendicular component
+
+### 4. Geometric Interpretation
+- **Numerator** $\|\vec{c}_t \times \vec{c}_{tt}\|$: 
+  Measures the *area* of the parallelogram formed by velocity and acceleration → pure bending effect
+- **Denominator** $\|\vec{c}_t\|^3$: 
+  Normalizes for:
+
+  1. Parameterization speed ($\|\vec{c}_t\|$)
+  2. Unit tangent construction (two $\|\vec{c}_t\|$ terms)
+
+### 5. Simple Example: Circle
+For $\vec{c}(t) = (r\cos t, r\sin t)$:
+
+- $\vec{c}_t = (-r\sin t, r\cos t)$ → $\|\vec{c}_t\| = r$
+- $\vec{c}_{tt} = (-r\cos t, -r\sin t)$
+- $\vec{c}_t \times \vec{c}_{tt} = r^2$
+- $\kappa = \frac{r^2}{r^3} = \frac{1}{r}$ (correct for circle radius $r$)
+
+## Surface Curvatures Explained
+
+### 1. Fundamental Notations
+- **Surface Parameterization**: 
+  - $\underline{S}(u,v)$: A 2D → 3D mapping defining the surface
+  - $\underline{S}_u = \frac{\partial \underline{S}}{\partial u}$: Partial derivative in u-direction (tangent vector)
+  - $\underline{S}_v = \frac{\partial \underline{S}}{\partial v}$: Partial derivative in v-direction (tangent vector)
+  
+- **First Fundamental Form (Metric Tensor)**:
+  $$I = \begin{pmatrix} E & F \\ F & G \end{pmatrix} = \begin{pmatrix} \langle \underline{S}_u, \underline{S}_u \rangle & \langle \underline{S}_u, \underline{S}_v \rangle \\ \langle \underline{S}_u, \underline{S}_v \rangle & \langle \underline{S}_v, \underline{S}_v \rangle \end{pmatrix}$$
+
+- **Unit Normal Vector**:
+  $$\hat{n} = \frac{\underline{S}_u \times \underline{S}_v}{\|\underline{S}_u \times \underline{S}_v\|}$$
+
+### 2. Normal Curvature Basics
+For a given point $\underline{p}$ on the surface:
+
+1. **Definition**: Curvature of the intersection curve created by slicing the surface with a plane containing:
+
+   - The surface normal $\hat{n}$
+   - A tangent vector $\underline{v} = \cosα\,\underline{S}_u + \sinα\,\underline{S}_v$
+
+2. **Angle Parameter**:
+
+   - $α$: Angle between $\underline{S}_u$ and the chosen tangent direction $\underline{v}$
+   - $β = α - α_0$: Angle relative to principal direction
+
+### 3. Euler's Theorem
+There exist two orthogonal principal directions where normal curvature reaches extremal values:
+$$κ_n(β) = κ_{\min}\cos^2β + κ_{\max}\sin^2β$$
+
+- **$κ_{\min}$**: Minimum normal curvature
+- **$κ_{\max}$**: Maximum normal curvature
+- **$α_0$**: Angle of first principal direction from $\underline{S}_u$
+
+### 4. Second Fundamental Form
+Measures how the surface bends in 3D space:
+$$II = \begin{pmatrix} L & M \\ M & N \end{pmatrix}$$
+where:
+
+- $L = \langle \underline{S}_{uu}, \hat{n} \rangle$
+- $M = \langle \underline{S}_{uv}, \hat{n} \rangle$
+- $N = \langle \underline{S}_{vv}, \hat{n} \rangle$
+
+### 5. Fundamental Curvature Measures
+1. **Gaussian Curvature** (intrinsic):
+   $$K = κ_{\min}κ_{\max} = \frac{LN - M^2}{EG - F^2}$$
+
+2. **Mean Curvature** (extrinsic):
+   $$H = \frac{κ_{\min} + κ_{\max}}{2} = \frac{EN - 2FM + GL}{2(EG - F^2)}$$
+
+3. **Principal Curvatures**:
+   $$κ_{\max,\min} = H \pm \sqrt{H^2 - K}$$
+
+### 6. Geometric Interpretation
+- **Positive Gaussian Curvature** ($K > 0$): Bowl-like (both curvatures same sign)
+- **Negative Gaussian Curvature** ($K < 0$): Saddle-like (opposite signs)
+- **Zero Gaussian Curvature** ($K = 0$): Developable surface (at least one zero curvature)
+
+### 7. Practical Computation
+To find principal directions:
+1. Solve eigenvalue problem for the shape operator:
+   $$S = I^{-1}II$$
+2. Eigenvalues → principal curvatures
+3. Eigenvectors → principal directions
+
+### Example: Cylinder
+- $κ_{\min} = 0$ (along axis)
+- $κ_{\max} = 1/r$ (around circumference)
+- $K = 0$ (developable)
+- $H = 1/(2r)$
+
+## Derivation of the Second Fundamental Form
+
+### 1. Intuition: Measuring Surface Bending
+While the First Fundamental Form (I) measures distances *on* the surface, the Second Fundamental Form (II) quantifies how the surface *bends* in 3D space by tracking normal vector variations.
+
+### 2. Formal Derivation
+
+#### Step 1: Surface Normal Variation
+Consider a surface patch $\underline{S}(u,v)$ with unit normal $\hat{n}(u,v)$. The rate of normal change reveals curvature:
+
+$$
+d\hat{n} = \hat{n}_u du + \hat{n}_v dv
+$$
+
+#### Step 2: Relate to Tangent Vectors
+Since $\hat{n} \perp$ tangent plane, we have:
+$$
+\langle \hat{n}, \underline{S}_u \rangle = \langle \hat{n}, \underline{S}_v \rangle = 0
+$$
+
+Differentiating these gives the **Weingarten equations**:
+$$
+\begin{aligned}
+\langle \hat{n}_u, \underline{S}_u \rangle &= -\langle \hat{n}, \underline{S}_{uu} \rangle = -L \\
+\langle \hat{n}_u, \underline{S}_v \rangle &= -\langle \hat{n}, \underline{S}_{uv} \rangle = -M \\
+\langle \hat{n}_v, \underline{S}_v \rangle &= -\langle \hat{n}, \underline{S}_{vv} \rangle = -N
+\end{aligned}
+$$
+
+#### Step 3: Construct the Form
+The second fundamental form emerges when expressing the normal component of surface acceleration:
+
+For a curve $\underline{c}(t) = \underline{S}(u(t),v(t))$:
+$$
+\underline{c}''(t) = \underline{S}_{uu}(u')^2 + 2\underline{S}_{uv}u'v' + \underline{S}_{vv}(v')^2 + \text{tangent terms}
+$$
+
+The normal curvature is:
+$$
+\kappa_n = \frac{\langle \underline{c}'', \hat{n} \rangle}{\langle \underline{c}', \underline{c}' \rangle} = \frac{L(u')^2 + 2Mu'v' + N(v')^2}{E(u')^2 + 2Fu'v' + G(v')^2}
+$$
+
+Thus we define:
+$$
+II = \begin{pmatrix} L & M \\ M & N \end{pmatrix} = \begin{pmatrix} 
+\langle \underline{S}_{uu}, \hat{n} \rangle & \langle \underline{S}_{uv}, \hat{n} \rangle \\ 
+\langle \underline{S}_{uv}, \hat{n} \rangle & \langle \underline{S}_{vv}, \hat{n} \rangle 
+\end{pmatrix}
+$$
+
+### 3. Why "Second" Fundamental Form?
+1. **Historical Context**: 
+
+   - First Fundamental Form (I) measures *intrinsic* properties (lengths/angles)
+   - Second Fundamental Form (II) captures *extrinsic* bending (how the surface embeds in 3D space)
+
+2. **Mathematical Hierarchy**:
+
+   - I comes from the metric tensor (1st derivatives)
+   - II requires 2nd derivatives and normal information
+
+3. **Duality**:
+
+   - I: $\langle d\underline{S}, d\underline{S} \rangle$ (dot product of tangent vectors)
+   - II: $\langle d^2\underline{S}, \hat{n} \rangle$ (projection of curvature onto normal)
+
+### 4. Geometric Interpretation
+The quadratic form $II(v,v)$ gives the normal curvature in direction $v$:
+
+- Positive value: Surface bends toward $\hat{n}$
+- Negative value: Surface bends away from $\hat{n}$
+- Zero value: Asymptotic direction (no normal bending)
+
+### 5. Example: Sphere of Radius $R$
+For $\underline{S}(\theta,\phi) = R(\sin\theta\cos\phi, \sin\theta\sin\phi, \cos\theta)$:
+
+- $\hat{n} = (\sin\theta\cos\phi, \sin\theta\sin\phi, \cos\theta)$
+- $L = \langle \underline{S}_{\theta\theta}, \hat{n} \rangle = -R$
+- $M = \langle \underline{S}_{\theta\phi}, \hat{n} \rangle = 0$
+- $N = \langle \underline{S}_{\phi\phi}, \hat{n} \rangle = -R\sin^2\theta$
+
+Thus:
+$$
+II = \begin{pmatrix} -R & 0 \\ 0 & -R\sin^2\theta \end{pmatrix}
+$$
+
+# Topology
+## 2-Manifold if can always find a disk or a half disk
+## Understanding the Euler Characteristic
+
+### 1. Basic Definition
+For any closed (borderless) surface **S** subdivided into vertices (V), edges (E), and faces (F):
+
+$$
+\chi(S) = V - E + F
+$$
+
+**Key Property**: 
+- χ is a *topological invariant* - it depends only on the surface's "shape" (topology), not on how we subdivide it.
+
+### 2. Examples
+| Surface      | V - E + F | χ  |
+|--------------|----------|----|
+| Sphere       | 8-12+6 = 2 (cube) <br> 4-6+4 = 2 (tetrahedron) | 2 |
+| Torus        | 16-32+16 = 0 | 0 |
+| Double Torus | 8-16+8 = 0 | 0 ? |
+
+### 3. Topological Meaning
+The Euler characteristic can be expressed via Betti numbers (counting topological features):
+
+$$
+\chi = h_0 - h_1 + h_2
+$$
+
+#### $h_0$: 0-Dimensional Holes (Connected Components)
+- Counts the number of separate pieces in the surface
+- For a single connected surface: $h_0 = 1$
+- Example: Both a sphere and torus have $h_0 = 1$
+
+#### $h_1$: 1-Dimensional Holes (Non-Trivial Loops)
+- Counts the maximum number of independent closed curves that:
+  1. Cannot be shrunk to a point
+  2. Don't split the surface when cut
+- Sphere: $h_1 = 0$ (all loops can shrink)
+- Torus: $h_1 = 2$ (meridian and longitude loops)
+- Double Torus: $h_1 = 4$
+
+#### $h_2$: Number of orientable shells
+
+
+| Surface      | $h_0$ | $h_1$ | $h_2$ | $\chi$ | 
+|--------------|-------|-------|-------|--------|
+| **Sphere**   | 1     | 0     | 1     | 2      | 
+| **Torus**    | 1     | 2     | 1     | 0      | 
+| **Disk**     | 1     | 0     | 0     | 1      | 
+
+### 5. Geometric Interpretation
+- Positive $\chi$: Sphere-like topology
+- Zero $\chi$: Torus-like topology
+- Negative $\chi$: Higher-genus surfaces (multiple handles)
+
+### 5. Practical Applications
+1. **Mesh Processing**: 
+   - Verify mesh integrity (e.g., χ=2 for watertight meshes)
+   - Detect topological changes during simplification
+
+2. **Physics**: 
+   - Gauss-Bonnet theorem relates χ to total curvature
+   - Essential in string theory and cosmology
+
+3. **Computer Graphics**:
+   - Texture mapping requires χ=2 for spherical topology
+   - Character modeling (ear/handles change topology)
+
