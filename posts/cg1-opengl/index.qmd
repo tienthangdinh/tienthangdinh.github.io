@@ -1,13 +1,14 @@
 ---
-title: "OpenGL"
+title: "Rendering"
 date: 2025-08-06
-categories: [Computer Graphics, OpenGL]
+categories: [Computer Graphics, Rendering]
 format:
   html:
     toc: true
     code-fold: true
     math: mathjax
 ---
+# OpenGL
 
 - Timeline:
   
@@ -157,13 +158,7 @@ if < or > then will change the color, depth in frame buffer respectively.
 
 
 ```
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include "Shader.h" // A custom class to manage shaders
+...
 
 // Vertex data for a triangle
 float vertices[] = {
@@ -174,28 +169,25 @@ float vertices[] = {
 };
 
 int main() {
-    glfwInit();
-    // (GLFW and GLAD initialization code omitted for brevity)
+    // context init
     GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL Example", NULL, NULL);
     glfwMakeContextCurrent(window);
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
     // 1. Create Program
-    // This assumes you have a Shader class that handles compiling and linking
-    Shader ourShader("shader.vert", "shader.frag"); 
+    unsigned int programID = createShaderProgram("shader.vert", "shader.frag"); //glShaderSource -> glCompileShader -> glAttachShader ->  glCreateProgram -> glLinkProgram
     
-    // --- VAO & VBO setup for the triangle ---
+    // -init VBO, VAO
     unsigned int VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO); //vertices
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); //vertices
 
     // 3. Link VAO/VBO Attributes
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0); //take this address
+    glEnableVertexAttribArray(0); //and write down here in the shader
     // Color attribute
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
@@ -206,12 +198,13 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
         
         // 2. Bind Program
-        ourShader.use(); 
+        glUseProgram(programID);
 
         // 4. Set Uniforms
+        GLint transformUniformLocation = glGetUniformLocation(programID, "transform");
         glm::mat4 transform = glm::mat4(1.0f);
         transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-        ourShader.setMat4("transform", transform);
+        glUniformMatrix4fv(transformUniformLocation, 1, GL_FALSE, glm::value_ptr(transform));
 
         // 5. Draw
         glBindVertexArray(VAO);
@@ -220,11 +213,7 @@ int main() {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glfwTerminate();
-    return 0;
+    ...
 }
 ```
 
@@ -243,3 +232,117 @@ void main() {
     ourColor = aColor;
 }
 ```
+
+# Geometry Rendering
+1. **Discuss how geometry can be stored in buffers and textures on the GPU?**
+   
+vertex buffer (VBO) + texture
+
+2. **Explain how geometry is rendered with OpenGL by referring to Vertex Buffer Objects, Vertex Array Objects, and Shader Programs!**
+   
+Initialization (done once):
+
+   - Shader Programs: compiled, attached and linked
+   - Vertex Buffer Objects (VBOs)
+   - Vertex Array Objects (VAOs): glVertexAttribPointer (update VBO onto VAO)
+  
+Main Loop (done every frame):
+
+  - Bind Program and VAO:  choose program_id glUseProgram + VAO to be drawn (glBindVertexArray)
+  - Set Uniforms: model-view-projection matrix, are updated.
+  - Draw: 
+
+3. **Discuss advantages and disadvantages of interleaved versus non-interleaved storage of geometry in buffer objects!**
+   
+Interleaved Storage: this is what we have always been using!!! look at the data you will know
+  - Advantage: all attributes loaded in cache, and also good for individual processing
+  - Disadvantage: Updating a single attribute (e.g., only the positions for an animation) is complex, because has to skip over the other attributes.
+  
+Non-Interleaved Storage: (opposite)
+  - Advantage: This allows for the fast replacement of individual attributes. e.g. only touching position buffer without touching the normals or texture coordinates.
+  - Disadvantage: multiple fetches per vertice for each attribute
+
+4. **How do you specify the format and component type for a vertex attribute?**
+   
+used in the function glVertexAttribPointer: 
+- layout(location = 0) in shader
+- number of scalar elements in component (e.g., 3 for a vec3).
+- data type (e.g., GL_FLOAT).
+- stride (distance between 2 elements (vd: 6 floats))
+- offset for first component
+
+5. **What is the difference between uniform variables and vertex attributes?**
+Vertex Attributes:  per-vertex data.
+Uniform Variables are constant for a single draw call (for all vertices) (model-view-projection matrix, light positions)
+
+6. **How do you get the index of a vertex attribute array declared as input to the vertex shader necessary for specifying the corresponding attribute pointer of a vertex array object?**
+
+- layout(location = 0) in vec4 vPosition;
+- GLint i = glGetAttribLocation(program, "vPosition");
+
+7. **Explain indexed rendering and discuss when this is advantageous over retained mode rendering?**
+
+- Problem: In a mesh, a single vertex is often part of multiple triangles (typically 6 in triangle or 2 in stripification). Without indexed rendering, you would have to duplicate that vertex's data in the vertex buffer for every triangle it belongs to.
+
+- Solution: linear sequence of vertices for each triangle with repeated vertices => 1 VBO + 1 VEO
+- Advantage: store vertice only once
+- Disadvantage: extra memory and complex access logic
+- Usage: bind an extra VAO `glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, datapointer);`
+```
+//----VEO
+std::vector<GLuint> elements;
+// fill elements vector with indices
+elements.clear();
+for (int i=0; i<N; ++i) {
+  for (int j=0; j<=M; ++j)
+    for (int k=0; k<2; ++k)
+      elements.push_back((i+k)*(M+1)+j);
+elements.push_back(RESTART_IDX);
+}
+// create buffer object for element data
+GLuint ebo;
+glGenBuffers(1, &ebo);
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+// transfer element data to GPU buffer object
+glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*elements.size(),&elements[0], GL_STATIC_DRAW); 
+
+
+//-----VBO
+// bind buffer object to array buffer target
+glBindBuffer(GL_ARRAY_BUFFER, vbo);
+glEnableVertexAttribArray(0);
+glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE,sizeof(vertex), 0);
+glEnableVertexAttribArray(1);
+glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,sizeof(vertex), sizeof(vec4));
+glEnableVertexAttribArray(2);
+glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE,sizeof(vertex), sizeof(vec4)+sizeof(vec3));
+```
+
+1. **What primitive types can be input and output to the geometry shader?**
+   
+The geometry shader is invoked once per primitive:
+- Input Primitive Types: points, lines, lines_adjacency, triangles, triangles_adjacency.
+- Output Primitive Types: points, line_strip, triangle_strip.
+The geometry shader consumes whole primitives and emits a sequence of vertices that are organized into one of the output strip types.
+
+9. **Why is the input data to the geometry shader to be declared as arrays?**
+The geometry shader's fundamental purpose is to process an entire primitive at once, not just a single vertex. Since a primitive consists of multiple vertices (e.g., a triangle has 3, a line with adjacency has 4), the input variables that receive vertex attributes must be declared as arrays.
+
+10. **Given a shader program. Determine the shader type and its functionality!**
+
+- Vertex Shader: Will always write to the special output gl_Position.
+- Geometry Shader: Will have layout(points) in; layout(triangle strip) out;
+- Fragment Shader: Will write its final color to an out vec4 variable 
+- Functionality: Reading the code in main(). For example, a geometry shader that takes lines as input and outputs a triangle_strip
+
+11.  **How do you pass a variable that is interpolated over a triangle from the geometry shader to the fragment shader?**
+
+- Vertex shader output vertices
+- primitive assembly
+- In the geometry shader, declare an out variable (e.g., out vec3 worldPos;). Before calling EmitVertex(), assign a value to this variable. (emits the vertices of a new primitive)
+- Rasterizer interpolate everything across the surface of this primitive
+- In the fragment shader, declare a matching in variable (e.g., in vec3 worldPos;).
+
+12.  **Explain the principle of instanced rendering and describe a typical application!**
+
+Render 3 trees at one call or to generate complex tesselation at once
