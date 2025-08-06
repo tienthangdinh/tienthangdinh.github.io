@@ -40,5 +40,11 @@
   },
   "posts/cg1-meshprocessing/index.qmd": {
     "index.html": "57f2c27d"
+  },
+  "posts/cg1-polygonalmesh/index.qmd": {
+    "index.html": "554fbeaf"
+  },
+  "posts/cg1-opengl/index.qmd": {
+    "index.html": "c42bcfa3"
   }
 }

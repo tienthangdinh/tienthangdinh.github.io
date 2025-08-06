@@ -1,264 +1,13 @@
 ---
-title: "Mesh Geometry Processing"
-date: 2025-07-30
-categories: [Computer Graphics, Mesh Processing]
+title: "Surface Analysis"
+date: 2025-08-04
+categories: [Computer Graphics, Surface Analysis]
 format:
   html:
     toc: true
     code-fold: true
     math: mathjax
 ---
-# Polygonal Meshes
-## Basics
-* mesh 𝑀 is defined as a tripel (𝑉, 𝐸, 𝐹)
-* Topological type using betti numbers 
-* incident: different type, adjacent: same type
-* valence (given a vertex: number of incident edge/traingles?)
-* degree (given a face: number of incident edges?)
-* $\sum valences = 2edges = \sum degrees$ (because mostly one edge is shared by 2 vertices and 2 faces)
-* winding order is used for backface culling (when we add into the program)
-
-### OBJ - a Data Structure
-```
-v -1 -1 1
-v 1 -1 1
-v -1 1 1
-...
-vt u1 v1
-vt u2 v2
-vt u3 v3
-...
-vn -1 0 0
-vn 1 0 0
-vn 0 -1 0
-...
-f 1/1/1 3/3/1 7/?/1 5/?/1
-f 2/2/2 6/6/2 8//2 4//2
-...
-```
-* deep in hardware could be saved as:
-  * array: very fast for linear traversal, add and delete slower
-  * double linked-list: add and delete faster, but linear traversal slower
-
-### Manifold Topology
-Goal idea: resembling 2D plane everywhere on the surface:
-
-* each edge is incident to 1 or 2 faces (if less: no face, if more: no clear surface definition, if 1: boundary)
-* each edge is incident to 2 vertices (no rounded edge with its face in itself)
-* each face is bounded by 1 loop over incident edges (if not: its a hole)
-* each vertex: the incident faces and edges form a **single** "fan" which is either open (on the boundary) or a closed disk (in the interior of the mesh), but not multiple fans.
-
-DS are mostly restricted on this because:
-
-* Reliably deterministic in operation (e.g. each edge only has 1,2 faces at 2 sides which create a clear surface for traversal) => avoid ambigioiusity
-* Naturally it is able to model most of 3D shapes
-
-### Triangulation of Polygons using Ear-Cutting
-* classify all corners in convex or concave (already knew from internal angles)
-* repeat n-3 times: (n loop)
-  * one ear-cut: iterate all convex corners (corner hear means vertex and the edges at two sides): (n loop)
-    * check, if corner is an ear (if it contains no concave inside the border line)
-    * if yes, cut-off ear, reclassify adjacent corners, break this loop to go to the next eat-cut
-
-### Triangle Meshes (Simplified Polygon Mesh)
-* Triangulated using Ear-Cutting
-* $2e = 3f$ or $\frac{3}{2} f = e$ bc each faces has 3 edges, but each edge is used double
-* Euler formula: $v-e+f=X$, for X very small => $v = \frac{1}{3} e = \frac{1}{2} f$
-* valence: $\sum valences = 2e = 6v$
-
-
-## Geometry Analysis
-### Face Normals = Polygon Area
-* For triangle: $\hat{n} = (p_1 - p_0) \times (p_2 - p_0)$ and $A = \frac{1}{2} \left| p_0 \times p_1 + p_1 \times p_2 + p_2 \times p_0 \right|$
-* For Polygon: $\hat{n} \propto (p_0 \times p_1) + (p_1 \times p_2) + \ldots + (p_{d-1} \times p_0)$ and $A = \frac{1}{2} \left| (p_0 \times p_1) + (p_1 \times p_2) + \ldots + (p_{d-1} \times p_0) \right|$
-
-General idea for Area: 
-
-1. Choose a reference point, typically the origin (0, 0).
-2. Iterate through each directed edges (p_i, p_j) of the polygon, calculate the signed area of the triangle it forms with the origin using the z-component of the cross product: $\Delta A = \frac{1}{2} (x_i y_j - x_j y_i)$. (It is represented by a normal pointing inside in the winding order aka right-hand rule, some shorter, some longer will sum up to the correct direction)
-3. Sum all these signed areas $A = \sum \Delta A$. Concave (negative area) and Convex (positive area) 
-
-Advantage:
-
-* No need ear-cutting: O(n²)
-* Taking care of concave triangles
-
-### Volume Enclosed by Triangle Mesh
-Idea comes from Divergence Theorem: sum of all the "sources" and "sinks" within a volume equal to the total amount of "stuff" flowing out (or in) through the surface boundary of that volume.
-$\iint_S \mathbf{F} \cdot d\mathbf{S} = \iiint_V (\nabla \cdot \mathbf{F}) dV$
-
-Where:
-
-* $\mathbf{F}$ is the vector field.
-* $S$ is a closed surface.
-* $V$ is the volume enclosed by $S$.
-* $d\mathbf{S}$ is an infinitesimal outward normal vector element of the surface.
-* $\nabla \cdot \mathbf{F}$ is the divergence of the vector field $\mathbf{F}$.
-
-In simpler terms:
-
-* **Flux ($\iint_S \mathbf{F} \cdot d\mathbf{S}$):** This represents the "flow" of the vector field out of the enclosed volume through its boundary surface. Imagine a fluid flowing; the flux would be the amount of fluid passing through the surface per unit time.
-* **Divergence ($\nabla \cdot \mathbf{F}$):** This measures the "source" or "sink" density of the vector field at each point within the volume. A positive divergence indicates a source (where the field is originating or expanding), and a negative divergence indicates a sink (where the field is converging or disappearing).
-
-Now we apply that to Volume, each tetrahedron volume created by each triangle $\frac{1}{6} \mathbf{p}_i \cdot (\mathbf{p}_j \times \mathbf{p}_k)$ (also called triple product)
-
-Then the total volume $V$ is sum of tetrahedron volume: $V = \frac{1}{6} \sum_{(ijk) \in T} [\mathbf{p}_i, \mathbf{p}_j, \mathbf{p}_k]$
-
-### Volume Gradient
-Let's start with the **volume contribution** of a tetrahedron formed by the origin and a triangle $(\mathbf{p}_i, \mathbf{p}_j, \mathbf{p}_k)$:
-
-$V_{ijk} = \frac{1}{6} \mathbf{p}_k \cdot (\mathbf{p}_i \times \mathbf{p}_j)$
-
-$\frac{\partial V_{ijk}}{\partial \mathbf{p}_k} = \frac{\partial}{\partial \mathbf{p}_k} \left( \frac{1}{6} \mathbf{p}_i \cdot (\mathbf{p}_j \times \mathbf{p}_k) \right)$ (volume with respect to the coordinates of a specific vertex $\frac{\partial V}{\partial \mathbf{p}_k}$)
-
-$\frac{\partial V_{ijk}}{\partial \mathbf{p}_k} = \frac{1}{6} (\mathbf{p}_i \times \mathbf{p}_j)$
-
-Until now what this means?
-
-* It means much the volume of that specific tetrahedron changes if we move vertex $\mathbf{p}_k$ by a small amount.
-* The result, $\frac{1}{6} (\mathbf{p}_i \times \mathbf{p}_j)$, is a vector. This vector is normal to the plane formed by $\mathbf{p}_i$ and $\mathbf{p}_j$, and its magnitude is related to the area of the triangle formed by $\mathbf{p}_i$, $\mathbf{p}_j$, and the origin.
-
-For the total volume $V$, the gradient with respect to a vertex $\mathbf{p}_k$ is the **sum of the gradients of all tetrahedra one-ring** around $\mathbf{p}_k$:
-
-$\nabla_{\mathbf{p}_k} V = \sum_{\text{one-ring } (\mathbf{p}_i, \mathbf{p}_j, \mathbf{p}_k)} \frac{1}{6} (\mathbf{p}_i \times \mathbf{p}_j)$
-
-This gradient indicates the direction in which moving the vertex would most effectively increase the total mesh volume.
-
-### Vertex Normal from incidents faces
-$\hat{n}_v \propto \sum_i w_i \hat{n}_i$
-
-Implementation is interestingly reversed: because faces and vertices are jointly incident to each other
-```
-normals.resize(positions.size()); // init normals array with length equal to number of vertices
-foreach (fi in meshfaces) // iterate over all faces
-  nml = get_face_normal(fi); // get the normal for this face
-  foreach (corner ci in face fi) // iterate over all vertices of this face
-    normals[vi(ci)] += nml *compute_corner_weight(ci); // add the weighted normal to the corresponding normal array index
-```
-
-### Centroid of One-Ring
-$c_v = \frac{1}{n_{onering}} \sum_i p_i$
-Implementaton also a little reversed, hell yeah, because all vertices are adjacent to each other
-```
-centroids.resize(positions.size()); //init
-valences.resize(positions.size());
-foreach (fi in meshfaces) //for each face
-  foreach (halfedge vi,vj in face fi) // iterate three halfedges (vi,vj)
-    centroids[vi] += positions[vj];
-    valences[vi] += 1;
-```
-
-## Connectivity Analysis
-### Shells & Loops
-* Shells are connected components
-* Boundary Loops are border/edges
-
-### Union-Find DS
-This DS can be used to find shells
-three operations:
-* initialize UF-DS such that each element forms its own subset
-* union(element1, element2): Merges the sets containing the two elements.
-* find(element): Returns a unique identifier for the set that the element belongs to.
-
-Algorithm to find shells and count shells
-```
-int nr_comp = vertices.size(); 
-UF.init(vertices.size()); // init to component/set per vertex
-foreach (fi) // iterate face
-  foreach (halfedge vi,vj in face fi) //iterate HE
-  if (UF.find(vi) != UF.find(vj))
-    UF.union(vi,vj); //unite
-    nr_comp -= 1; //reduce comp by 1
-```
-
-# Halfedge
-**Goal** Always in winding order so that:
-
-* Manifold: 2 HE of the same edge are always opposite to each other
-* Non-manifold: this invalid
-
-## DS Construction 
-
-* Adjacent relationship: next, prev, inv
-* Incident relationship: origin, loop/face, edge
-```
-struct vertex {
-  vec3d position;
-  int halfedge;  //stores only 1 HE, the rest can be found by inv(next) like below
-};
-struct halfedge {
-  int origin,ni,ti; (pointer-based trade off sequential access vs single access vs memory)
-  int next,inv,li;
-};
-struct loop {
-  int halfedge; //stores only 1 HE, the rest can be found by next
-  bool is_border;
-};
-struct halfedge_mesh {
-vector<vertex> vertices;
-vector<vec3d> normals;
-vector<vec2d> texCoords;
-vector<halfedge> halfedges;
-vector<loop> loops;
-};
-```
-
-* So, from an OBJ. file, what of these relationship can be directly inferred?
-  * actually everything when reading the face: origin, next, loop BUT EXCEPT FOR inv, that neads to find what face adjacent to current face
-
-### Vertex Circulator:
-```
-int h0 = inv(vertexHalfEdge(vi)); //usually start with the inverse
-int hi = h0;
-do {
-  useNeighbor(origin(hi));
-  hi = inv(next(hi)); //always inv(next)
-} while (hi != h0); //until back to beginning
-```
-
-### Inverse Matching
-* Goal: finding the inv pointer for every halfedge in the mesh by placing them next to each other
-* Idea: Easy:
-  1. Sort internally v1 -> v2 vs v2 -> v1 in format smaller->bigger
-  2. Sort the indices along the smaller column
-  3. End effect: 
-    * HE exists twice are matched, they are internal
-    * HE exists once are boundary
-    * HE exists more than twice are non-manifold
-
-* This way we can extract Boundary Loop by for each unmatched HE, define all the inverse, and the inverse keep traversing next until it come back to the beginning
-
-## Mesh Analysis
-### Design Pattern for Design Mesh Processing Algorithm
-* Circulator (around vertex, face, vertex in face)
-* Tagging (mark processed elements or store id/flag)
-* Region Growing (triangle strip, compressed segmentation)
-
-### Why use Triangle Strips for Rendering?
-* Transfer: only need to transfer n+2 vertices for a strip of n triangles (the first one all 3, after that only 1 for each new triangle)
-* Access: for triangle mesh we all know $f = 2v$, triangle strip can utilize this optimum, but without strip, each face individually require separate 3 times access to their vertices. So $f = 2.3v$
-* Downside? The algorithm is not always perfect (its just greedy)
-
-### How to compute Triangle Strip?
-Output Goal: strip index per face
-1. Sample some seed
-2. For each seed, generate a stripification
-3. Here is how to stripification:
-  * 2 types of HE, (even - odd) using parity (0-1) depending on how the origin aligned.
-  * Forward: prev(inv(vi)) or next(inv(vi))
-  * Backward: ...
-  This run alternatively...change parity 0-1-0-1-0-1
-  Until Border or Comeback to beginning
-4. Choose the longest strip from seed
-5. Repeat with new set of seeds
-
-### How to do Orientability Check?
-Region Growing: Start at a seed to queue
-1. Take the first face from queue
-2. Check if orientable?
-  1. check if all neighboring processed faces have consistent orientation 
-  2. If no, give up. But if yes, swap next and inv
-3. Add all neighbors to queue
 
 # Surface Analysis
 ## Representation
@@ -1209,71 +958,191 @@ $$
 II = \begin{pmatrix} -R & 0 \\ 0 & -R\sin^2\theta \end{pmatrix}
 $$
 
-# Topology
-## 2-Manifold if can always find a disk or a half disk
-## Understanding the Euler Characteristic
 
-### 1. Basic Definition
-For any closed (borderless) surface **S** subdivided into vertices (V), edges (E), and faces (F):
+# Mesh Processing
+## Heat Equation-Based Denoising
+
+
+### The Heat Equation - 1D Laplace
+The smoothing process is modeled by the 1D heat equation:
+$$
+\frac{\partial f(x,t)}{\partial t} = \alpha \frac{\partial^2 f(x,t)}{\partial x^2}
+$$
+where:
+
+- $f(x,t)$: Signal value at position $x$ and time $t$
+- $\alpha$: Diffusion coefficient (controls smoothing rate)
+- $\frac{\partial^2 f}{\partial x^2}$: Second spatial derivative (curvature)
+
+### Numerical Implementation
+
+#### Spatial Discretization
+1. Represent signal as vector $F = [f_1, f_2, ..., f_n]^T$
+2. Approximate second derivative using finite differences:
+   $$f''_i \approx \frac{f_{i+1} - 2f_i + f_{i-1}}{h^2}$$
+3. Construct Laplacian matrix $L$:
+   $$
+   L = \frac{1}{h^2}\begin{pmatrix} 
+   -2 & 1 & & \\
+   1 & -2 & 1 & \\
+   & \ddots & \ddots & \ddots \\
+   & & 1 & -2 
+   \end{pmatrix}
+   $$
+
+#### Time Integration Methods
+
+##### Explicit Euler (Forward Euler)
+$$
+F^{t+\Delta t} = F^t + \Delta t \alpha L F^t = (I + \Delta t \alpha L)F^t
+$$
+
+- **Idea**: Use slope at current time to forward compute next time
+- **Pros**: Simple to implement
+- **Cons**: Requires small $\Delta t$ for stability (CFL condition: $\Delta t \leq \frac{h^2}{2\alpha}$)
+
+##### Implicit Euler (Backward Euler)
+$$
+F^{t+\Delta t} = F^t + \Delta t \alpha L F^{t+\Delta t}
+$$
+$$(I - \Delta t \alpha L)F^{t+\Delta t} = F^t$$
+
+- **Idea**: Use slope of future to compute => have to compute backward from the future back to now
+- **Pros**: Unconditionally stable (any $\Delta t$ allowed)
+- **Cons**: Requires solving linear system each step **(like LQR-based MPC)**
+
+### 3. Boundary Conditions
+Common choices for signal boundaries:
+
+1. **Dirichlet**: Fixed values ($f=0$ at boundaries)
+2. **Neumann**: Zero derivative ($f'=0$ at boundaries)
+3. **Periodic**: Wrap-around (for cyclic signals)
+
+### 2D Heat Equation Denoising Example
+
+Consider a 2D grayscale image $f(x,y,t)$ where:
+- $(x,y)$ are pixel coordinates
+- $t$ is diffusion time
+- $\alpha$ controls smoothing strength
+
+The heat equation becomes:
+$$
+\frac{\partial f}{\partial t} = \alpha \Delta f = \alpha \left(\frac{\partial^2 f}{\partial x^2} + \frac{\partial^2 f}{\partial y^2}\right)
+$$
+
+#### Discrete Laplacian Operator
+For a pixel grid with spacing $h=1$:
 
 $$
-\chi(S) = V - E + F
+\Delta f_{i,j} \approx f_{i-1,j} + f_{i+1,j} + f_{i,j-1} + f_{i,j+1} - 4f_{i,j}
 $$
 
-**Key Property**: 
-- χ is a *topological invariant* - it depends only on the surface's "shape" (topology), not on how we subdivide it.
+**Matrix Representation**:
+```
+math
+L = \begin{pmatrix} 
+0 & 1 & 0 \\
+1 & -4 & 1 \\
+0 & 1 & 0 
+\end{pmatrix}
+```
+## What is Divergence?
 
-### 2. Examples
-| Surface      | V - E + F | χ  |
-|--------------|----------|----|
-| Sphere       | 8-12+6 = 2 (cube) <br> 4-6+4 = 2 (tetrahedron) | 2 |
-| Torus        | 16-32+16 = 0 | 0 |
-| Double Torus | 8-16+8 = 0 | 0 ? |
+### 1. Core Definition
+If Gradient applying $\nabla$ on a scalar field as input and output a vector field. 
 
-### 3. Topological Meaning
-The Euler characteristic can be expressed via Betti numbers (counting topological features):
-
+Divergence continues on that Dot product of the $\nabla$ with a vector field for e.g. **F** = (F₁, F₂, F₃):
 $$
-\chi = h_0 - h_1 + h_2
+\text{div } \mathbf{F} = \nabla \cdot \mathbf{F} = \frac{\partial F_1}{\partial x} + \frac{\partial F_2}{\partial y} + \frac{\partial F_3}{\partial z}
 $$
 
-#### $h_0$: 0-Dimensional Holes (Connected Components)
-- Counts the number of separate pieces in the surface
-- For a single connected surface: $h_0 = 1$
-- Example: Both a sphere and torus have $h_0 = 1$
 
-#### $h_1$: 1-Dimensional Holes (Non-Trivial Loops)
-- Counts the maximum number of independent closed curves that:
-  1. Cannot be shrunk to a point
-  2. Don't split the surface when cut
-- Sphere: $h_1 = 0$ (all loops can shrink)
-- Torus: $h_1 = 2$ (meridian and longitude loops)
-- Double Torus: $h_1 = 4$
+### 2. Physical Interpretation
+Imagine fluid flow where **F** represents velocity vectors:
 
-#### $h_2$: Number of orientable shells
+| Divergence Value | What's Happening | Meaning |
+|------------------|------------------|--------------------|
+| **Positive**     | More fluid exits than enters | Mostly gradient positively out |
+| **Negative**     | More fluid enters than exits | Mostly gradient negatively in |
+| **Zero**         | Equal inflow/outflow | positive gradient = negative gradient |
+
+### 3. Gradient vs Divergence Relationship
+1. **Gradient (∇f)**: Creates a vector field pointing uphill  
+   Example: Temperature gradient shows heat flow direction
+
+2. **Divergence of Gradient**:  
+   $$
+   \nabla \cdot (\nabla f) = \frac{\partial^2 f}{\partial x^2} + \frac{\partial^2 f}{\partial y^2} + \frac{\partial^2 f}{\partial z^2} = \Delta f
+   $$
+
+3. Image Example
+
+| Operation | Effect | Kernel Example |
+|-----------|--------|----------------|
+| **Gradient** ∇I | Detect change | $[-1, 0, 1]$ |
+| **Divergence** ∇·(∇I) | Compare positive change vs negative changes | $\begin{bmatrix}0&1&0\\1&-4&1\\0&1&0\end{bmatrix}$ |
 
 
-| Surface      | $h_0$ | $h_1$ | $h_2$ | $\chi$ | 
-|--------------|-------|-------|-------|--------|
-| **Sphere**   | 1     | 0     | 1     | 2      | 
-| **Torus**    | 1     | 2     | 1     | 0      | 
-| **Disk**     | 1     | 0     | 0     | 1      | 
+## Laplace-Beltrami Operator on Surfaces
 
-### 5. Geometric Interpretation
-- Positive $\chi$: Sphere-like topology
-- Zero $\chi$: Torus-like topology
-- Negative $\chi$: Higher-genus surfaces (multiple handles)
+### 1. Fundamental Definition
+For a function $f : S \rightarrow \mathbb{R}$ defined on a surface $S$:
+$$
+\Delta_S f = \text{div}_S (\nabla_S f)
+$$
+where:
 
-### 5. Practical Applications
-1. **Mesh Processing**: 
-   - Verify mesh integrity (e.g., χ=2 for watertight meshes)
-   - Detect topological changes during simplification
+- $\nabla_S f$ is the surface gradient (intrinsic derivative along the surface)
+- $\text{div}_S$ is the surface divergence (measures flux through infinitesimal surface patches)
 
-2. **Physics**: 
-   - Gauss-Bonnet theorem relates χ to total curvature
-   - Essential in string theory and cosmology
+### 2. Discrete Formulation
+For triangle meshes there are 2 options, the first is without weighting (Uniform Laplace), but this one is Cotant Laplace-Beltrami:
+$$
+(\Delta_S f)_i \approx \frac{1}{A_i} \sum_{j \in N(i)} (\cot \alpha_{ij} + \cot \beta_{ij})(f_j - f_i)
+$$
 
-3. **Computer Graphics**:
-   - Texture mapping requires χ=2 for spherical topology
-   - Character modeling (ear/handles change topology)
+where:
 
+- $A_i$ is the Voronoi area around vertex $i$
+- $N(i)$ are neighboring vertices
+- $\alpha_{ij}, \beta_{ij}$ are angles opposite to edge $(i,j)$
+
+### 3. Key Properties
+
+1. **INTERESTING Curvature Relationship**:
+   $$
+   \Delta_S p = -2H\hat{n}
+   $$
+   where:
+
+   - $H = \frac{\kappa_1 + \kappa_2}{2}$ (mean curvature)
+   - $\hat{n}$ is the unit normal vector
+
+### 4. Numerical Implementation
+Explicit smoothing:
+$$
+f_i^{t+1} = f_i^t + \Delta t \alpha (\Delta_S f^t)_i
+$$
+
+
+### 6. Mean Curvature Flow
+$$
+\frac{\partial p}{\partial t} = \Delta_S p = -2H\hat{n}
+$$
+
+- **MOVING TO LAPLACE = MOVING TO MEAN CURVATURE DIRECTION**
+
+
+
+## Dynamic Connectivity
+### Remeshing Pipeline
+given a target edge length $l$:
+1. **split** all edges that are longer than $\frac{4}{3} l$ at their midpoint.
+1. **collapse** all edges shorter than $\frac{4}{5} l$ into their midpoint
+1. **flip** edges in order get standard valence 6 (or 4 on boundaries).
+1. **relocate** vertices on the surface by tangential smoothing
+   
+### Add/Remove Face
+Mostly taking care of:
+- boundary list for inverse HE
+- and the prev/next relationship at each HE

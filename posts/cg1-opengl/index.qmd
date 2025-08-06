@@ -1,0 +1,245 @@
+---
+title: "OpenGL"
+date: 2025-08-06
+categories: [Computer Graphics, OpenGL]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+
+- Timeline:
+  
+  1.  **Create Program:** You compile your shaders and link them into a `programID`.
+  2.  **Bind Program:** You make this program the active one using `glUseProgram(programID)`.
+  3.  **Link VAO/VBO Attributes:** The connection between your vertex data and the shader's input variables (`aPos`, `aColor`) is set up.
+  4.  **Set Uniforms:** You get the location of your uniform variable (`uniform mat4 transform;`) and then use a `glUniform*` function to send its value to the active shader program.
+  5.  **Draw:** The `glDraw*` call then uses the currently bound VAO/VBO with the active shader program and its uniform values to render the geometry.
+     
+1. **Why is it important for graphics application development to wait for next events during the main loop?**
+
+- "Games Architecture" runs in a continuous, busy loop, fully occupying the CPU and GPU even when there is no new input or change in the scene. 
+- "Application Architecture" uses an event-driven loop. The program "waits" until an event occurs (like a mouse click, key press, or window resize), and only then do the CPU and GPU perform work to handle the event and redraw the scene => more efficient and can coexist with other applications
+- Threaded Architecture:...
+
+2. **Name three architectural concepts of modern GPU that facilitate a large throughput!**
+    
+GPU works on SIMT principle, it has processing units (either FP64, FP32, INT, TENSORS):
+- parallel streaming processing: (like vertices or fragments) 
+- Hiding memory access time: GPUs use scheduling for thousands of threads (SM, wraps), scheduler instantly switches to another group of threads if this one waiting for data
+- Load balancing: distributed streaming multiprocessors (SMs) on the GPU, => no bottleneck.
+
+3. **How do you have to prepare an analytic surface representation such that it can be rendered with the rendering pipeline of a GPU?**
+
+- Tesselation on CPU: continuous analytic surface -> discrete surface = polygonal mesh (set of vertices, faces, color).
+- GPU: Geometry building -> view transformation -> fragment generation -> color adding
+
+1. **Step 1: How are GPU objects managed in OpenGL?**
+
+- We first need a window and a context to that window
+````
+window = glfwCreateWindow(...) 
+glfwMakeContextCurrent(window)
+````
+- We have to create these objects to be stored in GPU:
+
+  - Buffer Objects (VBOs): vertex (positions, normals, colors)
+  - Vertex Array Objects (VAOs): defining how should vertex shader read VBOs (INF, float, at what allocation, interleaving,...)
+  - Textures: image to be added in shader
+  - Shader Programs: Linked, executable programs composed of individual shaders (vertex shader for height generation, fragment shader for color)
+  
+- And then: every objects are defined as GLuint:
+  
+  1. Generate a name for a new object (glGenBuffers)
+   ````
+    GLuint vboOpsitions;
+    glGenBuffers(1, &vboPositions);
+    ````
+  2. Bind the object to a specific target slot (convention for vertices is GL_ARRAY_BUFFER) in the OpenGL (glBindBuffer)
+   ````
+   glBindBuffer(GL_ARRAY_BUFFER, vboPositions); 
+   ````
+  3. Modify the object that is currently bound to the target (e.g., upload array of vec4 with glBufferData)
+   ````
+   glBufferData(GL_ARRAY_BUFFER, posvector.size() * sizeof(vec4), posvector.data())
+   ````
+
+4. 1. **After creating Buffer, how to bind them to Vertex Array Object?**
+
+So after we did the same to each **attribute separately** position, normals, colors, each an object, we now add them on VAO.
+
+For each attribute, bind the buffer -> enable -> specify how to read data
+
+```
+glGenVertexArrays(1, &vao);
+glBindVertexArray(vao);
+
+glBindBuffer(GL_ARRAY_BUFFER, vboPositions);
+glEnableVertexArray(0); // address of the shader input
+glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(vec4), 0) // 4 float for each component therefore sizeof(vec4), no offset
+glBindVertexArray(0) //unbind
+
+```
+
+Do not forget to load Shader and read Shader before that
+```
+program_id = glCreateProgram()
+vertex_shader_id = glCreateShader()
+glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+glCompileShader(vertexShader);
+glAttachShader(program_id, vertex_shader_id)
+glAttachShader(program_id, fragment_shader_id)
+glLinkProgram(program_id)
+```
+4. 2. **Render it all!**
+```
+glBindVertexArray(vao);
+glDrawArrays(GL_TRIANGLES, 0, 3) //draw triangles starting from the first vertice, each triangle use 3 vertices
+glBindVertexArray(0);
+```
+5. **How to debug in OpenGL?**
+   
+  1. Define callback function, basically print out `debug_callback(message,...)`
+  2. Set debug context `glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);`
+  3. Register callnback function `glDebugMessageCallback(debug_callback, 0);`
+
+6. **Given a picture of the OpenGL 3.2 pipeline without specification of the data types (vertices, primitives, fragments): Explain the data flow through the pipeline!**
+   
+  1. Vertex Buffer VBO
+  2. individual vertex from VBO -> VAO -> Vertex Shader (each vertex separately processed) (model coords -> world coords -> projection coords)
+  3. Primitive Assembly (group vertices -> triangles).
+  4. (Optionally) Geometry Shader
+  5. Clipping primitives against the view frustum + Back-face culling
+  6. Rasterizer clipped primitives -> fragments (aka pixels) + interpolated natural color
+  7. Fragment Shader, textured lighted color and depth.
+  8. Fragment Buffer (depth test)
+
+7. **Explain the difference between a shader and a shader program! What are the building blocks of shaders and shader programs respectively?**
+
+- Shader:  vertex / pixel -> vertex / pixel in .GLSL
+- Shader Program: a set of compiled shaders in .bin
+
+8. **How can you transfer data from a C / C++ program to a shader program?**
+
+  1. VBO -> VAO -> in Shader
+  2. Uniform variables (transformation matrix, lighting parameters) -> `uniform mat4 modelViewProjection;`
+
+9. **How is streaming input and streaming output of vertex shader and a fragment shader defined?**
+    
+- Vertex Shader: in from VAO -> out color, gl_Positions (this one is a must!!! vec4 clip-space coords)
+- Fragment Shader: rasterizer interpolated color -> textured lighting color -> framebuffer
+
+10. **Given a vertex and a fragment shader, explain the data flow (input, transfer from vertex to fragment shader, output)!**
+
+- slide 20, important note: output of vertex color -> rasterized -> input of fragment color for shader
+
+11. **Given a shader. Determine if it is a vertex or fragment shader.**
+    
+- vertex shader has to output gl_Positions
+
+12. **Expand a vertex / fragment shader pair by a variable passed from vertex to the fragment shader!**
+
+- e.g. output intensity -> input intensity of the next one (remember it is rasterized)
+
+
+13. **How do you pass values for a uniform variable to a shader program?**
+
+    1. activate the shader program `glUseProgram(programID);`
+    2. create location for the uniform variable in shader program `GLint transformUniformLocation = glGetUniformLocation(programID, "transform");
+    3. `glUniformMatrix4fv(transformUniformLocation)`
+
+14. How is visibility sorting done in the rendering pipeline with the depth buffer algorithm?
+
+For every single fragment, its depth value is compared to the value currently stored in the depth buffer at that fragment's pixel location.
+if < or > then will change the color, depth in frame buffer respectively.
+
+
+
+```
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "Shader.h" // A custom class to manage shaders
+
+// Vertex data for a triangle
+float vertices[] = {
+    // positions         // colors
+     0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom right
+    -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f, // bottom left
+     0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f  // top
+};
+
+int main() {
+    glfwInit();
+    // (GLFW and GLAD initialization code omitted for brevity)
+    GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL Example", NULL, NULL);
+    glfwMakeContextCurrent(window);
+    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+
+    // 1. Create Program
+    // This assumes you have a Shader class that handles compiling and linking
+    Shader ourShader("shader.vert", "shader.frag"); 
+    
+    // --- VAO & VBO setup for the triangle ---
+    unsigned int VBO, VAO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // 3. Link VAO/VBO Attributes
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // Color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    while (!glfwWindowShouldClose(window)) {
+        // Render loop
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        
+        // 2. Bind Program
+        ourShader.use(); 
+
+        // 4. Set Uniforms
+        glm::mat4 transform = glm::mat4(1.0f);
+        transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        ourShader.setMat4("transform", transform);
+
+        // 5. Draw
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glfwTerminate();
+    return 0;
+}
+```
+
+because look at the vertex shader
+```
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aColor;
+
+out vec3 ourColor;
+
+uniform mat4 transform;
+
+void main() {
+    gl_Position = transform * vec4(aPos, 1.0);
+    ourColor = aColor;
+}
+```
