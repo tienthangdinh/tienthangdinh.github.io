@@ -346,3 +346,156 @@ The geometry shader's fundamental purpose is to process an entire primitive at o
 12.  **Explain the principle of instanced rendering and describe a typical application!**
 
 Render 3 trees at one call or to generate complex tesselation at once
+
+# Lighting
+1. **Explain the different stages of light transport from emission to detection!**
+- Emission: A light source converts energy (e.g., electrical) into light photons.
+- Transport: Light travels in straight lines through a homogeneous medium like a vacuum.
+- Scattering: In a transparent medium like air, light can be deflected by particles (e.g., skin).
+- Reflection: Light bounces off surfaces.
+- Refraction: Light passes through transparent surfaces (like glass or water), changing its direction.
+- Absorption: Light is absorbed by surfaces or media, converting its energy into another form (e.g., heat).
+- Detection: An eye or an image sensor measures the spatial distribution of the light that reaches it.
+
+2. **What is needed to specify a goniometric point light source?**
+- goniometric point light source = light is emitted from a single point: emission position, intensity varied by directions & decreased by distance
+
+3. **What is color bleeding?**
+- color reflection from 1 surface to other surfaces 
+
+4. **How do the results of light simulations with single versus multiple reflections compare?**
+- Single Reflection: Only allow bounce from original light source (not so realistic)
+- Multiple Reflections: Light is allowed to bounce multiple times between surfaces (indirect lighting). Each bounce adds more light to the scene. As a result, simulations with multiple reflections produce brighter, more realistic scenes with softer shadows and effects like color bleeding.
+
+5.  **Explain the difference between hard and soft shadows!**
+- Hard Shadows:  sharp (when light source is a single point)
+- Soft Shadows:  fuzzy, smoothed (when the light source is an area light => partially occluded)
+
+6. **Which light source types result in hard shadows?**
+- Point light sources  -> hard shadow
+
+7. **Penumbra**
+- area light sources -> soft shadow
+
+8. **Argue why human perception motivates the use of gamma for sRGB color space and displays!**
+Human perception of brightness is not linear. Eyes are more sensitive to darker colors (use more 8bit ranges for that)
+
+9. **What is the rendering equation and why is it difficult to solve?**
+- Sum outgoing light from a point = sum Light_emitted Light_reflect
+- It is difficult to solve because: integral of all incoming lights + the incoming light themself is the outgoing of the other (recursive)
+
+10. **Name three simplifications of the rendering equation typically adopted in real-time rendering!**
+- Ignore indirect lighting
+- Restrict light source types: only directional or point light
+- Replace physically-based BRDFs with simpler empirical models like Phong or Blinn-Phong.
+
+11. **How does intensity fall off for a point light source?**
+The intensity (the radiance) Radiance ∝ 1 / distance²
+
+12. **Explain why it makes sense to split local lighting into ambient, diffuse and specular reflection!**
+Splitting the local illumination model into ambient, diffuse, and specular components is a useful simplification because each term models a different aspect of light reflection:
+Ambient: usually not a part of BRDF
+Diffuse: Lambdertian
+Specular: Phong or Microfacet (gaussian distributed)
+
+12. **Explain why it makes sense to split local lighting into ambient, diffuse and specular reflection!**
+
+- modular and computationally cheap way to approximate the appearance of different materials.
+
+13. **What does the ambient term in local illumination models compensate for?**
+- indirect lighting that we cannot calculate but can approximate
+
+
+14.  **What is a Lambertian Radiator and how does it look from different viewing angles?**
+- ideal diffusion
+- same radiance regardless of their viewing direction L = (phi/pi)*(Icos(alpha))/r²
+
+15.  **The Lambertian implementation of diffuse local illumination is computed mainly from the cosine term. What does this imply for the bidirectional reflectance distribution function?**
+The Lambertian depends only on the cosine of the angle between the incoming light direction (not outgoing) => BRDF for a Lambertian surface is constant for all incoming and outgoing directions.
+
+16. **Which parameter of the Phong and Blinn-Phong implementation of specular reflection defines the roughness of the surface? Where is the cosine term in these models?**
+- Roughness Parameter: The shininess parameter, m, is the exponent, the higher the shinier
+- Cosine Term: The cosine term is implemented via a dot product raised to the power of m.
+- Phong, it is (<ω_out, ω_refl>)^m.
+- Blinn-Phong, it is (<ω_half, n>)^m.
+
+17. **Given images of illuminated objects, estimate diffuse, specular and roughness parameters!**
+Diffuse, specular, roughness
+
+18. **In which coordinate system is the illumination calculation typically performed?**
+- Eye Coordinates (also called View Space) a.k.a (0,0,0)
+- The requirements: no clipping, no distortion
+
+19. **Explain which part of lighting calculation is done on CPU, in Vertex Shader and in Fragment Shader!**
+- CPU: scene, materials and lights (like color, position, shininess) and passes these values to the shaders as uniforms.
+- Vertex Shader: transform geometry. It takes vertex positions and normals from object coordinates and transforms them into eye coordinates, then passes these transformed values to the next stage.
+- Fragment Shader: lighting calculation. It receives the interpolated position and normal from the rasterizer, accesses the uniform variables for light and material properties, and computes the final color of the fragment.
+
+20. **How can you provide the following parameters to the Fragment Shader in eye coordinates: position, surface normal, direction to the viewer and direction to the light source?**
+- Position (p): The vertex shader calculates the eye-space position and passes it to the fragment shader as an out variable. The rasterizer interpolates this value for each fragment.
+- Surface Normal (n): The vertex shader transforms the object-space normal to eye-space using the inverse transpose of the model-view matrix. It passes this as an out variable. 
+- Direction to Viewer (ω_out): This is calculated inside the fragment shader. Since the viewer is at the origin (0,0,0) in eye coordinates, the direction is simply normalize(-p), where p is the fragment's interpolated position.
+- Direction to Light Source (ω_in): The light's position l (in eye coordinates) is passed (also calculated from vertex shader as uniform) to the fragment shader as a uniform. The direction is then calculated inside the shader as normalize(l - p).
+
+21. **Explain how you have to account for gamma correction in the shader pipeline to avoid unnatural darkening when the display performs gamma correction!**
+
+- Lighting calculations in a shader produce physically linear color values.
+- However, Monitor expects non-linear sRGB color values (which are approximately gamma-corrected with γ ≈ 2.2) => If you write a linear color directly to the framebuffer => it will be too dark because it saves more bit for that
+- Solution: directly in fragment shader OR OpenGL function
+- Additionally, you must handle input textures. If a texture is stored in sRGB format (which is common for .jpg or .png files), you must convert it to linear space inside the shader before using it in lighting calculations.
+
+## Rendering Equation
+
+$$
+L_o(p,\omega_o) = \int_\Omega f_r(p,\omega_i,\omega_o) L_i(p,\omega_i) (n \cdot \omega_i) d\omega_i
+$$
+
+- **$$L_o(p,\omega_o)$$**  
+   Outgoing radiance - the light leaving surface point $$p$$ in direction $$\omega_o$$ (what the observer sees)
+
+- **$$\int_\Omega ... d\omega_i$$**  
+   Integral over the hemisphere $$\Omega$$ above the surface, summing contributions from all incoming light directions
+
+- **$$f_r(p,\omega_i,\omega_o)$$**  
+   BRDF (Bidirectional Reflectance Distribution Function) that defines the relationship:
+   - How light reflects at point $$p$$  
+   - From incoming direction $$\omega_i$$ to outgoing $$\omega_o$$  
+   - Determines material appearance (diffuse/glossy/metallic)
+
+- **$$L_i(p,\omega_i)$$**  
+   Incoming radiance - light arriving at $$p$$ from direction $$\omega_i$$
+
+- **$$(n \cdot \omega_i)$$**  
+   Lambertian cosine term accounting for:  
+   - Angle between surface normal $$n$$ and light direction  
+   - Surfaces receive less light at grazing angles  
+
+
+## Common Lighting Models
+
+### 1. Lambertian (Diffuse)
+$$ f_{\text{lambert}} = k_d \cdot (n \cdot l) $$
+- $$k_d$$: Diffuse albedo
+- $$n$$: Surface normal
+- $$l$$: Light direction
+- Models perfect matte surfaces
+
+### 2. Phong Model
+$$ I = k_d \cdot (n \cdot l) + k_s \cdot (r \cdot v)^\alpha $$
+- $$r$$: Reflection vector ($$r = 2(n \cdot l)n - l$$)
+- $$v$$: View direction
+- $$\alpha$$: Shininess exponent
+
+### 3. Blinn-Phong Model
+$$ I = k_d \cdot (n \cdot l) + k_s \cdot (n \cdot h)^\alpha $$
+- $$h$$: Halfway vector ($$h = \text{normalize}(l + v)$$)
+- More efficient than Phong
+- Better for metallic surfaces
+
+### Key Differences:
+| Feature       | Lambertian | Phong       | Blinn-Phong |
+|--------------|-----------|------------|-------------|
+| Diffuse      | ✓         | ✓          | ✓           |
+| Specular     | ✗         | Reflection | Halfway     |
+| Performance  | Fastest   | Moderate   | Fast        |
+| Realism      | Matte     | Plastic    | Metallic    |
