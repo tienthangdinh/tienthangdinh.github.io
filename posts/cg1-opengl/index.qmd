@@ -499,3 +499,29 @@ $$ I = k_d \cdot (n \cdot l) + k_s \cdot (n \cdot h)^\alpha $$
 | Specular     | ✗         | Reflection | Halfway     |
 | Performance  | Fastest   | Moderate   | Fast        |
 | Realism      | Matte     | Plastic    | Metallic    |
+
+
+# Texturing
+1. **What types of mapping are there?**
+- Color
+- Traditional Bump Mapping (less storage but more computational because it needs gradient from neighboring, so it needs smapling neighbors height too)
+- Normal Mapping (add some extra normal (x,z,y) but actually saved as (r,g,b)) => simple, fast
+- Parallax Mapping
+- Displacement (add explicitely heightmap uvh)
+
+2. **How exactly is the uv texture defined? Like someone made it explicitly?**
+
+3. **Tangent Method for Mapping please**
+- For any given fragment on the screen, there's a unique p_eye and a unique uv because when the GPU rasterizes a triangle, it interpolates all the vertex attributes, including both the 3D position and the 2D texture coordinates, for every single fragment.
+- The p_eye is the 3D position of a point on the crumpled paper.
+- The uv is the 2D position of that same point on the flat paper.
+- We know the change in 3D position over a pixel on the screen (dFdx(p_eye))
+- We also know the change in 2D texture coordinates over the same pixel on the screen (dFdx(uv)).
+- We can set up a system of equations to solve for the unknown: the change in 3D position for a change in u and v.
+
+$$\frac{\partial \mathbf{p}_{eye}}{\partial x} = \mathbf{T} \cdot \frac{\partial u}{\partial x} + \mathbf{B} \cdot \frac{\partial v}{\partial x}$$
+
+$$\frac{\partial \mathbf{p}_{eye}}{\partial y} = \mathbf{T} \cdot \frac{\partial u}{\partial y} + \mathbf{B} \cdot \frac{\partial v}{\partial y}$$
+
+
+$$\begin{bmatrix} \frac{\partial \mathbf{p}_{eye}}{\partial x} \\ \frac{\partial \mathbf{p}_{eye}}{\partial y} \end{bmatrix} = \begin{bmatrix} \frac{\partial u}{\partial x} & \frac{\partial v}{\partial x} \\ \frac{\partial u}{\partial y} & \frac{\partial v}{\partial y} \end{bmatrix} \begin{bmatrix} \mathbf{T} \\ \mathbf{B} \end{bmatrix}$$

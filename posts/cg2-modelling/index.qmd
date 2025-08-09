@@ -1,0 +1,142 @@
+---
+title: "Advanced Modelling"
+date: 2025-08-08
+categories: [Computer Graphics, Advanced Modelling]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+# Implicit Surface
+1. **Define the term implicit surface and explain the idea with a sketch!**
+- f: R³ → R: f(x, y, z) = 0 
+- The Interior: f(x) < 0.
+- The Surface: f(x) = 0. 
+- The Exterior: f(x) > 0.
+- They use the following operations: levelset, CSG, 
+
+2. **What is a regular implicit function and what does the implicit function theorem say about them?**
+- Regular Implicit Function: An implicit function f is called regular if its gradient ∇f(x) does not vanish aka = 0 (no cut itself)
+- Implicit Function Theorem:  if f is a regular function, then the implicit surface S(f) is a manifold. 
+
+3. **How can one compute the surface normal of an implicit surface?**
+- The gradient vector ∇f(x) is always orthogonal to the surface at x: n(x) ∝ ∇f(x)
+
+4. **Explain the advantage of an analytic computation of the gradient of an implicit function!**
+- Accuracy: no numeric approximatation
+- Fast: no need numeric apprixmiation
+
+5. **Compare levelset surfaces with implicit surfaces!**
+- Start with implicit surface  S(f) = {x | f(x) = 0}.
+- A level set is an entire family of this function: l_λ(x) = f(x) - λ 
+
+6. **How can CSG-operations be expressed in the formalism of implicit functions?**
+- CSG on implicit functions (f₁, f₂, etc.), think like what would a position value be:
+- f_union(x) = min(f₁(x), f₂(x)).
+- f_intersection(x) = max(f₁(x), f₂(x)).
+- Difference (A \ B): The set of points in A but not in B. This corresponds to f_difference(x) = max(f₁(x), -f₂(x)).
+
+7. **Name examples of implicit surface primitives!**
+- Implicit surface primitives can be defined in several ways:
+    - SDF that we all know  (can utilize mixed Minkowski) (sphere f(x) = sqrt(x² + y² + z²) - r)
+    - Algebraic Surfaces: e.g. Quadrics (e.g., spheres, cylinders, cones) are algebraic surfaces of degree two. (sphere f(x) = x² + y² + z² - r²)
+    - Radial Basis Functions: Used to define "meta-balls" or "blobs" where a radially symmetric potential field is centered on a set of points.
+    - Lattice Basis: Using a spline basis over a grid to define the implicit function.
+
+8. **Given an image of a superquadric estimate the exponents 𝑝₁ and 𝑝₂ of the used Minkowski norms!**
+- Exponent p₁ controls the shape in the xy-plane (looking down the z-axis).
+    - p₁ < 2: The shape is concave or "star-like".
+    - p₁ = 2: The cross-section is a perfect circle.
+    - p₁ > 2: The cross-section becomes more "square-like".
+- Exponent p₂ controls the shape in the rz-plane (the profile along the z-axis).
+    - p₂ < 2: The shape is pointy at the poles.
+    - p₂ = 2: The profile is circular.
+    - p₂ > 2: The profile becomes more "box-like".
+
+9. **Name same example shapes that can be represented by a quadratic implicit surface and precisely specify implicit functions for sphere and cylinder!**
+- Sphere/Ellipsoid (centered at origin): f(x, y, z) = x² + y² + z² - 1 = 0
+- Cylinder (aligned with z-axis): f(x, y, z) = x² + y² - 1 = 0
+
+10. **Explain the principle of meta balls (Gaussian Splatting?)!**
+- Meta balls (or blobs) are an implicit modeling technique used to create organic, smoothly blended shapes. The principle is:
+- A set of "atoms" (center points c_i) are defined in space.
+- Each atom generates a potential field function h_i(x) that decreases with distance from the atom's center (e.g., a Gaussian function exp(-||x - c_i||² / r_i²)).
+- The overall implicit function f(x) is defined by summing the potentials from all atoms and subtracting this sum from a flipped  Gaussian value: f(x) = 1/e - Σ h_i(x) (look at that function in the slide you will understand)
+- The resulting implicit surface f(x) = 0 is a smooth surface that naturally blends together where the potential fields of different atoms overlap.
+
+11. **Explain the Marching Cubes algorithm!**
+- Goal: extracts a polygonal mesh (tessellates) an implicit surface defined on a grid. The steps are:
+- For each voxel, evaluate the implicit function f at its 8 corners.
+- Classify each corner as being inside (f < 0) or outside (f > 0). This creates an 8-bit index for the voxel (one bit per corner).
+- lookup edges connecting interior with exterior using that 8bit
+- For each intersected edge, calculate the precise intersection point (the "zero crossing").
+- Connect it
+
+12. **What problems arise at sharp creases and corners when using Marching Cubes?**
+- cannot reproduce sharp creases or corners
+
+13. **How can one reconstruct sharp creases and corners with the Dual Contouring approach?**
+- **Idea**: placing additionally single representative vertex inside each grid cell that is intersected by the surface, rather than on the edges the whole time.
+- For every grid edge that has a sign change, find the zero-crossing point and the surface normal (gradient) at that point. These define a tangent plane.
+- Find the optimal point p that best fits all the tangent planes using Quadric Error Metric (QEM).
+
+14. **Compare Space Warping and Function Value Mapping for the manipulation of implicit surfaces!**
+- Function Value Mapping: combining the scalar values from generic functions: m^F(p) = m(f₁(p), f₂(p), ...):
+    - CSG: Union (min), Intersection (max), Difference (max(f₁, -f₂)).
+    - Levelset Mapping: m(f, λ) = f - λ
+    - Outline Mapping: m(f, λ) = f² - λ² (creates two offset surfaces).
+    - Blending: Smooth approximations of min and max for CSG union and intersection.
+    - Adding Noise: m(f) = f + noise()
+- Space Warping: These deform the surface by modifying the space (input coordinate)s before they are evaluated by the function f. The new function is f'(q) = f(w(q)), where w is the inverse warp.
+    - Linear Transformations: Affine transformations like rotation, scaling, and shear, represented by a matrix M. The warp is w(q) = M⁻¹q.
+    - Taper: A non-uniform scaling along an axis.
+    - Twist: A rotation around an axis where the angle of rotation depends on the position along that axis.
+    - Bend: Deforming an object along a circular arc.
+
+15. **Explain how to transform an implicit surface with an affine transformation! How can one compute the gradient of the transformed implicit surface?**
+- To transform an implicit surface f(p) = 0 with an affine transformation to q = M*p:
+- Find the inverse p = w(q) = M⁻¹q. (bringing the coordinate system there)
+- Then apply the original function: f^w(q) = f(w(q)) = f(M⁻¹q)
+- The gradient of the transformed surface is found using the chain rule: ∇f^w = ∇f(p) ⋅ J_w
+where ∇f(p) is the gradient of the original function evaluated at the un-warped point p, and J_w is the Jacobian of the warp function. For a linear transformation, the Jacobian is simply the matrix itself, so:
+∇f^w(q) = ∇f(M⁻¹q) ⋅ M⁻¹
+
+16. **Given an image of a space warped implicit surface, argue whether it was generated via a Tapper, Twist or Bend transformation!**
+we know
+
+17. **Explain modified union and intersection operations that smoothly blend between implicit surfaces!**
+- CSG union (min) putting a sphere at outside (1, 1). => (1-f1)^2 + (1-f2)^2
+- CSG intersection (max) putting a sphere inside (-1, -1)
+18. **How can one define the extent of the smoothing area?**
+- aka the blending radius, can be controlled independently for each surface. Normalizing d_i = f_i / r_i
+
+19. **What problems arise in areas where the implicit surfaces coincide? How can one conquer these problems?**
+- when 2 blended surfaces become parallel or nearly parallel, unwanted bulging artifacts can occur where the blending influences undesirably accumulate. Idea: control when parallel => no blending, but when 90 deg. => max blending:
+d_i → d_i / (1 - |cos θ|)
+
+20. **Skeleton based with hard Implicit Surface**
+- Given a point p: find the dot product between AB, and AP to get the projection (clamp between 0, 1)
+- Get the height from that projection 
+- Minus 1 (to make the surface to 1)
+
+20. **How to do similar thing using Convolution?**
+- An implicit surface generated from a skeleton (a geometric primitive like a point, line, or polygon) and a potential function (or filter kernel, h). 
+- Implementation: skeleton function g (which is 1 on the skeleton and 0 elsewhere) convoluted by the potential function h. The final implicit surface is a level set of this resulting scalar field: f(r) = const - (g * h)(r) = 0.
+
+21. **Compare distance surfaces and convolution surfaces!**
+- Distance Surfaces: easy to implement but sharp
+- Convolution Surfaces: smooth (can produce bulging) but more computationally complex
+
+22. **How can one evaluate a convolution surface defined over a set of primitives?** 
+- summing the result of each primitive skeleton
+
+23. **Which filter kernels do you know and over which can these be integrated analytically?**
+- Gaussian
+- Cauchy
+- Inverse powers of radius (radial basis)
+
+24. **Do bulging artefacts also arise for convolution surfaces and if so, how can they be cured?**
+- Solution:
+    - Thick Skeletons: skeleton width thicker than the kernel radius
+    - Weighted Skeletons: Use weights that decrease at the intersections of skeleton primitives
