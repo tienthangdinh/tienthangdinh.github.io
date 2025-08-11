@@ -140,3 +140,256 @@ d_i → d_i / (1 - |cos θ|)
 - Solution:
     - Thick Skeletons: skeleton width thicker than the kernel radius
     - Weighted Skeletons: Use weights that decrease at the intersections of skeleton primitives
+
+# 3D Scanning
+
+1. **Name some techniques to acquire the shape of 3D objects!**
+- Structured light (RGBD)
+- stereo acquisition RGBD
+- Tomographic reconstruction from X-ray images (CT scan).
+- Time-of-flight
+- Magnetic Resonance Tomography (MRI).
+
+2. **Explain the idea of a structured light scanner!**
+- known structured pattern of light is projected (e.g., vertical stripes) onto the 3D object.
+- The projected pattern appears distorted in the image due to the object's surface shape.
+- Because the system is calibrated, for any pixel in the camera image, we can determine which stripe
+- triangulation.
+
+3. **What is a homography?**
+- transformation 3x3 homogeneous matrix H maps points from one 2D plane to another
+
+4. **How many feature correspondences are needed to estimate a homography?**
+- 3x3 matrix has 9 parameters but only 8 variables needed, the last one set to 1 (doesnt matter, scalable).
+- Since each point-to-point correspondence provides 2 linear equations (x, y), needs 4 corresponding pairs
+- calculate using SVD
+
+5. **Under which situations can two images be brought into correspondence with a homography?**
+- Planar Scene: The images are of a 3D scene where all the points of interest lie on a single plane (like a checkerboard). The camera can undergo any rotation and translation.
+- Pure Rotation: The camera only rotates around its optical center (pinhole) and does not translate. In this case, the 3D scene can have any arbitrary shape.
+
+6. **CALIBRATION: What are the intrinsic and extrinsic camera parameters in the pinhole camera model?**
+- Extrinsic Parameters: camera's position and orientation relative to the world coordinate system. 
+- Intrinsic Parameters: focal lengths in pixel units (sx, sy), the principal point (the pixel coordinates where the optical axis intersects the image plane) (cx, cy), and a skew parameter (h).
+
+7. **How many degrees of freedom do we have for the intrinsic and extrinsic parameters?**
+- Extrinsic Parameters: 3 for rotation and 3 for translation, for a total of 6 degrees of freedom.
+- Intrinsic Parameters: 2 focal length at diagonal (scaling) + 2 principle point (translation) + 1 skew matrix (shear) = 5 (sx, sy, cx, cy, h).
+
+8. **Why is the pinhole model in practice not sufficient and how can it be extended?**
+- non-linear distortion (if you show me formula i can explain)
+
+9. **Explain the procedure for camera calibration according to Zhang!**
+Zhang's method is a widely used camera calibration technique:
+- Acquire 3 images from different orientations.
+- Detect multiples anker points of the image (mostly corners)
+- for each new image -> a new homography H!!! nice!!! (hollistic intrinsic K + extrinsic [R|t])
+- 2 equations each image, and utilizing $H = K * [R|t]$:
+  1.  **R are orthogonal  => dot products** => creating inverse K  $r_1r_2 = h_1^TK^{-T}K^{-1}h_2$
+  2.  **R should have same size everywhere** => $h_1^TK^{-T}K^{-1}h1 = h2^TK^{-T}K^{-1}h2$
+- 3 images * 2 equations each images we have 6 equation to find $K$ (in slides is B)
+- add more non-linear distortion if needed
+
+
+10.  **How many shots of the calibration plate are needed at least? Why?**
+- 5 linear intrinsic parameter (ffcch)
+- A minimum of 3 images are needed. each image = 1 homography = 2 linear constraints  inintrinsic parameters derived. 
+- => 3 views (providing 6 constraints) are required to solve the system of equations.
+
+11. **Why are the parameters of the camera model estimated in two steps?**
+- Linear Estimation: first step ignores distortion => initial point
+- Non-linear Refinement: include distortion using algorithm to solve
+
+12. **What is the typical procedure to calibrate a camera?**
+- like said above (2 big steps linear for intrinsic) => nonlinear for distortion
+
+13. **Explain a method to calibrate a camera-projector setup!**
+- "inverse progress":
+- Calibrate the camera first using a standard method.
+- To establish correspondences for the projector, project gray-codes that encode the projector's pixel columns and rows onto a calibration plane
+- The calibrated camera captures images of these patterns. This allows you to determine for each camera pixel which projector pixel is illuminating that spot.
+- By detecting the checkerboard corners in the camera image, you can find their corresponding projector coordinates.
+- Now that you have correspondences between known 3D world points (the checkerboard corners) and 2D projector image points, you can calibrate the projector using the same technique as for a camera.
+
+14. **Explain the term Triangulation in the domain of structured light scanning!**
+- stereo trigonometry
+
+15. **What difficulty does one face with a non-linear camera-projector model for triangulation when working with stripe patterns? How can the problem be circumvented?**
+- projector has distortion -> also inversely distort projector pattern
+
+16. **Explain advantages of a 2-camera structured light scanning setup!**
+Adding additional camera to a standard camera-projector setup provides several advantages:
+- Reduces highlight problems: Specular reflections that might blind one camera can be correctly captured by the other.
+- Increases surface visibility: It helps resolve occlusions, as a surface part hidden from one camera may be visible to the other.
+- Increases precision: It provides multiple measurements of the same surface point, leading to a more robust and accurate reconstruction.
+
+17. **Discuss the scanning of dynamic 3D scenes with structured light approaches!**
+- High-speed systems: Use a synchronized high-speed camera and projector to capture the entire pattern sequence before the object moves significantly.
+- Debrujin, GrayCode
+
+18. **Explain and compare Line-Shift, Intensity Coding, Gray-Code and phase shift based structured light scanning!**
+- Line-Shift: Projects one vertical line at a time => not good, because only 1 line => many shots
+- Intensity Coding: 2 images: x = L2/L1
+- Gray-Code: n images, see how a point change after n images (dark/white)
+- Phase Shift: 3 images, see how a point change after 3 images (using continuos function )
+
+19. **Why is the Gray-Code better suited for structured light 3D scanning?**
+- avoid color bleeding (small scattered cells)
+
+20. **How can one use de Bruijn Sequences to build a Single-Shot 3D Scanner?**
+- idk
+
+21. **Explain the basic idea for the separation of direct from indirect illumination! How can one make decoding of bit codes more robust with direct-indirect light separation?**
+- Indirect: low frequency
+- Direct_ high frequency
+
+# 3D Processing
+
+1. **Explain what the Riemannian-Graph is and how it can be used to filter outliers!**
+- Riemannian-Graph: every point has outgoing edges connecting it to its k nearest neighbors.
+- Outlier Filtering: This graph structure can be used to detect outliers. has outgoing but not incoming => no friends haha
+- Extra (symetric Riemanian Graph, has something to do with Voronoi area, and the idea is only connect pointbetween the (similar) parallel voronoi poles)
+
+2. **Describe a method to estimate the local sampling density of a point cloud!**
+- area among 3-6 nearest neighbors
+
+3. **Explain how to fit a least squares plane to a set of points! (also repeat details on that from CG1)**
+- **Goal** find the plane $p=(n_x, n_y, n_z,d)$ that minimizes weighted sum displacement $f = p^TA^TWAp$
+- Weight: Gaussian from center
+- Weighted Covariance Matrix
+- Find smallest eigenvalue
+- similar to PCA but embed the tangental normal in => from max to min
+
+4. **Is the least squares normal unique?**
+No, can be n* or -n* => need orientation step.
+
+5. **Motivate problems of the least squares fit in the vicinity of outliers, C⁰ and C¹ discontinuities!**
+- The standard L₂-norm (least squares) is highly sensitive discontiuinity C0 C2 + outliers
+- => for example L1-norm is less sensitive
+
+5. 1. **There is also the optimal weighting problem, but I dont remember**
+
+6. **How to extend the weighted least squares normal fit to avoid smoothing out of normals in the vicinity of sharp corners and creases?**
+- remember bilateral filtering? this one similar
+- $w = w_1 w_{bilateral}$ where w1 is normal weight, w2 reduce the effect when tangent normal is different
+- BUT to do this, we do not know the tangent normal, so just start with $w_{bilateral}=1$ first, then start using that to keep fitting
+
+7. **How to compute a Minimum / Maximum Spanning Tree efficiently?**
+- **Goal** a tree that go through all vertices but just through the edges with minimal costs
+
+8. **Explain how to compute a consistent orientation of surface normals with the help of a Minimum Spanning Tree and explain variants of defining the edge costs?**
+- Start with one or more normals that are known to be correctly oriented (e.g., from scanner position).
+- Construct a neighbor graph (e.g., a Riemannian graph)
+- Assign a cost (low for edges at smooth surface - high creases edges)
+- Propagate through the MST. For each edge traversed, orient the neighbor's normal to be consistent with the current normal.
+- flip criteria
+  - Hoppe, Xie: if dot product $n_1 n_2 < 0$ then flip
+  - König: idea is simpler curve with less curvature
+
+9. **Explain the ICP-algorithm!**
+- **Start with BIGGEST ASSUMPTION:** oready initially coarse aligned. => alternates between 2 steps until convergence:
+- Find closest Correspondences (like real physical closest - or normal matching - or even FPFH)
+- Transform using minimal homography (similar to covariance matrix)
+- SVD transformation for translation|rotation
+- Nachteil: it really needs initially coarsely aligned, for example if 2 scans flipped, then it does not work
+
+10. **What is normal-space sampling and how can it help to improve the ICP-algorithm?**
+- **Goal** balance the set of normal vectors distributed from sampling => less biased to only flat plane fitting
+
+11. **What possibilities do you know to define the distance measure used for the objective function of the registration optimization problem?**
+- 2 main error metrics (distance measures) used in ICP:
+- Point-to-Point Distance: simply minimize squared Euclidean distance between corresponding points
+- Point-to-Plane Distance: minimizes the squared distance from a source point to the tangent plane at its corresponding target point (using dot product to project this chan duong cao)
+
+12. **What variants do you know to extract corresponding point pairs for the ICP-algorithm?**
+- Several matching strategies:
+- Closest-Point: standard, but when they flip not good
+- Normal Shooting: Project a point along its normal to find an intersection with the other surface
+- Projection: Project a point from the source onto the target mesh **from the camera's point of view** (tbh honest i really do not know how this works)
+
+13. **Explain and compare the surface reconstruction techniques silhouette-, space- and volume carving!**
+- Silhouette Carving using only 2D RGB: create a 3D voxel space, project that 3D on binary silhouettte from every perspective image, start carving
+- Space Carving using only 2D RGB: initialized silhouette carving + photo consistency over all images of that same voxel
+- Volume Carving: space carving in RGBD. depth provides a much stronger initial constraint, nothing else to say, this is good!!!
+
+14. **Given images of reconstructions, find out, which result was produced by silhouette-, space- or volume carving!**
+- Silhouette Carving: results in convex looking
+- Space Carving: actually convex but color constraint can reduce something, but not good enough
+- Volume Carving: most accurate
+
+15. **Explain how to use implicit functions for surface reconstruction! Why are constraints at the sample points not sufficient?**
+- **Goal** Poisson uses 2 constraints:
+- (∇χ ≈ V) (V are the surface normals)
+- (χ(p) = 0) constraints at surface (screened poisson)
+- How to do this? we derivate one more to get the Laplace/Poisson equation where we seem to be able to to solve bc we know the divergence inside/outside (divχ = ∇V)
+- then slowly make finer
+
+# Rotation & Articulated Objects
+
+1. **Explain 3 representations for rotations and discuss their suitability for interpolation between rotations!**
+- 3x3 Rotation Matrices: Not suitable for direct interpolation. Linearly interpolating between two rotation matrices and re-normalizing does not produce a constant-velocity rotation and can result in unwanted scaling/shearing artifacts.
+- Euler Angles: Simple to interpolate the three angles linearly, but this is highly problematic. It does not produce the "shortest path" rotation and is susceptible to gimbal lock
+- Quaternions:Excellent for interpolation. 
+
+2. **Discuss uniqueness of the different representations for rotations!**
+- Rotation Matrices: 1 rotation 1 matrix eindeutig
+- Euler Angles: (extrinsic & intrinsic)
+- Axis-Angle / Quaternions: rotation by angle α around axis n is identical to a rotation by angle -α around axis -n. (q and -q) represent the exact same 3D rotation. (similar to complex number)
+
+3. **What is a quaternion and how can it be used to rotate a vector around an axis?**
+- is a 4-dimensional complex numbers, with one real part (s) and three imaginary parts (x, y, z). $(i²=j²=k²=ijk=-1) \And (ijk)$ 
+- To rotate p around $n=ai+bj+ck$ for $\alpha$ degree (where $a+b+c=1$ normalized):
+- Represent p as a "pure" quaternion with a zero real part: $p_{quat} = (0, p)$.
+The rotation is performed using the quaternion multiplication formula:
+$p'_{quat} = (\cos(\frac{\alpha}{2}) + sin(\frac{\alpha}{2})(n)) * p_{quat} * (\cos(\frac{\alpha}{2}) - sin(\frac{\alpha}{2})(n))$
+- Basically only rotate 3 dimension ijk out of 4 dimensions, therefore the inverse
+
+4. **Which additional transformation can be expressed by the length of a quaternion?**
+- unit quaternion (length = 1) -> pure rotation
+- non-unit quaternion -> rotation + uniform scaling
+
+5. **Given an image of a robot arm, explain the terms basis, node, joint and end effector!**
+- we all know what those are
+
+6. **Given images of joint types, classify joint type and enumerate degrees of freedom!**
+- Revolute (1R): 1 DOF (1 rotation)
+- Prismatic (1T): 1 DOF (1 translation)
+- Universal (2R):2 DOF (2 revolute together)
+- Spherical (3R): 3 DOF.
+- Gimbal (3R): 3 DOF with Gimbal lock
+
+7. **What is the difference between a kinematic chain and a kinematic tree?**
+- Kinematic Chain: transofrmation base-> effector
+- Kinematic Tree: bone hierarchy
+
+8. **Discuss the difference between representing joint transformation as a sequence of rotation and translation compared to a sequence of translation and rotation!**
+- ofcourse not the same => ( Denavit-Hartenberg) makes it deterministic
+
+9. **Explain linearization of a kinematic tree for the efficient computation of world to joint transformations!**
+- its a linear transformation: T(n+1) use Tn as base
+- just calculate forward
+
+10. **How many parameters are used in the Denavit-Hartenberg Convention to represent bone transformations in a kinematic chain?**
+- 4 param, compared to Euler (2+3=6), Quaternion (7)
+- d_i distance along z_i to meet common perpendicular length
+- α_i angular offset of the 2 joint axes z_i & z_i-1
+- θ_i actual angular change of x_i and x_i-1 on z-1 axe
+- a_i common perpendicular length
+- To sum up, DH = Rot(θ_i) * Trans(d_i) * Trans(a_i) * Rot(α_i), where the actual rotation is Rot(θ_i) & Trans(d_i)
+- EVENTUALLY then it can all be presented in a matrix in lecture but I do not remember, you can show me
+
+
+11.  **Which joint types can be represented directly in the Denavit-Hartenberg Convention?**
+- Revolute -> joint angle θ_i is variable.
+- Prismatic -> link offset d_i is variable.
+
+12.  **How can other joint types be emulated in the Denavit-Hartenberg Convention?**
+- combine them together with zero link offset
+
+13.  **How can one compute the angles in the Denavite-Hartenberg Convention such that a full revolution of 360 degrees can be supported?**
+- To support a full 360-degree => use arctan2(sine, cosine) => output (angle, quadrant).
+- For an angle like the link twist α_i, you compute both:
+- sin(α_i) = ||ẑ_{i-1} × ẑ_i||
+- cos(α_i) = <ẑ_{i-1}, ẑ_i>
+- However, the sine term is always positive, restricting the angle to [0, π]. SO that does not actually eliminate the result we want anyway => sign of the cross product of angle by taking a dot product dot producting with a third, orthogonal vector ( x̂_i). 
+- The final formula becomes: α_i = sgn(<ẑ_{i-1} × ẑ_i, x̂_i>) * arctan2(||ẑ_{i-1} × ẑ_i||, <ẑ_{i-1}, ẑ_i>)
