@@ -393,3 +393,93 @@ $p'_{quat} = (\cos(\frac{\alpha}{2}) + sin(\frac{\alpha}{2})(n)) * p_{quat} * (\
 - cos(α_i) = <ẑ_{i-1}, ẑ_i>
 - However, the sine term is always positive, restricting the angle to [0, π]. SO that does not actually eliminate the result we want anyway => sign of the cross product of angle by taking a dot product dot producting with a third, orthogonal vector ( x̂_i). 
 - The final formula becomes: α_i = sgn(<ẑ_{i-1} × ẑ_i, x̂_i>) * arctan2(||ẑ_{i-1} × ẑ_i||, <ẑ_{i-1}, ẑ_i>)
+
+# Skeleton Extraction
+1. **Explain the term medial axis and be able to draw it into a 2D shape!**
+- set of all interior points that have at least two closest points on the shape's boundary.
+- A helpful analogy is the "grass-fire" model: imagine setting the entire boundary of the shape on fire simultaneously. The fire fronts would burn inwards at a constant speed. The medial axis is the set of points where the fire fronts meet and extinguish themselves.
+- (For a 2D rectangle, the medial axis would look like an "H" shape turned on its side: a line segment down the center of the long axis, with two shorter line segments branching off perpendicularly towards the middle of the shorter sides.)
+
+2. **Why is the medial axis not suitable as a curve skeleton of a 2D or a 3D shape?**
+- Sensitivity to Noise: It is extremely sensitive to small perturbations or noise on the boundary. A tiny bump on the surface can create a new, often large, branch in the medial axis, making it unstable and overly complex.
+- Dimensionality in 3D: For a 3D shape, the medial axis is not a 1D curve but a **2D surface**, which is not skeleton
+
+3. **Name important properties of a curve skeleton!**
+- 1D curve structure, even for 3D shapes.
+- same topology as the shape (e.g., the same number of loops for holes/tunnels).
+- lie in the center of the object's volume.
+- invariant to isometric transformations (like bending) of the shape.
+- Every point on the shape's surface should be "visible" from at least one point on the skeleton.
+- insensitive to small amounts of noise
+
+4. **Explain some techniques to compute a curve skeleton!**
+- Erosion until 1D
+- Distance Field: skeleton is maxima of this field.
+- Voronoi: we all know
+- General Field Functions: These methods use other types of vector or scalar fields, such as an electrostatic field, to find the central structure of the shape.
+
+
+5. **Explain the competing front approach of Sharf et al. and name some advantages!**
+- method for both surface reconstruction and skeleton extraction.
+- Principle:
+- An initial deformable mesh (a "front") is placed inside the point cloud.
+- This front is inflated outwards, driven by a distance field, to reconstruct the shape.
+- As the front expands, it may need to split to pass through narrow channels or merge when different parts of the front meet.
+- **The skeleton is traced as the center of these evolving fronts.** Junctions in the skeleton are formed where fronts split or merge.
+- Advantages:
+- Robustness: It works well with noisy and incomplete data because it is driven by a global distance field and doesn't rely on local connectivity.
+- Speed: The "on-the-fly" version is very fast and can compute a skeleton in seconds.
+- Controllable Topology: The splitting and merging of fronts are controllable topological operations, leading to a well-defined skeleton.
+
+# Rigging
+1. **Explain the term rigging in the domain of character animation!**
+- in animation:
+- Rigging: building an internal skeleton and fitting it inside the 3D mesh.
+- Skinning: binding the mesh's vertices to the bones of the skeleton.
+
+2. **What are input and output to the Pinocchio automated rigging approach!**
+Input: 3D mesh + skeleton
+Output: embedded skeleton
+
+3. **Give an overview of how the Skeleton is positioned inside the input polygonal mesh!**
+- Discretization: The system first computes a medial axis approximation of the mesh and builds a graph from its sphere cover. This provides a discrete representation of the mesh's interior.
+- Discrete Embedding: A coarse-to-fine optimization is performed. First, a simplified version of the skeleton is optimally placed within the graph using an A* search algorithm guided by a penalty function.
+- Embedding Refinement: The full skeleton is then placed based on the coarse result, and its position is fine-tuned using a continuous gradient-descent optimization on a simplified penalty function.
+
+4. **Name some terms of the energy function used to optimize the skeleton and explain how the authors adapted the energy function to a set of good and bad rigging examples!**
+- The energy (penalty) function uses several weighted terms to guide the optimization. include:
+- Center Distance: Penalizes bones for being far from the medial axis.
+- Short Bones / Wrong Directions: Penalizes the skeleton for having bone lengths or orientations that differ significantly from the input skeleton's proportions.
+- Feet: A specific term to ensure the feet are placed at the bottom of the model.
+- Limb Sharing: Penalizes cases where multiple limbs are embedded into the same part of the mesh.
+- supervised learning from bad & good examples
+  
+5. **Explain the idea of the RigMesh-Approach**
+- integrate rigging into a sketch-based modeling workflow. Traditionally, rigging is a separate, final step performed after modeling is complete. If the model is changed, the rig must be redone. RigMesh makes the rigging process incremental. As a user draws and edits the shape of a character using sketches, the system automatically and continuously updates the internal skeleton and skinning weights => faster change
+
+6. **Give some sources for mesh animations!**
+A mesh animation (also called a vertex cache or point cache animation) is a sequence of meshes where the vertex positions change over time. Sources for this data include:
+- Physics simulations (e.g., cloth or soft bodies).
+- Motion capture data applied to a mesh.
+- Keyframe animation created by an artist.
+
+7. **How can one approximate a mesh animation with a skinned mesh representation?**
+- The goal is to find a set of bones, bone transformations for each frame, and a set of vertex weights that, when applied to a single base mesh, best reproduces the entire input animation sequence. This is a decomposition problem. It seeks to compress the large amount of data from the mesh animation into a much more compact and controllable skinned mesh representation.
+
+8. **Explain the principle steps of the “Skinning Mesh Animations” (SMA) approach!**
+The SMA approach automatically extracts a skinned mesh from a given mesh animation. The main steps are:
+- Triangle Segmentation: The triangles of the mesh are clustered into nearly rigid parts. This is done by analyzing the sequence of rotation transformations for each triangle throughout the animation and grouping triangles with similar rotation sequences. These clusters will become the rigid bones.
+- Bone Transformation: For each frame and each identified bone (cluster), a rigid transformation (rotation and translation) is computed by averaging the transformations of all triangles belonging to that bone.
+- Vertex Weight Estimation: A linear least squares problem is solved to find the optimal skinning weights for each vertex, determining how it should be influenced by the nearby bones.
+
+9. **What are the feature vectors used for clustering the mesh triangles into bone clusters?**
+- homogeneous transoformation matrix 3x3 or a 9D parameter vector 
+
+10. **How are the vertex weights computed in the SMA approach?**
+-  solving a constrained least squares problem.
+- Bone Influence Selection: First, for each vertex, the b most influential bones are identified (where b is a small user-defined number). This is done greedily by finding the set of b bones that minimizes the animation reconstruction error for that vertex.
+- Least Squares Fit: With the influencing bones known, a linear least squares problem is solved to find the optimal weights. This fit is often constrained (e.g., using non-negative least squares) to avoid overfitting and ensure plausible weights.
+
+11. **Where is room for improvement in the SMA approach that was used in „Fast&efficient skinning of animated meshes“?**
+- The "Fast & Efficient Skinning of Animated Meshes" (F&ESAM) paper improves upon the general idea by addressing its computational complexity. The main improvement is solving the problem in a reduced trajectory space.
+- Instead of working with the trajectories of all m vertices over k frames (a very large matrix A), the method first approximates the entire animation using a much smaller set of d basis trajectories (where d << m). The matrix decomposition problem is then solved in this much smaller, lower-dimensional space. This yields a slightly larger number of bones (d) than a full SVD would, but it can be solved in a significantly shorter amount of time.
