@@ -397,8 +397,7 @@ $p'_{quat} = (\cos(\frac{\alpha}{2}) + sin(\frac{\alpha}{2})(n)) * p_{quat} * (\
 # Skeleton Extraction
 1. **Explain the term medial axis and be able to draw it into a 2D shape!**
 - set of all interior points that have at least two closest points on the shape's boundary.
-- A helpful analogy is the "grass-fire" model: imagine setting the entire boundary of the shape on fire simultaneously. The fire fronts would burn inwards at a constant speed. The medial axis is the set of points where the fire fronts meet and extinguish themselves.
-- (For a 2D rectangle, the medial axis would look like an "H" shape turned on its side: a line segment down the center of the long axis, with two shorter line segments branching off perpendicularly towards the middle of the shorter sides.)
+- voxelize -> create Voronoi vertices -> connect Voronois with each other
 
 2. **Why is the medial axis not suitable as a curve skeleton of a 2D or a 3D shape?**
 - Sensitivity to Noise: It is extremely sensitive to small perturbations or noise on the boundary. A tiny bump on the surface can create a new, often large, branch in the medial axis, making it unstable and overly complex.
@@ -416,7 +415,7 @@ $p'_{quat} = (\cos(\frac{\alpha}{2}) + sin(\frac{\alpha}{2})(n)) * p_{quat} * (\
 - Erosion until 1D
 - Distance Field: skeleton is maxima of this field.
 - Voronoi: we all know
-- General Field Functions: These methods use other types of vector or scalar fields, such as an electrostatic field, to find the central structure of the shape.
+- Competing Front (growing method and at each timestamp keep the center)
 
 
 5. **Explain the competing front approach of Sharf et al. and name some advantages!**
@@ -426,10 +425,7 @@ $p'_{quat} = (\cos(\frac{\alpha}{2}) + sin(\frac{\alpha}{2})(n)) * p_{quat} * (\
 - This front is inflated outwards, driven by a distance field, to reconstruct the shape.
 - As the front expands, it may need to split to pass through narrow channels or merge when different parts of the front meet.
 - **The skeleton is traced as the center of these evolving fronts.** Junctions in the skeleton are formed where fronts split or merge.
-- Advantages:
-- Robustness: It works well with noisy and incomplete data because it is driven by a global distance field and doesn't rely on local connectivity.
-- Speed: The "on-the-fly" version is very fast and can compute a skeleton in seconds.
-- Controllable Topology: The splitting and merging of fronts are controllable topological operations, leading to a well-defined skeleton.
+- Advantages: robust, shape good, topology
 
 # Rigging
 1. **Explain the term rigging in the domain of character animation!**
@@ -442,12 +438,11 @@ Input: 3D mesh + skeleton
 Output: embedded skeleton
 
 3. **Give an overview of how the Skeleton is positioned inside the input polygonal mesh!**
-- Discretization: The system first computes a medial axis approximation of the mesh and builds a graph from its sphere cover. This provides a discrete representation of the mesh's interior.
-- Discrete Embedding: A coarse-to-fine optimization is performed. First, a simplified version of the skeleton is optimally placed within the graph using an A* search algorithm guided by a penalty function.
+- Discretization: The system first computes a medial axis graph.
+- Embedding initialization:  simplified version of the skeleton is optimally placed within the graph using an A* search algorithm guided by a penalty function.
 - Embedding Refinement: The full skeleton is then placed based on the coarse result, and its position is fine-tuned using a continuous gradient-descent optimization on a simplified penalty function.
 
 4. **Name some terms of the energy function used to optimize the skeleton and explain how the authors adapted the energy function to a set of good and bad rigging examples!**
-- The energy (penalty) function uses several weighted terms to guide the optimization. include:
 - Center Distance: Penalizes bones for being far from the medial axis.
 - Short Bones / Wrong Directions: Penalizes the skeleton for having bone lengths or orientations that differ significantly from the input skeleton's proportions.
 - Feet: A specific term to ensure the feet are placed at the bottom of the model.
@@ -468,9 +463,8 @@ A mesh animation (also called a vertex cache or point cache animation) is a sequ
 
 8. **Explain the principle steps of the “Skinning Mesh Animations” (SMA) approach!**
 The SMA approach automatically extracts a skinned mesh from a given mesh animation. The main steps are:
-- Triangle Segmentation: The triangles of the mesh are clustered into nearly rigid parts. This is done by analyzing the sequence of rotation transformations for each triangle throughout the animation and grouping triangles with similar rotation sequences. These clusters will become the rigid bones.
-- Bone Transformation: For each frame and each identified bone (cluster), a rigid transformation (rotation and translation) is computed by averaging the transformations of all triangles belonging to that bone.
-- Vertex Weight Estimation: A linear least squares problem is solved to find the optimal skinning weights for each vertex, determining how it should be influenced by the nearby bones.
+- clustering triangles with similar transformation along the frames
+- transfer that transformation to Bone: For each frame and each identified bone (cluster), a average rigid transformation is calculated to assign to that bone.
 
 9. **What are the feature vectors used for clustering the mesh triangles into bone clusters?**
 - homogeneous transoformation matrix 3x3 or a 9D parameter vector 
