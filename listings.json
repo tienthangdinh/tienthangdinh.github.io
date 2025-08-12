@@ -2,7 +2,10 @@
   {
     "listing": "/index.html",
     "items": [
-      "/posts/cg1/index.html",
+      "/posts/cg2-modelling/index.html",
+      "/posts/cg1-opengl/index.html",
+      "/posts/cg1-meshprocessing/index.html",
+      "/posts/cg1-polygonalmesh/index.html",
       "/posts/exam-ml4r/index.html",
       "/posts/exam-touchsensing/index.html",
       "/posts/learning-from-demonstration/index.html",

@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-08-04">
+
+<title>Surface Analysis – silent convergence</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-db03927a41f77a8af5287a812d7101f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">silent convergence</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Đinh Tiến Thắng</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Surface Analysis</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">Computer Graphics</div>
+                <div class="quarto-category">Surface Analysis</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">August 4, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#surface-analysis" id="toc-surface-analysis" class="nav-link active" data-scroll-target="#surface-analysis">Surface Analysis</a>
+  <ul class="collapse">
+  <li><a href="#representation" id="toc-representation" class="nav-link" data-scroll-target="#representation">Representation</a>
+  <ul class="collapse">
+  <li><a href="#multivariate-function-height-field-a2-to-r" id="toc-multivariate-function-height-field-a2-to-r" class="nav-link" data-scroll-target="#multivariate-function-height-field-a2-to-r">1. (Multivariate Function) Height Field <span class="math inline">\(A^2 \to R\)</span></a></li>
+  <li><a href="#multivariate-vector-valued-function---parametric-surface-a2-to-a3" id="toc-multivariate-vector-valued-function---parametric-surface-a2-to-a3" class="nav-link" data-scroll-target="#multivariate-vector-valued-function---parametric-surface-a2-to-a3">2. (Multivariate) Vector-Valued Function - Parametric Surface <span class="math inline">\(A^2 \to A^3\)</span></a></li>
+  <li><a href="#multivariate-function-implicit-surface-a3-to-r" id="toc-multivariate-function-implicit-surface-a3-to-r" class="nav-link" data-scroll-target="#multivariate-function-implicit-surface-a3-to-r">3. (Multivariate Function) Implicit Surface <span class="math inline">\(A^3 \to R\)</span></a></li>
+  </ul></li>
+  <li><a href="#taylor-expansion" id="toc-taylor-expansion" class="nav-link" data-scroll-target="#taylor-expansion">Taylor Expansion</a>
+  <ul class="collapse">
+  <li><a href="#multivariate-functions" id="toc-multivariate-functions" class="nav-link" data-scroll-target="#multivariate-functions">Multivariate Functions</a></li>
+  <li><a href="#vector-valued-functions" id="toc-vector-valued-functions" class="nav-link" data-scroll-target="#vector-valued-functions">Vector-Valued Functions</a></li>
+  <li><a href="#multivariate-vector-valued-functions" id="toc-multivariate-vector-valued-functions" class="nav-link" data-scroll-target="#multivariate-vector-valued-functions">Multivariate Vector-Valued Functions</a></li>
+  <li><a href="#directional-derivative" id="toc-directional-derivative" class="nav-link" data-scroll-target="#directional-derivative">Directional Derivative</a></li>
+  <li><a href="#vector-valued-derivative-conversion" id="toc-vector-valued-derivative-conversion" class="nav-link" data-scroll-target="#vector-valued-derivative-conversion">Vector-valued Derivative conversion</a></li>
+  </ul></li>
+  <li><a href="#differential-geometry-in-1st-fundamental-form" id="toc-differential-geometry-in-1st-fundamental-form" class="nav-link" data-scroll-target="#differential-geometry-in-1st-fundamental-form">Differential Geometry in 1st Fundamental Form</a>
+  <ul class="collapse">
+  <li><a href="#length-of-curve" id="toc-length-of-curve" class="nav-link" data-scroll-target="#length-of-curve">Length of Curve</a></li>
+  <li><a href="#length-of-curve-mapped-to-a-surface-stretch-mapping" id="toc-length-of-curve-mapped-to-a-surface-stretch-mapping" class="nav-link" data-scroll-target="#length-of-curve-mapped-to-a-surface-stretch-mapping">Length of Curve Mapped to a Surface (Stretch Mapping)</a></li>
+  <li><a href="#length-of-a-curve-on-a-surface-worked-example" id="toc-length-of-a-curve-on-a-surface-worked-example" class="nav-link" data-scroll-target="#length-of-a-curve-on-a-surface-worked-example">Length of a Curve on a Surface: Worked Example</a></li>
+  </ul></li>
+  <li><a href="#first-fundamental-form-measuring-lengths-and-angles-on-surfaces" id="toc-first-fundamental-form-measuring-lengths-and-angles-on-surfaces" class="nav-link" data-scroll-target="#first-fundamental-form-measuring-lengths-and-angles-on-surfaces">First Fundamental Form: Measuring Lengths and Angles on Surfaces</a>
+  <ul class="collapse">
+  <li><a href="#study-the-relationship-btw-parameter-surface-space-changes-by-finding-the-first-fundamental-form-i_underlinetaus" id="toc-study-the-relationship-btw-parameter-surface-space-changes-by-finding-the-first-fundamental-form-i_underlinetaus" class="nav-link" data-scroll-target="#study-the-relationship-btw-parameter-surface-space-changes-by-finding-the-first-fundamental-form-i_underlinetaus">Study the relationship btw Parameter &amp; Surface Space Changes by finding the First Fundamental Form <span class="math inline">\(I_{\underline{\tau}}^S\)</span></a></li>
+  <li><a href="#apply-this-relationship-to-find-length-of-curve-on-surface" id="toc-apply-this-relationship-to-find-length-of-curve-on-surface" class="nav-link" data-scroll-target="#apply-this-relationship-to-find-length-of-curve-on-surface">Apply this Relationship to find Length of Curve on Surface</a></li>
+  <li><a href="#apply-fff-to-calculate-angle" id="toc-apply-fff-to-calculate-angle" class="nav-link" data-scroll-target="#apply-fff-to-calculate-angle">Apply FFF to Calculate Angle</a></li>
+  <li><a href="#apply-to-calculate-very-small-infinitesmal-area-on-surfaces" id="toc-apply-to-calculate-very-small-infinitesmal-area-on-surfaces" class="nav-link" data-scroll-target="#apply-to-calculate-very-small-infinitesmal-area-on-surfaces">Apply to calculate very small infinitesmal Area on Surfaces</a></li>
+  <li><a href="#surface-area-of-a-sphere-using-first-fundamental-form" id="toc-surface-area-of-a-sphere-using-first-fundamental-form" class="nav-link" data-scroll-target="#surface-area-of-a-sphere-using-first-fundamental-form">Surface Area of a Sphere Using First Fundamental Form</a></li>
+  </ul></li>
+  <li><a href="#optimal-curve-design-in-2d" id="toc-optimal-curve-design-in-2d" class="nav-link" data-scroll-target="#optimal-curve-design-in-2d">Optimal Curve Design in 2D</a>
+  <ul class="collapse">
+  <li><a href="#problem-statement" id="toc-problem-statement" class="nav-link" data-scroll-target="#problem-statement">1. Problem Statement</a></li>
+  <li><a href="#key-components" id="toc-key-components" class="nav-link" data-scroll-target="#key-components">2. Key Components</a></li>
+  </ul></li>
+  <li><a href="#minimal-energy-interpolating-curves" id="toc-minimal-energy-interpolating-curves" class="nav-link" data-scroll-target="#minimal-energy-interpolating-curves">Minimal Energy Interpolating Curves</a>
+  <ul class="collapse">
+  <li><a href="#core-objective" id="toc-core-objective" class="nav-link" data-scroll-target="#core-objective">Core Objective</a></li>
+  <li><a href="#mathematical-framework" id="toc-mathematical-framework" class="nav-link" data-scroll-target="#mathematical-framework">Mathematical Framework</a></li>
+  <li><a href="#solution-procedure" id="toc-solution-procedure" class="nav-link" data-scroll-target="#solution-procedure">Solution Procedure</a></li>
+  <li><a href="#practical-example-3-point-case" id="toc-practical-example-3-point-case" class="nav-link" data-scroll-target="#practical-example-3-point-case">Practical Example (3-Point Case)</a></li>
+  </ul></li>
+  <li><a href="#curvature-formula-deep-dive-why-kappa-fracvecc_t-times-vecc_ttvecc_t3" id="toc-curvature-formula-deep-dive-why-kappa-fracvecc_t-times-vecc_ttvecc_t3" class="nav-link" data-scroll-target="#curvature-formula-deep-dive-why-kappa-fracvecc_t-times-vecc_ttvecc_t3">Curvature Formula Deep Dive: Why <span class="math inline">\(\kappa = \frac{\|\vec{c}_t \times \vec{c}_{tt}\|}{\|\vec{c}_t\|^3}\)</span>?</a>
+  <ul class="collapse">
+  <li><a href="#the-core-idea" id="toc-the-core-idea" class="nav-link" data-scroll-target="#the-core-idea">1. The Core Idea</a></li>
+  <li><a href="#step-by-step-derivation" id="toc-step-by-step-derivation" class="nav-link" data-scroll-target="#step-by-step-derivation">2. Step-by-Step Derivation</a></li>
+  <li><a href="#why-the-vecc_t3" id="toc-why-the-vecc_t3" class="nav-link" data-scroll-target="#why-the-vecc_t3">3. Why the <span class="math inline">\(\|\vec{c}_t\|^3\)</span>?</a></li>
+  <li><a href="#geometric-interpretation" id="toc-geometric-interpretation" class="nav-link" data-scroll-target="#geometric-interpretation">4. Geometric Interpretation</a></li>
+  <li><a href="#simple-example-circle" id="toc-simple-example-circle" class="nav-link" data-scroll-target="#simple-example-circle">5. Simple Example: Circle</a></li>
+  </ul></li>
+  <li><a href="#surface-curvatures-explained" id="toc-surface-curvatures-explained" class="nav-link" data-scroll-target="#surface-curvatures-explained">Surface Curvatures Explained</a>
+  <ul class="collapse">
+  <li><a href="#fundamental-notations" id="toc-fundamental-notations" class="nav-link" data-scroll-target="#fundamental-notations">1. Fundamental Notations</a></li>
+  <li><a href="#normal-curvature-basics" id="toc-normal-curvature-basics" class="nav-link" data-scroll-target="#normal-curvature-basics">2. Normal Curvature Basics</a></li>
+  <li><a href="#eulers-theorem" id="toc-eulers-theorem" class="nav-link" data-scroll-target="#eulers-theorem">3. Euler’s Theorem</a></li>
+  <li><a href="#second-fundamental-form" id="toc-second-fundamental-form" class="nav-link" data-scroll-target="#second-fundamental-form">4. Second Fundamental Form</a></li>
+  <li><a href="#fundamental-curvature-measures" id="toc-fundamental-curvature-measures" class="nav-link" data-scroll-target="#fundamental-curvature-measures">5. Fundamental Curvature Measures</a></li>
+  <li><a href="#geometric-interpretation-1" id="toc-geometric-interpretation-1" class="nav-link" data-scroll-target="#geometric-interpretation-1">6. Geometric Interpretation</a></li>
+  <li><a href="#practical-computation" id="toc-practical-computation" class="nav-link" data-scroll-target="#practical-computation">7. Practical Computation</a></li>
+  <li><a href="#example-cylinder" id="toc-example-cylinder" class="nav-link" data-scroll-target="#example-cylinder">Example: Cylinder</a></li>
+  </ul></li>
+  <li><a href="#derivation-of-the-second-fundamental-form" id="toc-derivation-of-the-second-fundamental-form" class="nav-link" data-scroll-target="#derivation-of-the-second-fundamental-form">Derivation of the Second Fundamental Form</a>
+  <ul class="collapse">
+  <li><a href="#intuition-measuring-surface-bending" id="toc-intuition-measuring-surface-bending" class="nav-link" data-scroll-target="#intuition-measuring-surface-bending">1. Intuition: Measuring Surface Bending</a></li>
+  <li><a href="#formal-derivation" id="toc-formal-derivation" class="nav-link" data-scroll-target="#formal-derivation">2. Formal Derivation</a></li>
+  <li><a href="#why-second-fundamental-form" id="toc-why-second-fundamental-form" class="nav-link" data-scroll-target="#why-second-fundamental-form">3. Why “Second” Fundamental Form?</a></li>
+  <li><a href="#geometric-interpretation-2" id="toc-geometric-interpretation-2" class="nav-link" data-scroll-target="#geometric-interpretation-2">4. Geometric Interpretation</a></li>
+  <li><a href="#example-sphere-of-radius-r" id="toc-example-sphere-of-radius-r" class="nav-link" data-scroll-target="#example-sphere-of-radius-r">5. Example: Sphere of Radius <span class="math inline">\(R\)</span></a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#mesh-processing" id="toc-mesh-processing" class="nav-link" data-scroll-target="#mesh-processing">Mesh Processing</a>
+  <ul class="collapse">
+  <li><a href="#heat-equation-based-denoising" id="toc-heat-equation-based-denoising" class="nav-link" data-scroll-target="#heat-equation-based-denoising">Heat Equation-Based Denoising</a>
+  <ul class="collapse">
+  <li><a href="#the-heat-equation---1d-laplace" id="toc-the-heat-equation---1d-laplace" class="nav-link" data-scroll-target="#the-heat-equation---1d-laplace">The Heat Equation - 1D Laplace</a></li>
+  <li><a href="#numerical-implementation" id="toc-numerical-implementation" class="nav-link" data-scroll-target="#numerical-implementation">Numerical Implementation</a></li>
+  <li><a href="#boundary-conditions" id="toc-boundary-conditions" class="nav-link" data-scroll-target="#boundary-conditions">3. Boundary Conditions</a></li>
+  <li><a href="#d-heat-equation-denoising-example" id="toc-d-heat-equation-denoising-example" class="nav-link" data-scroll-target="#d-heat-equation-denoising-example">2D Heat Equation Denoising Example</a></li>
+  </ul></li>
+  <li><a href="#what-is-divergence" id="toc-what-is-divergence" class="nav-link" data-scroll-target="#what-is-divergence">What is Divergence?</a>
+  <ul class="collapse">
+  <li><a href="#core-definition" id="toc-core-definition" class="nav-link" data-scroll-target="#core-definition">1. Core Definition</a></li>
+  <li><a href="#physical-interpretation" id="toc-physical-interpretation" class="nav-link" data-scroll-target="#physical-interpretation">2. Physical Interpretation</a></li>
+  <li><a href="#gradient-vs-divergence-relationship" id="toc-gradient-vs-divergence-relationship" class="nav-link" data-scroll-target="#gradient-vs-divergence-relationship">3. Gradient vs Divergence Relationship</a></li>
+  </ul></li>
+  <li><a href="#laplace-beltrami-operator-on-surfaces" id="toc-laplace-beltrami-operator-on-surfaces" class="nav-link" data-scroll-target="#laplace-beltrami-operator-on-surfaces">Laplace-Beltrami Operator on Surfaces</a>
+  <ul class="collapse">
+  <li><a href="#fundamental-definition" id="toc-fundamental-definition" class="nav-link" data-scroll-target="#fundamental-definition">1. Fundamental Definition</a></li>
+  <li><a href="#discrete-formulation" id="toc-discrete-formulation" class="nav-link" data-scroll-target="#discrete-formulation">2. Discrete Formulation</a></li>
+  <li><a href="#key-properties" id="toc-key-properties" class="nav-link" data-scroll-target="#key-properties">3. Key Properties</a></li>
+  <li><a href="#numerical-implementation-1" id="toc-numerical-implementation-1" class="nav-link" data-scroll-target="#numerical-implementation-1">4. Numerical Implementation</a></li>
+  <li><a href="#mean-curvature-flow" id="toc-mean-curvature-flow" class="nav-link" data-scroll-target="#mean-curvature-flow">6. Mean Curvature Flow</a></li>
+  </ul></li>
+  <li><a href="#dynamic-connectivity" id="toc-dynamic-connectivity" class="nav-link" data-scroll-target="#dynamic-connectivity">Dynamic Connectivity</a>
+  <ul class="collapse">
+  <li><a href="#remeshing-pipeline" id="toc-remeshing-pipeline" class="nav-link" data-scroll-target="#remeshing-pipeline">Remeshing Pipeline</a></li>
+  <li><a href="#addremove-face" id="toc-addremove-face" class="nav-link" data-scroll-target="#addremove-face">Add/Remove Face</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="surface-analysis" class="level1">
+<h1>Surface Analysis</h1>
+<section id="representation" class="level2">
+<h2 class="anchored" data-anchor-id="representation">Representation</h2>
+<p>There are three main ways to represent an analytic surface:</p>
+<section id="multivariate-function-height-field-a2-to-r" class="level3">
+<h3 class="anchored" data-anchor-id="multivariate-function-height-field-a2-to-r">1. (Multivariate Function) Height Field <span class="math inline">\(A^2 \to R\)</span></h3>
+<p>at any given <span class="math inline">\((x,y)\)</span> coordinate, the function gives a surface’s height (<span class="math inline">\(z\)</span>). Downside that only for surface that doesnt overlap the z value more than once.</p>
+<ul>
+<li><strong>Equation:</strong> <span class="math inline">\(z=f(x,y)\)</span></li>
+<li><strong>Example:</strong> A plane <span class="math inline">\(z=ax+by+c\)</span>.</li>
+</ul>
+</section>
+<section id="multivariate-vector-valued-function---parametric-surface-a2-to-a3" class="level3">
+<h3 class="anchored" data-anchor-id="multivariate-vector-valued-function---parametric-surface-a2-to-a3">2. (Multivariate) Vector-Valued Function - Parametric Surface <span class="math inline">\(A^2 \to A^3\)</span></h3>
+<p>This is a vector-valued function that maps a 2D parameter space (defined by parameters like <span class="math inline">\(u\)</span> and <span class="math inline">\(v\)</span>) to a 3D surface. This is a very flexible representation that can describe a wide range of shapes, including closed surfaces, so we focus on this.</p>
+<ul>
+<li><strong>Equation:</strong> <span class="math inline">\(\mathbf{S}(u,v)=\begin{pmatrix} x(u,v) \\ y(u,v) \\ z(u,v) \end{pmatrix}\)</span></li>
+<li><strong>Example:</strong> A sphere defined by the equations:
+<ul>
+<li><span class="math inline">\(x=r\cos\theta\sin\phi\)</span> (Basically each element in the target vector has their own function x, y, z)</li>
+<li><span class="math inline">\(y=r\sin\theta\sin\phi\)</span></li>
+<li><span class="math inline">\(z=r\cos\phi\)</span></li>
+</ul></li>
+</ul>
+</section>
+<section id="multivariate-function-implicit-surface-a3-to-r" class="level3">
+<h3 class="anchored" data-anchor-id="multivariate-function-implicit-surface-a3-to-r">3. (Multivariate Function) Implicit Surface <span class="math inline">\(A^3 \to R\)</span></h3>
+<p>This is a function that defines a surface as the set of all points that satisfy a specific equation, where the function equals a constant (often zero). Implicit surfaces can represent complex, closed shapes and are useful for collision detection and boolean operations.</p>
+<ul>
+<li><strong>Equation:</strong> <span class="math inline">\(f(x,y,z)=0\)</span></li>
+<li><strong>Example:</strong> A sphere with radius <span class="math inline">\(r\)</span> centered at the origin <span class="math inline">\(x^2+y^2+z^2-r^2=0\)</span>.</li>
+</ul>
+</section>
+</section>
+<section id="taylor-expansion" class="level2">
+<h2 class="anchored" data-anchor-id="taylor-expansion">Taylor Expansion</h2>
+<p>How much order we take is the function of that order (first-order is a linear function, second order is a quadratic function (parabol go across point p))</p>
+<p><strong>Univariate scalar:</strong></p>
+<p><span class="math display">\[f(x+\delta) = f(x) + f'(x)\cdot\delta + \frac{1}{2}f''(x)\cdot\delta^2 + \mathcal{O}(\delta^3)\]</span></p>
+<p><strong>Multivariate scalar:</strong></p>
+<p><span class="math display">\[f(\mathbf{x}+\boldsymbol{\delta}) = f(\mathbf{x}) + f'_{\mathbf{x}}(\mathbf{x})\cdot\boldsymbol{\delta} + \frac{1}{2}\boldsymbol{\delta}^T H_f^\dagger(\mathbf{x})\boldsymbol{\delta} + \mathcal{O}(\left\|\boldsymbol{\delta}\right\|^3)\]</span></p>
+<p><strong>Multivariate vector-valued:</strong> <span class="math display">\[\mathbf{f}(\mathbf{x}+\boldsymbol{\delta}) = \mathbf{f}(\mathbf{x}) + J_{\mathbf{f}_{\boldsymbol{\delta}}}(\mathbf{x})\boldsymbol{\delta} + \mathcal{O}(\left\|\boldsymbol{\delta}\right\|^2)\]</span></p>
+<section id="multivariate-functions" class="level3">
+<h3 class="anchored" data-anchor-id="multivariate-functions">Multivariate Functions</h3>
+<p><span class="math display">\[f: \mathbb{R}^n \to \mathbb{R}\]</span> e.g.&nbsp;height field <span class="math inline">\(h = f(\mathbf{x}) = f(x,y)\)</span></p>
+<p>Derivation w.r.t. any of the variables gives partial derivatives:</p>
+<p><span class="math display">\[\frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}: \mathbb{R}^n \to \mathbb{R}\]</span></p>
+<p>Short forms: <span class="math inline">\(f_x = \frac{\partial f}{\partial x}, f_y = \frac{\partial f}{\partial y}\)</span></p>
+<p>2nd deriv.: <span class="math inline">\(f_{xx} = \frac{\partial^2 f}{\partial x^2}, f_{yy} = \frac{\partial^2 f}{\partial y^2}, f_{xy} = \frac{\partial^2 f}{\partial x \partial y}\)</span></p>
+<p>The gradient of a function at a given point is the (row)-vector (in direction of steepest ascent) of partial derivatives (<span class="math inline">\(\nabla_{\mathbf{x}} f: \mathbb{R}^n \to \mathbb{R}^{1\times n}\)</span>):</p>
+<p><span class="math inline">\(\nabla_{\mathbf{x}} f = f_{\mathbf{x}} = (f_x, f_y, \ldots)\)</span> (it points in direction of steepest ascent)</p>
+</section>
+<section id="vector-valued-functions" class="level3">
+<h3 class="anchored" data-anchor-id="vector-valued-functions">Vector-Valued Functions</h3>
+<p><span class="math display">\[f: \mathbb{R} \to \mathbb{R}^m\]</span></p>
+<p>E.g. a curve:</p>
+<p><span class="math display">\[\mathbf{f}(t) = \begin{pmatrix} x(t) \\ y(t) \end{pmatrix} = \begin{pmatrix} \cos t \\ \sin t \end{pmatrix}\]</span></p>
+<p>Derivatives are computed per component independently</p>
+<p><span class="math display">\[\frac{d\mathbf{f}}{dt}: \mathbb{R} \to \mathbb{R}^2\]</span> <span class="math display">\[\mathbf{f}'(t) = \begin{pmatrix} x'(t) \\ y'(t) \end{pmatrix}\]</span></p>
+<p>Where:</p>
+<ul>
+<li>The derivative is a tangent vector to the surface</li>
+<li>Its length represents the speed of change.</li>
+</ul>
+</section>
+<section id="multivariate-vector-valued-functions" class="level3">
+<h3 class="anchored" data-anchor-id="multivariate-vector-valued-functions">Multivariate Vector-Valued Functions</h3>
+<p><span class="math display">\[f: \mathbb{R}^n \to \mathbb{R}^m\]</span></p>
+<p>E.g. a surface:</p>
+<p><span class="math display">\[\mathbf{s}(\boldsymbol{\tau}) = \mathbf{s}\begin{pmatrix} u \\ v \end{pmatrix} = \begin{pmatrix} x(\boldsymbol{\tau}) \\ y(\boldsymbol{\tau}) \\ z(\boldsymbol{\tau}) \end{pmatrix} = \begin{pmatrix} x(u,v) \\ y(u,v) \\ z(u,v) \end{pmatrix} = \begin{pmatrix} \cos u \cos v \\ \sin u \cos v \\ \sin v \end{pmatrix}\]</span></p>
+<p>The partial derivatives are tangent vectors:</p>
+<p><span class="math display">\[\frac{\partial \mathbf{s}}{\partial u} = \mathbf{s}_u = \begin{pmatrix} x_u \\ y_u \\ z_u \end{pmatrix}\]</span></p>
+<p>The row-vector of partial derivatives is now a matrix says how changes in u and v affect the coordinate x,y,z:</p>
+<p><span class="math display">\[J_{\mathbf{s}_{\boldsymbol{\tau}}} = \mathbf{s}_{\boldsymbol{\tau}} = \begin{pmatrix} \mathbf{s}_u &amp; \mathbf{s}_v \end{pmatrix} = \begin{pmatrix} x_u &amp; x_v \\ y_u &amp; y_v \\ z_u &amp; z_v \end{pmatrix}\]</span></p>
+<p>This matrix is called the Jacobian. Basically a transformation matrix that map direction from parameter space to value space. The Jacobian’s columns are the tangent vectors s_u and s_v in value space.</p>
+</section>
+<section id="directional-derivative" class="level3">
+<h3 class="anchored" data-anchor-id="directional-derivative">Directional Derivative</h3>
+<p>We can calculate the derivative in a <strong>specific direction</strong> <span class="math inline">\(\boldsymbol{\delta}\)</span> (<span class="math inline">\(\left\|\boldsymbol{\delta}\right\|=1\)</span>).</p>
+<p>In the scalar case, just do the dot product with the gradien, it projects on it:</p>
+<p><span class="math display">\[\frac{\partial f}{\partial \boldsymbol{\delta}}(\mathbf{x}) = f_{\mathbf{x}}(\mathbf{x})\cdot\boldsymbol{\delta} = f_x \cdot \delta[x] + f_y \cdot \delta[y] + \ldots\]</span></p>
+<p>This generalizes to vector-valued functions:</p>
+<p><span class="math display">\[\frac{\partial \mathbf{f}}{\partial \boldsymbol{\delta}}(\mathbf{x}) = \mathbf{f}_{\mathbf{x}}\cdot\boldsymbol{\delta} = \mathbf{f}_x \cdot \delta[x] + \mathbf{f}_y \cdot \delta[y] + \ldots\]</span></p>
+<p>As said above: The Jacobian’s columns are the tangent vectors s_u and s_v in value space.</p>
+</section>
+<section id="vector-valued-derivative-conversion" class="level3">
+<h3 class="anchored" data-anchor-id="vector-valued-derivative-conversion">Vector-valued Derivative conversion</h3>
+<p>The transformation chain can be represented as:</p>
+<p><span class="math display">\[
+\begin{align*}
+\vec{\tau} = \begin{pmatrix} u \\ v \end{pmatrix}
+\xrightarrow{s} \vec{p} = \begin{pmatrix} x \\ y \\ z \end{pmatrix}
+\xrightarrow{\tilde{c}} \vec{c} = \begin{pmatrix} r \\ g \\ b \\ a \end{pmatrix}
+\end{align*}
+\]</span></p>
+<p>Chain rule:</p>
+<p><span class="math display">\[
+[ \dot{c}(s(\vec{\tau})) ]_{\vec{\tau}} =
+[ \dot{c}_{\vec{p}}(s(\vec{\tau})) ] s_{\vec{\tau}}(\vec{\tau})
+\]</span></p>
+<p><span class="math display">\[\frac{\partial \mathbf{c}}{\partial \boldsymbol{\tau}} = \frac{\partial \mathbf{c}}{\partial \mathbf{p}} \frac{\partial \mathbf{p}}{\partial \boldsymbol{\tau}}\]</span></p>
+<p>Expressed in component form:</p>
+<p><span class="math display">\[
+\begin{pmatrix}
+r_u &amp; r_v \\
+g_u &amp; g_v \\
+b_u &amp; b_v \\
+a_u &amp; a_v
+\end{pmatrix} =
+\begin{pmatrix}
+r_x &amp; r_y &amp; r_z \\
+g_x &amp; g_y &amp; g_z \\
+b_x &amp; b_y &amp; b_z \\
+a_x &amp; a_y &amp; a_z
+\end{pmatrix}
+\begin{pmatrix}
+x_u &amp; x_v \\
+y_u &amp; y_v \\
+z_u &amp; z_v
+\end{pmatrix}
+\]</span></p>
+<p><span class="math display">\[\begin{pmatrix} \frac{\partial c_r}{\partial u} &amp; \frac{\partial c_r}{\partial v} \\ \frac{\partial c_g}{\partial u} &amp; \frac{\partial c_g}{\partial v} \\ \frac{\partial c_b}{\partial u} &amp; \frac{\partial c_b}{\partial v} \\ \frac{\partial c_a}{\partial u} &amp; \frac{\partial c_a}{\partial v} \end{pmatrix} = \begin{pmatrix} \frac{\partial c_r}{\partial x} &amp; \frac{\partial c_r}{\partial y} &amp; \frac{\partial c_r}{\partial z} \\ \frac{\partial c_g}{\partial x} &amp; \frac{\partial c_g}{\partial y} &amp; \frac{\partial c_g}{\partial z} \\ \frac{\partial c_b}{\partial x} &amp; \frac{\partial c_b}{\partial y} &amp; \frac{\partial c_b}{\partial z} \\ \frac{\partial c_a}{\partial x} &amp; \frac{\partial c_a}{\partial y} &amp; \frac{\partial c_a}{\partial z} \end{pmatrix} \begin{pmatrix} \frac{\partial x}{\partial u} &amp; \frac{\partial x}{\partial v} \\ \frac{\partial y}{\partial u} &amp; \frac{\partial y}{\partial v} \\ \frac{\partial z}{\partial u} &amp; \frac{\partial z}{\partial v} \end{pmatrix}\]</span></p>
+</section>
+</section>
+<section id="differential-geometry-in-1st-fundamental-form" class="level2">
+<h2 class="anchored" data-anchor-id="differential-geometry-in-1st-fundamental-form">Differential Geometry in 1st Fundamental Form</h2>
+<section id="length-of-curve" class="level3">
+<h3 class="anchored" data-anchor-id="length-of-curve">Length of Curve</h3>
+<p>Core idea: Discrete Approximation by densely sampling points along it: <span class="math display">\[
+s \approx \sum_i \Delta s_i = \sum_i \| c(h \cdot (i + 1)) - c(h \cdot i) \|
+\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(c(t)\)</span> is the curve parameterized by <span class="math inline">\(t \in [0,1]\)</span></li>
+<li><span class="math inline">\(h\)</span> is the step size between samples</li>
+<li><span class="math inline">\(\Delta s_i\)</span> represents the straight-line distance between consecutive points</li>
+</ul>
+<p>Using first-order Taylor expansion around each sampled point: <span class="math display">\[
+c(h \cdot i + h) \approx c(h \cdot i) + c'(h \cdot i) \cdot h
+\]</span></p>
+<p><span class="math display">\[
+s \approx \sum_i \| c'(h \cdot i) \| \cdot h
+\]</span></p>
+<section id="continuous-presentation" class="level4">
+<h4 class="anchored" data-anchor-id="continuous-presentation">Continuous presentation</h4>
+<p>Taking the limit as <span class="math inline">\(h \to 0\)</span> gives us the exact arc length formula:</p>
+<p><span class="math display">\[
+s = \int_0^1 \| c'(t) \| dt
+\]</span></p>
+<p>Key concepts:</p>
+<ol type="1">
+<li>The discrete sum becomes a Riemann integral</li>
+<li><span class="math inline">\(\| c'(t) \|\)</span> represents the instantaneous “speed” along the curve</li>
+<li>This works for curves in any dimension (2D, 3D, etc.)</li>
+</ol>
+</section>
+<section id="d-example" class="level4">
+<h4 class="anchored" data-anchor-id="d-example">2D Example</h4>
+<p>We consider a parametric curve in 2D space:</p>
+<p><span class="math display">\[
+\underline{c}(t) = \frac{1}{2} \begin{pmatrix}
+\cos(2\pi t) + 1 \\
+\sin(2\pi t) + 1
+\end{pmatrix}, \quad t \in [0,1]
+\]</span></p>
+<p><strong>Properties</strong>:</p>
+<ul>
+<li>This describes a circle with radius ½ centered at (½, ½)</li>
+<li>The parameter <span class="math inline">\(t\)</span> completes one full revolution as it goes from 0 to 1</li>
+</ul>
+<p>First, we compute the derivative (velocity vector) by time:</p>
+<p><span class="math display">\[
+\underline{c}^{\prime}(t) = \begin{pmatrix}
+-\pi \sin(2\pi t) \\
+\pi \cos(2\pi t)
+\end{pmatrix}
+\]</span></p>
+<p>The speed (magnitude of velocity) is interestingly constant for every t, so we just need to calculate once:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\| \underline{c}^{\prime}(t) \| &amp;= \sqrt{(-\pi \sin(2\pi t))^2 + (\pi \cos(2\pi t))^2} \\
+&amp;= \sqrt{\pi^2 (\sin^2 (2\pi t) + \cos^2 (2\pi t))} \\
+&amp;= \sqrt{\pi^2} = \pi
+\end{aligned}
+\]</span></p>
+<p>Total arc-length of the curve:</p>
+<p><span class="math display">\[
+s = \int_{0}^{1} \| \underline{c}^{\prime}(t) \| \, dt =  \int_{0}^{1} \pi \, dt = \pi
+\]</span></p>
+<p><strong>Goal:</strong> now make sure the velocity by length should also be constant (also claled arclength parameterization)</p>
+<ol type="1">
+<li><p>Cumulative length function: <span class="math display">\[ s(t) = \int_{0}^{t} \pi \, dt = \pi t \]</span></p></li>
+<li><p>Inverse relationship: This tells us the time t needed to travel a distance s along the curve. <span class="math display">\[ t(s) = \frac{s}{\pi} \]</span></p></li>
+<li><p>Substitute <span class="math inline">\(t(s)\)</span> to original <span class="math inline">\(c(t)\)</span> tells the curve’s position after travel a distance s: <span class="math display">\[
+\underline{c}(t) = \underline{c}(t(s)) = \underline{c}(s) = \frac{1}{2} \begin{pmatrix}
+\cos(2s) + 1 \\
+\sin(2s) + 1
+\end{pmatrix}, \quad s \in [0,\pi]
+\]</span></p></li>
+</ol>
+<p><strong>Why this matters</strong>: This ensures <span class="math inline">\(\| \underline{c}^{\prime}(t) \| = 1\)</span> everywhere, means the curve travel at constant speed.</p>
+</section>
+</section>
+<section id="length-of-curve-mapped-to-a-surface-stretch-mapping" class="level3">
+<h3 class="anchored" data-anchor-id="length-of-curve-mapped-to-a-surface-stretch-mapping">Length of Curve Mapped to a Surface (Stretch Mapping)</h3>
+<p><strong>Basically just a stretched velocity, implemented by mapping</strong> A curve <span class="math inline">\(\underline{c}(t)\)</span> in parameter space (e.g., texture coordinates) is mapped to a 3D surface (liek a deformable fabric) <span class="math inline">\(\underline{x}(\underline{\tau})\)</span>: <span class="math display">\[
+\underline{x}(\underline{\tau}) = \underline{x}(\underline{c}(t))
+\]</span> The physical length on deformable fabric becomes, now we also account this deformable stretching surface: <span class="math display">\[
+s = \int_{0}^{1} \left\| \frac{d}{dt} \underline{x}(\underline{c}(t)) \right\| dt
+\]</span> The derivative decomposes into surface and curve components (Chain Rule Application (remember above?)): <span class="math display">\[
+\frac{d}{dt} \underline{x}(\underline{c}(t)) = \underbrace{\nabla_{\underline{\tau}} \underline{x}}_{\text{Surface Jacobian}} \cdot \underbrace{\frac{d\underline{c}}{dt}}_{\text{Curve velocity}}
+\]</span></p>
+<p>Component dimensions:</p>
+<ul>
+<li><span class="math inline">\(\nabla_{\underline{\tau}} \underline{x}\)</span>: <span class="math inline">\(3 \times 2\)</span> matrix (tangent vectors)</li>
+<li><span class="math inline">\(\frac{d\underline{c}}{dt}\)</span>: <span class="math inline">\(2 \times 1\)</span> vector</li>
+</ul>
+<p><strong>Finally the general form:</strong></p>
+<p><span class="math display">\[
+s = \int_{0}^{1} \left\| \nabla_{\underline{\tau}} \underline{x}(\underline{c}(t)) \cdot \underline{c}'(t) \right\| dt
+\]</span></p>
+<ul>
+<li>The integrand <span class="math inline">\(\left\| J \cdot \underline{c}'(t) \right\|\)</span> is the <em>stretched speed</em>:
+<ul>
+<li><span class="math inline">\(J\)</span> encodes how the surface stretches/compresses space</li>
+<li><span class="math inline">\(\underline{c}'(t)\)</span> is the original curve’s velocity</li>
+</ul></li>
+</ul>
+</section>
+<section id="length-of-a-curve-on-a-surface-worked-example" class="level3">
+<h3 class="anchored" data-anchor-id="length-of-a-curve-on-a-surface-worked-example">Length of a Curve on a Surface: Worked Example</h3>
+<section id="we-start-with-the-curve" class="level4">
+<h4 class="anchored" data-anchor-id="we-start-with-the-curve">1. We start with the Curve</h4>
+<p>Center at <span class="math inline">\((0.5, 0.5)\)</span> with radius 0.5 in parameter space: <span class="math display">\[
+\underline{c}(t) = \frac{1}{2} \begin{pmatrix}
+\cos(2\pi t) + 1 \\
+\sin(2\pi t) + 1
+\end{pmatrix}, \quad t \in [0,1]
+\]</span></p>
+<p><strong>Derivative (velocity)</strong>: <span class="math display">\[
+\underline{c}'(t) = \begin{pmatrix}
+-\pi \sin(2\pi t) \\
+\pi \cos(2\pi t)
+\end{pmatrix}
+\]</span></p>
+</section>
+<section id="we-have-a-stretched-surface" class="level4">
+<h4 class="anchored" data-anchor-id="we-have-a-stretched-surface">2. We have a stretched surface</h4>
+<p>A surface that is stretched as a parabol: <span class="math display">\[
+\underline{x}(\underline{\tau}) = \underline{x}(u,v) = \begin{pmatrix}
+u \\
+v \\
+u^2 + v^2
+\end{pmatrix}
+\]</span></p>
+<p><strong>Surface Jacobian</strong> (tangential vectors): <span class="math display">\[
+\nabla_{\underline{\tau}} \underline{x} = \begin{pmatrix}
+1 &amp; 0 \\
+0 &amp; 1 \\
+2u &amp; 2v
+\end{pmatrix}
+\]</span></p>
+<p><strong>Interpretation</strong>:</p>
+<ul>
+<li>The last row shows how the surface “bends” in the z-direction</li>
+<li>First two rows maintain the identity mapping in x and y</li>
+</ul>
+</section>
+<section id="mapping-the-curve-to-the-surface" class="level4">
+<h4 class="anchored" data-anchor-id="mapping-the-curve-to-the-surface">3. Mapping the Curve to the Surface</h4>
+<p>Evaluate the Jacobian at <span class="math inline">\(\underline{c}(t)\)</span>: <span class="math display">\[
+\nabla_{\underline{\tau}} \underline{x}(\underline{c}(t)) = \begin{pmatrix}
+1 &amp; 0 \\
+0 &amp; 1 \\
+\cos(2\pi t) + 1 &amp; \sin(2\pi t) + 1
+\end{pmatrix}
+\]</span> <strong>Key observation</strong>: The z-component now varies with the curve’s position</p>
+</section>
+<section id="velocity-on-surface" class="level4">
+<h4 class="anchored" data-anchor-id="velocity-on-surface">4. Velocity on Surface</h4>
+<p>Multiply Jacobian by curve velocity: <span class="math display">\[
+\nabla_{\underline{\tau}} \underline{x} \cdot \underline{c}'(t) = \begin{pmatrix}
+1 &amp; 0 \\
+0 &amp; 1 \\
+\cos(2\pi t) + 1 &amp; \sin(2\pi t) + 1
+\end{pmatrix} \begin{pmatrix}
+-\pi \sin(2\pi t) \\
+\pi \cos(2\pi t)
+\end{pmatrix}
+\]</span> <span class="math display">\[
+\nabla_{\underline{\tau}} \underline{x} \cdot \underline{c}'(t) = \begin{pmatrix}
+-\pi \sin(2\pi t) \\
+\pi \cos(2\pi t) \\
+\pi (\cos(2\pi t) - \sin(2\pi t))
+\end{pmatrix}
+\]</span></p>
+<p>Compute the magnitude: <span class="math display">\[
+\begin{aligned}
+\left\| \nabla_{\underline{\tau}} \underline{x} \cdot \underline{c}'(t) \right\| &amp;= \pi \sqrt{\sin^2(2\pi t) + \cos^2(2\pi t) + (\cos(2\pi t) - \sin(2\pi t))^2} \\
+&amp;= \pi \sqrt{1 + 1 - 2\sin(2\pi t)\cos(2\pi t)} \\
+&amp;= \pi \sqrt{2 - \sin(4\pi t)}
+\end{aligned}
+\]</span></p>
+<p>Final total length becomes: <span class="math display">\[
+s = \pi \int_{0}^{1} \sqrt{2 - \sin(4\pi t)} \, dt \approx 1.39\pi
+\]</span></p>
+<p><strong>Numerical insight</strong>:</p>
+<ul>
+<li>The integral evaluates to ≈1.39 (requires numerical methods)</li>
+<li>Compare to flat case (where <span class="math inline">\(s=\pi\)</span>)</li>
+<li>The surface curvature adds ~39% more length</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="first-fundamental-form-measuring-lengths-and-angles-on-surfaces" class="level2">
+<h2 class="anchored" data-anchor-id="first-fundamental-form-measuring-lengths-and-angles-on-surfaces">First Fundamental Form: Measuring Lengths and Angles on Surfaces</h2>
+<section id="study-the-relationship-btw-parameter-surface-space-changes-by-finding-the-first-fundamental-form-i_underlinetaus" class="level3">
+<h3 class="anchored" data-anchor-id="study-the-relationship-btw-parameter-surface-space-changes-by-finding-the-first-fundamental-form-i_underlinetaus">Study the relationship btw Parameter &amp; Surface Space Changes by finding the First Fundamental Form <span class="math inline">\(I_{\underline{\tau}}^S\)</span></h3>
+<section id="starting-point-surface-parameterization" class="level4">
+<h4 class="anchored" data-anchor-id="starting-point-surface-parameterization">1. Starting Point: Surface Parameterization</h4>
+<p>Consider a surface <span class="math inline">\(S\)</span> parameterized by: <span class="math display">\[
+\underline{x}(u,v) : \mathbb{R}^2 \rightarrow \mathbb{R}^3
+\]</span> where <span class="math inline">\(\underline{\tau} = (u,v)\)</span> are the 2D parameter coordinates.</p>
+</section>
+<section id="tangent-vectors" class="level4">
+<h4 class="anchored" data-anchor-id="tangent-vectors">2. Tangent Vectors</h4>
+<p>The partial derivatives form a basis for the tangent plane: <span class="math display">\[
+\underline{x}_u = \frac{\partial \underline{x}}{\partial u}, \quad
+\underline{x}_v = \frac{\partial \underline{x}}{\partial v}
+\]</span></p>
+<p><strong>Physical meaning</strong>: These vectors span the plane “tangent” to the surface at point <span class="math inline">\(\underline{\tau}\)</span>.</p>
+</section>
+<section id="for-a-small-change-in-parameter-space-du-dv-how-big-is-that-change-in-surface-dx" class="level4">
+<h4 class="anchored" data-anchor-id="for-a-small-change-in-parameter-space-du-dv-how-big-is-that-change-in-surface-dx">3. <strong>For a small change in parameter space (du, dv), how big is that change in surface dx</strong></h4>
+<p>For an infinitesimal displacement <span class="math inline">\(d\underline{\tau} = (du, dv)^T\)</span> in parameter space, the corresponding 3D displacement on the surface is: <span class="math display">\[
+d\underline{x} = \underline{x}_u du + \underline{x}_v dv = \begin{pmatrix} \underline{x}_u &amp; \underline{x}_v \end{pmatrix} \begin{pmatrix} du \\ dv \end{pmatrix}
+\]</span></p>
+<p>The squared length in 3D is: <span class="math display">\[
+\|d\underline{x}\|^2 = \langle d\underline{x}, d\underline{x} \rangle = \langle \underline{x}_u du + \underline{x}_v dv, \underline{x}_u du + \underline{x}_v dv \rangle
+\]</span> <span class="math display">\[
+\|d\underline{x}\|^2 = \underbrace{\langle \underline{x}_u, \underline{x}_u \rangle}_{E} du^2 + 2 \underbrace{\langle \underline{x}_u, \underline{x}_v \rangle}_{F} dudv + \underbrace{\langle \underline{x}_v, \underline{x}_v \rangle}_{G} dv^2
+\]</span></p>
+<p>We can eventually write this quadratic form as a matrix: <span class="math display">\[
+\|d\underline{x}\|^2 = \begin{pmatrix} du &amp; dv \end{pmatrix}
+\underbrace{\begin{pmatrix} E &amp; F \\ F &amp; G \end{pmatrix}}_{I_{\underline{\tau}}^S}
+\begin{pmatrix} du \\ dv \end{pmatrix}
+\]</span></p>
+<p>Thus, the First Fundamental Form emerges naturally as the matrix: <span class="math display">\[
+I_{\underline{\tau}}^S = \begin{pmatrix} E &amp; F \\ F &amp; G \end{pmatrix} = \begin{pmatrix} \underline{x}_u^T \underline{x}_u &amp; \underline{x}_u^T \underline{x}_v \\ \underline{x}_u^T \underline{x}_v &amp; \underline{x}_v^T \underline{x}_v \end{pmatrix}
+\]</span></p>
+<p><strong>Components</strong>:</p>
+<ul>
+<li><span class="math inline">\(E = \|\underline{s}_u\|^2\)</span>: Squared length of u-tangent vector</li>
+<li><span class="math inline">\(G = \|\underline{s}_v\|^2\)</span>: Squared length of v-tangent vector<br>
+</li>
+<li><span class="math inline">\(F = \langle \underline{s}_u, \underline{s}_v \rangle\)</span>: Cosine similarity between tangent vectors</li>
+</ul>
+<p>The FFF is the basically just quadratic the Jacobian: <span class="math display">\[
+I_{\underline{\tau}}^S = J^T J \quad \text{where} \quad J = [\underline{x}_u \ \underline{x}_v] \ \text{(Jacobian)}
+\]</span></p>
+</section>
+</section>
+<section id="apply-this-relationship-to-find-length-of-curve-on-surface" class="level3">
+<h3 class="anchored" data-anchor-id="apply-this-relationship-to-find-length-of-curve-on-surface">Apply this Relationship to find Length of Curve on Surface</h3>
+<section id="original-rules" class="level4">
+<h4 class="anchored" data-anchor-id="original-rules">Original Rules</h4>
+<p>For any vectors in parameter space <span class="math inline">\(\mathbb{R}^3\)</span> where we draw the curve originally on, the length of this vector on parameter surface is: <span class="math display">\[ \|\vec{v}\|^2 = \langle \vec{v}, \vec{v} \rangle \]</span></p>
+</section>
+<section id="length-of-that-parameter-space-vector-vecv-uv-but-now-mapped-on-surface-using-fff" class="level4">
+<h4 class="anchored" data-anchor-id="length-of-that-parameter-space-vector-vecv-uv-but-now-mapped-on-surface-using-fff">Length of that parameter space vector <span class="math inline">\(\vec{v} = (u,v)\)</span> BUT NOW mapped on Surface using FFF</h4>
+<p><span class="math display">\[
+\|\vec{v}\|_{I_{\underline{\tau}}^S} = \sqrt{\langle \vec{v}, \vec{v} \rangle_{I_{\underline{\tau}}^S}} = \sqrt{\vec{v}^T I_{\underline{\tau}}^S \vec{v}}
+\]</span></p>
+</section>
+<section id="extend-to-length-of-the-whole-curve-on-surface" class="level4">
+<h4 class="anchored" data-anchor-id="extend-to-length-of-the-whole-curve-on-surface">Extend to length of the whole curve on Surface:</h4>
+<p>Well, simply add all small displacement that together, remember that <strong>each point <span class="math inline">\(\underline{\tau}\)</span> or <span class="math inline">\((u,v)\)</span> from parameter space will have a totally different stretch <span class="math inline">\(I_{\underline{\tau}}^S\)</span> on the surface, so the stretch at each point is different.</strong> <span class="math display">\[s = \int_0^1 \|\underline{c}'(t)\|_{I_{\underline{\tau}}^S} dt = \int_0^1 \sqrt{ \langle \underline{c}'(t), \underline{c}'(t) \rangle_{I_{\underline{\tau}}^S}} dt = \int_0^1 \sqrt{ \underline{c}'(t) {I_{\underline{\tau}}^S} \underline{c}'(t)} dt\]</span></p>
+</section>
+<section id="stretch-analysis" class="level4">
+<h4 class="anchored" data-anchor-id="stretch-analysis">Stretch Analysis</h4>
+<p>We can also decompose in eigenvalues:</p>
+<p><span class="math display">\[
+I_{\underline{\tau}}^S = \begin{pmatrix}
+E &amp; F \\
+F &amp; G
+\end{pmatrix} = \lambda_1 \hat{v}_1 \hat{v}_1^T + \lambda_2 \hat{v}_2 \hat{v}_2^T
+\]</span></p>
+</section>
+<section id="geometric-meaning" class="level4">
+<h4 class="anchored" data-anchor-id="geometric-meaning">Geometric Meaning:</h4>
+<ul>
+<li><span class="math inline">\(\lambda_i\)</span>: Principal stretching factors</li>
+<li><span class="math inline">\(\hat{v}_i\)</span>: Principal directions in <strong>parameter space</strong></li>
+<li><strong>Orthonormal basis</strong>: The eigenvectors form a coordinate system for the surface at point <span class="math inline">\(\underline{\tau}\)</span> or <span class="math inline">\((u,v)\)</span></li>
+</ul>
+<p>For each vector <span class="math inline">\(W = (w_1, w_2)^T\)</span> in the eigenbasis at point <span class="math inline">\(\underline{\tau}\)</span> aka <span class="math inline">\((u,v)\)</span>, it will be stretched like this:</p>
+<p><span class="math display">\[
+\|W\|_{I_{\underline{\tau}}^S} = \sqrt{\lambda_1 w_1^2 + \lambda_2 w_2^2}
+\]</span></p>
+</section>
+</section>
+<section id="apply-fff-to-calculate-angle" class="level3">
+<h3 class="anchored" data-anchor-id="apply-fff-to-calculate-angle">Apply FFF to Calculate Angle</h3>
+<p>For any vectors in parameter space <span class="math inline">\(\mathbb{R}^3\)</span> where we draw the curve originally on: <span class="math display">\[ \cos \theta(\vec{v}, \vec{w}) = \frac{\langle \vec{v}, \vec{w} \rangle}{\|\vec{v}\|\|\vec{w}\|} \]</span></p>
+<p>Now we <strong>MAP ON THE SURFACE</strong> with surface parameterization <span class="math inline">\(\underline{s}(\vec{t})\)</span>, the upper part is: <span class="math display">\[ \langle \underline{s}_{\vec{t}} \vec{v}, \underline{s}_{\vec{t}} \vec{w} \rangle = \vec{v}^T \underbrace{(\underline{s}_{\vec{t}}^T \underline{s}_{\vec{t}})}_{\text{FFF Matrix } \Gamma} \vec{w} \]</span></p>
+<p>We can also write it like this: <span class="math display">\[
+\langle \vec{v}, \vec{w} \rangle_{I_{\underline{\tau}}^S} = \vec{v}^T I_{\underline{\tau}}^S \vec{w}
+\]</span></p>
+<p>And the bottom part is yeah actually we just learned from above: <span class="math display">\[
+\|\vec{v}\|_{I_{\underline{\tau}}^S} = \sqrt{\langle \vec{v}, \vec{v} \rangle_{I_{\underline{\tau}}^S}} = \sqrt{\vec{v}^T I_{\underline{\tau}}^S \vec{v}}
+\]</span></p>
+<p>To assemble we will have: <span class="math display">\[
+\cos \theta = \frac{\langle \vec{v}, \vec{w} \rangle_{I_{\underline{\tau}}^S}}{\|\vec{v}\|_{I_{\underline{\tau}}^S} \|\vec{w}\|_{I_{\underline{\tau}}^S}} = \frac{\vec{v}^T I_{\underline{\tau}}^S \vec{w}}{\sqrt{\vec{v}^T I_{\underline{\tau}}^S \vec{v}} \sqrt{\vec{w}^T I_{\underline{\tau}}^S \vec{w}}}
+\]</span> Angle <span class="math inline">\(\theta\)</span> between two directions <span class="math inline">\(d\vec{t}_1\)</span>, <span class="math inline">\(d\vec{t}_2\)</span>: <span class="math display">\[ \cos \theta = \frac{Edu_1du_2 + F(du_1dv_2 + du_2dv_1) + Gdv_1dv_2}{\sqrt{Edu_1^2 + 2Fdu_1dv_1 + Gdv_1^2}\sqrt{Edu_2^2 + 2Fdu_2dv_2 + Gdv_2^2}} \]</span></p>
+</section>
+<section id="apply-to-calculate-very-small-infinitesmal-area-on-surfaces" class="level3">
+<h3 class="anchored" data-anchor-id="apply-to-calculate-very-small-infinitesmal-area-on-surfaces">Apply to calculate very small infinitesmal Area on Surfaces</h3>
+<p>Cross Product area of an infinitesimal parallelogram spanned by <span class="math inline">\(\underline{s}_u du\)</span> and <span class="math inline">\(\underline{s}_v dv\)</span> is: <span class="math display">\[
+dA = \|(\underline{s}_u du) \times (\underline{s}_v dv)\| = \|\underline{s}_u \times \underline{s}_v\| du dv
+\]</span></p>
+<p>We can express this purely in terms of the FFF coefficients:</p>
+<ol type="1">
+<li>Start with the cross product magnitude identity: <span class="math display">\[
+\|\underline{s}_u \times \underline{s}_v\|^2 = \|\underline{s}_u\|^2 \|\underline{s}_v\|^2 - \langle \underline{s}_u, \underline{s}_v \rangle^2
+\]</span></li>
+<li>Recognize this matches the determinant of <span class="math inline">\(I_{\underline{\tau}}^S\)</span>: <span class="math display">\[
+\det(I_{\underline{\tau}}^S) = EG - F^2
+\]</span></li>
+<li>Thus: <span class="math display">\[
+dA = \sqrt{EG - F^2} du dv
+\]</span></li>
+</ol>
+<section id="please-explain" class="level4">
+<h4 class="anchored" data-anchor-id="please-explain">Please explain</h4>
+<p><span class="math display">\[
+\|\vec{a} \times \vec{b}\|^2 + |\vec{a} \cdot \vec{b}|^2 = \|\vec{a}\|^2 \|\vec{b}\|^2
+\]</span></p>
+<section id="because" class="level5">
+<h5 class="anchored" data-anchor-id="because">Because</h5>
+<ol type="1">
+<li><p><strong>Cross Product Definition</strong><br>
+Measures “perpendicularity” (the area of the parallelogram formed) <span class="math display">\[
+\|\vec{a} \times \vec{b}\| = \|\vec{a}\|\|\vec{b}\|\sin\theta
+\]</span> <span class="math display">\[
+\|\vec{a} \times \vec{b}\|^2 = \|\vec{a}\|^2\|\vec{b}\|^2\sin^2\theta
+\]</span></p></li>
+<li><p><strong>Dot Product Definition</strong> Measures “perpendicularity” (the area of the parallelogram formed) Measures “parallelism” (how aligned the vectors are) <span class="math display">\[
+\vec{a} \cdot \vec{b} = \|\vec{a}\|\|\vec{b}\|\cos\theta
+\]</span> <span class="math display">\[
+|\vec{a} \cdot \vec{b}|^2 = \|\vec{a}\|^2\|\vec{b}\|^2\cos^2\theta
+\]</span></p></li>
+<li><p><strong>Combining Both Terms</strong><br>
+Represents the total magnitude regardless of angle <span class="math display">\[
+\|\vec{a} \times \vec{b}\|^2 + |\vec{a} \cdot \vec{b}|^2 = \|\vec{a}\|^2\|\vec{b}\|^2(\sin^2\theta + \cos^2\theta) = \|\vec{a}\|^2\|\vec{b}\|^2
+\]</span></p></li>
+</ol>
+</section>
+</section>
+</section>
+<section id="surface-area-of-a-sphere-using-first-fundamental-form" class="level3">
+<h3 class="anchored" data-anchor-id="surface-area-of-a-sphere-using-first-fundamental-form">Surface Area of a Sphere Using First Fundamental Form</h3>
+<section id="sphere-parameterization" class="level4">
+<h4 class="anchored" data-anchor-id="sphere-parameterization">1. Sphere Parameterization</h4>
+<p>We start with the spherical coordinates parameterization: <span class="math display">\[
+\underline{S}(u,v) = r \begin{pmatrix}
+\cos u \cos v \\
+\sin u \cos v \\
+\sin v
+\end{pmatrix}, \quad
+\begin{cases}
+u \in [-\pi, \pi] \ (\text{longitude}) \\
+v \in [-\frac{\pi}{2}, \frac{\pi}{2}] \ (\text{latitude})
+\end{cases}
+\]</span></p>
+</section>
+<section id="compute-tangent-vectors" class="level4">
+<h4 class="anchored" data-anchor-id="compute-tangent-vectors">2. Compute Tangent Vectors</h4>
+<p><strong>Partial derivatives</strong> form the tangent basis: <span class="math display">\[
+\underline{S}_u = r \begin{pmatrix}
+-\sin u \cos v \\
+\cos u \cos v \\
+0
+\end{pmatrix}, \quad
+\underline{S}_v = r \begin{pmatrix}
+-\cos u \sin v \\
+-\sin u \sin v \\
+\cos v
+\end{pmatrix}
+\]</span></p>
+</section>
+<section id="first-fundamental-form-components" class="level4">
+<h4 class="anchored" data-anchor-id="first-fundamental-form-components">3. First Fundamental Form Components</h4>
+<p>Calculate the metric tensor coefficients: <span class="math display">\[
+\begin{aligned}
+E &amp;= \|\underline{S}_u\|^2 = r^2 \cos^2 v (\sin^2 u + \cos^2 u) = r^2 \cos^2 v \\
+F &amp;= \langle \underline{S}_u, \underline{S}_v \rangle = 0 \quad \text{(orthogonal coordinates)} \\
+G &amp;= \|\underline{S}_v\|^2 = r^2 (\cos^2 u \sin^2 v + \sin^2 u \sin^2 v + \cos^2 v) = r^2
+\end{aligned}
+\]</span></p>
+<p>Thus, the metric tensor is: <span class="math display">\[
+I = \begin{pmatrix}
+r^2 \cos^2 v &amp; 0 \\
+0 &amp; r^2
+\end{pmatrix}
+\]</span></p>
+</section>
+<section id="infinitesimal-area-element" class="level4">
+<h4 class="anchored" data-anchor-id="infinitesimal-area-element">4. Infinitesimal Area Element</h4>
+<p>The area element derives from the metric determinant: <span class="math display">\[
+\begin{aligned}
+dA &amp;= \sqrt{\det I} \, du dv = \sqrt{r^4 \cos^2 v} \, du dv \\
+&amp;= r^2 |\cos v| \, du dv
+\end{aligned}
+\]</span></p>
+</section>
+<section id="compute-total-surface-area" class="level4">
+<h4 class="anchored" data-anchor-id="compute-total-surface-area">5. Compute Total Surface Area</h4>
+<p>Integrate over the parameter domain: <span class="math display">\[
+\begin{aligned}
+A &amp;= \int_{-\pi}^{\pi} \int_{-\frac{\pi}{2}}^{\frac{\pi}{2}} r^2 |\cos v| \, dv du \\
+&amp;= r^2 \int_{-\pi}^{\pi} du \cdot 2 \int_{0}^{\frac{\pi}{2}} \cos v \, dv \quad \text{(by symmetry)} \\
+&amp;= r^2 (2\pi) \cdot 2 \left[ \sin v \right]_0^{\frac{\pi}{2}} \\
+&amp;= 4\pi r^2
+\end{aligned}
+\]</span></p>
+</section>
+</section>
+</section>
+<section id="optimal-curve-design-in-2d" class="level2">
+<h2 class="anchored" data-anchor-id="optimal-curve-design-in-2d">Optimal Curve Design in 2D</h2>
+<section id="problem-statement" class="level3">
+<h3 class="anchored" data-anchor-id="problem-statement">1. Problem Statement</h3>
+<p>The method ([Gum ’04]) designs smooth curves through control points by optimizing a combined length-curvature functional:</p>
+<p><span class="math display">\[
+F_{simp}(c, \lambda) = \int_{s=0}^{L(c)} \underbrace{(1 - \lambda)q}_{\text{length term}} + \underbrace{\lambda |\kappa L_0|^2}_{\text{curvature term}} ds
+\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(c\)</span>: Curve parameterization</li>
+<li><span class="math inline">\(\lambda \in [0,1]\)</span>: Blending parameter</li>
+<li><span class="math inline">\(L_0\)</span>: Length of control polygon</li>
+<li><span class="math inline">\(q = 5000\)</span>: Normalization constant</li>
+<li><span class="math inline">\(\kappa\)</span>: Curvature at each point</li>
+</ul>
+</section>
+<section id="key-components" class="level3">
+<h3 class="anchored" data-anchor-id="key-components">2. Key Components</h3>
+<p><strong>Optimization Objective</strong>: <span class="math display">\[
+\text{C}_{simp}(\lambda) = \min_{\mathbf{c}: \mathbf{c}(x_i) = \mathbf{p}_i} F_{simp}(\mathbf{c}, \lambda)
+\]</span></p>
+<p><strong>Behavioral Spectrum</strong>:</p>
+<ul>
+<li><span class="math inline">\(\lambda = 0\)</span>: Pure length minimization → yields control polygon (blue curve)</li>
+<li><span class="math inline">\(\lambda = 1\)</span>: Pure curvature minimization → yields smoothest curve (red curve)</li>
+<li>Intermediate <span class="math inline">\(\lambda\)</span>: Balanced trade-off</li>
+</ul>
+</section>
+</section>
+<section id="minimal-energy-interpolating-curves" class="level2">
+<h2 class="anchored" data-anchor-id="minimal-energy-interpolating-curves">Minimal Energy Interpolating Curves</h2>
+<section id="core-objective" class="level3">
+<h3 class="anchored" data-anchor-id="core-objective">Core Objective</h3>
+<p>Find a curve <span class="math inline">\(\mathbf{c}(s)\)</span> that:</p>
+<ol type="1">
+<li><strong>Exactly interpolates</strong> given control points <span class="math inline">\(\{\mathbf{p}_i\}_{i=0}^n\)</span></li>
+<li><strong>Minimizes</strong> the hybrid energy functional: <span class="math display">\[
+F_{simp}(\mathbf{c}, \lambda) = \int \underbrace{(1-\lambda)q}_{\text{length term}} + \underbrace{\lambda|\kappa(s)L_0|^2}_{\text{curvature term}} ds
+\]</span></li>
+</ol>
+</section>
+<section id="mathematical-framework" class="level3">
+<h3 class="anchored" data-anchor-id="mathematical-framework">Mathematical Framework</h3>
+<section id="curve-representation" class="level4">
+<h4 class="anchored" data-anchor-id="curve-representation">1. Curve Representation</h4>
+<p>Use <strong>piecewise cubic Hermite splines</strong> between each <span class="math inline">\(\mathbf{p}_i\)</span> and <span class="math inline">\(\mathbf{p}_{i+1}\)</span>: <span class="math display">\[
+\mathbf{c}_i(t) = \mathbf{a}_i t^3 + \mathbf{b}_i t^2 + \mathbf{c}_i t + \mathbf{d}_i, \quad t \in [0,1]
+\]</span></p>
+</section>
+<section id="interpolation-constraints" class="level4">
+<h4 class="anchored" data-anchor-id="interpolation-constraints">2. Interpolation Constraints</h4>
+<ul>
+<li><strong>Position</strong>: <span class="math display">\[\mathbf{c}_i(0) = \mathbf{p}_i, \quad \mathbf{c}_i(1) = \mathbf{p}_{i+1}\]</span></li>
+<li><strong>Tangent continuity</strong> (with <span class="math inline">\(\mathbf{m}_i\)</span> as unknown tangent vectors): <span class="math display">\[\mathbf{c}_i'(0) = \mathbf{m}_i, \quad \mathbf{c}_i'(1) = \mathbf{m}_{i+1}\]</span></li>
+</ul>
+</section>
+<section id="energy-functional-components" class="level4">
+<h4 class="anchored" data-anchor-id="energy-functional-components">3. Energy Functional Components</h4>
+<p>Expressed in terms of curve derivatives: <span class="math display">\[
+F_{simp} = \sum_{i=0}^{n-1} \int_0^1 \left[
+(1-\lambda)q \|\mathbf{c}_i'(t)\| +
+\lambda L_0^2 \left(\frac{\|\mathbf{c}_i'(t) \times \mathbf{c}_i''(t)\|}{\|\mathbf{c}_i'(t)\|^3}\right)^2
+\right] dt
+\]</span></p>
+</section>
+</section>
+<section id="solution-procedure" class="level3">
+<h3 class="anchored" data-anchor-id="solution-procedure">Solution Procedure</h3>
+<section id="step-1-coefficient-tangent-relationship" class="level4">
+<h4 class="anchored" data-anchor-id="step-1-coefficient-tangent-relationship">Step 1: Coefficient-Tangent Relationship</h4>
+<p>Express cubic coefficients using control points and tangents: <span class="math display">\[
+\begin{aligned}
+\mathbf{a}_i &amp;= 2(\mathbf{p}_i - \mathbf{p}_{i+1}) + \mathbf{m}_i + \mathbf{m}_{i+1} \\
+\mathbf{b}_i &amp;= -3(\mathbf{p}_i - \mathbf{p}_{i+1}) - 2\mathbf{m}_i - \mathbf{m}_{i+1} \\
+\mathbf{c}_i &amp;= \mathbf{m}_i \\
+\mathbf{d}_i &amp;= \mathbf{p}_i
+\end{aligned}
+\]</span></p>
+</section>
+<section id="step-2-compute-derivatives" class="level4">
+<h4 class="anchored" data-anchor-id="step-2-compute-derivatives">Step 2: Compute Derivatives</h4>
+<p>For energy calculation: <span class="math display">\[
+\begin{aligned}
+\mathbf{c}_i'(t) &amp;= 3\mathbf{a}_i t^2 + 2\mathbf{b}_i t + \mathbf{c}_i \\
+\mathbf{c}_i''(t) &amp;= 6\mathbf{a}_i t + 2\mathbf{b}_i
+\end{aligned}
+\]</span></p>
+</section>
+<section id="step-3-nonlinear-optimization" class="level4">
+<h4 class="anchored" data-anchor-id="step-3-nonlinear-optimization">Step 3: Nonlinear Optimization</h4>
+<ol type="1">
+<li><strong>Initial guess</strong>: Set <span class="math inline">\(\mathbf{m}_i = \frac{\mathbf{p}_{i+1} - \mathbf{p}_{i-1}}{2}\)</span> (central differences)</li>
+<li><strong>Gradient descent</strong>: <span class="math display">\[
+\mathbf{m}_i^{(k+1)} = \mathbf{m}_i^{(k)} - \gamma \frac{\partial F_{simp}}{\partial \mathbf{m}_i}
+\]</span> where the gradient involves: <span class="math display">\[
+\frac{\partial F_{simp}}{\partial \mathbf{m}_i} = \int_0^1 \left[
+(1-\lambda)q \frac{\partial \|\mathbf{c}_i'\|}{\partial \mathbf{m}_i} +
+2\lambda L_0^2 \kappa \frac{\partial \kappa}{\partial \mathbf{m}_i}
+\right] dt
+\]</span></li>
+</ol>
+</section>
+</section>
+<section id="practical-example-3-point-case" class="level3">
+<h3 class="anchored" data-anchor-id="practical-example-3-point-case">Practical Example (3-Point Case)</h3>
+<p>Given <span class="math inline">\(\mathbf{p}_0, \mathbf{p}_1, \mathbf{p}_2\)</span> with <span class="math inline">\(\mathbf{p}_1\)</span> at <span class="math inline">\(t^*=0.5\)</span>:</p>
+<ol type="1">
+<li>Single cubic segment with constraint <span class="math inline">\(\mathbf{c}(0.5) = \mathbf{p}_1\)</span></li>
+<li>Solve for <span class="math inline">\(\mathbf{m}_0, \mathbf{m}_1, \mathbf{m}_2\)</span> minimizing <span class="math inline">\(F_{simp}\)</span></li>
+<li>Final curve guarantees:
+<ul>
+<li><span class="math inline">\(\mathbf{c}(0) = \mathbf{p}_0\)</span>, <span class="math inline">\(\mathbf{c}(0.5) = \mathbf{p}_1\)</span>, <span class="math inline">\(\mathbf{c}(1) = \mathbf{p}_2\)</span></li>
+<li>Minimal energy for chosen <span class="math inline">\(\lambda\)</span></li>
+</ul></li>
+</ol>
+</section>
+</section>
+<section id="curvature-formula-deep-dive-why-kappa-fracvecc_t-times-vecc_ttvecc_t3" class="level2">
+<h2 class="anchored" data-anchor-id="curvature-formula-deep-dive-why-kappa-fracvecc_t-times-vecc_ttvecc_t3">Curvature Formula Deep Dive: Why <span class="math inline">\(\kappa = \frac{\|\vec{c}_t \times \vec{c}_{tt}\|}{\|\vec{c}_t\|^3}\)</span>?</h2>
+<section id="the-core-idea" class="level3">
+<h3 class="anchored" data-anchor-id="the-core-idea">1. The Core Idea</h3>
+<p>Curvature measures <strong>how fast the tangent vector turns</strong> per unit distance traveled. We need to:</p>
+<ol type="1">
+<li>Track how much the tangent direction changes (numerator)</li>
+<li>Normalize by how fast we’re moving (denominator)</li>
+</ol>
+</section>
+<section id="step-by-step-derivation" class="level3">
+<h3 class="anchored" data-anchor-id="step-by-step-derivation">2. Step-by-Step Derivation</h3>
+<section id="step-1-tangent-vector" class="level4">
+<h4 class="anchored" data-anchor-id="step-1-tangent-vector">Step 1: Tangent Vector</h4>
+<p>Define the unit tangent vector: <span class="math display">\[
+\vec{T}(t) = \frac{\vec{c}_t(t)}{\|\vec{c}_t(t)\|}
+\]</span> (Note: <span class="math inline">\(\vec{c}_t = \frac{d\vec{c}}{dt}\)</span> is the velocity vector)</p>
+</section>
+<section id="step-2-rate-of-tangent-change" class="level4">
+<h4 class="anchored" data-anchor-id="step-2-rate-of-tangent-change">Step 2: Rate of Tangent Change</h4>
+<p>The curvature comes from <span class="math inline">\(\frac{d\vec{T}}{ds}\)</span> (how <span class="math inline">\(\vec{T}\)</span> changes with arc length <span class="math inline">\(s\)</span>).</p>
+<p>First, apply chain rule: <span class="math display">\[
+\frac{d\vec{T}}{dt} = \frac{d}{dt}\left(\frac{\vec{c}_t}{\|\vec{c}_t\|}\right) = \frac{\vec{c}_{tt}\|\vec{c}_t\| - \vec{c}_t(\vec{c}_t \cdot \vec{c}_{tt})/\|\vec{c}_t\|}{\|\vec{c}_t\|^2}
+\]</span></p>
+</section>
+<section id="step-3-keep-only-normal-component" class="level4">
+<h4 class="anchored" data-anchor-id="step-3-keep-only-normal-component">Step 3: Keep Only Normal Component</h4>
+<p>Curvature only cares about <strong>perpendicular</strong> changes to <span class="math inline">\(\vec{T}\)</span> (lateral bending). The tangential component affects speed, not shape.</p>
+<p>The perpendicular part is: <span class="math display">\[
+\left(\frac{d\vec{T}}{dt}\right)_{\perp} = \frac{\vec{c}_{tt}}{\|\vec{c}_t\|} - \frac{\vec{c}_t (\vec{c}_t \cdot \vec{c}_{tt})}{\|\vec{c}_t\|^3}
+\]</span></p>
+</section>
+<section id="step-4-magnitude-calculation" class="level4">
+<h4 class="anchored" data-anchor-id="step-4-magnitude-calculation">Step 4: Magnitude Calculation</h4>
+<p>Compute <span class="math inline">\(\|\frac{d\vec{T}}{dt}\|\)</span> using vector identity <span class="math inline">\(\|\vec{a}\| = \sqrt{\vec{a} \cdot \vec{a}}\)</span>: <span class="math display">\[
+\left\|\left(\frac{d\vec{T}}{dt}\right)_{\perp}\right\| = \frac{\|\vec{c}_t \times \vec{c}_{tt}\|}{\|\vec{c}_t\|^2}
+\]</span></p>
+</section>
+<section id="step-5-convert-to-arc-length" class="level4">
+<h4 class="anchored" data-anchor-id="step-5-convert-to-arc-length">Step 5: Convert to Arc Length</h4>
+<p>Since curvature is <span class="math inline">\(\kappa = \|\frac{d\vec{T}}{ds}\|\)</span> and <span class="math inline">\(ds = \|\vec{c}_t\|dt\)</span>: <span class="math display">\[
+\kappa = \left\|\frac{d\vec{T}}{ds}\right\| = \frac{\|\frac{d\vec{T}}{dt}\|}{ds/dt} = \frac{\|\vec{c}_t \times \vec{c}_{tt}\|/\|\vec{c}_t\|^2}{\|\vec{c}_t\|} = \frac{\|\vec{c}_t \times \vec{c}_{tt}\|}{\|\vec{c}_t\|^3}
+\]</span></p>
+</section>
+</section>
+<section id="why-the-vecc_t3" class="level3">
+<h3 class="anchored" data-anchor-id="why-the-vecc_t3">3. Why the <span class="math inline">\(\|\vec{c}_t\|^3\)</span>?</h3>
+<p>The denominator accounts for: 1. <strong>One <span class="math inline">\(\|\vec{c}_t\|\)</span></strong>: Converts time derivative to arc-length derivative (<span class="math inline">\(ds = \|\vec{c}_t\|dt\)</span>) 2. <strong>Two more <span class="math inline">\(\|\vec{c}_t\|\)</span> terms</strong>:</p>
+<ul>
+<li>One from normalizing the tangent vector (<span class="math inline">\(\vec{T} = \vec{c}_t/\|\vec{c}_t\|\)</span>)</li>
+<li>One from isolating the perpendicular component</li>
+</ul>
+</section>
+<section id="geometric-interpretation" class="level3">
+<h3 class="anchored" data-anchor-id="geometric-interpretation">4. Geometric Interpretation</h3>
+<ul>
+<li><p><strong>Numerator</strong> <span class="math inline">\(\|\vec{c}_t \times \vec{c}_{tt}\|\)</span>: Measures the <em>area</em> of the parallelogram formed by velocity and acceleration → pure bending effect</p></li>
+<li><p><strong>Denominator</strong> <span class="math inline">\(\|\vec{c}_t\|^3\)</span>: Normalizes for:</p>
+<ol type="1">
+<li>Parameterization speed (<span class="math inline">\(\|\vec{c}_t\|\)</span>)</li>
+<li>Unit tangent construction (two <span class="math inline">\(\|\vec{c}_t\|\)</span> terms)</li>
+</ol></li>
+</ul>
+</section>
+<section id="simple-example-circle" class="level3">
+<h3 class="anchored" data-anchor-id="simple-example-circle">5. Simple Example: Circle</h3>
+<p>For <span class="math inline">\(\vec{c}(t) = (r\cos t, r\sin t)\)</span>:</p>
+<ul>
+<li><span class="math inline">\(\vec{c}_t = (-r\sin t, r\cos t)\)</span> → <span class="math inline">\(\|\vec{c}_t\| = r\)</span></li>
+<li><span class="math inline">\(\vec{c}_{tt} = (-r\cos t, -r\sin t)\)</span></li>
+<li><span class="math inline">\(\vec{c}_t \times \vec{c}_{tt} = r^2\)</span></li>
+<li><span class="math inline">\(\kappa = \frac{r^2}{r^3} = \frac{1}{r}\)</span> (correct for circle radius <span class="math inline">\(r\)</span>)</li>
+</ul>
+</section>
+</section>
+<section id="surface-curvatures-explained" class="level2">
+<h2 class="anchored" data-anchor-id="surface-curvatures-explained">Surface Curvatures Explained</h2>
+<section id="fundamental-notations" class="level3">
+<h3 class="anchored" data-anchor-id="fundamental-notations">1. Fundamental Notations</h3>
+<ul>
+<li><p><strong>Surface Parameterization</strong>:</p>
+<ul>
+<li><span class="math inline">\(\underline{S}(u,v)\)</span>: A 2D → 3D mapping defining the surface</li>
+<li><span class="math inline">\(\underline{S}_u = \frac{\partial \underline{S}}{\partial u}\)</span>: Partial derivative in u-direction (tangent vector)</li>
+<li><span class="math inline">\(\underline{S}_v = \frac{\partial \underline{S}}{\partial v}\)</span>: Partial derivative in v-direction (tangent vector)</li>
+</ul></li>
+<li><p><strong>First Fundamental Form (Metric Tensor)</strong>: <span class="math display">\[I = \begin{pmatrix} E &amp; F \\ F &amp; G \end{pmatrix} = \begin{pmatrix} \langle \underline{S}_u, \underline{S}_u \rangle &amp; \langle \underline{S}_u, \underline{S}_v \rangle \\ \langle \underline{S}_u, \underline{S}_v \rangle &amp; \langle \underline{S}_v, \underline{S}_v \rangle \end{pmatrix}\]</span></p></li>
+<li><p><strong>Unit Normal Vector</strong>: <span class="math display">\[\hat{n} = \frac{\underline{S}_u \times \underline{S}_v}{\|\underline{S}_u \times \underline{S}_v\|}\]</span></p></li>
+</ul>
+</section>
+<section id="normal-curvature-basics" class="level3">
+<h3 class="anchored" data-anchor-id="normal-curvature-basics">2. Normal Curvature Basics</h3>
+<p>For a given point <span class="math inline">\(\underline{p}\)</span> on the surface:</p>
+<ol type="1">
+<li><p><strong>Definition</strong>: Curvature of the intersection curve created by slicing the surface with a plane containing:</p>
+<ul>
+<li>The surface normal <span class="math inline">\(\hat{n}\)</span></li>
+<li>A tangent vector <span class="math inline">\(\underline{v} = \cosα\,\underline{S}_u + \sinα\,\underline{S}_v\)</span></li>
+</ul></li>
+<li><p><strong>Angle Parameter</strong>:</p>
+<ul>
+<li><span class="math inline">\(α\)</span>: Angle between <span class="math inline">\(\underline{S}_u\)</span> and the chosen tangent direction <span class="math inline">\(\underline{v}\)</span></li>
+<li><span class="math inline">\(β = α - α_0\)</span>: Angle relative to principal direction</li>
+</ul></li>
+</ol>
+</section>
+<section id="eulers-theorem" class="level3">
+<h3 class="anchored" data-anchor-id="eulers-theorem">3. Euler’s Theorem</h3>
+<p>There exist two orthogonal principal directions where normal curvature reaches extremal values: <span class="math display">\[κ_n(β) = κ_{\min}\cos^2β + κ_{\max}\sin^2β\]</span></p>
+<ul>
+<li><strong><span class="math inline">\(κ_{\min}\)</span></strong>: Minimum normal curvature</li>
+<li><strong><span class="math inline">\(κ_{\max}\)</span></strong>: Maximum normal curvature</li>
+<li><strong><span class="math inline">\(α_0\)</span></strong>: Angle of first principal direction from <span class="math inline">\(\underline{S}_u\)</span></li>
+</ul>
+</section>
+<section id="second-fundamental-form" class="level3">
+<h3 class="anchored" data-anchor-id="second-fundamental-form">4. Second Fundamental Form</h3>
+<p>Measures how the surface bends in 3D space: <span class="math display">\[II = \begin{pmatrix} L &amp; M \\ M &amp; N \end{pmatrix}\]</span> where:</p>
+<ul>
+<li><span class="math inline">\(L = \langle \underline{S}_{uu}, \hat{n} \rangle\)</span></li>
+<li><span class="math inline">\(M = \langle \underline{S}_{uv}, \hat{n} \rangle\)</span></li>
+<li><span class="math inline">\(N = \langle \underline{S}_{vv}, \hat{n} \rangle\)</span></li>
+</ul>
+</section>
+<section id="fundamental-curvature-measures" class="level3">
+<h3 class="anchored" data-anchor-id="fundamental-curvature-measures">5. Fundamental Curvature Measures</h3>
+<ol type="1">
+<li><p><strong>Gaussian Curvature</strong> (intrinsic): <span class="math display">\[K = κ_{\min}κ_{\max} = \frac{LN - M^2}{EG - F^2}\]</span></p></li>
+<li><p><strong>Mean Curvature</strong> (extrinsic): <span class="math display">\[H = \frac{κ_{\min} + κ_{\max}}{2} = \frac{EN - 2FM + GL}{2(EG - F^2)}\]</span></p></li>
+<li><p><strong>Principal Curvatures</strong>: <span class="math display">\[κ_{\max,\min} = H \pm \sqrt{H^2 - K}\]</span></p></li>
+</ol>
+</section>
+<section id="geometric-interpretation-1" class="level3">
+<h3 class="anchored" data-anchor-id="geometric-interpretation-1">6. Geometric Interpretation</h3>
+<ul>
+<li><strong>Positive Gaussian Curvature</strong> (<span class="math inline">\(K &gt; 0\)</span>): Bowl-like (both curvatures same sign)</li>
+<li><strong>Negative Gaussian Curvature</strong> (<span class="math inline">\(K &lt; 0\)</span>): Saddle-like (opposite signs)</li>
+<li><strong>Zero Gaussian Curvature</strong> (<span class="math inline">\(K = 0\)</span>): Developable surface (at least one zero curvature)</li>
+</ul>
+</section>
+<section id="practical-computation" class="level3">
+<h3 class="anchored" data-anchor-id="practical-computation">7. Practical Computation</h3>
+<p>To find principal directions: 1. Solve eigenvalue problem for the shape operator: <span class="math display">\[S = I^{-1}II\]</span> 2. Eigenvalues → principal curvatures 3. Eigenvectors → principal directions</p>
+</section>
+<section id="example-cylinder" class="level3">
+<h3 class="anchored" data-anchor-id="example-cylinder">Example: Cylinder</h3>
+<ul>
+<li><span class="math inline">\(κ_{\min} = 0\)</span> (along axis)</li>
+<li><span class="math inline">\(κ_{\max} = 1/r\)</span> (around circumference)</li>
+<li><span class="math inline">\(K = 0\)</span> (developable)</li>
+<li><span class="math inline">\(H = 1/(2r)\)</span></li>
+</ul>
+</section>
+</section>
+<section id="derivation-of-the-second-fundamental-form" class="level2">
+<h2 class="anchored" data-anchor-id="derivation-of-the-second-fundamental-form">Derivation of the Second Fundamental Form</h2>
+<section id="intuition-measuring-surface-bending" class="level3">
+<h3 class="anchored" data-anchor-id="intuition-measuring-surface-bending">1. Intuition: Measuring Surface Bending</h3>
+<p>While the First Fundamental Form (I) measures distances <em>on</em> the surface, the Second Fundamental Form (II) quantifies how the surface <em>bends</em> in 3D space by tracking normal vector variations.</p>
+</section>
+<section id="formal-derivation" class="level3">
+<h3 class="anchored" data-anchor-id="formal-derivation">2. Formal Derivation</h3>
+<section id="step-1-surface-normal-variation" class="level4">
+<h4 class="anchored" data-anchor-id="step-1-surface-normal-variation">Step 1: Surface Normal Variation</h4>
+<p>Consider a surface patch <span class="math inline">\(\underline{S}(u,v)\)</span> with unit normal <span class="math inline">\(\hat{n}(u,v)\)</span>. The rate of normal change reveals curvature:</p>
+<p><span class="math display">\[
+d\hat{n} = \hat{n}_u du + \hat{n}_v dv
+\]</span></p>
+</section>
+<section id="step-2-relate-to-tangent-vectors" class="level4">
+<h4 class="anchored" data-anchor-id="step-2-relate-to-tangent-vectors">Step 2: Relate to Tangent Vectors</h4>
+<p>Since <span class="math inline">\(\hat{n} \perp\)</span> tangent plane, we have: <span class="math display">\[
+\langle \hat{n}, \underline{S}_u \rangle = \langle \hat{n}, \underline{S}_v \rangle = 0
+\]</span></p>
+<p>Differentiating these gives the <strong>Weingarten equations</strong>: <span class="math display">\[
+\begin{aligned}
+\langle \hat{n}_u, \underline{S}_u \rangle &amp;= -\langle \hat{n}, \underline{S}_{uu} \rangle = -L \\
+\langle \hat{n}_u, \underline{S}_v \rangle &amp;= -\langle \hat{n}, \underline{S}_{uv} \rangle = -M \\
+\langle \hat{n}_v, \underline{S}_v \rangle &amp;= -\langle \hat{n}, \underline{S}_{vv} \rangle = -N
+\end{aligned}
+\]</span></p>
+</section>
+<section id="step-3-construct-the-form" class="level4">
+<h4 class="anchored" data-anchor-id="step-3-construct-the-form">Step 3: Construct the Form</h4>
+<p>The second fundamental form emerges when expressing the normal component of surface acceleration:</p>
+<p>For a curve <span class="math inline">\(\underline{c}(t) = \underline{S}(u(t),v(t))\)</span>: <span class="math display">\[
+\underline{c}''(t) = \underline{S}_{uu}(u')^2 + 2\underline{S}_{uv}u'v' + \underline{S}_{vv}(v')^2 + \text{tangent terms}
+\]</span></p>
+<p>The normal curvature is: <span class="math display">\[
+\kappa_n = \frac{\langle \underline{c}'', \hat{n} \rangle}{\langle \underline{c}', \underline{c}' \rangle} = \frac{L(u')^2 + 2Mu'v' + N(v')^2}{E(u')^2 + 2Fu'v' + G(v')^2}
+\]</span></p>
+<p>Thus we define: <span class="math display">\[
+II = \begin{pmatrix} L &amp; M \\ M &amp; N \end{pmatrix} = \begin{pmatrix}
+\langle \underline{S}_{uu}, \hat{n} \rangle &amp; \langle \underline{S}_{uv}, \hat{n} \rangle \\
+\langle \underline{S}_{uv}, \hat{n} \rangle &amp; \langle \underline{S}_{vv}, \hat{n} \rangle
+\end{pmatrix}
+\]</span></p>
+</section>
+</section>
+<section id="why-second-fundamental-form" class="level3">
+<h3 class="anchored" data-anchor-id="why-second-fundamental-form">3. Why “Second” Fundamental Form?</h3>
+<ol type="1">
+<li><p><strong>Historical Context</strong>:</p>
+<ul>
+<li>First Fundamental Form (I) measures <em>intrinsic</em> properties (lengths/angles)</li>
+<li>Second Fundamental Form (II) captures <em>extrinsic</em> bending (how the surface embeds in 3D space)</li>
+</ul></li>
+<li><p><strong>Mathematical Hierarchy</strong>:</p>
+<ul>
+<li>I comes from the metric tensor (1st derivatives)</li>
+<li>II requires 2nd derivatives and normal information</li>
+</ul></li>
+<li><p><strong>Duality</strong>:</p>
+<ul>
+<li>I: <span class="math inline">\(\langle d\underline{S}, d\underline{S} \rangle\)</span> (dot product of tangent vectors)</li>
+<li>II: <span class="math inline">\(\langle d^2\underline{S}, \hat{n} \rangle\)</span> (projection of curvature onto normal)</li>
+</ul></li>
+</ol>
+</section>
+<section id="geometric-interpretation-2" class="level3">
+<h3 class="anchored" data-anchor-id="geometric-interpretation-2">4. Geometric Interpretation</h3>
+<p>The quadratic form <span class="math inline">\(II(v,v)\)</span> gives the normal curvature in direction <span class="math inline">\(v\)</span>:</p>
+<ul>
+<li>Positive value: Surface bends toward <span class="math inline">\(\hat{n}\)</span></li>
+<li>Negative value: Surface bends away from <span class="math inline">\(\hat{n}\)</span></li>
+<li>Zero value: Asymptotic direction (no normal bending)</li>
+</ul>
+</section>
+<section id="example-sphere-of-radius-r" class="level3">
+<h3 class="anchored" data-anchor-id="example-sphere-of-radius-r">5. Example: Sphere of Radius <span class="math inline">\(R\)</span></h3>
+<p>For <span class="math inline">\(\underline{S}(\theta,\phi) = R(\sin\theta\cos\phi, \sin\theta\sin\phi, \cos\theta)\)</span>:</p>
+<ul>
+<li><span class="math inline">\(\hat{n} = (\sin\theta\cos\phi, \sin\theta\sin\phi, \cos\theta)\)</span></li>
+<li><span class="math inline">\(L = \langle \underline{S}_{\theta\theta}, \hat{n} \rangle = -R\)</span></li>
+<li><span class="math inline">\(M = \langle \underline{S}_{\theta\phi}, \hat{n} \rangle = 0\)</span></li>
+<li><span class="math inline">\(N = \langle \underline{S}_{\phi\phi}, \hat{n} \rangle = -R\sin^2\theta\)</span></li>
+</ul>
+<p>Thus: <span class="math display">\[
+II = \begin{pmatrix} -R &amp; 0 \\ 0 &amp; -R\sin^2\theta \end{pmatrix}
+\]</span></p>
+</section>
+</section>
+</section>
+<section id="mesh-processing" class="level1">
+<h1>Mesh Processing</h1>
+<section id="heat-equation-based-denoising" class="level2">
+<h2 class="anchored" data-anchor-id="heat-equation-based-denoising">Heat Equation-Based Denoising</h2>
+<section id="the-heat-equation---1d-laplace" class="level3">
+<h3 class="anchored" data-anchor-id="the-heat-equation---1d-laplace">The Heat Equation - 1D Laplace</h3>
+<p>The smoothing process is modeled by the 1D heat equation: <span class="math display">\[
+\frac{\partial f(x,t)}{\partial t} = \alpha \frac{\partial^2 f(x,t)}{\partial x^2}
+\]</span> where:</p>
+<ul>
+<li><span class="math inline">\(f(x,t)\)</span>: Signal value at position <span class="math inline">\(x\)</span> and time <span class="math inline">\(t\)</span></li>
+<li><span class="math inline">\(\alpha\)</span>: Diffusion coefficient (controls smoothing rate)</li>
+<li><span class="math inline">\(\frac{\partial^2 f}{\partial x^2}\)</span>: Second spatial derivative (curvature)</li>
+</ul>
+</section>
+<section id="numerical-implementation" class="level3">
+<h3 class="anchored" data-anchor-id="numerical-implementation">Numerical Implementation</h3>
+<section id="spatial-discretization" class="level4">
+<h4 class="anchored" data-anchor-id="spatial-discretization">Spatial Discretization</h4>
+<ol type="1">
+<li>Represent signal as vector <span class="math inline">\(F = [f_1, f_2, ..., f_n]^T\)</span></li>
+<li>Approximate second derivative using finite differences: <span class="math display">\[f''_i \approx \frac{f_{i+1} - 2f_i + f_{i-1}}{h^2}\]</span></li>
+<li>Construct Laplacian matrix <span class="math inline">\(L\)</span>: <span class="math display">\[
+L = \frac{1}{h^2}\begin{pmatrix}
+-2 &amp; 1 &amp; &amp; \\
+1 &amp; -2 &amp; 1 &amp; \\
+&amp; \ddots &amp; \ddots &amp; \ddots \\
+&amp; &amp; 1 &amp; -2
+\end{pmatrix}
+\]</span></li>
+</ol>
+</section>
+<section id="time-integration-methods" class="level4">
+<h4 class="anchored" data-anchor-id="time-integration-methods">Time Integration Methods</h4>
+<section id="explicit-euler-forward-euler" class="level5">
+<h5 class="anchored" data-anchor-id="explicit-euler-forward-euler">Explicit Euler (Forward Euler)</h5>
+<p><span class="math display">\[
+F^{t+\Delta t} = F^t + \Delta t \alpha L F^t = (I + \Delta t \alpha L)F^t
+\]</span></p>
+<ul>
+<li><strong>Idea</strong>: Use slope at current time to forward compute next time</li>
+<li><strong>Pros</strong>: Simple to implement</li>
+<li><strong>Cons</strong>: Requires small <span class="math inline">\(\Delta t\)</span> for stability (CFL condition: <span class="math inline">\(\Delta t \leq \frac{h^2}{2\alpha}\)</span>)</li>
+</ul>
+</section>
+<section id="implicit-euler-backward-euler" class="level5">
+<h5 class="anchored" data-anchor-id="implicit-euler-backward-euler">Implicit Euler (Backward Euler)</h5>
+<p><span class="math display">\[
+F^{t+\Delta t} = F^t + \Delta t \alpha L F^{t+\Delta t}
+\]</span> <span class="math display">\[(I - \Delta t \alpha L)F^{t+\Delta t} = F^t\]</span></p>
+<ul>
+<li><strong>Idea</strong>: Use slope of future to compute =&gt; have to compute backward from the future back to now</li>
+<li><strong>Pros</strong>: Unconditionally stable (any <span class="math inline">\(\Delta t\)</span> allowed)</li>
+<li><strong>Cons</strong>: Requires solving linear system each step <strong>(like LQR-based MPC)</strong></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="boundary-conditions" class="level3">
+<h3 class="anchored" data-anchor-id="boundary-conditions">3. Boundary Conditions</h3>
+<p>Common choices for signal boundaries:</p>
+<ol type="1">
+<li><strong>Dirichlet</strong>: Fixed values (<span class="math inline">\(f=0\)</span> at boundaries)</li>
+<li><strong>Neumann</strong>: Zero derivative (<span class="math inline">\(f'=0\)</span> at boundaries)</li>
+<li><strong>Periodic</strong>: Wrap-around (for cyclic signals)</li>
+</ol>
+</section>
+<section id="d-heat-equation-denoising-example" class="level3">
+<h3 class="anchored" data-anchor-id="d-heat-equation-denoising-example">2D Heat Equation Denoising Example</h3>
+<p>Consider a 2D grayscale image <span class="math inline">\(f(x,y,t)\)</span> where: - <span class="math inline">\((x,y)\)</span> are pixel coordinates - <span class="math inline">\(t\)</span> is diffusion time - <span class="math inline">\(\alpha\)</span> controls smoothing strength</p>
+<p>The heat equation becomes: <span class="math display">\[
+\frac{\partial f}{\partial t} = \alpha \Delta f = \alpha \left(\frac{\partial^2 f}{\partial x^2} + \frac{\partial^2 f}{\partial y^2}\right)
+\]</span></p>
+<section id="discrete-laplacian-operator" class="level4">
+<h4 class="anchored" data-anchor-id="discrete-laplacian-operator">Discrete Laplacian Operator</h4>
+<p>For a pixel grid with spacing <span class="math inline">\(h=1\)</span>:</p>
+<p><span class="math display">\[
+\Delta f_{i,j} \approx f_{i-1,j} + f_{i+1,j} + f_{i,j-1} + f_{i,j+1} - 4f_{i,j}
+\]</span></p>
+<p><strong>Matrix Representation</strong>:</p>
+<pre><code>math
+L = \begin{pmatrix} 
+0 &amp; 1 &amp; 0 \\
+1 &amp; -4 &amp; 1 \\
+0 &amp; 1 &amp; 0 
+\end{pmatrix}</code></pre>
+</section>
+</section>
+</section>
+<section id="what-is-divergence" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-divergence">What is Divergence?</h2>
+<section id="core-definition" class="level3">
+<h3 class="anchored" data-anchor-id="core-definition">1. Core Definition</h3>
+<p>If Gradient applying <span class="math inline">\(\nabla\)</span> on a scalar field as input and output a vector field.</p>
+<p>Divergence continues on that Dot product of the <span class="math inline">\(\nabla\)</span> with a vector field for e.g.&nbsp;<strong>F</strong> = (F₁, F₂, F₃): <span class="math display">\[
+\text{div } \mathbf{F} = \nabla \cdot \mathbf{F} = \frac{\partial F_1}{\partial x} + \frac{\partial F_2}{\partial y} + \frac{\partial F_3}{\partial z}
+\]</span></p>
+</section>
+<section id="physical-interpretation" class="level3">
+<h3 class="anchored" data-anchor-id="physical-interpretation">2. Physical Interpretation</h3>
+<p>Imagine fluid flow where <strong>F</strong> represents velocity vectors:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 32%">
+<col style="width: 32%">
+<col style="width: 35%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Divergence Value</th>
+<th>What’s Happening</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Positive</strong></td>
+<td>More fluid exits than enters</td>
+<td>Mostly gradient positively out</td>
+</tr>
+<tr class="even">
+<td><strong>Negative</strong></td>
+<td>More fluid enters than exits</td>
+<td>Mostly gradient negatively in</td>
+</tr>
+<tr class="odd">
+<td><strong>Zero</strong></td>
+<td>Equal inflow/outflow</td>
+<td>positive gradient = negative gradient</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="gradient-vs-divergence-relationship" class="level3">
+<h3 class="anchored" data-anchor-id="gradient-vs-divergence-relationship">3. Gradient vs Divergence Relationship</h3>
+<ol type="1">
+<li><p><strong>Gradient (∇f)</strong>: Creates a vector field pointing uphill<br>
+Example: Temperature gradient shows heat flow direction</p></li>
+<li><p><strong>Divergence of Gradient</strong>:<br>
+<span class="math display">\[
+\nabla \cdot (\nabla f) = \frac{\partial^2 f}{\partial x^2} + \frac{\partial^2 f}{\partial y^2} + \frac{\partial^2 f}{\partial z^2} = \Delta f
+\]</span></p></li>
+<li><p>Image Example</p></li>
+</ol>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 31%">
+<col style="width: 22%">
+<col style="width: 45%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Operation</th>
+<th>Effect</th>
+<th>Kernel Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Gradient</strong> ∇I</td>
+<td>Detect change</td>
+<td><span class="math inline">\([-1, 0, 1]\)</span></td>
+</tr>
+<tr class="even">
+<td><strong>Divergence</strong> ∇·(∇I)</td>
+<td>Compare positive change vs negative changes</td>
+<td><span class="math inline">\(\begin{bmatrix}0&amp;1&amp;0\\1&amp;-4&amp;1\\0&amp;1&amp;0\end{bmatrix}\)</span></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="laplace-beltrami-operator-on-surfaces" class="level2">
+<h2 class="anchored" data-anchor-id="laplace-beltrami-operator-on-surfaces">Laplace-Beltrami Operator on Surfaces</h2>
+<section id="fundamental-definition" class="level3">
+<h3 class="anchored" data-anchor-id="fundamental-definition">1. Fundamental Definition</h3>
+<p>For a function <span class="math inline">\(f : S \rightarrow \mathbb{R}\)</span> defined on a surface <span class="math inline">\(S\)</span>: <span class="math display">\[
+\Delta_S f = \text{div}_S (\nabla_S f)
+\]</span> where:</p>
+<ul>
+<li><span class="math inline">\(\nabla_S f\)</span> is the surface gradient (intrinsic derivative along the surface)</li>
+<li><span class="math inline">\(\text{div}_S\)</span> is the surface divergence (measures flux through infinitesimal surface patches)</li>
+</ul>
+</section>
+<section id="discrete-formulation" class="level3">
+<h3 class="anchored" data-anchor-id="discrete-formulation">2. Discrete Formulation</h3>
+<p>For triangle meshes there are 2 options, the first is without weighting (Uniform Laplace), but this one is Cotant Laplace-Beltrami: <span class="math display">\[
+(\Delta_S f)_i \approx \frac{1}{A_i} \sum_{j \in N(i)} (\cot \alpha_{ij} + \cot \beta_{ij})(f_j - f_i)
+\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(A_i\)</span> is the Voronoi area around vertex <span class="math inline">\(i\)</span></li>
+<li><span class="math inline">\(N(i)\)</span> are neighboring vertices</li>
+<li><span class="math inline">\(\alpha_{ij}, \beta_{ij}\)</span> are angles opposite to edge <span class="math inline">\((i,j)\)</span></li>
+</ul>
+</section>
+<section id="key-properties" class="level3">
+<h3 class="anchored" data-anchor-id="key-properties">3. Key Properties</h3>
+<ol type="1">
+<li><p><strong>INTERESTING Curvature Relationship</strong>: <span class="math display">\[
+\Delta_S p = -2H\hat{n}
+\]</span> where:</p>
+<ul>
+<li><span class="math inline">\(H = \frac{\kappa_1 + \kappa_2}{2}\)</span> (mean curvature)</li>
+<li><span class="math inline">\(\hat{n}\)</span> is the unit normal vector</li>
+</ul></li>
+</ol>
+</section>
+<section id="numerical-implementation-1" class="level3">
+<h3 class="anchored" data-anchor-id="numerical-implementation-1">4. Numerical Implementation</h3>
+<p>Explicit smoothing: <span class="math display">\[
+f_i^{t+1} = f_i^t + \Delta t \alpha (\Delta_S f^t)_i
+\]</span></p>
+</section>
+<section id="mean-curvature-flow" class="level3">
+<h3 class="anchored" data-anchor-id="mean-curvature-flow">6. Mean Curvature Flow</h3>
+<p><span class="math display">\[
+\frac{\partial p}{\partial t} = \Delta_S p = -2H\hat{n}
+\]</span></p>
+<ul>
+<li><strong>MOVING TO LAPLACE = MOVING TO MEAN CURVATURE DIRECTION</strong></li>
+</ul>
+</section>
+</section>
+<section id="dynamic-connectivity" class="level2">
+<h2 class="anchored" data-anchor-id="dynamic-connectivity">Dynamic Connectivity</h2>
+<section id="remeshing-pipeline" class="level3">
+<h3 class="anchored" data-anchor-id="remeshing-pipeline">Remeshing Pipeline</h3>
+<p>given a target edge length <span class="math inline">\(l\)</span>: 1. <strong>split</strong> all edges that are longer than <span class="math inline">\(\frac{4}{3} l\)</span> at their midpoint. 1. <strong>collapse</strong> all edges shorter than <span class="math inline">\(\frac{4}{5} l\)</span> into their midpoint 1. <strong>flip</strong> edges in order get standard valence 6 (or 4 on boundaries). 1. <strong>relocate</strong> vertices on the surface by tangential smoothing</p>
+</section>
+<section id="addremove-face" class="level3">
+<h3 class="anchored" data-anchor-id="addremove-face">Add/Remove Face</h3>
+<p>Mostly taking care of: - boundary list for inverse HE - and the prev/next relationship at each HE</p>
+
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

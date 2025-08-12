@@ -8,7 +8,7 @@
 
 <meta name="dcterms.date" content="2025-07-30">
 
-<title>Computer Graphics Foundation – Đinh Tiến Thắng</title>
+<title>Polygonal Mesh – silent convergence</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -40,7 +40,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-db03927a41f77a8af5287a812d7101f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -110,7 +110,7 @@ window.Quarto = {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
-    <span class="navbar-title">Đinh Tiến Thắng</span>
+    <span class="navbar-title">silent convergence</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -134,12 +134,10 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Computer Graphics Foundation</h1>
+      <h1 class="title">Polygonal Mesh</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">Computer Graphics</div>
-                <div class="quarto-category">Mesh Processing</div>
-                <div class="quarto-category">GPU real-time Rendering</div>
-                <div class="quarto-category">Accelerated Data Structure</div>
+                <div class="quarto-category">Polygonal Mesh</div>
               </div>
                   </div>
   </div>
@@ -203,6 +201,18 @@ window.Quarto = {
   <li><a href="#why-use-triangle-strips-for-rendering" id="toc-why-use-triangle-strips-for-rendering" class="nav-link" data-scroll-target="#why-use-triangle-strips-for-rendering">Why use Triangle Strips for Rendering?</a></li>
   <li><a href="#how-to-compute-triangle-strip" id="toc-how-to-compute-triangle-strip" class="nav-link" data-scroll-target="#how-to-compute-triangle-strip">How to compute Triangle Strip?</a></li>
   <li><a href="#how-to-do-orientability-check" id="toc-how-to-do-orientability-check" class="nav-link" data-scroll-target="#how-to-do-orientability-check">How to do Orientability Check?</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#topology" id="toc-topology" class="nav-link" data-scroll-target="#topology">Topology</a>
+  <ul class="collapse">
+  <li><a href="#manifold-if-can-always-find-a-disk-or-a-half-disk" id="toc-manifold-if-can-always-find-a-disk-or-a-half-disk" class="nav-link" data-scroll-target="#manifold-if-can-always-find-a-disk-or-a-half-disk">2-Manifold if can always find a disk or a half disk</a></li>
+  <li><a href="#understanding-the-euler-characteristic" id="toc-understanding-the-euler-characteristic" class="nav-link" data-scroll-target="#understanding-the-euler-characteristic">Understanding the Euler Characteristic</a>
+  <ul class="collapse">
+  <li><a href="#basic-definition" id="toc-basic-definition" class="nav-link" data-scroll-target="#basic-definition">1. Basic Definition</a></li>
+  <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">2. Examples</a></li>
+  <li><a href="#topological-meaning" id="toc-topological-meaning" class="nav-link" data-scroll-target="#topological-meaning">3. Topological Meaning</a></li>
+  <li><a href="#geometric-interpretation" id="toc-geometric-interpretation" class="nav-link" data-scroll-target="#geometric-interpretation">5. Geometric Interpretation</a></li>
+  <li><a href="#practical-applications" id="toc-practical-applications" class="nav-link" data-scroll-target="#practical-applications">5. Practical Applications</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -481,6 +491,145 @@ do {
 <section id="how-to-do-orientability-check" class="level3">
 <h3 class="anchored" data-anchor-id="how-to-do-orientability-check">How to do Orientability Check?</h3>
 <p>Region Growing: Start at a seed to queue 1. Take the first face from queue 2. Check if orientable? 1. check if all neighboring processed faces have consistent orientation 2. If no, give up. But if yes, swap next and inv 3. Add all neighbors to queue</p>
+</section>
+</section>
+</section>
+<section id="topology" class="level1">
+<h1>Topology</h1>
+<section id="manifold-if-can-always-find-a-disk-or-a-half-disk" class="level2">
+<h2 class="anchored" data-anchor-id="manifold-if-can-always-find-a-disk-or-a-half-disk">2-Manifold if can always find a disk or a half disk</h2>
+</section>
+<section id="understanding-the-euler-characteristic" class="level2">
+<h2 class="anchored" data-anchor-id="understanding-the-euler-characteristic">Understanding the Euler Characteristic</h2>
+<section id="basic-definition" class="level3">
+<h3 class="anchored" data-anchor-id="basic-definition">1. Basic Definition</h3>
+<p>For any closed (borderless) surface <strong>S</strong> subdivided into vertices (V), edges (E), and faces (F):</p>
+<p><span class="math display">\[
+\chi(S) = V - E + F
+\]</span></p>
+<p><strong>Key Property</strong>: - χ is a <em>topological invariant</em> - it depends only on the surface’s “shape” (topology), not on how we subdivide it.</p>
+</section>
+<section id="examples" class="level3">
+<h3 class="anchored" data-anchor-id="examples">2. Examples</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Surface</th>
+<th>V - E + F</th>
+<th>χ</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Sphere</td>
+<td>8-12+6 = 2 (cube) <br> 4-6+4 = 2 (tetrahedron)</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>Torus</td>
+<td>16-32+16 = 0</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>Double Torus</td>
+<td>8-16+8 = 0</td>
+<td>0 ?</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="topological-meaning" class="level3">
+<h3 class="anchored" data-anchor-id="topological-meaning">3. Topological Meaning</h3>
+<p>The Euler characteristic can be expressed via Betti numbers (counting topological features):</p>
+<p><span class="math display">\[
+\chi = h_0 - h_1 + h_2
+\]</span></p>
+<section id="h_0-0-dimensional-holes-connected-components" class="level4">
+<h4 class="anchored" data-anchor-id="h_0-0-dimensional-holes-connected-components"><span class="math inline">\(h_0\)</span>: 0-Dimensional Holes (Connected Components)</h4>
+<ul>
+<li>Counts the number of separate pieces in the surface</li>
+<li>For a single connected surface: <span class="math inline">\(h_0 = 1\)</span></li>
+<li>Example: Both a sphere and torus have <span class="math inline">\(h_0 = 1\)</span></li>
+</ul>
+</section>
+<section id="h_1-1-dimensional-holes-non-trivial-loops" class="level4">
+<h4 class="anchored" data-anchor-id="h_1-1-dimensional-holes-non-trivial-loops"><span class="math inline">\(h_1\)</span>: 1-Dimensional Holes (Non-Trivial Loops)</h4>
+<ul>
+<li>Counts the maximum number of independent closed curves that:
+<ol type="1">
+<li>Cannot be shrunk to a point</li>
+<li>Don’t split the surface when cut</li>
+</ol></li>
+<li>Sphere: <span class="math inline">\(h_1 = 0\)</span> (all loops can shrink)</li>
+<li>Torus: <span class="math inline">\(h_1 = 2\)</span> (meridian and longitude loops)</li>
+<li>Double Torus: <span class="math inline">\(h_1 = 4\)</span></li>
+</ul>
+</section>
+<section id="h_2-number-of-orientable-shells" class="level4">
+<h4 class="anchored" data-anchor-id="h_2-number-of-orientable-shells"><span class="math inline">\(h_2\)</span>: Number of orientable shells</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Surface</th>
+<th><span class="math inline">\(h_0\)</span></th>
+<th><span class="math inline">\(h_1\)</span></th>
+<th><span class="math inline">\(h_2\)</span></th>
+<th><span class="math inline">\(\chi\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Sphere</strong></td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td><strong>Torus</strong></td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td><strong>Disk</strong></td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="geometric-interpretation" class="level3">
+<h3 class="anchored" data-anchor-id="geometric-interpretation">5. Geometric Interpretation</h3>
+<ul>
+<li>Positive <span class="math inline">\(\chi\)</span>: Sphere-like topology</li>
+<li>Zero <span class="math inline">\(\chi\)</span>: Torus-like topology</li>
+<li>Negative <span class="math inline">\(\chi\)</span>: Higher-genus surfaces (multiple handles)</li>
+</ul>
+</section>
+<section id="practical-applications" class="level3">
+<h3 class="anchored" data-anchor-id="practical-applications">5. Practical Applications</h3>
+<ol type="1">
+<li><strong>Mesh Processing</strong>:
+<ul>
+<li>Verify mesh integrity (e.g., χ=2 for watertight meshes)</li>
+<li>Detect topological changes during simplification</li>
+</ul></li>
+<li><strong>Physics</strong>:
+<ul>
+<li>Gauss-Bonnet theorem relates χ to total curvature</li>
+<li>Essential in string theory and cosmology</li>
+</ul></li>
+<li><strong>Computer Graphics</strong>:
+<ul>
+<li>Texture mapping requires χ=2 for spherical topology</li>
+<li>Character modeling (ear/handles change topology)</li>
+</ul></li>
+</ol>
 
 
 

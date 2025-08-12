@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-08-08">
+
+<title>Advanced Modelling – silent convergence</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-db03927a41f77a8af5287a812d7101f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">silent convergence</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Đinh Tiến Thắng</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Advanced Modelling</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">Computer Graphics</div>
+                <div class="quarto-category">Advanced Modelling</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">August 8, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#implicit-surface" id="toc-implicit-surface" class="nav-link active" data-scroll-target="#implicit-surface">Implicit Surface</a></li>
+  <li><a href="#d-scanning" id="toc-d-scanning" class="nav-link" data-scroll-target="#d-scanning">3D Scanning</a></li>
+  <li><a href="#d-processing" id="toc-d-processing" class="nav-link" data-scroll-target="#d-processing">3D Processing</a></li>
+  <li><a href="#rotation-articulated-objects" id="toc-rotation-articulated-objects" class="nav-link" data-scroll-target="#rotation-articulated-objects">Rotation &amp; Articulated Objects</a></li>
+  <li><a href="#skeleton-extraction" id="toc-skeleton-extraction" class="nav-link" data-scroll-target="#skeleton-extraction">Skeleton Extraction</a></li>
+  <li><a href="#rigging" id="toc-rigging" class="nav-link" data-scroll-target="#rigging">Rigging</a></li>
+  <li><a href="#skinning" id="toc-skinning" class="nav-link" data-scroll-target="#skinning">Skinning</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="implicit-surface" class="level1">
+<h1>Implicit Surface</h1>
+<ol type="1">
+<li><strong>Define the term implicit surface and explain the idea with a sketch!</strong></li>
+</ol>
+<ul>
+<li>f: R³ → R: f(x, y, z) = 0</li>
+<li>The Interior: f(x) &lt; 0.</li>
+<li>The Surface: f(x) = 0.</li>
+<li>The Exterior: f(x) &gt; 0.</li>
+<li>They use the following operations: levelset, CSG,</li>
+</ul>
+<ol start="2" type="1">
+<li><strong>What is a regular implicit function and what does the implicit function theorem say about them?</strong></li>
+</ol>
+<ul>
+<li>Regular Implicit Function: An implicit function f is called regular if its gradient ∇f(x) does not vanish aka = 0 (no cut itself)</li>
+<li>Implicit Function Theorem: if f is a regular function, then the implicit surface S(f) is a manifold.</li>
+</ul>
+<ol start="3" type="1">
+<li><strong>How can one compute the surface normal of an implicit surface?</strong></li>
+</ol>
+<ul>
+<li>The gradient vector ∇f(x) is always orthogonal to the surface at x: n(x) ∝ ∇f(x)</li>
+</ul>
+<ol start="4" type="1">
+<li><strong>Explain the advantage of an analytic computation of the gradient of an implicit function!</strong></li>
+</ol>
+<ul>
+<li>Accuracy: no numeric approximatation</li>
+<li>Fast: no need numeric apprixmiation</li>
+</ul>
+<ol start="5" type="1">
+<li><strong>Compare levelset surfaces with implicit surfaces!</strong></li>
+</ol>
+<ul>
+<li>Start with implicit surface S(f) = {x | f(x) = 0}.</li>
+<li>A level set is an entire family of this function: l_λ(x) = f(x) - λ</li>
+</ul>
+<ol start="6" type="1">
+<li><strong>How can CSG-operations be expressed in the formalism of implicit functions?</strong></li>
+</ol>
+<ul>
+<li>CSG on implicit functions (f₁, f₂, etc.), think like what would a position value be:</li>
+<li>f_union(x) = min(f₁(x), f₂(x)).</li>
+<li>f_intersection(x) = max(f₁(x), f₂(x)).</li>
+<li>Difference (A &nbsp;B): The set of points in A but not in B. This corresponds to f_difference(x) = max(f₁(x), -f₂(x)).</li>
+</ul>
+<ol start="7" type="1">
+<li><strong>Name examples of implicit surface primitives!</strong></li>
+</ol>
+<ul>
+<li>Implicit surface primitives can be defined in several ways:
+<ul>
+<li>SDF that we all know (can utilize mixed Minkowski) (sphere f(x) = sqrt(x² + y² + z²) - r)</li>
+<li>Algebraic Surfaces: e.g.&nbsp;Quadrics (e.g., spheres, cylinders, cones) are algebraic surfaces of degree two. (sphere f(x) = x² + y² + z² - r²)</li>
+<li>Radial Basis Functions: Used to define “meta-balls” or “blobs” where a radially symmetric potential field is centered on a set of points.</li>
+<li>Lattice Basis: Using a spline basis over a grid to define the implicit function.</li>
+</ul></li>
+</ul>
+<ol start="8" type="1">
+<li><strong>Given an image of a superquadric estimate the exponents 𝑝₁ and 𝑝₂ of the used Minkowski norms!</strong></li>
+</ol>
+<ul>
+<li>Exponent p₁ controls the shape in the xy-plane (looking down the z-axis).
+<ul>
+<li>p₁ &lt; 2: The shape is concave or “star-like”.</li>
+<li>p₁ = 2: The cross-section is a perfect circle.</li>
+<li>p₁ &gt; 2: The cross-section becomes more “square-like”.</li>
+</ul></li>
+<li>Exponent p₂ controls the shape in the rz-plane (the profile along the z-axis).
+<ul>
+<li>p₂ &lt; 2: The shape is pointy at the poles.</li>
+<li>p₂ = 2: The profile is circular.</li>
+<li>p₂ &gt; 2: The profile becomes more “box-like”.</li>
+</ul></li>
+</ul>
+<ol start="9" type="1">
+<li><strong>Name same example shapes that can be represented by a quadratic implicit surface and precisely specify implicit functions for sphere and cylinder!</strong></li>
+</ol>
+<ul>
+<li>Sphere/Ellipsoid (centered at origin): f(x, y, z) = x² + y² + z² - 1 = 0</li>
+<li>Cylinder (aligned with z-axis): f(x, y, z) = x² + y² - 1 = 0</li>
+</ul>
+<ol start="10" type="1">
+<li><strong>Explain the principle of meta balls (Gaussian Splatting?)!</strong></li>
+</ol>
+<ul>
+<li>Meta balls (or blobs) are an implicit modeling technique used to create organic, smoothly blended shapes. The principle is:</li>
+<li>A set of “atoms” (center points c_i) are defined in space.</li>
+<li>Each atom generates a potential field function h_i(x) that decreases with distance from the atom’s center (e.g., a Gaussian function exp(-||x - c_i||² / r_i²)).</li>
+<li>The overall implicit function f(x) is defined by summing the potentials from all atoms and subtracting this sum from a flipped Gaussian value: f(x) = 1/e - Σ h_i(x) (look at that function in the slide you will understand)</li>
+<li>The resulting implicit surface f(x) = 0 is a smooth surface that naturally blends together where the potential fields of different atoms overlap.</li>
+</ul>
+<ol start="11" type="1">
+<li><strong>Explain the Marching Cubes algorithm!</strong></li>
+</ol>
+<ul>
+<li>Goal: extracts a polygonal mesh (tessellates) an implicit surface defined on a grid. The steps are:</li>
+<li>For each voxel, evaluate the implicit function f at its 8 corners.</li>
+<li>Classify each corner as being inside (f &lt; 0) or outside (f &gt; 0). This creates an 8-bit index for the voxel (one bit per corner).</li>
+<li>lookup edges connecting interior with exterior using that 8bit</li>
+<li>For each intersected edge, calculate the precise intersection point (the “zero crossing”).</li>
+<li>Connect it</li>
+</ul>
+<ol start="12" type="1">
+<li><strong>What problems arise at sharp creases and corners when using Marching Cubes?</strong></li>
+</ol>
+<ul>
+<li>cannot reproduce sharp creases or corners</li>
+</ul>
+<ol start="13" type="1">
+<li><strong>How can one reconstruct sharp creases and corners with the Dual Contouring approach?</strong></li>
+</ol>
+<ul>
+<li><strong>Idea</strong>: placing additionally single representative vertex inside each grid cell that is intersected by the surface, rather than on the edges the whole time.</li>
+<li>For every grid edge that has a sign change, find the zero-crossing point and the surface normal (gradient) at that point. These define a tangent plane.</li>
+<li>Find the optimal point p that best fits all the tangent planes using Quadric Error Metric (QEM).</li>
+</ul>
+<ol start="14" type="1">
+<li><strong>Compare Space Warping and Function Value Mapping for the manipulation of implicit surfaces!</strong></li>
+</ol>
+<ul>
+<li>Function Value Mapping: combining the scalar values from generic functions: m^F(p) = m(f₁(p), f₂(p), …):
+<ul>
+<li>CSG: Union (min), Intersection (max), Difference (max(f₁, -f₂)).</li>
+<li>Levelset Mapping: m(f, λ) = f - λ</li>
+<li>Outline Mapping: m(f, λ) = f² - λ² (creates two offset surfaces).</li>
+<li>Blending: Smooth approximations of min and max for CSG union and intersection.</li>
+<li>Adding Noise: m(f) = f + noise()</li>
+</ul></li>
+<li>Space Warping: These deform the surface by modifying the space (input coordinate)s before they are evaluated by the function f.&nbsp;The new function is f’(q) = f(w(q)), where w is the inverse warp.
+<ul>
+<li>Linear Transformations: Affine transformations like rotation, scaling, and shear, represented by a matrix M. The warp is w(q) = M⁻¹q.</li>
+<li>Taper: A non-uniform scaling along an axis.</li>
+<li>Twist: A rotation around an axis where the angle of rotation depends on the position along that axis.</li>
+<li>Bend: Deforming an object along a circular arc.</li>
+</ul></li>
+</ul>
+<ol start="15" type="1">
+<li><strong>Explain how to transform an implicit surface with an affine transformation! How can one compute the gradient of the transformed implicit surface?</strong></li>
+</ol>
+<ul>
+<li>To transform an implicit surface f(p) = 0 with an affine transformation to q = M*p:</li>
+<li>Find the inverse p = w(q) = M⁻¹q. (bringing the coordinate system there)</li>
+<li>Then apply the original function: f^w(q) = f(w(q)) = f(M⁻¹q)</li>
+<li>The gradient of the transformed surface is found using the chain rule: ∇f^w = ∇f(p) ⋅ J_w where ∇f(p) is the gradient of the original function evaluated at the un-warped point p, and J_w is the Jacobian of the warp function. For a linear transformation, the Jacobian is simply the matrix itself, so: ∇f^w(q) = ∇f(M⁻¹q) ⋅ M⁻¹</li>
+</ul>
+<ol start="16" type="1">
+<li><p><strong>Given an image of a space warped implicit surface, argue whether it was generated via a Tapper, Twist or Bend transformation!</strong> we know</p></li>
+<li><p><strong>Explain modified union and intersection operations that smoothly blend between implicit surfaces!</strong></p></li>
+</ol>
+<ul>
+<li>CSG union (min) putting a sphere at outside (1, 1). =&gt; (1-f1)^2 + (1-f2)^2</li>
+<li>CSG intersection (max) putting a sphere inside (-1, -1)</li>
+</ul>
+<ol start="18" type="1">
+<li><strong>How can one define the extent of the smoothing area?</strong></li>
+</ol>
+<ul>
+<li>aka the blending radius, can be controlled independently for each surface. Normalizing d_i = f_i / r_i</li>
+</ul>
+<ol start="19" type="1">
+<li><strong>What problems arise in areas where the implicit surfaces coincide? How can one conquer these problems?</strong></li>
+</ol>
+<ul>
+<li>when 2 blended surfaces become parallel or nearly parallel, unwanted bulging artifacts can occur where the blending influences undesirably accumulate. Idea: control when parallel =&gt; no blending, but when 90 deg. =&gt; max blending: d_i → d_i / (1 - |cos θ|)</li>
+</ul>
+<ol start="20" type="1">
+<li><strong>Skeleton based with hard Implicit Surface</strong></li>
+</ol>
+<ul>
+<li>Given a point p: find the dot product between AB, and AP to get the projection (clamp between 0, 1)</li>
+<li>Get the height from that projection</li>
+<li>Minus 1 (to make the surface to 1)</li>
+</ul>
+<ol start="20" type="1">
+<li><strong>How to do similar thing using Convolution?</strong></li>
+</ol>
+<ul>
+<li>An implicit surface generated from a skeleton (a geometric primitive like a point, line, or polygon) and a potential function (or filter kernel, h).</li>
+<li>Implementation: skeleton function g (which is 1 on the skeleton and 0 elsewhere) convoluted by the potential function h. The final implicit surface is a level set of this resulting scalar field: f(r) = const - (g * h)(r) = 0.</li>
+</ul>
+<ol start="21" type="1">
+<li><strong>Compare distance surfaces and convolution surfaces!</strong></li>
+</ol>
+<ul>
+<li>Distance Surfaces: easy to implement but sharp</li>
+<li>Convolution Surfaces: smooth (can produce bulging) but more computationally complex</li>
+</ul>
+<ol start="22" type="1">
+<li><strong>How can one evaluate a convolution surface defined over a set of primitives?</strong></li>
+</ol>
+<ul>
+<li>summing the result of each primitive skeleton</li>
+</ul>
+<ol start="23" type="1">
+<li><strong>Which filter kernels do you know and over which can these be integrated analytically?</strong></li>
+</ol>
+<ul>
+<li>Gaussian</li>
+<li>Cauchy</li>
+<li>Inverse powers of radius (radial basis)</li>
+</ul>
+<ol start="24" type="1">
+<li><strong>Do bulging artefacts also arise for convolution surfaces and if so, how can they be cured?</strong></li>
+</ol>
+<ul>
+<li>Solution:
+<ul>
+<li>Thick Skeletons: skeleton width thicker than the kernel radius</li>
+<li>Weighted Skeletons: Use weights that decrease at the intersections of skeleton primitives</li>
+</ul></li>
+</ul>
+</section>
+<section id="d-scanning" class="level1">
+<h1>3D Scanning</h1>
+<ol type="1">
+<li><strong>Name some techniques to acquire the shape of 3D objects!</strong></li>
+</ol>
+<ul>
+<li>Structured light (RGBD)</li>
+<li>stereo acquisition RGBD</li>
+<li>Tomographic reconstruction from X-ray images (CT scan).</li>
+<li>Time-of-flight</li>
+<li>Magnetic Resonance Tomography (MRI).</li>
+</ul>
+<ol start="2" type="1">
+<li><strong>Explain the idea of a structured light scanner!</strong></li>
+</ol>
+<ul>
+<li>known structured pattern of light is projected (e.g., vertical stripes) onto the 3D object.</li>
+<li>The projected pattern appears distorted in the image due to the object’s surface shape.</li>
+<li>Because the system is calibrated, for any pixel in the camera image, we can determine which stripe</li>
+<li>triangulation.</li>
+</ul>
+<ol start="3" type="1">
+<li><strong>What is a homography?</strong></li>
+</ol>
+<ul>
+<li>transformation 3x3 homogeneous matrix H maps points from one 2D plane to another</li>
+</ul>
+<ol start="4" type="1">
+<li><strong>How many feature correspondences are needed to estimate a homography?</strong></li>
+</ol>
+<ul>
+<li>3x3 matrix has 9 parameters but only 8 variables needed, the last one set to 1 (doesnt matter, scalable).</li>
+<li>Since each point-to-point correspondence provides 2 linear equations (x, y), needs 4 corresponding pairs</li>
+<li>calculate using SVD</li>
+</ul>
+<ol start="5" type="1">
+<li><strong>Under which situations can two images be brought into correspondence with a homography?</strong></li>
+</ol>
+<ul>
+<li>Planar Scene: The images are of a 3D scene where all the points of interest lie on a single plane (like a checkerboard). The camera can undergo any rotation and translation.</li>
+<li>Pure Rotation: The camera only rotates around its optical center (pinhole) and does not translate. In this case, the 3D scene can have any arbitrary shape.</li>
+</ul>
+<ol start="6" type="1">
+<li><strong>CALIBRATION: What are the intrinsic and extrinsic camera parameters in the pinhole camera model?</strong></li>
+</ol>
+<ul>
+<li>Extrinsic Parameters: camera’s position and orientation relative to the world coordinate system.</li>
+<li>Intrinsic Parameters: focal lengths in pixel units (sx, sy), the principal point (the pixel coordinates where the optical axis intersects the image plane) (cx, cy), and a skew parameter (h).</li>
+</ul>
+<ol start="7" type="1">
+<li><strong>How many degrees of freedom do we have for the intrinsic and extrinsic parameters?</strong></li>
+</ol>
+<ul>
+<li>Extrinsic Parameters: 3 for rotation and 3 for translation, for a total of 6 degrees of freedom.</li>
+<li>Intrinsic Parameters: 2 focal length at diagonal (scaling) + 2 principle point (translation) + 1 skew matrix (shear) = 5 (sx, sy, cx, cy, h).</li>
+</ul>
+<ol start="8" type="1">
+<li><strong>Why is the pinhole model in practice not sufficient and how can it be extended?</strong></li>
+</ol>
+<ul>
+<li>non-linear distortion (if you show me formula i can explain)</li>
+</ul>
+<ol start="9" type="1">
+<li><strong>Explain the procedure for camera calibration according to Zhang!</strong> Zhang’s method is a widely used camera calibration technique:</li>
+</ol>
+<ul>
+<li>Acquire 3 images from different orientations.</li>
+<li>Detect multiples anker points of the image (mostly corners)</li>
+<li>for each new image -&gt; a new homography H!!! nice!!! (hollistic intrinsic K + extrinsic [R|t])</li>
+<li>2 equations each image, and utilizing <span class="math inline">\(H = K * [R|t]\)</span>:
+<ol type="1">
+<li><strong>R are orthogonal =&gt; dot products</strong> =&gt; creating inverse K <span class="math inline">\(r_1r_2 = h_1^TK^{-T}K^{-1}h_2\)</span></li>
+<li><strong>R should have same size everywhere</strong> =&gt; <span class="math inline">\(h_1^TK^{-T}K^{-1}h1 = h2^TK^{-T}K^{-1}h2\)</span></li>
+</ol></li>
+<li>3 images * 2 equations each images we have 6 equation to find <span class="math inline">\(K\)</span> (in slides is B)</li>
+<li>add more non-linear distortion if needed</li>
+</ul>
+<ol start="10" type="1">
+<li><strong>How many shots of the calibration plate are needed at least? Why?</strong></li>
+</ol>
+<ul>
+<li>5 linear intrinsic parameter (ffcch)</li>
+<li>A minimum of 3 images are needed. each image = 1 homography = 2 linear constraints inintrinsic parameters derived.</li>
+<li>=&gt; 3 views (providing 6 constraints) are required to solve the system of equations.</li>
+</ul>
+<ol start="11" type="1">
+<li><strong>Why are the parameters of the camera model estimated in two steps?</strong></li>
+</ol>
+<ul>
+<li>Linear Estimation: first step ignores distortion =&gt; initial point</li>
+<li>Non-linear Refinement: include distortion using algorithm to solve</li>
+</ul>
+<ol start="12" type="1">
+<li><strong>What is the typical procedure to calibrate a camera?</strong></li>
+</ol>
+<ul>
+<li>like said above (2 big steps linear for intrinsic) =&gt; nonlinear for distortion</li>
+</ul>
+<ol start="13" type="1">
+<li><strong>Explain a method to calibrate a camera-projector setup!</strong></li>
+</ol>
+<ul>
+<li>“inverse progress”:</li>
+<li>Calibrate the camera first using a standard method.</li>
+<li>To establish correspondences for the projector, project gray-codes that encode the projector’s pixel columns and rows onto a calibration plane</li>
+<li>The calibrated camera captures images of these patterns. This allows you to determine for each camera pixel which projector pixel is illuminating that spot.</li>
+<li>By detecting the checkerboard corners in the camera image, you can find their corresponding projector coordinates.</li>
+<li>Now that you have correspondences between known 3D world points (the checkerboard corners) and 2D projector image points, you can calibrate the projector using the same technique as for a camera.</li>
+</ul>
+<ol start="14" type="1">
+<li><strong>Explain the term Triangulation in the domain of structured light scanning!</strong></li>
+</ol>
+<ul>
+<li>stereo trigonometry</li>
+</ul>
+<ol start="15" type="1">
+<li><strong>What difficulty does one face with a non-linear camera-projector model for triangulation when working with stripe patterns? How can the problem be circumvented?</strong></li>
+</ol>
+<ul>
+<li>projector has distortion -&gt; also inversely distort projector pattern</li>
+</ul>
+<ol start="16" type="1">
+<li><strong>Explain advantages of a 2-camera structured light scanning setup!</strong> Adding additional camera to a standard camera-projector setup provides several advantages:</li>
+</ol>
+<ul>
+<li>Reduces highlight problems: Specular reflections that might blind one camera can be correctly captured by the other.</li>
+<li>Increases surface visibility: It helps resolve occlusions, as a surface part hidden from one camera may be visible to the other.</li>
+<li>Increases precision: It provides multiple measurements of the same surface point, leading to a more robust and accurate reconstruction.</li>
+</ul>
+<ol start="17" type="1">
+<li><strong>Discuss the scanning of dynamic 3D scenes with structured light approaches!</strong></li>
+</ol>
+<ul>
+<li>High-speed systems: Use a synchronized high-speed camera and projector to capture the entire pattern sequence before the object moves significantly.</li>
+<li>Debrujin, GrayCode</li>
+</ul>
+<ol start="18" type="1">
+<li><strong>Explain and compare Line-Shift, Intensity Coding, Gray-Code and phase shift based structured light scanning!</strong></li>
+</ol>
+<ul>
+<li>Line-Shift: Projects one vertical line at a time =&gt; not good, because only 1 line =&gt; many shots</li>
+<li>Intensity Coding: 2 images: x = L2/L1</li>
+<li>Gray-Code: n images, see how a point change after n images (dark/white)</li>
+<li>Phase Shift: 3 images, see how a point change after 3 images (using continuos function )</li>
+</ul>
+<ol start="19" type="1">
+<li><strong>Why is the Gray-Code better suited for structured light 3D scanning?</strong></li>
+</ol>
+<ul>
+<li>avoid color bleeding (small scattered cells)</li>
+</ul>
+<ol start="20" type="1">
+<li><strong>How can one use de Bruijn Sequences to build a Single-Shot 3D Scanner?</strong></li>
+</ol>
+<ul>
+<li>idk</li>
+</ul>
+<ol start="21" type="1">
+<li><strong>Explain the basic idea for the separation of direct from indirect illumination! How can one make decoding of bit codes more robust with direct-indirect light separation?</strong></li>
+</ol>
+<ul>
+<li>Indirect: low frequency</li>
+<li>Direct_ high frequency</li>
+</ul>
+</section>
+<section id="d-processing" class="level1">
+<h1>3D Processing</h1>
+<ol type="1">
+<li><strong>Explain what the Riemannian-Graph is and how it can be used to filter outliers!</strong></li>
+</ol>
+<ul>
+<li>Riemannian-Graph: every point has outgoing edges connecting it to its k nearest neighbors.</li>
+<li>Outlier Filtering: This graph structure can be used to detect outliers. has outgoing but not incoming =&gt; no friends haha</li>
+<li>Extra (symetric Riemanian Graph, has something to do with Voronoi area, and the idea is only connect pointbetween the (similar) parallel voronoi poles)</li>
+</ul>
+<ol start="2" type="1">
+<li><strong>Describe a method to estimate the local sampling density of a point cloud!</strong></li>
+</ol>
+<ul>
+<li>area among 3-6 nearest neighbors</li>
+</ul>
+<ol start="3" type="1">
+<li><strong>Explain how to fit a least squares plane to a set of points! (also repeat details on that from CG1)</strong></li>
+</ol>
+<ul>
+<li><strong>Goal</strong> find the plane <span class="math inline">\(p=(n_x, n_y, n_z,d)\)</span> that minimizes weighted sum displacement <span class="math inline">\(f = p^TA^TWAp\)</span></li>
+<li>Weight: Gaussian from center</li>
+<li>Weighted Covariance Matrix</li>
+<li>Find smallest eigenvalue</li>
+<li>similar to PCA but embed the tangental normal in =&gt; from max to min</li>
+</ul>
+<ol start="4" type="1">
+<li><p><strong>Is the least squares normal unique?</strong> No, can be n* or -n* =&gt; need orientation step.</p></li>
+<li><p><strong>Motivate problems of the least squares fit in the vicinity of outliers, C⁰ and C¹ discontinuities!</strong></p></li>
+</ol>
+<ul>
+<li>The standard L₂-norm (least squares) is highly sensitive discontiuinity C0 C2 + outliers</li>
+<li>=&gt; for example L1-norm is less sensitive</li>
+</ul>
+<ol start="5" type="1">
+<li><ol type="1">
+<li><strong>There is also the optimal weighting problem, but I dont remember</strong></li>
+</ol></li>
+<li><strong>How to extend the weighted least squares normal fit to avoid smoothing out of normals in the vicinity of sharp corners and creases?</strong></li>
+</ol>
+<ul>
+<li>remember bilateral filtering? this one similar</li>
+<li><span class="math inline">\(w = w_1 w_{bilateral}\)</span> where w1 is normal weight, w2 reduce the effect when tangent normal is different</li>
+<li>BUT to do this, we do not know the tangent normal, so just start with <span class="math inline">\(w_{bilateral}=1\)</span> first, then start using that to keep fitting</li>
+</ul>
+<ol start="7" type="1">
+<li><strong>How to compute a Minimum / Maximum Spanning Tree efficiently?</strong></li>
+</ol>
+<ul>
+<li><strong>Goal</strong> a tree that go through all vertices but just through the edges with minimal costs</li>
+</ul>
+<ol start="8" type="1">
+<li><strong>Explain how to compute a consistent orientation of surface normals with the help of a Minimum Spanning Tree and explain variants of defining the edge costs?</strong></li>
+</ol>
+<ul>
+<li>Start with one or more normals that are known to be correctly oriented (e.g., from scanner position).</li>
+<li>Construct a neighbor graph (e.g., a Riemannian graph)</li>
+<li>Assign a cost (low for edges at smooth surface - high creases edges)</li>
+<li>Propagate through the MST. For each edge traversed, orient the neighbor’s normal to be consistent with the current normal.</li>
+<li>flip criteria
+<ul>
+<li>Hoppe, Xie: if dot product <span class="math inline">\(n_1 n_2 &lt; 0\)</span> then flip</li>
+<li>König: idea is simpler curve with less curvature</li>
+</ul></li>
+</ul>
+<ol start="9" type="1">
+<li><strong>Explain the ICP-algorithm!</strong></li>
+</ol>
+<ul>
+<li><strong>Start with BIGGEST ASSUMPTION:</strong> oready initially coarse aligned. =&gt; alternates between 2 steps until convergence:</li>
+<li>Find closest Correspondences (like real physical closest - or normal matching - or even FPFH)</li>
+<li>Transform using minimal homography (similar to covariance matrix)</li>
+<li>SVD transformation for translation|rotation</li>
+<li>Nachteil: it really needs initially coarsely aligned, for example if 2 scans flipped, then it does not work</li>
+</ul>
+<ol start="10" type="1">
+<li><strong>What is normal-space sampling and how can it help to improve the ICP-algorithm?</strong></li>
+</ol>
+<ul>
+<li><strong>Goal</strong> balance the set of normal vectors distributed from sampling =&gt; less biased to only flat plane fitting</li>
+</ul>
+<ol start="11" type="1">
+<li><strong>What possibilities do you know to define the distance measure used for the objective function of the registration optimization problem?</strong></li>
+</ol>
+<ul>
+<li>2 main error metrics (distance measures) used in ICP:</li>
+<li>Point-to-Point Distance: simply minimize squared Euclidean distance between corresponding points</li>
+<li>Point-to-Plane Distance: minimizes the squared distance from a source point to the tangent plane at its corresponding target point (using dot product to project this chan duong cao)</li>
+</ul>
+<ol start="12" type="1">
+<li><strong>What variants do you know to extract corresponding point pairs for the ICP-algorithm?</strong></li>
+</ol>
+<ul>
+<li>Several matching strategies:</li>
+<li>Closest-Point: standard, but when they flip not good</li>
+<li>Normal Shooting: Project a point along its normal to find an intersection with the other surface</li>
+<li>Projection: Project a point from the source onto the target mesh <strong>from the camera’s point of view</strong> (tbh honest i really do not know how this works)</li>
+</ul>
+<ol start="13" type="1">
+<li><strong>Explain and compare the surface reconstruction techniques silhouette-, space- and volume carving!</strong></li>
+</ol>
+<ul>
+<li>Silhouette Carving using only 2D RGB: create a 3D voxel space, project that 3D on binary silhouettte from every perspective image, start carving</li>
+<li>Space Carving using only 2D RGB: initialized silhouette carving + photo consistency over all images of that same voxel</li>
+<li>Volume Carving: space carving in RGBD. depth provides a much stronger initial constraint, nothing else to say, this is good!!!</li>
+</ul>
+<ol start="14" type="1">
+<li><strong>Given images of reconstructions, find out, which result was produced by silhouette-, space- or volume carving!</strong></li>
+</ol>
+<ul>
+<li>Silhouette Carving: results in convex looking</li>
+<li>Space Carving: actually convex but color constraint can reduce something, but not good enough</li>
+<li>Volume Carving: most accurate</li>
+</ul>
+<ol start="15" type="1">
+<li><strong>Explain how to use implicit functions for surface reconstruction! Why are constraints at the sample points not sufficient?</strong></li>
+</ol>
+<ul>
+<li><strong>Goal</strong> Poisson uses 2 constraints:</li>
+<li>(∇χ ≈ V) (V are the surface normals)</li>
+<li>(χ(p) = 0) constraints at surface (screened poisson)</li>
+<li>How to do this? we derivate one more to get the Laplace/Poisson equation where we seem to be able to to solve bc we know the divergence inside/outside (divχ = ∇V)</li>
+<li>then slowly make finer</li>
+</ul>
+</section>
+<section id="rotation-articulated-objects" class="level1">
+<h1>Rotation &amp; Articulated Objects</h1>
+<ol type="1">
+<li><strong>Explain 3 representations for rotations and discuss their suitability for interpolation between rotations!</strong></li>
+</ol>
+<ul>
+<li>3x3 Rotation Matrices: Not suitable for direct interpolation. Linearly interpolating between two rotation matrices and re-normalizing does not produce a constant-velocity rotation and can result in unwanted scaling/shearing artifacts.</li>
+<li>Euler Angles: Simple to interpolate the three angles linearly, but this is highly problematic. It does not produce the “shortest path” rotation and is susceptible to gimbal lock</li>
+<li>Quaternions:Excellent for interpolation.</li>
+</ul>
+<ol start="2" type="1">
+<li><strong>Discuss uniqueness of the different representations for rotations!</strong></li>
+</ol>
+<ul>
+<li>Rotation Matrices: 1 rotation 1 matrix eindeutig</li>
+<li>Euler Angles: (extrinsic &amp; intrinsic)</li>
+<li>Axis-Angle / Quaternions: rotation by angle α around axis n is identical to a rotation by angle -α around axis -n.&nbsp;(q and -q) represent the exact same 3D rotation. (similar to complex number)</li>
+</ul>
+<ol start="3" type="1">
+<li><strong>What is a quaternion and how can it be used to rotate a vector around an axis?</strong></li>
+</ol>
+<ul>
+<li>is a 4-dimensional complex numbers, with one real part (s) and three imaginary parts (x, y, z). <span class="math inline">\((i²=j²=k²=ijk=-1) \And (ijk)\)</span></li>
+<li>To rotate p around <span class="math inline">\(n=ai+bj+ck\)</span> for <span class="math inline">\(\alpha\)</span> degree (where <span class="math inline">\(a+b+c=1\)</span> normalized):</li>
+<li>Represent p as a “pure” quaternion with a zero real part: <span class="math inline">\(p_{quat} = (0, p)\)</span>. The rotation is performed using the quaternion multiplication formula: <span class="math inline">\(p'_{quat} = (\cos(\frac{\alpha}{2}) + sin(\frac{\alpha}{2})(n)) * p_{quat} * (\cos(\frac{\alpha}{2}) - sin(\frac{\alpha}{2})(n))\)</span></li>
+<li>Basically only rotate 3 dimension ijk out of 4 dimensions, therefore the inverse</li>
+</ul>
+<ol start="4" type="1">
+<li><strong>Which additional transformation can be expressed by the length of a quaternion?</strong></li>
+</ol>
+<ul>
+<li>unit quaternion (length = 1) -&gt; pure rotation</li>
+<li>non-unit quaternion -&gt; rotation + uniform scaling</li>
+</ul>
+<ol start="5" type="1">
+<li><strong>Given an image of a robot arm, explain the terms basis, node, joint and end effector!</strong></li>
+</ol>
+<ul>
+<li>we all know what those are</li>
+</ul>
+<ol start="6" type="1">
+<li><strong>Given images of joint types, classify joint type and enumerate degrees of freedom!</strong></li>
+</ol>
+<ul>
+<li>Revolute (1R): 1 DOF (1 rotation)</li>
+<li>Prismatic (1T): 1 DOF (1 translation)</li>
+<li>Universal (2R):2 DOF (2 revolute together)</li>
+<li>Spherical (3R): 3 DOF.</li>
+<li>Gimbal (3R): 3 DOF with Gimbal lock</li>
+</ul>
+<ol start="7" type="1">
+<li><strong>What is the difference between a kinematic chain and a kinematic tree?</strong></li>
+</ol>
+<ul>
+<li>Kinematic Chain: transofrmation base-&gt; effector</li>
+<li>Kinematic Tree: bone hierarchy</li>
+</ul>
+<ol start="8" type="1">
+<li><strong>Discuss the difference between representing joint transformation as a sequence of rotation and translation compared to a sequence of translation and rotation!</strong></li>
+</ol>
+<ul>
+<li>ofcourse not the same =&gt; ( Denavit-Hartenberg) makes it deterministic</li>
+</ul>
+<ol start="9" type="1">
+<li><strong>Explain linearization of a kinematic tree for the efficient computation of world to joint transformations!</strong></li>
+</ol>
+<ul>
+<li>its a linear transformation: T(n+1) use Tn as base</li>
+<li>just calculate forward</li>
+</ul>
+<ol start="10" type="1">
+<li><strong>How many parameters are used in the Denavit-Hartenberg Convention to represent bone transformations in a kinematic chain?</strong></li>
+</ol>
+<ul>
+<li>4 param, compared to Euler (2+3=6), Quaternion (7)</li>
+<li>d_i distance along z_i to meet common perpendicular length</li>
+<li>α_i angular offset of the 2 joint axes z_i &amp; z_i-1</li>
+<li>θ_i actual angular change of x_i and x_i-1 on z-1 axe</li>
+<li>a_i common perpendicular length</li>
+<li>To sum up, DH = Rot(θ_i) * Trans(d_i) * Trans(a_i) * Rot(α_i), where the actual rotation is Rot(θ_i) &amp; Trans(d_i)</li>
+<li>EVENTUALLY then it can all be presented in a matrix in lecture but I do not remember, you can show me</li>
+</ul>
+<ol start="11" type="1">
+<li><strong>Which joint types can be represented directly in the Denavit-Hartenberg Convention?</strong></li>
+</ol>
+<ul>
+<li>Revolute -&gt; joint angle θ_i is variable.</li>
+<li>Prismatic -&gt; link offset d_i is variable.</li>
+</ul>
+<ol start="12" type="1">
+<li><strong>How can other joint types be emulated in the Denavit-Hartenberg Convention?</strong></li>
+</ol>
+<ul>
+<li>combine them together with zero link offset</li>
+</ul>
+<ol start="13" type="1">
+<li><strong>How can one compute the angles in the Denavite-Hartenberg Convention such that a full revolution of 360 degrees can be supported?</strong></li>
+</ol>
+<ul>
+<li>To support a full 360-degree =&gt; use arctan2(sine, cosine) =&gt; output (angle, quadrant).</li>
+<li>For an angle like the link twist α_i, you compute both:</li>
+<li>sin(α_i) = ||ẑ_{i-1} × ẑ_i||</li>
+<li>cos(α_i) = &lt;ẑ_{i-1}, ẑ_i&gt;</li>
+<li>However, the sine term is always positive, restricting the angle to [0, π]. SO that does not actually eliminate the result we want anyway =&gt; sign of the cross product of angle by taking a dot product dot producting with a third, orthogonal vector ( x̂_i).</li>
+<li>The final formula becomes: α_i = sgn(&lt;ẑ_{i-1} × ẑ_i, x̂<em>i&gt;) * arctan2(||ẑ</em>{i-1} × ẑ<em>i||, &lt;ẑ</em>{i-1}, ẑ_i&gt;)</li>
+</ul>
+</section>
+<section id="skeleton-extraction" class="level1">
+<h1>Skeleton Extraction</h1>
+<ol type="1">
+<li><strong>Explain the term medial axis and be able to draw it into a 2D shape!</strong></li>
+</ol>
+<ul>
+<li>set of all interior points that have at least two closest points on the shape’s boundary.</li>
+<li>voxelize -&gt; create Voronoi vertices -&gt; connect Voronois with each other</li>
+</ul>
+<ol start="2" type="1">
+<li><strong>Why is the medial axis not suitable as a curve skeleton of a 2D or a 3D shape?</strong></li>
+</ol>
+<ul>
+<li>Sensitivity to Noise: It is extremely sensitive to small perturbations or noise on the boundary. A tiny bump on the surface can create a new, often large, branch in the medial axis, making it unstable and overly complex.</li>
+<li>Dimensionality in 3D: For a 3D shape, the medial axis is not a 1D curve but a <strong>2D surface</strong>, which is not skeleton</li>
+</ul>
+<ol start="3" type="1">
+<li><strong>Name important properties of a curve skeleton!</strong></li>
+</ol>
+<ul>
+<li>1D curve structure, even for 3D shapes.</li>
+<li>same topology as the shape (e.g., the same number of loops for holes/tunnels).</li>
+<li>lie in the center of the object’s volume.</li>
+<li>invariant to isometric transformations (like bending) of the shape.</li>
+<li>Every point on the shape’s surface should be “visible” from at least one point on the skeleton.</li>
+<li>insensitive to small amounts of noise</li>
+</ul>
+<ol start="4" type="1">
+<li><strong>Explain some techniques to compute a curve skeleton!</strong></li>
+</ol>
+<ul>
+<li>Erosion until 1D</li>
+<li>Distance Field: skeleton is maxima of this field.</li>
+<li>Voronoi: we all know</li>
+<li>Competing Front (growing method and at each timestamp keep the center)</li>
+</ul>
+<ol start="5" type="1">
+<li><strong>Explain the competing front approach of Sharf et al.&nbsp;and name some advantages!</strong></li>
+</ol>
+<ul>
+<li>method for both surface reconstruction and skeleton extraction.</li>
+<li>Principle:</li>
+<li>An initial deformable mesh (a “front”) is placed inside the point cloud.</li>
+<li>This front is inflated outwards, driven by a distance field, to reconstruct the shape.</li>
+<li>As the front expands, it may need to split to pass through narrow channels or merge when different parts of the front meet.</li>
+<li><strong>The skeleton is traced as the center of these evolving fronts.</strong> Junctions in the skeleton are formed where fronts split or merge.</li>
+<li>Advantages: robust, shape good, topology</li>
+</ul>
+</section>
+<section id="rigging" class="level1">
+<h1>Rigging</h1>
+<ol type="1">
+<li><strong>Explain the term rigging in the domain of character animation!</strong></li>
+</ol>
+<ul>
+<li>in animation:</li>
+<li>Rigging: building an internal skeleton and fitting it inside the 3D mesh.</li>
+<li>Skinning: binding the mesh’s vertices to the bones of the skeleton.</li>
+</ul>
+<ol start="2" type="1">
+<li><p><strong>What are input and output to the Pinocchio automated rigging approach!</strong> Input: 3D mesh + skeleton Output: embedded skeleton</p></li>
+<li><p><strong>Give an overview of how the Skeleton is positioned inside the input polygonal mesh!</strong></p></li>
+</ol>
+<ul>
+<li>Discretization: The system first computes a medial axis graph.</li>
+<li>Embedding initialization: simplified version of the skeleton is optimally placed within the graph using an A* search algorithm guided by a penalty function.</li>
+<li>Embedding Refinement: The full skeleton is then placed based on the coarse result, and its position is fine-tuned using a continuous gradient-descent optimization on a simplified penalty function.</li>
+</ul>
+<ol start="4" type="1">
+<li><strong>Name some terms of the energy function used to optimize the skeleton and explain how the authors adapted the energy function to a set of good and bad rigging examples!</strong></li>
+</ol>
+<ul>
+<li>Center Distance: Penalizes bones for being far from the medial axis.</li>
+<li>Short Bones / Wrong Directions: Penalizes the skeleton for having bone lengths or orientations that differ significantly from the input skeleton’s proportions.</li>
+<li>Feet: A specific term to ensure the feet are placed at the bottom of the model.</li>
+<li>Limb Sharing: Penalizes cases where multiple limbs are embedded into the same part of the mesh.</li>
+<li>supervised learning from bad &amp; good examples</li>
+</ul>
+<ol start="5" type="1">
+<li><strong>Explain the idea of the RigMesh-Approach</strong></li>
+</ol>
+<ul>
+<li>integrate rigging into a sketch-based modeling workflow. Traditionally, rigging is a separate, final step performed after modeling is complete. If the model is changed, the rig must be redone. RigMesh makes the rigging process incremental. As a user draws and edits the shape of a character using sketches, the system automatically and continuously updates the internal skeleton and skinning weights =&gt; faster change</li>
+</ul>
+<ol start="6" type="1">
+<li><strong>Give some sources for mesh animations!</strong> A mesh animation (also called a vertex cache or point cache animation) is a sequence of meshes where the vertex positions change over time. Sources for this data include:</li>
+</ol>
+<ul>
+<li>Physics simulations (e.g., cloth or soft bodies).</li>
+<li>Motion capture data applied to a mesh.</li>
+<li>Keyframe animation created by an artist.</li>
+</ul>
+<ol start="7" type="1">
+<li><strong>How can one approximate a mesh animation with a skinned mesh representation?</strong></li>
+</ol>
+<ul>
+<li>The goal is to find a set of bones, bone transformations for each frame, and a set of vertex weights that, when applied to a single base mesh, best reproduces the entire input animation sequence. This is a decomposition problem. It seeks to compress the large amount of data from the mesh animation into a much more compact and controllable skinned mesh representation.</li>
+</ul>
+<ol start="8" type="1">
+<li><strong>Explain the principle steps of the “Skinning Mesh Animations” (SMA) approach!</strong> The SMA approach automatically extracts a skinned mesh from a given mesh animation. The main steps are:</li>
+</ol>
+<ul>
+<li>clustering triangles with similar transformation along the frames</li>
+<li>transfer that transformation to Bone: For each frame and each identified bone (cluster), a average rigid transformation is calculated to assign to that bone.</li>
+</ul>
+<ol start="9" type="1">
+<li><strong>What are the feature vectors used for clustering the mesh triangles into bone clusters?</strong></li>
+</ol>
+<ul>
+<li>homogeneous transoformation matrix 3x3 or a 9D parameter vector</li>
+</ul>
+<ol start="10" type="1">
+<li><strong>How are the vertex weights computed in the SMA approach?</strong></li>
+</ol>
+<ul>
+<li>solving a constrained least squares problem.</li>
+<li>Bone Influence Selection: First, for each vertex, the b most influential bones are identified (where b is a small user-defined number). This is done greedily by finding the set of b bones that minimizes the animation reconstruction error for that vertex.</li>
+<li>Least Squares Fit: With the influencing bones known, a linear least squares problem is solved to find the optimal weights. This fit is often constrained (e.g., using non-negative least squares) to avoid overfitting and ensure plausible weights.</li>
+</ul>
+<ol start="11" type="1">
+<li><strong>Where is room for improvement in the SMA approach that was used in „Fast&amp;efficient skinning of animated meshes“?</strong></li>
+</ol>
+<ul>
+<li>The “Fast &amp; Efficient Skinning of Animated Meshes” (F&amp;ESAM) paper improves upon the general idea by addressing its computational complexity. The main improvement is solving the problem in a reduced trajectory space.</li>
+<li>Instead of working with the trajectories of all m vertices over k frames (a very large matrix A), the method first approximates the entire animation using a much smaller set of d basis trajectories (where d &lt;&lt; m). The matrix decomposition problem is then solved in this much smaller, lower-dimensional space. This yields a slightly larger number of bones (d) than a full SVD would, but it can be solved in a significantly shorter amount of time.</li>
+</ul>
+</section>
+<section id="skinning" class="level1">
+<h1>Skinning</h1>
+<ol type="1">
+<li><strong>Explain the representation used for mesh skinning and explain advantages!</strong></li>
+</ol>
+<ul>
+<li><p>Rest Pose Mesh: The mesh’s geometry (vertices, connectivity) in a neutral or reference pose, often a T-pose.</p></li>
+<li><p>Skeleton (or Armature): A hierarchy of joints or “bones” that defines the underlying structure for animation.</p></li>
+<li><p>Vertex Weights: For each vertex in the mesh, a set of weights is defined that specifies how much influence each joint in the skeleton has on that vertex. Typically, the sum of weights for a single vertex equals 1. For efficiency, a vertex is usually only influenced by a small number of joints (e.g., up to 4).</p></li>
+<li><p>Advantages of this representation:</p></li>
+<li><p>Efficiency: It is computationally simple and fast, making it suitable for real-time applications like video games.</p></li>
+<li><p>Data Compactness: Instead of storing a full mesh for every frame of an animation (as in morph target animation), only the skeleton’s pose needs to be stored per frame, which is significantly less data.</p></li>
+<li><p>Intuitive Animation: Animators can manipulate the skeleton, a much simpler structure than the full mesh, to create complex deformations and poses.</p></li>
+<li><p>Separation of Concerns: The mesh (the “skin”) and the animation data (the skeleton’s movement) are separate. The same animation can be applied to different meshes, and the same mesh can be used with different animations.</p></li>
+</ul>
+<ol start="2" type="1">
+<li><strong>How is a skinned mesh transformed into a specific pose with linear blend skinning?</strong></li>
+</ol>
+<ul>
+<li>Define the skeleton’s new pose from transformations</li>
+<li>Compute World Transformations: local transform multiplied by its parent’s world transform.</li>
+<li>Compute Joint Pose Transformations: For each joint i, calculate its pose transformation matrix T<sup>0→t</sup><sub>i</sub>. This matrix transforms a point from the coordinate system of the joint in the rest pose to the coordinate system of the same joint in the target pose. This matrix effectively captures the total transformation of a single joint from the rest pose to the target pose.</li>
+<li>Blend Vertices: For each vertex p<sub>j</sub> in the mesh, its new position p’<sub>j</sub> is calculated. This is a weighted average of the vertex being transformed by every joint’s pose transformation.</li>
+<li>The formula is: p’<sub>j</sub> = Σ (w<sub>ij</sub> ⋅ T<sup>0→t</sup><sub>i</sub> ⋅ p<sup>0</sup><sub>j</sub>). Here, w<sub>ij</sub> is the weight of influence of joint i on vertex j, and the sum is over all joints i that influence the vertex.</li>
+</ul>
+<ol start="3" type="1">
+<li><strong>What are typical artefacts of linear blend skinning?</strong></li>
+</ol>
+<ul>
+<li>Linear Blend Skinning is fast but prone to <strong>Loss of Volume</strong> artifacts, because linearly blending matrices is not geometrically sound for rotations:</li>
+<li>Elbow Collapse / Joint Collapse: At joints that bend significantly (like elbows or knees), the volume around the joint appears to collapse and shrink. This happens because the vertices in the joint’s interior are averaged between two bones rotating in different directions -&gt; <strong>tend to move towards the center of the joint</strong></li>
+<li>Candy Wrapper Artefact: When a bone is twisted along its length, the mesh around it tends to lose volume and collapse inward, because it keep the weight constant</li>
+</ul>
+<ol start="4" type="1">
+<li><strong>Why can some artefacts be avoided when interpolating transformations instead of transformed intermediate points?</strong></li>
+</ol>
+<ul>
+<li>Linear Blend Skinning (LBS) has problem aboe bc it try to fit the linear matrix transformation.</li>
+<li><strong>Solution:</strong> we need to avoid the stright-line path between two segments =&gt; interpolating the transformations themselves, a single, valid intermediate transformation is created first. This blended transformation is then applied to the vertex. Methods like spherical interpolation of quaternions find the “shortest path” for rotation, preserving the arc-like motion of a rotating object.</li>
+</ul>
+<ol start="5" type="1">
+<li><strong>Describe spherical blend skinning and explain why the choice of the origin of rotation is important!</strong></li>
+</ol>
+<ul>
+<li>Decomposition: Each joint’s pose transformation matrix is split into a rotation component (represented by a quaternion, q<sub>i</sub>) and a translation vector (t<sub>i</sub>).</li>
+<li>Independent Blending: For each vertex, the influencing quaternions and translation vectors are blended separately. The quaternions are averaged using spherical linear interpolation (or a normalized linear interpolation as a fast approximation), and the translation vectors are averaged linearly, both using the vertex’s weights.</li>
+<li>The blended quaternion and blended translation are used to transform the vertex. The formula subtracts a rotation center, applies the blended rotation, and then adds back the rotated center and the blended translation.</li>
+<li>The choice of the origin of rotation is critical because rotation is always defined relative to a center point. If an incorrect center is used, the blended rotation will cause the vertex to pivot around the wrong point, leading to unnatural shearing and movement instead of a clean, rigid rotation.</li>
+</ul>
+<ol start="6" type="1">
+<li><p><strong>How can we incorporate an optimized origin of rotation in spherical blend skinning?</strong> Spherical Blend Skinning incorporates an optimized rotation center to improve results. For each vertex, it considers the group of joints that influence it. The algorithm then finds an optimal rotation center (r<sup>0</sup><sub>α</sub>) for this group of joints, such that when this center is transformed by each of the individual joint transformations, the resulting points are as close to each other as possible. This finds a stable, common pivot point for the group of transformations affecting the vertex, leading to a more rigid and natural deformation.</p></li>
+<li><p><strong>What is a good origin for spherical blend skinning of articulated objects with revolute joints?</strong></p></li>
+</ol>
+<ul>
+<li>revolute joints the best origin of rotation is a point located on the joint’s axis. This is the natural pivot point around which the connected limb rotates.</li>
+</ul>
+<ol start="8" type="1">
+<li><strong>Explain log matrix blending and discuss its drawbacks with respect to interpolation of rigid body transformations!</strong> Log Matrix Blending is a technique that allows for the meaningful blending of transformation matrices. The core idea is to use the matrix logarithm to convert the multiplicative group of matrices into an additive space (the “log space”). In this space, a weighted average can be calculated. The matrix exponential is then used to map the result back into a valid transformation matrix.</li>
+</ol>
+<ul>
+<li>Drawbacks for Rigid Body Transformations:</li>
+<li>Not Necessarily Shortest Path: The interpolation between two rotations is not guaranteed to be along the shortest path.</li>
+<li>No Static Rotation Axis: The interpolation does not generally correspond to a rotation around a fixed axis, which can sometimes look unnatural.</li>
+<li>Ambiguity of Rotations: A single rotation can be represented by an infinite number of matrices in log space (e.g., corresponding to angles α, α + 2π, α + 4π, etc.). This makes spline interpolation and other analysis techniques very difficult to implement correctly.</li>
+</ul>
+<ol start="9" type="1">
+<li><strong>Explain the screw representation of a rigid body transformation! With which parameters can it be parameterized?</strong></li>
+</ol>
+<ul>
+<li>any rigid body transformation can be uniquely described as a screw motion:</li>
+<li>A rotation axis: Defined by its direction vector and a point on the line (or using Plücker coordinates).</li>
+<li>A rotation angle (θ): The amount of rotation around the axis.</li>
+<li>A translation offset (d): The distance of translation along the axis.</li>
+</ul>
+<ol start="10" type="1">
+<li><strong>How can one encode a screw motion with dual quaternions?</strong> A screw motion can be elegantly encoded using a unit dual quaternion: q̂ = (cos(θ̂/2), sin(θ̂/2) * ŝ)</li>
+</ol>
+<ul>
+<li>where θ̂ is a dual angle and ŝ is a dual axis vector.</li>
+<li>The real part of the dual angle (θ) is the rotation angle.</li>
+<li>The dual part of the dual angle (θ<sub>ε</sub>) is the translation offset.</li>
+<li>The real part of the dual axis vector (s) is the direction of the screw axis.</li>
+<li>The dual part of the dual axis vector (s<sub>ε</sub>) is the moment of the axis, which defines its position in space.</li>
+</ul>
+<ol start="11" type="1">
+<li><strong>How do you represent a position vector and how can you transform it with a dual quaternion?</strong></li>
+</ol>
+<ul>
+<li>A 3D position vector v is represented as a pure dual quaternion v̂ where the real part is 1 and the dual part contains the vector: v̂ = 1 + ε(v<sub>x</sub>i + v<sub>y</sub>j + v<sub>z</sub>k)</li>
+<li>Transformation: v’ = q̂ ⋅ v̂ ⋅ q̂*</li>
+</ul>
+
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

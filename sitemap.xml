@@ -1,43 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://tienthangdinh.github.io/about.html</loc>
-    <lastmod>2025-07-12T10:18:30.283Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/reinforcement-learning/index.html</loc>
-    <lastmod>2025-07-15T19:07:39.880Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/cg1/index.html</loc>
-    <lastmod>2025-07-31T15:57:20.598Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/exam-ml4r/index.html</loc>
-    <lastmod>2025-07-25T06:07:12.956Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/bayesian-optimization/index.html</loc>
-    <lastmod>2025-07-21T20:16:47.211Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/autoencoder-dreamer/index.html</loc>
-    <lastmod>2025-07-15T19:00:34.251Z</lastmod>
+    <loc>https://tienthangdinh.github.io/index.html</loc>
+    <lastmod>2025-07-07T15:16:12.550Z</lastmod>
   </url>
   <url>
     <loc>https://tienthangdinh.github.io/posts/learning-from-demonstration/index.html</loc>
-    <lastmod>2025-07-16T19:52:27.997Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/exam-touchsensing/index.html</loc>
-    <lastmod>2025-07-25T05:31:56.274Z</lastmod>
+    <lastmod>2025-07-19T20:34:23.897Z</lastmod>
   </url>
   <url>
     <loc>https://tienthangdinh.github.io/posts/control/index.html</loc>
-    <lastmod>2025-07-12T10:18:27.877Z</lastmod>
+    <lastmod>2025-07-14T09:26:40.274Z</lastmod>
   </url>
   <url>
-    <loc>https://tienthangdinh.github.io/index.html</loc>
-    <lastmod>2025-07-12T10:18:35.437Z</lastmod>
+    <loc>https://tienthangdinh.github.io/posts/cg1-polygonalmesh/index.html</loc>
+    <lastmod>2025-08-04T19:48:25.611Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/cg2-modelling/index.html</loc>
+    <lastmod>2025-08-12T10:31:26.888Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/autoencoder-dreamer/index.html</loc>
+    <lastmod>2025-07-15T10:59:00.437Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/cg1-opengl/index.html</loc>
+    <lastmod>2025-08-09T19:44:23.030Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/exam-ml4r/index.html</loc>
+    <lastmod>2025-07-30T07:51:19.324Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/cg1-meshprocessing/index.html</loc>
+    <lastmod>2025-08-05T21:52:50.578Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/reinforcement-learning/index.html</loc>
+    <lastmod>2025-07-19T20:34:23.897Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/bayesian-optimization/index.html</loc>
+    <lastmod>2025-07-21T09:32:18.193Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/exam-touchsensing/index.html</loc>
+    <lastmod>2025-07-30T07:51:19.324Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/about.html</loc>
+    <lastmod>2025-07-14T09:26:40.274Z</lastmod>
   </url>
 </urlset>

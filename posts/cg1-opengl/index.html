@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-08-06">
+
+<title>Rendering – silent convergence</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-db03927a41f77a8af5287a812d7101f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">silent convergence</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Đinh Tiến Thắng</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Rendering</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">Computer Graphics</div>
+                <div class="quarto-category">Rendering</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">August 6, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#opengl" id="toc-opengl" class="nav-link active" data-scroll-target="#opengl">OpenGL</a></li>
+  <li><a href="#geometry-rendering" id="toc-geometry-rendering" class="nav-link" data-scroll-target="#geometry-rendering">Geometry Rendering</a></li>
+  <li><a href="#lighting" id="toc-lighting" class="nav-link" data-scroll-target="#lighting">Lighting</a>
+  <ul class="collapse">
+  <li><a href="#rendering-equation" id="toc-rendering-equation" class="nav-link" data-scroll-target="#rendering-equation">Rendering Equation</a></li>
+  <li><a href="#common-lighting-models" id="toc-common-lighting-models" class="nav-link" data-scroll-target="#common-lighting-models">Common Lighting Models</a>
+  <ul class="collapse">
+  <li><a href="#lambertian-diffuse" id="toc-lambertian-diffuse" class="nav-link" data-scroll-target="#lambertian-diffuse">1. Lambertian (Diffuse)</a></li>
+  <li><a href="#phong-model" id="toc-phong-model" class="nav-link" data-scroll-target="#phong-model">2. Phong Model</a></li>
+  <li><a href="#blinn-phong-model" id="toc-blinn-phong-model" class="nav-link" data-scroll-target="#blinn-phong-model">3. Blinn-Phong Model</a></li>
+  <li><a href="#key-differences" id="toc-key-differences" class="nav-link" data-scroll-target="#key-differences">Key Differences:</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#texturing" id="toc-texturing" class="nav-link" data-scroll-target="#texturing">Texturing</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="opengl" class="level1">
+<h1>OpenGL</h1>
+<ul>
+<li><p>Timeline:</p>
+<ol type="1">
+<li><strong>Create Program:</strong> You compile your shaders and link them into a <code>programID</code>.</li>
+<li><strong>Bind Program:</strong> You make this program the active one using <code>glUseProgram(programID)</code>.</li>
+<li><strong>Link VAO/VBO Attributes:</strong> The connection between your vertex data and the shader’s input variables (<code>aPos</code>, <code>aColor</code>) is set up.</li>
+<li><strong>Set Uniforms:</strong> You get the location of your uniform variable (<code>uniform mat4 transform;</code>) and then use a <code>glUniform*</code> function to send its value to the active shader program.</li>
+<li><strong>Draw:</strong> The <code>glDraw*</code> call then uses the currently bound VAO/VBO with the active shader program and its uniform values to render the geometry.</li>
+</ol></li>
+</ul>
+<ol type="1">
+<li><strong>Why is it important for graphics application development to wait for next events during the main loop?</strong></li>
+</ol>
+<ul>
+<li>“Games Architecture” runs in a continuous, busy loop, fully occupying the CPU and GPU even when there is no new input or change in the scene.</li>
+<li>“Application Architecture” uses an event-driven loop. The program “waits” until an event occurs (like a mouse click, key press, or window resize), and only then do the CPU and GPU perform work to handle the event and redraw the scene =&gt; more efficient and can coexist with other applications</li>
+<li>Threaded Architecture:…</li>
+</ul>
+<ol start="2" type="1">
+<li><strong>Name three architectural concepts of modern GPU that facilitate a large throughput!</strong></li>
+</ol>
+<p>GPU works on SIMT principle, it has processing units (either FP64, FP32, INT, TENSORS): - parallel streaming processing: (like vertices or fragments) - Hiding memory access time: GPUs use scheduling for thousands of threads (SM, wraps), scheduler instantly switches to another group of threads if this one waiting for data - Load balancing: distributed streaming multiprocessors (SMs) on the GPU, =&gt; no bottleneck.</p>
+<ol start="3" type="1">
+<li><strong>How do you have to prepare an analytic surface representation such that it can be rendered with the rendering pipeline of a GPU?</strong></li>
+</ol>
+<ul>
+<li>Tesselation on CPU: continuous analytic surface -&gt; discrete surface = polygonal mesh (set of vertices, faces, color).</li>
+<li>GPU: Geometry building -&gt; view transformation -&gt; fragment generation -&gt; color adding</li>
+</ul>
+<ol type="1">
+<li><strong>Step 1: How are GPU objects managed in OpenGL?</strong></li>
+</ol>
+<ul>
+<li>We first need a window and a context to that window</li>
+</ul>
+<pre><code>window = glfwCreateWindow(...) 
+glfwMakeContextCurrent(window)</code></pre>
+<ul>
+<li><p>We have to create these objects to be stored in GPU:</p>
+<ul>
+<li>Buffer Objects (VBOs): vertex (positions, normals, colors)</li>
+<li>Vertex Array Objects (VAOs): defining how should vertex shader read VBOs (INF, float, at what allocation, interleaving,…)</li>
+<li>Textures: image to be added in shader</li>
+<li>Shader Programs: Linked, executable programs composed of individual shaders (vertex shader for height generation, fragment shader for color)</li>
+</ul></li>
+<li><p>And then: every objects are defined as GLuint:</p>
+<ol type="1">
+<li>Generate a name for a new object (glGenBuffers)</li>
+</ol>
+<pre><code> GLuint vboOpsitions;
+ glGenBuffers(1, &amp;vboPositions);</code></pre>
+<ol start="2" type="1">
+<li>Bind the object to a specific target slot (convention for vertices is GL_ARRAY_BUFFER) in the OpenGL (glBindBuffer)</li>
+</ol>
+<pre><code>glBindBuffer(GL_ARRAY_BUFFER, vboPositions); </code></pre>
+<ol start="3" type="1">
+<li>Modify the object that is currently bound to the target (e.g., upload array of vec4 with glBufferData)</li>
+</ol>
+<pre><code>glBufferData(GL_ARRAY_BUFFER, posvector.size() * sizeof(vec4), posvector.data())</code></pre></li>
+</ul>
+<ol start="4" type="1">
+<li><ol type="1">
+<li><strong>After creating Buffer, how to bind them to Vertex Array Object?</strong></li>
+</ol></li>
+</ol>
+<p>So after we did the same to each <strong>attribute separately</strong> position, normals, colors, each an object, we now add them on VAO.</p>
+<p>For each attribute, bind the buffer -&gt; enable -&gt; specify how to read data</p>
+<pre><code>glGenVertexArrays(1, &amp;vao);
+glBindVertexArray(vao);
+
+glBindBuffer(GL_ARRAY_BUFFER, vboPositions);
+glEnableVertexArray(0); // address of the shader input
+glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(vec4), 0) // 4 float for each component therefore sizeof(vec4), no offset
+glBindVertexArray(0) //unbind
+</code></pre>
+<p>Do not forget to load Shader and read Shader before that</p>
+<pre><code>program_id = glCreateProgram()
+vertex_shader_id = glCreateShader()
+glShaderSource(vertexShader, 1, &amp;vertexShaderSource, NULL);
+glCompileShader(vertexShader);
+glAttachShader(program_id, vertex_shader_id)
+glAttachShader(program_id, fragment_shader_id)
+glLinkProgram(program_id)</code></pre>
+<ol start="4" type="1">
+<li><ol start="2" type="1">
+<li><strong>Render it all!</strong></li>
+</ol></li>
+</ol>
+<pre><code>glBindVertexArray(vao);
+glDrawArrays(GL_TRIANGLES, 0, 3) //draw triangles starting from the first vertice, each triangle use 3 vertices
+glBindVertexArray(0);</code></pre>
+<ol start="5" type="1">
+<li><p><strong>How to debug in OpenGL?</strong></p></li>
+<li><p>Define callback function, basically print out <code>debug_callback(message,...)</code></p></li>
+<li><p>Set debug context <code>glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);</code></p></li>
+<li><p>Register callnback function <code>glDebugMessageCallback(debug_callback, 0);</code></p></li>
+<li><p><strong>Given a picture of the OpenGL 3.2 pipeline without specification of the data types (vertices, primitives, fragments): Explain the data flow through the pipeline!</strong></p></li>
+<li><p>Vertex Buffer VBO</p></li>
+<li><p>individual vertex from VBO -&gt; VAO -&gt; Vertex Shader (each vertex separately processed) (model coords -&gt; world coords -&gt; projection coords)</p></li>
+<li><p>Primitive Assembly (group vertices -&gt; triangles).</p></li>
+<li><p>(Optionally) Geometry Shader</p></li>
+<li><p>Clipping primitives against the view frustum + Back-face culling</p></li>
+<li><p>Rasterizer clipped primitives -&gt; fragments (aka pixels) + interpolated natural color</p></li>
+<li><p>Fragment Shader, textured lighted color and depth.</p></li>
+<li><p>Fragment Buffer (depth test)</p></li>
+<li><p><strong>Explain the difference between a shader and a shader program! What are the building blocks of shaders and shader programs respectively?</strong></p></li>
+</ol>
+<ul>
+<li>Shader: vertex / pixel -&gt; vertex / pixel in .GLSL</li>
+<li>Shader Program: a set of compiled shaders in .bin</li>
+</ul>
+<ol start="8" type="1">
+<li><p><strong>How can you transfer data from a C / C++ program to a shader program?</strong></p></li>
+<li><p>VBO -&gt; VAO -&gt; in Shader</p></li>
+<li><p>Uniform variables (transformation matrix, lighting parameters) -&gt; <code>uniform mat4 modelViewProjection;</code></p></li>
+<li><p><strong>How is streaming input and streaming output of vertex shader and a fragment shader defined?</strong></p></li>
+</ol>
+<ul>
+<li>Vertex Shader: in from VAO -&gt; out color, gl_Positions (this one is a must!!! vec4 clip-space coords)</li>
+<li>Fragment Shader: rasterizer interpolated color -&gt; textured lighting color -&gt; framebuffer</li>
+</ul>
+<ol start="10" type="1">
+<li><strong>Given a vertex and a fragment shader, explain the data flow (input, transfer from vertex to fragment shader, output)!</strong></li>
+</ol>
+<ul>
+<li>slide 20, important note: output of vertex color -&gt; rasterized -&gt; input of fragment color for shader</li>
+</ul>
+<ol start="11" type="1">
+<li><strong>Given a shader. Determine if it is a vertex or fragment shader.</strong></li>
+</ol>
+<ul>
+<li>vertex shader has to output gl_Positions</li>
+</ul>
+<ol start="12" type="1">
+<li><strong>Expand a vertex / fragment shader pair by a variable passed from vertex to the fragment shader!</strong></li>
+</ol>
+<ul>
+<li>e.g.&nbsp;output intensity -&gt; input intensity of the next one (remember it is rasterized)</li>
+</ul>
+<ol start="13" type="1">
+<li><p><strong>How do you pass values for a uniform variable to a shader program?</strong></p>
+<ol type="1">
+<li>activate the shader program <code>glUseProgram(programID);</code></li>
+<li>create location for the uniform variable in shader program `GLint transformUniformLocation = glGetUniformLocation(programID, “transform”);</li>
+<li><code>glUniformMatrix4fv(transformUniformLocation)</code></li>
+</ol></li>
+<li><p>How is visibility sorting done in the rendering pipeline with the depth buffer algorithm?</p></li>
+</ol>
+<p>For every single fragment, its depth value is compared to the value currently stored in the depth buffer at that fragment’s pixel location. if &lt; or &gt; then will change the color, depth in frame buffer respectively.</p>
+<pre><code>...
+
+// Vertex data for a triangle
+float vertices[] = {
+    // positions         // colors
+     0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom right
+    -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f, // bottom left
+     0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f  // top
+};
+
+int main() {
+    // context init
+    GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL Example", NULL, NULL);
+    glfwMakeContextCurrent(window);
+
+    // 1. Create Program
+    unsigned int programID = createShaderProgram("shader.vert", "shader.frag"); //glShaderSource -&gt; glCompileShader -&gt; glAttachShader -&gt;  glCreateProgram -&gt; glLinkProgram
+    
+    // -init VBO, VAO
+    unsigned int VBO, VAO;
+    glGenVertexArrays(1, &amp;VAO);
+    glGenBuffers(1, &amp;VBO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO); //vertices
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); //vertices
+
+    // 3. Link VAO/VBO Attributes
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0); //take this address
+    glEnableVertexAttribArray(0); //and write down here in the shader
+    // Color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    while (!glfwWindowShouldClose(window)) {
+        // Render loop
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        
+        // 2. Bind Program
+        glUseProgram(programID);
+
+        // 4. Set Uniforms
+        GLint transformUniformLocation = glGetUniformLocation(programID, "transform");
+        glm::mat4 transform = glm::mat4(1.0f);
+        transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        glUniformMatrix4fv(transformUniformLocation, 1, GL_FALSE, glm::value_ptr(transform));
+
+        // 5. Draw
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+    ...
+}</code></pre>
+<p>because look at the vertex shader</p>
+<pre><code>#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aColor;
+
+out vec3 ourColor;
+
+uniform mat4 transform;
+
+void main() {
+    gl_Position = transform * vec4(aPos, 1.0);
+    ourColor = aColor;
+}</code></pre>
+</section>
+<section id="geometry-rendering" class="level1">
+<h1>Geometry Rendering</h1>
+<ol type="1">
+<li><strong>Discuss how geometry can be stored in buffers and textures on the GPU?</strong></li>
+</ol>
+<p>vertex buffer (VBO) + texture</p>
+<ol start="2" type="1">
+<li><strong>Explain how geometry is rendered with OpenGL by referring to Vertex Buffer Objects, Vertex Array Objects, and Shader Programs!</strong></li>
+</ol>
+<p>Initialization (done once):</p>
+<ul>
+<li>Shader Programs: compiled, attached and linked</li>
+<li>Vertex Buffer Objects (VBOs)</li>
+<li>Vertex Array Objects (VAOs): glVertexAttribPointer (update VBO onto VAO)</li>
+</ul>
+<p>Main Loop (done every frame):</p>
+<ul>
+<li>Bind Program and VAO: choose program_id glUseProgram + VAO to be drawn (glBindVertexArray)</li>
+<li>Set Uniforms: model-view-projection matrix, are updated.</li>
+<li>Draw:</li>
+</ul>
+<ol start="3" type="1">
+<li><strong>Discuss advantages and disadvantages of interleaved versus non-interleaved storage of geometry in buffer objects!</strong></li>
+</ol>
+<p>Interleaved Storage: this is what we have always been using!!! look at the data you will know - Advantage: all attributes loaded in cache, and also good for individual processing - Disadvantage: Updating a single attribute (e.g., only the positions for an animation) is complex, because has to skip over the other attributes.</p>
+<p>Non-Interleaved Storage: (opposite) - Advantage: This allows for the fast replacement of individual attributes. e.g.&nbsp;only touching position buffer without touching the normals or texture coordinates. - Disadvantage: multiple fetches per vertice for each attribute</p>
+<ol start="4" type="1">
+<li><strong>How do you specify the format and component type for a vertex attribute?</strong></li>
+</ol>
+<p>used in the function glVertexAttribPointer: - layout(location = 0) in shader - number of scalar elements in component (e.g., 3 for a vec3). - data type (e.g., GL_FLOAT). - stride (distance between 2 elements (vd: 6 floats)) - offset for first component</p>
+<ol start="5" type="1">
+<li><p><strong>What is the difference between uniform variables and vertex attributes?</strong> Vertex Attributes: per-vertex data. Uniform Variables are constant for a single draw call (for all vertices) (model-view-projection matrix, light positions)</p></li>
+<li><p><strong>How do you get the index of a vertex attribute array declared as input to the vertex shader necessary for specifying the corresponding attribute pointer of a vertex array object?</strong></p></li>
+</ol>
+<ul>
+<li>layout(location = 0) in vec4 vPosition;</li>
+<li>GLint i = glGetAttribLocation(program, “vPosition”);</li>
+</ul>
+<ol start="7" type="1">
+<li><strong>Explain indexed rendering and discuss when this is advantageous over retained mode rendering?</strong></li>
+</ol>
+<ul>
+<li><p>Problem: In a mesh, a single vertex is often part of multiple triangles (typically 6 in triangle or 2 in stripification). Without indexed rendering, you would have to duplicate that vertex’s data in the vertex buffer for every triangle it belongs to.</p></li>
+<li><p>Solution: linear sequence of vertices for each triangle with repeated vertices =&gt; 1 VBO + 1 VEO</p></li>
+<li><p>Advantage: store vertice only once</p></li>
+<li><p>Disadvantage: extra memory and complex access logic</p></li>
+<li><p>Usage: bind an extra VAO <code>glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, datapointer);</code></p></li>
+</ul>
+<pre><code>//----VEO
+std::vector&lt;GLuint&gt; elements;
+// fill elements vector with indices
+elements.clear();
+for (int i=0; i&lt;N; ++i) {
+  for (int j=0; j&lt;=M; ++j)
+    for (int k=0; k&lt;2; ++k)
+      elements.push_back((i+k)*(M+1)+j);
+elements.push_back(RESTART_IDX);
+}
+// create buffer object for element data
+GLuint ebo;
+glGenBuffers(1, &amp;ebo);
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+// transfer element data to GPU buffer object
+glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint)*elements.size(),&amp;elements[0], GL_STATIC_DRAW); 
+
+
+//-----VBO
+// bind buffer object to array buffer target
+glBindBuffer(GL_ARRAY_BUFFER, vbo);
+glEnableVertexAttribArray(0);
+glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE,sizeof(vertex), 0);
+glEnableVertexAttribArray(1);
+glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,sizeof(vertex), sizeof(vec4));
+glEnableVertexAttribArray(2);
+glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE,sizeof(vertex), sizeof(vec4)+sizeof(vec3));</code></pre>
+<ol type="1">
+<li><strong>What primitive types can be input and output to the geometry shader?</strong></li>
+</ol>
+<p>The geometry shader is invoked once per primitive: - Input Primitive Types: points, lines, lines_adjacency, triangles, triangles_adjacency. - Output Primitive Types: points, line_strip, triangle_strip. The geometry shader consumes whole primitives and emits a sequence of vertices that are organized into one of the output strip types.</p>
+<ol start="9" type="1">
+<li><p><strong>Why is the input data to the geometry shader to be declared as arrays?</strong> The geometry shader’s fundamental purpose is to process an entire primitive at once, not just a single vertex. Since a primitive consists of multiple vertices (e.g., a triangle has 3, a line with adjacency has 4), the input variables that receive vertex attributes must be declared as arrays.</p></li>
+<li><p><strong>Given a shader program. Determine the shader type and its functionality!</strong></p></li>
+</ol>
+<ul>
+<li>Vertex Shader: Will always write to the special output gl_Position.</li>
+<li>Geometry Shader: Will have layout(points) in; layout(triangle strip) out;</li>
+<li>Fragment Shader: Will write its final color to an out vec4 variable</li>
+<li>Functionality: Reading the code in main(). For example, a geometry shader that takes lines as input and outputs a triangle_strip</li>
+</ul>
+<ol start="11" type="1">
+<li><strong>How do you pass a variable that is interpolated over a triangle from the geometry shader to the fragment shader?</strong></li>
+</ol>
+<ul>
+<li>Vertex shader output vertices</li>
+<li>primitive assembly</li>
+<li>In the geometry shader, declare an out variable (e.g., out vec3 worldPos;). Before calling EmitVertex(), assign a value to this variable. (emits the vertices of a new primitive)</li>
+<li>Rasterizer interpolate everything across the surface of this primitive</li>
+<li>In the fragment shader, declare a matching in variable (e.g., in vec3 worldPos;).</li>
+</ul>
+<ol start="12" type="1">
+<li><strong>Explain the principle of instanced rendering and describe a typical application!</strong></li>
+</ol>
+<p>Render 3 trees at one call or to generate complex tesselation at once</p>
+</section>
+<section id="lighting" class="level1">
+<h1>Lighting</h1>
+<ol type="1">
+<li><strong>Explain the different stages of light transport from emission to detection!</strong></li>
+</ol>
+<ul>
+<li>Emission: A light source converts energy (e.g., electrical) into light photons.</li>
+<li>Transport: Light travels in straight lines through a homogeneous medium like a vacuum.</li>
+<li>Scattering: In a transparent medium like air, light can be deflected by particles (e.g., skin).</li>
+<li>Reflection: Light bounces off surfaces.</li>
+<li>Refraction: Light passes through transparent surfaces (like glass or water), changing its direction.</li>
+<li>Absorption: Light is absorbed by surfaces or media, converting its energy into another form (e.g., heat).</li>
+<li>Detection: An eye or an image sensor measures the spatial distribution of the light that reaches it.</li>
+</ul>
+<ol start="2" type="1">
+<li><strong>What is needed to specify a goniometric point light source?</strong></li>
+</ol>
+<ul>
+<li>goniometric point light source = light is emitted from a single point: emission position, intensity varied by directions &amp; decreased by distance</li>
+</ul>
+<ol start="3" type="1">
+<li><strong>What is color bleeding?</strong></li>
+</ol>
+<ul>
+<li>color reflection from 1 surface to other surfaces</li>
+</ul>
+<ol start="4" type="1">
+<li><strong>How do the results of light simulations with single versus multiple reflections compare?</strong></li>
+</ol>
+<ul>
+<li>Single Reflection: Only allow bounce from original light source (not so realistic)</li>
+<li>Multiple Reflections: Light is allowed to bounce multiple times between surfaces (indirect lighting). Each bounce adds more light to the scene. As a result, simulations with multiple reflections produce brighter, more realistic scenes with softer shadows and effects like color bleeding.</li>
+</ul>
+<ol start="5" type="1">
+<li><strong>Explain the difference between hard and soft shadows!</strong></li>
+</ol>
+<ul>
+<li>Hard Shadows: sharp (when light source is a single point)</li>
+<li>Soft Shadows: fuzzy, smoothed (when the light source is an area light =&gt; partially occluded)</li>
+</ul>
+<ol start="6" type="1">
+<li><strong>Which light source types result in hard shadows?</strong></li>
+</ol>
+<ul>
+<li>Point light sources -&gt; hard shadow</li>
+</ul>
+<ol start="7" type="1">
+<li><strong>Penumbra</strong></li>
+</ol>
+<ul>
+<li>area light sources -&gt; soft shadow</li>
+</ul>
+<ol start="8" type="1">
+<li><p><strong>Argue why human perception motivates the use of gamma for sRGB color space and displays!</strong> Human perception of brightness is not linear. Eyes are more sensitive to darker colors (use more 8bit ranges for that)</p></li>
+<li><p><strong>What is the rendering equation and why is it difficult to solve?</strong></p></li>
+</ol>
+<ul>
+<li>Sum outgoing light from a point = sum Light_emitted Light_reflect</li>
+<li>It is difficult to solve because: integral of all incoming lights + the incoming light themself is the outgoing of the other (recursive)</li>
+</ul>
+<ol start="10" type="1">
+<li><strong>Name three simplifications of the rendering equation typically adopted in real-time rendering!</strong></li>
+</ol>
+<ul>
+<li>Ignore indirect lighting</li>
+<li>Restrict light source types: only directional or point light</li>
+<li>Replace physically-based BRDFs with simpler empirical models like Phong or Blinn-Phong.</li>
+</ul>
+<ol start="11" type="1">
+<li><p><strong>How does intensity fall off for a point light source?</strong> The intensity (the radiance) Radiance ∝ 1 / distance²</p></li>
+<li><p><strong>Explain why it makes sense to split local lighting into ambient, diffuse and specular reflection!</strong> Splitting the local illumination model into ambient, diffuse, and specular components is a useful simplification because each term models a different aspect of light reflection: Ambient: usually not a part of BRDF Diffuse: Lambdertian Specular: Phong or Microfacet (gaussian distributed)</p></li>
+<li><p><strong>Explain why it makes sense to split local lighting into ambient, diffuse and specular reflection!</strong></p></li>
+</ol>
+<ul>
+<li>modular and computationally cheap way to approximate the appearance of different materials.</li>
+</ul>
+<ol start="13" type="1">
+<li><strong>What does the ambient term in local illumination models compensate for?</strong></li>
+</ol>
+<ul>
+<li>indirect lighting that we cannot calculate but can approximate</li>
+</ul>
+<ol start="14" type="1">
+<li><strong>What is a Lambertian Radiator and how does it look from different viewing angles?</strong></li>
+</ol>
+<ul>
+<li>ideal diffusion</li>
+<li>same radiance regardless of their viewing direction L = (phi/pi)*(Icos(alpha))/r²</li>
+</ul>
+<ol start="15" type="1">
+<li><p><strong>The Lambertian implementation of diffuse local illumination is computed mainly from the cosine term. What does this imply for the bidirectional reflectance distribution function?</strong> The Lambertian depends only on the cosine of the angle between the incoming light direction (not outgoing) =&gt; BRDF for a Lambertian surface is constant for all incoming and outgoing directions.</p></li>
+<li><p><strong>Which parameter of the Phong and Blinn-Phong implementation of specular reflection defines the roughness of the surface? Where is the cosine term in these models?</strong></p></li>
+</ol>
+<ul>
+<li>Roughness Parameter: The shininess parameter, m, is the exponent, the higher the shinier</li>
+<li>Cosine Term: The cosine term is implemented via a dot product raised to the power of m.</li>
+<li>Phong, it is (&lt;ω_out, ω_refl&gt;)^m.</li>
+<li>Blinn-Phong, it is (&lt;ω_half, n&gt;)^m.</li>
+</ul>
+<ol start="17" type="1">
+<li><p><strong>Given images of illuminated objects, estimate diffuse, specular and roughness parameters!</strong> Diffuse, specular, roughness</p></li>
+<li><p><strong>In which coordinate system is the illumination calculation typically performed?</strong></p></li>
+</ol>
+<ul>
+<li>Eye Coordinates (also called View Space) a.k.a (0,0,0)</li>
+<li>The requirements: no clipping, no distortion</li>
+</ul>
+<ol start="19" type="1">
+<li><strong>Explain which part of lighting calculation is done on CPU, in Vertex Shader and in Fragment Shader!</strong></li>
+</ol>
+<ul>
+<li>CPU: scene, materials and lights (like color, position, shininess) and passes these values to the shaders as uniforms.</li>
+<li>Vertex Shader: transform geometry. It takes vertex positions and normals from object coordinates and transforms them into eye coordinates, then passes these transformed values to the next stage.</li>
+<li>Fragment Shader: lighting calculation. It receives the interpolated position and normal from the rasterizer, accesses the uniform variables for light and material properties, and computes the final color of the fragment.</li>
+</ul>
+<ol start="20" type="1">
+<li><strong>How can you provide the following parameters to the Fragment Shader in eye coordinates: position, surface normal, direction to the viewer and direction to the light source?</strong></li>
+</ol>
+<ul>
+<li>Position (p): The vertex shader calculates the eye-space position and passes it to the fragment shader as an out variable. The rasterizer interpolates this value for each fragment.</li>
+<li>Surface Normal (n): The vertex shader transforms the object-space normal to eye-space using the inverse transpose of the model-view matrix. It passes this as an out variable.</li>
+<li>Direction to Viewer (ω_out): This is calculated inside the fragment shader. Since the viewer is at the origin (0,0,0) in eye coordinates, the direction is simply normalize(-p), where p is the fragment’s interpolated position.</li>
+<li>Direction to Light Source (ω_in): The light’s position l (in eye coordinates) is passed (also calculated from vertex shader as uniform) to the fragment shader as a uniform. The direction is then calculated inside the shader as normalize(l - p).</li>
+</ul>
+<ol start="21" type="1">
+<li><strong>Explain how you have to account for gamma correction in the shader pipeline to avoid unnatural darkening when the display performs gamma correction!</strong></li>
+</ol>
+<ul>
+<li>Lighting calculations in a shader produce physically linear color values.</li>
+<li>However, Monitor expects non-linear sRGB color values (which are approximately gamma-corrected with γ ≈ 2.2) =&gt; If you write a linear color directly to the framebuffer =&gt; it will be too dark because it saves more bit for that</li>
+<li>Solution: directly in fragment shader OR OpenGL function</li>
+<li>Additionally, you must handle input textures. If a texture is stored in sRGB format (which is common for .jpg or .png files), you must convert it to linear space inside the shader before using it in lighting calculations.</li>
+</ul>
+<section id="rendering-equation" class="level2">
+<h2 class="anchored" data-anchor-id="rendering-equation">Rendering Equation</h2>
+<p><span class="math display">\[
+L_o(p,\omega_o) = \int_\Omega f_r(p,\omega_i,\omega_o) L_i(p,\omega_i) (n \cdot \omega_i) d\omega_i
+\]</span></p>
+<ul>
+<li><p><strong><span class="math display">\[L_o(p,\omega_o)\]</span></strong><br>
+Outgoing radiance - the light leaving surface point <span class="math display">\[p\]</span> in direction <span class="math display">\[\omega_o\]</span> (what the observer sees)</p></li>
+<li><p><strong><span class="math display">\[\int_\Omega ... d\omega_i\]</span></strong><br>
+Integral over the hemisphere <span class="math display">\[\Omega\]</span> above the surface, summing contributions from all incoming light directions</p></li>
+<li><p><strong><span class="math display">\[f_r(p,\omega_i,\omega_o)\]</span></strong><br>
+BRDF (Bidirectional Reflectance Distribution Function) that defines the relationship:</p>
+<ul>
+<li>How light reflects at point <span class="math display">\[p\]</span><br>
+</li>
+<li>From incoming direction <span class="math display">\[\omega_i\]</span> to outgoing <span class="math display">\[\omega_o\]</span><br>
+</li>
+<li>Determines material appearance (diffuse/glossy/metallic)</li>
+</ul></li>
+<li><p><strong><span class="math display">\[L_i(p,\omega_i)\]</span></strong><br>
+Incoming radiance - light arriving at <span class="math display">\[p\]</span> from direction <span class="math display">\[\omega_i\]</span></p></li>
+<li><p><strong><span class="math display">\[(n \cdot \omega_i)\]</span></strong><br>
+Lambertian cosine term accounting for:</p>
+<ul>
+<li>Angle between surface normal <span class="math display">\[n\]</span> and light direction<br>
+</li>
+<li>Surfaces receive less light at grazing angles</li>
+</ul></li>
+</ul>
+</section>
+<section id="common-lighting-models" class="level2">
+<h2 class="anchored" data-anchor-id="common-lighting-models">Common Lighting Models</h2>
+<section id="lambertian-diffuse" class="level3">
+<h3 class="anchored" data-anchor-id="lambertian-diffuse">1. Lambertian (Diffuse)</h3>
+<p><span class="math display">\[ f_{\text{lambert}} = k_d \cdot (n \cdot l) \]</span> - <span class="math display">\[k_d\]</span>: Diffuse albedo - <span class="math display">\[n\]</span>: Surface normal - <span class="math display">\[l\]</span>: Light direction - Models perfect matte surfaces</p>
+</section>
+<section id="phong-model" class="level3">
+<h3 class="anchored" data-anchor-id="phong-model">2. Phong Model</h3>
+<p><span class="math display">\[ I = k_d \cdot (n \cdot l) + k_s \cdot (r \cdot v)^\alpha \]</span> - <span class="math display">\[r\]</span>: Reflection vector (<span class="math display">\[r = 2(n \cdot l)n - l\]</span>) - <span class="math display">\[v\]</span>: View direction - <span class="math display">\[\alpha\]</span>: Shininess exponent</p>
+</section>
+<section id="blinn-phong-model" class="level3">
+<h3 class="anchored" data-anchor-id="blinn-phong-model">3. Blinn-Phong Model</h3>
+<p><span class="math display">\[ I = k_d \cdot (n \cdot l) + k_s \cdot (n \cdot h)^\alpha \]</span> - <span class="math display">\[h\]</span>: Halfway vector (<span class="math display">\[h = \text{normalize}(l + v)\]</span>) - More efficient than Phong - Better for metallic surfaces</p>
+</section>
+<section id="key-differences" class="level3">
+<h3 class="anchored" data-anchor-id="key-differences">Key Differences:</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Lambertian</th>
+<th>Phong</th>
+<th>Blinn-Phong</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Diffuse</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>Specular</td>
+<td>✗</td>
+<td>Reflection</td>
+<td>Halfway</td>
+</tr>
+<tr class="odd">
+<td>Performance</td>
+<td>Fastest</td>
+<td>Moderate</td>
+<td>Fast</td>
+</tr>
+<tr class="even">
+<td>Realism</td>
+<td>Matte</td>
+<td>Plastic</td>
+<td>Metallic</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+<section id="texturing" class="level1">
+<h1>Texturing</h1>
+<ol type="1">
+<li><strong>What types of mapping are there?</strong></li>
+</ol>
+<ul>
+<li>Color</li>
+<li>Traditional Bump Mapping (less storage but more computational because it needs gradient from neighboring, so it needs smapling neighbors height too)</li>
+<li>Normal Mapping (add some extra normal (x,z,y) but actually saved as (r,g,b)) =&gt; simple, fast</li>
+<li>Parallax Mapping</li>
+<li>Displacement (add explicitely heightmap uvh)</li>
+</ul>
+<ol start="2" type="1">
+<li><p><strong>How exactly is the uv texture defined? Like someone made it explicitly?</strong></p></li>
+<li><p><strong>Tangent Method for Mapping please</strong></p></li>
+</ol>
+<ul>
+<li>For any given fragment on the screen, there’s a unique p_eye and a unique uv because when the GPU rasterizes a triangle, it interpolates all the vertex attributes, including both the 3D position and the 2D texture coordinates, for every single fragment.</li>
+<li>The p_eye is the 3D position of a point on the crumpled paper.</li>
+<li>The uv is the 2D position of that same point on the flat paper.</li>
+<li>We know the change in 3D position over a pixel on the screen (dFdx(p_eye))</li>
+<li>We also know the change in 2D texture coordinates over the same pixel on the screen (dFdx(uv)).</li>
+<li>We can set up a system of equations to solve for the unknown: the change in 3D position for a change in u and v.</li>
+</ul>
+<p><span class="math display">\[\frac{\partial \mathbf{p}_{eye}}{\partial x} = \mathbf{T} \cdot \frac{\partial u}{\partial x} + \mathbf{B} \cdot \frac{\partial v}{\partial x}\]</span></p>
+<p><span class="math display">\[\frac{\partial \mathbf{p}_{eye}}{\partial y} = \mathbf{T} \cdot \frac{\partial u}{\partial y} + \mathbf{B} \cdot \frac{\partial v}{\partial y}\]</span></p>
+<p><span class="math display">\[\begin{bmatrix} \frac{\partial \mathbf{p}_{eye}}{\partial x} \\ \frac{\partial \mathbf{p}_{eye}}{\partial y} \end{bmatrix} = \begin{bmatrix} \frac{\partial u}{\partial x} &amp; \frac{\partial v}{\partial x} \\ \frac{\partial u}{\partial y} &amp; \frac{\partial v}{\partial y} \end{bmatrix} \begin{bmatrix} \mathbf{T} \\ \mathbf{B} \end{bmatrix}\]</span></p>
+
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
