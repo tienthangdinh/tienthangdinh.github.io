@@ -8,7 +8,7 @@
 
 <meta name="dcterms.date" content="2025-08-08">
 
-<title>Advanced Modelling – silent convergence</title>
+<title>Advanced Modelling – silent brachistochrone</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -40,7 +40,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-db03927a41f77a8af5287a812d7101f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -110,7 +110,7 @@ window.Quarto = {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
-    <span class="navbar-title">silent convergence</span>
+    <span class="navbar-title">silent brachistochrone</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -171,7 +171,6 @@ window.Quarto = {
   <li><a href="#rotation-articulated-objects" id="toc-rotation-articulated-objects" class="nav-link" data-scroll-target="#rotation-articulated-objects">Rotation &amp; Articulated Objects</a></li>
   <li><a href="#skeleton-extraction" id="toc-skeleton-extraction" class="nav-link" data-scroll-target="#skeleton-extraction">Skeleton Extraction</a></li>
   <li><a href="#rigging" id="toc-rigging" class="nav-link" data-scroll-target="#rigging">Rigging</a></li>
-  <li><a href="#skinning" id="toc-skinning" class="nav-link" data-scroll-target="#skinning">Skinning</a></li>
   </ul>
 </nav>
     </div>
@@ -919,98 +918,6 @@ window.Quarto = {
 <ul>
 <li>The “Fast &amp; Efficient Skinning of Animated Meshes” (F&amp;ESAM) paper improves upon the general idea by addressing its computational complexity. The main improvement is solving the problem in a reduced trajectory space.</li>
 <li>Instead of working with the trajectories of all m vertices over k frames (a very large matrix A), the method first approximates the entire animation using a much smaller set of d basis trajectories (where d &lt;&lt; m). The matrix decomposition problem is then solved in this much smaller, lower-dimensional space. This yields a slightly larger number of bones (d) than a full SVD would, but it can be solved in a significantly shorter amount of time.</li>
-</ul>
-</section>
-<section id="skinning" class="level1">
-<h1>Skinning</h1>
-<ol type="1">
-<li><strong>Explain the representation used for mesh skinning and explain advantages!</strong></li>
-</ol>
-<ul>
-<li><p>Rest Pose Mesh: The mesh’s geometry (vertices, connectivity) in a neutral or reference pose, often a T-pose.</p></li>
-<li><p>Skeleton (or Armature): A hierarchy of joints or “bones” that defines the underlying structure for animation.</p></li>
-<li><p>Vertex Weights: For each vertex in the mesh, a set of weights is defined that specifies how much influence each joint in the skeleton has on that vertex. Typically, the sum of weights for a single vertex equals 1. For efficiency, a vertex is usually only influenced by a small number of joints (e.g., up to 4).</p></li>
-<li><p>Advantages of this representation:</p></li>
-<li><p>Efficiency: It is computationally simple and fast, making it suitable for real-time applications like video games.</p></li>
-<li><p>Data Compactness: Instead of storing a full mesh for every frame of an animation (as in morph target animation), only the skeleton’s pose needs to be stored per frame, which is significantly less data.</p></li>
-<li><p>Intuitive Animation: Animators can manipulate the skeleton, a much simpler structure than the full mesh, to create complex deformations and poses.</p></li>
-<li><p>Separation of Concerns: The mesh (the “skin”) and the animation data (the skeleton’s movement) are separate. The same animation can be applied to different meshes, and the same mesh can be used with different animations.</p></li>
-</ul>
-<ol start="2" type="1">
-<li><strong>How is a skinned mesh transformed into a specific pose with linear blend skinning?</strong></li>
-</ol>
-<ul>
-<li>Define the skeleton’s new pose from transformations</li>
-<li>Compute World Transformations: local transform multiplied by its parent’s world transform.</li>
-<li>Compute Joint Pose Transformations: For each joint i, calculate its pose transformation matrix T<sup>0→t</sup><sub>i</sub>. This matrix transforms a point from the coordinate system of the joint in the rest pose to the coordinate system of the same joint in the target pose. This matrix effectively captures the total transformation of a single joint from the rest pose to the target pose.</li>
-<li>Blend Vertices: For each vertex p<sub>j</sub> in the mesh, its new position p’<sub>j</sub> is calculated. This is a weighted average of the vertex being transformed by every joint’s pose transformation.</li>
-<li>The formula is: p’<sub>j</sub> = Σ (w<sub>ij</sub> ⋅ T<sup>0→t</sup><sub>i</sub> ⋅ p<sup>0</sup><sub>j</sub>). Here, w<sub>ij</sub> is the weight of influence of joint i on vertex j, and the sum is over all joints i that influence the vertex.</li>
-</ul>
-<ol start="3" type="1">
-<li><strong>What are typical artefacts of linear blend skinning?</strong></li>
-</ol>
-<ul>
-<li>Linear Blend Skinning is fast but prone to <strong>Loss of Volume</strong> artifacts, because linearly blending matrices is not geometrically sound for rotations:</li>
-<li>Elbow Collapse / Joint Collapse: At joints that bend significantly (like elbows or knees), the volume around the joint appears to collapse and shrink. This happens because the vertices in the joint’s interior are averaged between two bones rotating in different directions -&gt; <strong>tend to move towards the center of the joint</strong></li>
-<li>Candy Wrapper Artefact: When a bone is twisted along its length, the mesh around it tends to lose volume and collapse inward, because it keep the weight constant</li>
-</ul>
-<ol start="4" type="1">
-<li><strong>Why can some artefacts be avoided when interpolating transformations instead of transformed intermediate points?</strong></li>
-</ol>
-<ul>
-<li>Linear Blend Skinning (LBS) has problem aboe bc it try to fit the linear matrix transformation.</li>
-<li><strong>Solution:</strong> we need to avoid the stright-line path between two segments =&gt; interpolating the transformations themselves, a single, valid intermediate transformation is created first. This blended transformation is then applied to the vertex. Methods like spherical interpolation of quaternions find the “shortest path” for rotation, preserving the arc-like motion of a rotating object.</li>
-</ul>
-<ol start="5" type="1">
-<li><strong>Describe spherical blend skinning and explain why the choice of the origin of rotation is important!</strong></li>
-</ol>
-<ul>
-<li>Decomposition: Each joint’s pose transformation matrix is split into a rotation component (represented by a quaternion, q<sub>i</sub>) and a translation vector (t<sub>i</sub>).</li>
-<li>Independent Blending: For each vertex, the influencing quaternions and translation vectors are blended separately. The quaternions are averaged using spherical linear interpolation (or a normalized linear interpolation as a fast approximation), and the translation vectors are averaged linearly, both using the vertex’s weights.</li>
-<li>The blended quaternion and blended translation are used to transform the vertex. The formula subtracts a rotation center, applies the blended rotation, and then adds back the rotated center and the blended translation.</li>
-<li>The choice of the origin of rotation is critical because rotation is always defined relative to a center point. If an incorrect center is used, the blended rotation will cause the vertex to pivot around the wrong point, leading to unnatural shearing and movement instead of a clean, rigid rotation.</li>
-</ul>
-<ol start="6" type="1">
-<li><p><strong>How can we incorporate an optimized origin of rotation in spherical blend skinning?</strong> Spherical Blend Skinning incorporates an optimized rotation center to improve results. For each vertex, it considers the group of joints that influence it. The algorithm then finds an optimal rotation center (r<sup>0</sup><sub>α</sub>) for this group of joints, such that when this center is transformed by each of the individual joint transformations, the resulting points are as close to each other as possible. This finds a stable, common pivot point for the group of transformations affecting the vertex, leading to a more rigid and natural deformation.</p></li>
-<li><p><strong>What is a good origin for spherical blend skinning of articulated objects with revolute joints?</strong></p></li>
-</ol>
-<ul>
-<li>revolute joints the best origin of rotation is a point located on the joint’s axis. This is the natural pivot point around which the connected limb rotates.</li>
-</ul>
-<ol start="8" type="1">
-<li><strong>Explain log matrix blending and discuss its drawbacks with respect to interpolation of rigid body transformations!</strong> Log Matrix Blending is a technique that allows for the meaningful blending of transformation matrices. The core idea is to use the matrix logarithm to convert the multiplicative group of matrices into an additive space (the “log space”). In this space, a weighted average can be calculated. The matrix exponential is then used to map the result back into a valid transformation matrix.</li>
-</ol>
-<ul>
-<li>Drawbacks for Rigid Body Transformations:</li>
-<li>Not Necessarily Shortest Path: The interpolation between two rotations is not guaranteed to be along the shortest path.</li>
-<li>No Static Rotation Axis: The interpolation does not generally correspond to a rotation around a fixed axis, which can sometimes look unnatural.</li>
-<li>Ambiguity of Rotations: A single rotation can be represented by an infinite number of matrices in log space (e.g., corresponding to angles α, α + 2π, α + 4π, etc.). This makes spline interpolation and other analysis techniques very difficult to implement correctly.</li>
-</ul>
-<ol start="9" type="1">
-<li><strong>Explain the screw representation of a rigid body transformation! With which parameters can it be parameterized?</strong></li>
-</ol>
-<ul>
-<li>any rigid body transformation can be uniquely described as a screw motion:</li>
-<li>A rotation axis: Defined by its direction vector and a point on the line (or using Plücker coordinates).</li>
-<li>A rotation angle (θ): The amount of rotation around the axis.</li>
-<li>A translation offset (d): The distance of translation along the axis.</li>
-</ul>
-<ol start="10" type="1">
-<li><strong>How can one encode a screw motion with dual quaternions?</strong> A screw motion can be elegantly encoded using a unit dual quaternion: q̂ = (cos(θ̂/2), sin(θ̂/2) * ŝ)</li>
-</ol>
-<ul>
-<li>where θ̂ is a dual angle and ŝ is a dual axis vector.</li>
-<li>The real part of the dual angle (θ) is the rotation angle.</li>
-<li>The dual part of the dual angle (θ<sub>ε</sub>) is the translation offset.</li>
-<li>The real part of the dual axis vector (s) is the direction of the screw axis.</li>
-<li>The dual part of the dual axis vector (s<sub>ε</sub>) is the moment of the axis, which defines its position in space.</li>
-</ul>
-<ol start="11" type="1">
-<li><strong>How do you represent a position vector and how can you transform it with a dual quaternion?</strong></li>
-</ol>
-<ul>
-<li>A 3D position vector v is represented as a pure dual quaternion v̂ where the real part is 1 and the dual part contains the vector: v̂ = 1 + ε(v<sub>x</sub>i + v<sub>y</sub>j + v<sub>z</sub>k)</li>
-<li>Transformation: v’ = q̂ ⋅ v̂ ⋅ q̂*</li>
 </ul>
 
 

@@ -8,7 +8,7 @@
 
 <meta name="dcterms.date" content="2025-07-30">
 
-<title>Polygonal Mesh – silent brachistochrone</title>
+<title>Mesh Geometry Processing – Đinh Tiến Thắng</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -110,7 +110,7 @@ window.Quarto = {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
-    <span class="navbar-title">silent brachistochrone</span>
+    <span class="navbar-title">Đinh Tiến Thắng</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -134,10 +134,10 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Polygonal Mesh</h1>
+      <h1 class="title">Mesh Geometry Processing</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">Computer Graphics</div>
-                <div class="quarto-category">Polygonal Mesh</div>
+                <div class="quarto-category">Mesh Processing</div>
               </div>
                   </div>
   </div>
@@ -203,16 +203,21 @@ window.Quarto = {
   <li><a href="#how-to-do-orientability-check" id="toc-how-to-do-orientability-check" class="nav-link" data-scroll-target="#how-to-do-orientability-check">How to do Orientability Check?</a></li>
   </ul></li>
   </ul></li>
-  <li><a href="#topology" id="toc-topology" class="nav-link" data-scroll-target="#topology">Topology</a>
+  <li><a href="#surface-analysis" id="toc-surface-analysis" class="nav-link" data-scroll-target="#surface-analysis">Surface Analysis</a>
   <ul class="collapse">
-  <li><a href="#manifold-if-can-always-find-a-disk-or-a-half-disk" id="toc-manifold-if-can-always-find-a-disk-or-a-half-disk" class="nav-link" data-scroll-target="#manifold-if-can-always-find-a-disk-or-a-half-disk">2-Manifold if can always find a disk or a half disk</a></li>
-  <li><a href="#understanding-the-euler-characteristic" id="toc-understanding-the-euler-characteristic" class="nav-link" data-scroll-target="#understanding-the-euler-characteristic">Understanding the Euler Characteristic</a>
+  <li><a href="#representation" id="toc-representation" class="nav-link" data-scroll-target="#representation">Representation</a>
   <ul class="collapse">
-  <li><a href="#basic-definition" id="toc-basic-definition" class="nav-link" data-scroll-target="#basic-definition">1. Basic Definition</a></li>
-  <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">2. Examples</a></li>
-  <li><a href="#topological-meaning" id="toc-topological-meaning" class="nav-link" data-scroll-target="#topological-meaning">3. Topological Meaning</a></li>
-  <li><a href="#geometric-interpretation" id="toc-geometric-interpretation" class="nav-link" data-scroll-target="#geometric-interpretation">5. Geometric Interpretation</a></li>
-  <li><a href="#practical-applications" id="toc-practical-applications" class="nav-link" data-scroll-target="#practical-applications">5. Practical Applications</a></li>
+  <li><a href="#multivariate-function-height-field-a2-to-r" id="toc-multivariate-function-height-field-a2-to-r" class="nav-link" data-scroll-target="#multivariate-function-height-field-a2-to-r">1. (Multivariate Function) Height Field <span class="math inline">\(A^2 \to R\)</span></a></li>
+  <li><a href="#multivariate-vector-valued-function---parametric-surface-a2-to-a3" id="toc-multivariate-vector-valued-function---parametric-surface-a2-to-a3" class="nav-link" data-scroll-target="#multivariate-vector-valued-function---parametric-surface-a2-to-a3">2. (Multivariate) Vector-Valued Function - Parametric Surface <span class="math inline">\(A^2 \to A^3\)</span></a></li>
+  <li><a href="#multivariate-function-implicit-surface-a3-to-r" id="toc-multivariate-function-implicit-surface-a3-to-r" class="nav-link" data-scroll-target="#multivariate-function-implicit-surface-a3-to-r">3. (Multivariate Function) Implicit Surface <span class="math inline">\(A^3 \to R\)</span></a></li>
+  </ul></li>
+  <li><a href="#taylor-expansion" id="toc-taylor-expansion" class="nav-link" data-scroll-target="#taylor-expansion">Taylor Expansion</a>
+  <ul class="collapse">
+  <li><a href="#multivariate-functions" id="toc-multivariate-functions" class="nav-link" data-scroll-target="#multivariate-functions">Multivariate Functions</a></li>
+  <li><a href="#vector-valued-functions" id="toc-vector-valued-functions" class="nav-link" data-scroll-target="#vector-valued-functions">Vector-Valued Functions</a></li>
+  <li><a href="#multivariate-vector-valued-functions" id="toc-multivariate-vector-valued-functions" class="nav-link" data-scroll-target="#multivariate-vector-valued-functions">Multivariate Vector-Valued Functions</a></li>
+  <li><a href="#directional-derivative" id="toc-directional-derivative" class="nav-link" data-scroll-target="#directional-derivative">Directional Derivative</a></li>
+  <li><a href="#vector-valued-derivative-conversion" id="toc-vector-valued-derivative-conversion" class="nav-link" data-scroll-target="#vector-valued-derivative-conversion">Vector-valued Derivative conversion</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -494,142 +499,129 @@ do {
 </section>
 </section>
 </section>
-<section id="topology" class="level1">
-<h1>Topology</h1>
-<section id="manifold-if-can-always-find-a-disk-or-a-half-disk" class="level2">
-<h2 class="anchored" data-anchor-id="manifold-if-can-always-find-a-disk-or-a-half-disk">2-Manifold if can always find a disk or a half disk</h2>
+<section id="surface-analysis" class="level1">
+<h1>Surface Analysis</h1>
+<section id="representation" class="level2">
+<h2 class="anchored" data-anchor-id="representation">Representation</h2>
+<p>There are three main ways to represent an analytic surface:</p>
+<section id="multivariate-function-height-field-a2-to-r" class="level3">
+<h3 class="anchored" data-anchor-id="multivariate-function-height-field-a2-to-r">1. (Multivariate Function) Height Field <span class="math inline">\(A^2 \to R\)</span></h3>
+<p>at any given <span class="math inline">\((x,y)\)</span> coordinate, the function gives a surface’s height (<span class="math inline">\(z\)</span>). Downside that only for surface that doesnt overlap the z value more than once.</p>
+<ul>
+<li><strong>Equation:</strong> <span class="math inline">\(z=f(x,y)\)</span></li>
+<li><strong>Example:</strong> A plane <span class="math inline">\(z=ax+by+c\)</span>.</li>
+</ul>
 </section>
-<section id="understanding-the-euler-characteristic" class="level2">
-<h2 class="anchored" data-anchor-id="understanding-the-euler-characteristic">Understanding the Euler Characteristic</h2>
-<section id="basic-definition" class="level3">
-<h3 class="anchored" data-anchor-id="basic-definition">1. Basic Definition</h3>
-<p>For any closed (borderless) surface <strong>S</strong> subdivided into vertices (V), edges (E), and faces (F):</p>
+<section id="multivariate-vector-valued-function---parametric-surface-a2-to-a3" class="level3">
+<h3 class="anchored" data-anchor-id="multivariate-vector-valued-function---parametric-surface-a2-to-a3">2. (Multivariate) Vector-Valued Function - Parametric Surface <span class="math inline">\(A^2 \to A^3\)</span></h3>
+<p>This is a vector-valued function that maps a 2D parameter space (defined by parameters like <span class="math inline">\(u\)</span> and <span class="math inline">\(v\)</span>) to a 3D surface. This is a very flexible representation that can describe a wide range of shapes, including closed surfaces, so we focus on this.</p>
+<ul>
+<li><strong>Equation:</strong> <span class="math inline">\(\mathbf{S}(u,v)=\begin{pmatrix} x(u,v) \\ y(u,v) \\ z(u,v) \end{pmatrix}\)</span></li>
+<li><strong>Example:</strong> A sphere defined by the equations:
+<ul>
+<li><span class="math inline">\(x=r\cos\theta\sin\phi\)</span> (Basically each element in the target vector has their own function x, y, z)</li>
+<li><span class="math inline">\(y=r\sin\theta\sin\phi\)</span></li>
+<li><span class="math inline">\(z=r\cos\phi\)</span></li>
+</ul></li>
+</ul>
+</section>
+<section id="multivariate-function-implicit-surface-a3-to-r" class="level3">
+<h3 class="anchored" data-anchor-id="multivariate-function-implicit-surface-a3-to-r">3. (Multivariate Function) Implicit Surface <span class="math inline">\(A^3 \to R\)</span></h3>
+<p>This is a function that defines a surface as the set of all points that satisfy a specific equation, where the function equals a constant (often zero). Implicit surfaces can represent complex, closed shapes and are useful for collision detection and boolean operations.</p>
+<ul>
+<li><strong>Equation:</strong> <span class="math inline">\(f(x,y,z)=0\)</span></li>
+<li><strong>Example:</strong> A sphere with radius <span class="math inline">\(r\)</span> centered at the origin <span class="math inline">\(x^2+y^2+z^2-r^2=0\)</span>.</li>
+</ul>
+</section>
+</section>
+<section id="taylor-expansion" class="level2">
+<h2 class="anchored" data-anchor-id="taylor-expansion">Taylor Expansion</h2>
+<p>How much order we take is the function of that order (first-order is a linear function, second order is a quadratic function (parabol go across point p))</p>
+<p><strong>Univariate scalar:</strong></p>
+<p><span class="math display">\[f(x+\delta) = f(x) + f'(x)\cdot\delta + \frac{1}{2}f''(x)\cdot\delta^2 + \mathcal{O}(\delta^3)\]</span></p>
+<p><strong>Multivariate scalar:</strong></p>
+<p><span class="math display">\[f(\mathbf{x}+\boldsymbol{\delta}) = f(\mathbf{x}) + f'_{\mathbf{x}}(\mathbf{x})\cdot\boldsymbol{\delta} + \frac{1}{2}\boldsymbol{\delta}^T H_f^\dagger(\mathbf{x})\boldsymbol{\delta} + \mathcal{O}(\left\|\boldsymbol{\delta}\right\|^3)\]</span></p>
+<p><strong>Multivariate vector-valued:</strong> <span class="math display">\[\mathbf{f}(\mathbf{x}+\boldsymbol{\delta}) = \mathbf{f}(\mathbf{x}) + J_{\mathbf{f}_{\boldsymbol{\delta}}}(\mathbf{x})\boldsymbol{\delta} + \mathcal{O}(\left\|\boldsymbol{\delta}\right\|^2)\]</span></p>
+<section id="multivariate-functions" class="level3">
+<h3 class="anchored" data-anchor-id="multivariate-functions">Multivariate Functions</h3>
+<p><span class="math display">\[f: \mathbb{R}^n \to \mathbb{R}\]</span> e.g.&nbsp;height field <span class="math inline">\(h = f(\mathbf{x}) = f(x,y)\)</span></p>
+<p>Derivation w.r.t. any of the variables gives partial derivatives:</p>
+<p><span class="math display">\[\frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}: \mathbb{R}^n \to \mathbb{R}\]</span></p>
+<p>Short forms: <span class="math inline">\(f_x = \frac{\partial f}{\partial x}, f_y = \frac{\partial f}{\partial y}\)</span></p>
+<p>2nd deriv.: <span class="math inline">\(f_{xx} = \frac{\partial^2 f}{\partial x^2}, f_{yy} = \frac{\partial^2 f}{\partial y^2}, f_{xy} = \frac{\partial^2 f}{\partial x \partial y}\)</span></p>
+<p>The gradient of a function at a given point is the (row)-vector (in direction of steepest ascent) of partial derivatives (<span class="math inline">\(\nabla_{\mathbf{x}} f: \mathbb{R}^n \to \mathbb{R}^{1\times n}\)</span>):</p>
+<p><span class="math inline">\(\nabla_{\mathbf{x}} f = f_{\mathbf{x}} = (f_x, f_y, \ldots)\)</span> (it points in direction of steepest ascent)</p>
+</section>
+<section id="vector-valued-functions" class="level3">
+<h3 class="anchored" data-anchor-id="vector-valued-functions">Vector-Valued Functions</h3>
+<p><span class="math display">\[f: \mathbb{R} \to \mathbb{R}^m\]</span></p>
+<p>E.g. a curve:</p>
+<p><span class="math display">\[\mathbf{f}(t) = \begin{pmatrix} x(t) \\ y(t) \end{pmatrix} = \begin{pmatrix} \cos t \\ \sin t \end{pmatrix}\]</span></p>
+<p>Derivatives are computed per component independently</p>
+<p><span class="math display">\[\frac{d\mathbf{f}}{dt}: \mathbb{R} \to \mathbb{R}^2\]</span> <span class="math display">\[\mathbf{f}'(t) = \begin{pmatrix} x'(t) \\ y'(t) \end{pmatrix}\]</span></p>
+<p>Where:</p>
+<ul>
+<li>The derivative is a tangent vector to the surface</li>
+<li>Its length represents the speed of change.</li>
+</ul>
+</section>
+<section id="multivariate-vector-valued-functions" class="level3">
+<h3 class="anchored" data-anchor-id="multivariate-vector-valued-functions">Multivariate Vector-Valued Functions</h3>
+<p><span class="math display">\[f: \mathbb{R}^n \to \mathbb{R}^m\]</span></p>
+<p>E.g. a surface:</p>
+<p><span class="math display">\[\mathbf{s}(\boldsymbol{\tau}) = \mathbf{s}\begin{pmatrix} u \\ v \end{pmatrix} = \begin{pmatrix} x(\boldsymbol{\tau}) \\ y(\boldsymbol{\tau}) \\ z(\boldsymbol{\tau}) \end{pmatrix} = \begin{pmatrix} x(u,v) \\ y(u,v) \\ z(u,v) \end{pmatrix} = \begin{pmatrix} \cos u \cos v \\ \sin u \cos v \\ \sin v \end{pmatrix}\]</span></p>
+<p>The partial derivatives are tangent vectors:</p>
+<p><span class="math display">\[\frac{\partial \mathbf{s}}{\partial u} = \mathbf{s}_u = \begin{pmatrix} x_u \\ y_u \\ z_u \end{pmatrix}\]</span></p>
+<p>The row-vector of partial derivatives is now a matrix says how changes in u and v affect the coordinate x,y,z:</p>
+<p><span class="math display">\[J_{\mathbf{s}_{\boldsymbol{\tau}}} = \mathbf{s}_{\boldsymbol{\tau}} = \begin{pmatrix} \mathbf{s}_u &amp; \mathbf{s}_v \end{pmatrix} = \begin{pmatrix} x_u &amp; x_v \\ y_u &amp; y_v \\ z_u &amp; z_v \end{pmatrix}\]</span></p>
+<p>This matrix is called the Jacobian. Basically a transformation matrix that map direction from parameter space to value space. The Jacobian’s columns are the tangent vectors s_u and s_v in value space.</p>
+</section>
+<section id="directional-derivative" class="level3">
+<h3 class="anchored" data-anchor-id="directional-derivative">Directional Derivative</h3>
+<p>We can calculate the derivative in a <strong>specific direction</strong> <span class="math inline">\(\boldsymbol{\delta}\)</span> (<span class="math inline">\(\left\|\boldsymbol{\delta}\right\|=1\)</span>).</p>
+<p>In the scalar case, just do the dot product with the gradien, it projects on it:</p>
+<p><span class="math display">\[\frac{\partial f}{\partial \boldsymbol{\delta}}(\mathbf{x}) = f_{\mathbf{x}}(\mathbf{x})\cdot\boldsymbol{\delta} = f_x \cdot \delta[x] + f_y \cdot \delta[y] + \ldots\]</span></p>
+<p>This generalizes to vector-valued functions:</p>
+<p><span class="math display">\[\frac{\partial \mathbf{f}}{\partial \boldsymbol{\delta}}(\mathbf{x}) = \mathbf{f}_{\mathbf{x}}\cdot\boldsymbol{\delta} = \mathbf{f}_x \cdot \delta[x] + \mathbf{f}_y \cdot \delta[y] + \ldots\]</span></p>
+<p>As said above: The Jacobian’s columns are the tangent vectors s_u and s_v in value space.</p>
+</section>
+<section id="vector-valued-derivative-conversion" class="level3">
+<h3 class="anchored" data-anchor-id="vector-valued-derivative-conversion">Vector-valued Derivative conversion</h3>
+<p>The transformation chain can be represented as:</p>
 <p><span class="math display">\[
-\chi(S) = V - E + F
+\begin{align*}
+\vec{\tau} = \begin{pmatrix} u \\ v \end{pmatrix}
+\xrightarrow{s} \vec{p} = \begin{pmatrix} x \\ y \\ z \end{pmatrix}
+\xrightarrow{\tilde{c}} \vec{c} = \begin{pmatrix} r \\ g \\ b \\ a \end{pmatrix}
+\end{align*}
 \]</span></p>
-<p><strong>Key Property</strong>: - χ is a <em>topological invariant</em> - it depends only on the surface’s “shape” (topology), not on how we subdivide it.</p>
-</section>
-<section id="examples" class="level3">
-<h3 class="anchored" data-anchor-id="examples">2. Examples</h3>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Surface</th>
-<th>V - E + F</th>
-<th>χ</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Sphere</td>
-<td>8-12+6 = 2 (cube) <br> 4-6+4 = 2 (tetrahedron)</td>
-<td>2</td>
-</tr>
-<tr class="even">
-<td>Torus</td>
-<td>16-32+16 = 0</td>
-<td>0</td>
-</tr>
-<tr class="odd">
-<td>Double Torus</td>
-<td>8-16+8 = 0</td>
-<td>0 ?</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="topological-meaning" class="level3">
-<h3 class="anchored" data-anchor-id="topological-meaning">3. Topological Meaning</h3>
-<p>The Euler characteristic can be expressed via Betti numbers (counting topological features):</p>
+<p>Chain rule:</p>
 <p><span class="math display">\[
-\chi = h_0 - h_1 + h_2
+[ \dot{c}(s(\vec{\tau})) ]_{\vec{\tau}} =
+[ \dot{c}_{\vec{p}}(s(\vec{\tau})) ] s_{\vec{\tau}}(\vec{\tau})
 \]</span></p>
-<section id="h_0-0-dimensional-holes-connected-components" class="level4">
-<h4 class="anchored" data-anchor-id="h_0-0-dimensional-holes-connected-components"><span class="math inline">\(h_0\)</span>: 0-Dimensional Holes (Connected Components)</h4>
-<ul>
-<li>Counts the number of separate pieces in the surface</li>
-<li>For a single connected surface: <span class="math inline">\(h_0 = 1\)</span></li>
-<li>Example: Both a sphere and torus have <span class="math inline">\(h_0 = 1\)</span></li>
-</ul>
-</section>
-<section id="h_1-1-dimensional-holes-non-trivial-loops" class="level4">
-<h4 class="anchored" data-anchor-id="h_1-1-dimensional-holes-non-trivial-loops"><span class="math inline">\(h_1\)</span>: 1-Dimensional Holes (Non-Trivial Loops)</h4>
-<ul>
-<li>Counts the maximum number of independent closed curves that:
-<ol type="1">
-<li>Cannot be shrunk to a point</li>
-<li>Don’t split the surface when cut</li>
-</ol></li>
-<li>Sphere: <span class="math inline">\(h_1 = 0\)</span> (all loops can shrink)</li>
-<li>Torus: <span class="math inline">\(h_1 = 2\)</span> (meridian and longitude loops)</li>
-<li>Double Torus: <span class="math inline">\(h_1 = 4\)</span></li>
-</ul>
-</section>
-<section id="h_2-number-of-orientable-shells" class="level4">
-<h4 class="anchored" data-anchor-id="h_2-number-of-orientable-shells"><span class="math inline">\(h_2\)</span>: Number of orientable shells</h4>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Surface</th>
-<th><span class="math inline">\(h_0\)</span></th>
-<th><span class="math inline">\(h_1\)</span></th>
-<th><span class="math inline">\(h_2\)</span></th>
-<th><span class="math inline">\(\chi\)</span></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><strong>Sphere</strong></td>
-<td>1</td>
-<td>0</td>
-<td>1</td>
-<td>2</td>
-</tr>
-<tr class="even">
-<td><strong>Torus</strong></td>
-<td>1</td>
-<td>2</td>
-<td>1</td>
-<td>0</td>
-</tr>
-<tr class="odd">
-<td><strong>Disk</strong></td>
-<td>1</td>
-<td>0</td>
-<td>0</td>
-<td>1</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="geometric-interpretation" class="level3">
-<h3 class="anchored" data-anchor-id="geometric-interpretation">5. Geometric Interpretation</h3>
-<ul>
-<li>Positive <span class="math inline">\(\chi\)</span>: Sphere-like topology</li>
-<li>Zero <span class="math inline">\(\chi\)</span>: Torus-like topology</li>
-<li>Negative <span class="math inline">\(\chi\)</span>: Higher-genus surfaces (multiple handles)</li>
-</ul>
-</section>
-<section id="practical-applications" class="level3">
-<h3 class="anchored" data-anchor-id="practical-applications">5. Practical Applications</h3>
-<ol type="1">
-<li><strong>Mesh Processing</strong>:
-<ul>
-<li>Verify mesh integrity (e.g., χ=2 for watertight meshes)</li>
-<li>Detect topological changes during simplification</li>
-</ul></li>
-<li><strong>Physics</strong>:
-<ul>
-<li>Gauss-Bonnet theorem relates χ to total curvature</li>
-<li>Essential in string theory and cosmology</li>
-</ul></li>
-<li><strong>Computer Graphics</strong>:
-<ul>
-<li>Texture mapping requires χ=2 for spherical topology</li>
-<li>Character modeling (ear/handles change topology)</li>
-</ul></li>
-</ol>
+<p><span class="math display">\[\frac{\partial \mathbf{c}}{\partial \boldsymbol{\tau}} = \frac{\partial \mathbf{c}}{\partial \mathbf{p}} \frac{\partial \mathbf{p}}{\partial \boldsymbol{\tau}}\]</span></p>
+<p>Expressed in component form:</p>
+<p><span class="math display">\[
+\begin{pmatrix}
+r_u &amp; r_v \\
+g_u &amp; g_v \\
+b_u &amp; b_v \\
+a_u &amp; a_v
+\end{pmatrix} =
+\begin{pmatrix}
+r_x &amp; r_y &amp; r_z \\
+g_x &amp; g_y &amp; g_z \\
+b_x &amp; b_y &amp; b_z \\
+a_x &amp; a_y &amp; a_z
+\end{pmatrix}
+\begin{pmatrix}
+x_u &amp; x_v \\
+y_u &amp; y_v \\
+z_u &amp; z_v
+\end{pmatrix}
+\]</span></p>
+<p><span class="math display">\[\begin{pmatrix} \frac{\partial c_r}{\partial u} &amp; \frac{\partial c_r}{\partial v} \\ \frac{\partial c_g}{\partial u} &amp; \frac{\partial c_g}{\partial v} \\ \frac{\partial c_b}{\partial u} &amp; \frac{\partial c_b}{\partial v} \\ \frac{\partial c_a}{\partial u} &amp; \frac{\partial c_a}{\partial v} \end{pmatrix} = \begin{pmatrix} \frac{\partial c_r}{\partial x} &amp; \frac{\partial c_r}{\partial y} &amp; \frac{\partial c_r}{\partial z} \\ \frac{\partial c_g}{\partial x} &amp; \frac{\partial c_g}{\partial y} &amp; \frac{\partial c_g}{\partial z} \\ \frac{\partial c_b}{\partial x} &amp; \frac{\partial c_b}{\partial y} &amp; \frac{\partial c_b}{\partial z} \\ \frac{\partial c_a}{\partial x} &amp; \frac{\partial c_a}{\partial y} &amp; \frac{\partial c_a}{\partial z} \end{pmatrix} \begin{pmatrix} \frac{\partial x}{\partial u} &amp; \frac{\partial x}{\partial v} \\ \frac{\partial y}{\partial u} &amp; \frac{\partial y}{\partial v} \\ \frac{\partial z}{\partial u} &amp; \frac{\partial z}{\partial v} \end{pmatrix}\]</span></p>
 
 
 
@@ -710,7 +702,7 @@ do {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+        var filterRegex = new RegExp('/' + window.location.host + '/');
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }

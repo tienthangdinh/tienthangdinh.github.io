@@ -2,17 +2,15 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/pet-randomvariables/index.html",
       "/posts/cg2-modelling/index.html",
-      "/posts/cg1-opengl/index.html",
       "/posts/cg1-meshprocessing/index.html",
       "/posts/cg1-polygonalmesh/index.html",
-      "/posts/exam-ml4r/index.html",
-      "/posts/exam-touchsensing/index.html",
-      "/posts/learning-from-demonstration/index.html",
-      "/posts/autoencoder-dreamer/index.html",
-      "/posts/control/index.html",
-      "/posts/bayesian-optimization/index.html",
-      "/posts/reinforcement-learning/index.html"
+      "/posts/ml4r-learning-from-demonstration/index.html",
+      "/posts/ml4r-autoencoder-dreamer/index.html",
+      "/posts/ml4r-control/index.html",
+      "/posts/ml4r-bayesian-optimization/index.html",
+      "/posts/ml4r-reinforcement-learning/index.html"
     ]
   }
 ]

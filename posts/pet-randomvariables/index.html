@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-02-13">
+
+<title>Random Variables – silent brachistochrone</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">silent brachistochrone</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Đinh Tiến Thắng</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Random Variables</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">Statistics</div>
+                <div class="quarto-category">Probability</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">February 13, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#definition" id="toc-definition" class="nav-link active" data-scroll-target="#definition">Definition</a>
+  <ul class="collapse">
+  <li><a href="#the-probability-framework-omega-mathcalf-p" id="toc-the-probability-framework-omega-mathcalf-p" class="nav-link" data-scroll-target="#the-probability-framework-omega-mathcalf-p">1. The Probability Framework <span class="math inline">\((\Omega, \mathcal{F}, P)\)</span></a></li>
+  <li><a href="#what-is-a-random-variable-x" id="toc-what-is-a-random-variable-x" class="nav-link" data-scroll-target="#what-is-a-random-variable-x">2. What is a Random Variable (<span class="math inline">\(X\)</span>)?</a></li>
+  <li><a href="#how-to-calculate-probabilities-inverse-mapping" id="toc-how-to-calculate-probabilities-inverse-mapping" class="nav-link" data-scroll-target="#how-to-calculate-probabilities-inverse-mapping">3. How to calculate Probabilities? Inverse Mapping</a></li>
+  <li><a href="#or-calculating-probability-with-the-cdf" id="toc-or-calculating-probability-with-the-cdf" class="nav-link" data-scroll-target="#or-calculating-probability-with-the-cdf">4. Or Calculating Probability with the CDF</a>
+  <ul class="collapse">
+  <li><a href="#so-what-is-the-cdf" id="toc-so-what-is-the-cdf" class="nav-link" data-scroll-target="#so-what-is-the-cdf">So what is the CDF?</a></li>
+  </ul></li>
+  <li><a href="#or-calculating-probability-via-the-pdf" id="toc-or-calculating-probability-via-the-pdf" class="nav-link" data-scroll-target="#or-calculating-probability-via-the-pdf">5. Or calculating probability via the PDF</a>
+  <ul class="collapse">
+  <li><a href="#important" id="toc-important" class="nav-link" data-scroll-target="#important">Important</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#some-distributions" id="toc-some-distributions" class="nav-link" data-scroll-target="#some-distributions">Some Distributions</a>
+  <ul class="collapse">
+  <li><a href="#the-gaussian-normal-distribution-x-sim-nmu-sigma2" id="toc-the-gaussian-normal-distribution-x-sim-nmu-sigma2" class="nav-link" data-scroll-target="#the-gaussian-normal-distribution-x-sim-nmu-sigma2">1. The Gaussian (Normal) Distribution <span class="math inline">\(X \sim N(\mu, \sigma^2)\)</span></a>
+  <ul class="collapse">
+  <li><a href="#pdf" id="toc-pdf" class="nav-link" data-scroll-target="#pdf">PDF</a></li>
+  <li><a href="#cdf-area-of-pdf" id="toc-cdf-area-of-pdf" class="nav-link" data-scroll-target="#cdf-area-of-pdf">CDF (area of PDF)</a></li>
+  <li><a href="#expected-value-and-variance" id="toc-expected-value-and-variance" class="nav-link" data-scroll-target="#expected-value-and-variance">Expected Value and Variance</a></li>
+  </ul></li>
+  <li><a href="#uniform-distribution-x-sim-ua-b" id="toc-uniform-distribution-x-sim-ua-b" class="nav-link" data-scroll-target="#uniform-distribution-x-sim-ua-b">2. Uniform Distribution <span class="math inline">\(X \sim U(a, b)\)</span></a></li>
+  <li><a href="#exponential-distribution-x-sim-textexplambda" id="toc-exponential-distribution-x-sim-textexplambda" class="nav-link" data-scroll-target="#exponential-distribution-x-sim-textexplambda">3. Exponential Distribution <span class="math inline">\(X \sim \text{Exp}(\lambda)\)</span></a></li>
+  <li><a href="#geometric-distribution-x-sim-textgeomp" id="toc-geometric-distribution-x-sim-textgeomp" class="nav-link" data-scroll-target="#geometric-distribution-x-sim-textgeomp">4. Geometric Distribution <span class="math inline">\(X \sim \text{Geom}(p)\)</span></a></li>
+  <li><a href="#bernoulli-distribution" id="toc-bernoulli-distribution" class="nav-link" data-scroll-target="#bernoulli-distribution">5. Bernoulli Distribution</a></li>
+  <li><a href="#binomial-distribution-x-sim-bn-p" id="toc-binomial-distribution-x-sim-bn-p" class="nav-link" data-scroll-target="#binomial-distribution-x-sim-bn-p">6. Binomial Distribution <span class="math inline">\(X \sim B(n, p)\)</span></a></li>
+  <li><a href="#poisson-distribution-x-sim-textpoislambda" id="toc-poisson-distribution-x-sim-textpoislambda" class="nav-link" data-scroll-target="#poisson-distribution-x-sim-textpoislambda">7. Poisson Distribution <span class="math inline">\(X \sim \text{Pois}(\lambda)\)</span></a>
+  <ul class="collapse">
+  <li><a href="#numerical-example-the-bus-stop-scenario" id="toc-numerical-example-the-bus-stop-scenario" class="nav-link" data-scroll-target="#numerical-example-the-bus-stop-scenario">Numerical Example: The “Bus Stop” Scenario</a></li>
+  </ul></li>
+  <li><a href="#comparison-of-discrete-distributions" id="toc-comparison-of-discrete-distributions" class="nav-link" data-scroll-target="#comparison-of-discrete-distributions">Comparison of Discrete Distributions</a></li>
+  </ul></li>
+  <li><a href="#poisson-approximation-for-binomial" id="toc-poisson-approximation-for-binomial" class="nav-link" data-scroll-target="#poisson-approximation-for-binomial">Poisson Approximation for Binomial</a>
+  <ul class="collapse">
+  <li><a href="#solution-poisson-approximation" id="toc-solution-poisson-approximation" class="nav-link" data-scroll-target="#solution-poisson-approximation">Solution: Poisson Approximation</a></li>
+  </ul></li>
+  <li><a href="#conditional-distribution-f_xx-b" id="toc-conditional-distribution-f_xx-b" class="nav-link" data-scroll-target="#conditional-distribution-f_xx-b">Conditional Distribution (<span class="math inline">\(F_X(x | B)\)</span>)</a>
+  <ul class="collapse">
+  <li><a href="#direction-b-1-hard-conditioning-f_xxb" id="toc-direction-b-1-hard-conditioning-f_xxb" class="nav-link" data-scroll-target="#direction-b-1-hard-conditioning-f_xxb">Direction B-1: Hard Conditioning (<span class="math inline">\(F_X(x|B)\)</span>)</a></li>
+  <li><a href="#direction-b-2-soft-conditioning-f_xa" id="toc-direction-b-2-soft-conditioning-f_xa" class="nav-link" data-scroll-target="#direction-b-2-soft-conditioning-f_xa">Direction B-2: Soft Conditioning (<span class="math inline">\(f_{X|A}\)</span>)</a></li>
+  <li><a href="#direction-b-3-updating-the-probability-of-a-future-event-pba-beta-distribution-laplaces-rule-of-smoothed-succession" id="toc-direction-b-3-updating-the-probability-of-a-future-event-pba-beta-distribution-laplaces-rule-of-smoothed-succession" class="nav-link" data-scroll-target="#direction-b-3-updating-the-probability-of-a-future-event-pba-beta-distribution-laplaces-rule-of-smoothed-succession">Direction B-3: Updating the Probability of a Future Event (<span class="math inline">\(P(B|A)\)</span>) (Beta Distribution + Laplace’s Rule of Smoothed Succession)</a>
+  <ul class="collapse">
+  <li><a href="#so-yeah-it-is-not-simply-kn" id="toc-so-yeah-it-is-not-simply-kn" class="nav-link" data-scroll-target="#so-yeah-it-is-not-simply-kn">So yeah it is not simply <span class="math inline">\(k/n\)</span>?</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#bayesian-inference-updating-beliefs-with-x-x" id="toc-bayesian-inference-updating-beliefs-with-x-x" class="nav-link" data-scroll-target="#bayesian-inference-updating-beliefs-with-x-x">Bayesian Inference: Updating Beliefs with <span class="math inline">\(X = x\)</span></a>
+  <ul class="collapse">
+  <li><a href="#direction-a-1-updating-the-probability-of-an-event-pa-xx" id="toc-direction-a-1-updating-the-probability-of-an-event-pa-xx" class="nav-link" data-scroll-target="#direction-a-1-updating-the-probability-of-an-event-pa-xx">Direction A-1: Updating the Probability of an Event (<span class="math inline">\(P(A | X=x)\)</span>)</a></li>
+  <li><a href="#direction-a-2-updating-the-probability-of-an-event-with-interval-observations" id="toc-direction-a-2-updating-the-probability-of-an-event-with-interval-observations" class="nav-link" data-scroll-target="#direction-a-2-updating-the-probability-of-an-event-with-interval-observations">Direction A-2: Updating the Probability of an Event with Interval Observations</a></li>
+  <li><a href="#direction-a-3-updating-with-multiple-observations" id="toc-direction-a-3-updating-with-multiple-observations" class="nav-link" data-scroll-target="#direction-a-3-updating-with-multiple-observations">Direction A-3: Updating with Multiple Observations</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="definition" class="level1">
+<h1>Definition</h1>
+<section id="the-probability-framework-omega-mathcalf-p" class="level2">
+<h2 class="anchored" data-anchor-id="the-probability-framework-omega-mathcalf-p">1. The Probability Framework <span class="math inline">\((\Omega, \mathcal{F}, P)\)</span></h2>
+<ul>
+<li><strong>World:</strong> <span class="math inline">\(\Omega\)</span> (All possible outcomes <span class="math inline">\(\xi\)</span>) of an experiment (e.g.&nbsp;<span class="math inline">\(\Omega = \{HH, HT, TH, TT\}\)</span>)</li>
+<li><strong>Validation Set:</strong> <span class="math inline">\(\mathcal{F}\)</span> (The list of all valid events, usually the Power Set)</li>
+<li><strong>Probability Measure:</strong> <span class="math inline">\(P\)</span> is the rule that assigns a likelihood [0,1] to those events. (e.g.&nbsp;<span class="math inline">\(P(\{HH\}) = 1/4\)</span>)</li>
+<li><strong>Scoreboard:</strong> <span class="math inline">\(X(\xi)\)</span> (The function mapping outcomes to numbers - Random Variable)</li>
+<li><strong>Validation Rule:</strong> <span class="math inline">\(X^{-1}(B) \in \mathcal{F}\)</span> (Condition for <span class="math inline">\(X\)</span> to be a Random Variable)</li>
+</ul>
+<hr>
+</section>
+<section id="what-is-a-random-variable-x" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-a-random-variable-x">2. What is a Random Variable (<span class="math inline">\(X\)</span>)?</h2>
+<p>Despite the name, a <strong>Random Variable</strong> is not actually a variable in the algebraic sense—it is a <strong>FUNCTIONNNN</strong>, or a <strong>Scoreboard</strong>.</p>
+<p>A random variable <span class="math inline">\(X\)</span> takes an outcome <span class="math inline">\(\xi\)</span> (“xi”) from the sample space <span class="math inline">\(\Omega\)</span> and maps it to a unique point <span class="math inline">\(x\)</span> in <span class="math inline">\(\mathbb{R}\)</span>.</p>
+<p><span class="math display">\[X: \Omega \to \mathbb{R}, X(\xi) = x\]</span></p>
+<p><strong>Example: Let <span class="math inline">\(X\)</span> be the “Number of Heads” in two coin flips.</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Outcome (<span class="math inline">\(\xi\)</span>)</th>
+<th style="text-align: center;">Calculation</th>
+<th style="text-align: center;">Value (<span class="math inline">\(x\)</span>)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(HH\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(X(HH)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(2\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(HT\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(X(HT)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(TH\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(X(TH)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(TT\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(X(TT)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+</tr>
+</tbody>
+</table>
+<blockquote class="blockquote">
+<p><strong>Important:</strong> The above randomness values come from the sample space <span class="math inline">\(\Omega\)</span>. <span class="math inline">\(X\)</span> is simply the consistent rule (the function) that maps outcomes to numbers.</p>
+</blockquote>
+</section>
+<section id="how-to-calculate-probabilities-inverse-mapping" class="level2">
+<h2 class="anchored" data-anchor-id="how-to-calculate-probabilities-inverse-mapping">3. How to calculate Probabilities? Inverse Mapping</h2>
+<p>How do we determine the probability of a numerical value like <span class="math inline">\(X = 2\)</span>? We have to look “backward” from the real numbers to our original sample space. This is called <strong>Inverse Mapping</strong>.</p>
+<p>Given a set <span class="math inline">\(B\)</span> (a subset of the real numbers <span class="math inline">\(\mathbb{R}\)</span>), we must find the event <span class="math inline">\(A\)</span> in our sample space that “maps” to <span class="math inline">\(B\)</span>.</p>
+<p><span class="math display">\[A = X^{-1}(B) = \{\xi \in \Omega : X(\xi) \in B\}\]</span></p>
+<p>Probability is taken directly from the sample <span class="math inline">\(P(A)\)</span>. <span class="math display">\[P(X \in B) = P(A)\]</span></p>
+<p>Example: Finding <span class="math inline">\(P(B) = P(X = 2)\)</span> =&gt; Find outcomes <span class="math inline">\(\xi\)</span> result in a score of 2? <span class="math inline">\(A = X^{-1}(2) = \{HH\}\)</span>. Then we calculate <span class="math inline">\(P(X = 2) = P(\{HH\}) = \frac{1}{4}\)</span></p>
+</section>
+<section id="or-calculating-probability-with-the-cdf" class="level2">
+<h2 class="anchored" data-anchor-id="or-calculating-probability-with-the-cdf">4. Or Calculating Probability with the CDF</h2>
+<p>Once we have the Cumulative Distribution Function <span class="math inline">\(F_X(x)\)</span>, no longer need to go back to the sample space <span class="math inline">\(\Omega\)</span> every time; we can just subtract two values from the CDF.</p>
+<section id="so-what-is-the-cdf" class="level3">
+<h3 class="anchored" data-anchor-id="so-what-is-the-cdf">So what is the CDF?</h3>
+<p>The <strong>Cumulative Distribution Function (CDF)</strong> of a random variable <span class="math inline">\(X\)</span> is the non-decreasing function <span class="math inline">\(F_X: \mathbb{R} \to [0, 1]\)</span> defined by:</p>
+<p><span class="math display">\[F_X(x) = P(X \le x) = P(\{\xi \in \Omega \mid X(\xi) \le x\})\]</span></p>
+<p>Probability is taken directly from the CDF: <span class="math display">\[P(x_1 &lt; X \le x_2) = F_X(x_2) - F_X(x_1)\]</span></p>
+</section>
+</section>
+<section id="or-calculating-probability-via-the-pdf" class="level2">
+<h2 class="anchored" data-anchor-id="or-calculating-probability-via-the-pdf">5. Or calculating probability via the PDF</h2>
+<p>It is the <strong>derivative</strong> of the Cumulative Distribution Function (CDF).</p>
+<p><span class="math display">\[f_X(x) = \frac{d}{dx}F_X(x)\]</span></p>
+<p>Probability is equivalent to the <strong>area under the curve</strong> of the PDF:</p>
+<p><span class="math display">\[P(x_1 &lt; X \le x_2) = F_X(x_2) - F_X(x_1) = \int_{x_1}^{x_2} f_X(x) dx\]</span></p>
+<section id="important" class="level3">
+<h3 class="anchored" data-anchor-id="important">Important</h3>
+<ul>
+<li><strong>PDF <span class="math inline">\(f_X(x)\)</span>:</strong> This is <strong>not</strong> a probability. The probability at a single point <span class="math inline">\(P(X = x)\)</span> is always <strong>0</strong>. But the area under the curve of the PDF is the probability.</li>
+<li><strong>CDF <span class="math inline">\(F_X(x)\)</span>:</strong> This <strong>is</strong> a probability - a piled up probability.</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="some-distributions" class="level1">
+<h1>Some Distributions</h1>
+<section id="the-gaussian-normal-distribution-x-sim-nmu-sigma2" class="level2">
+<h2 class="anchored" data-anchor-id="the-gaussian-normal-distribution-x-sim-nmu-sigma2">1. The Gaussian (Normal) Distribution <span class="math inline">\(X \sim N(\mu, \sigma^2)\)</span></h2>
+<p>X counts the number of events that occurred in a fixed time interval.</p>
+<section id="pdf" class="level3">
+<h3 class="anchored" data-anchor-id="pdf">PDF</h3>
+<p><span class="math display">\[f_X(x) = \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}\]</span></p>
+</section>
+<section id="cdf-area-of-pdf" class="level3">
+<h3 class="anchored" data-anchor-id="cdf-area-of-pdf">CDF (area of PDF)</h3>
+<p><span class="math display">\[F_X(x) = \int_{-\infty}^{x} \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{(y-\mu)^2}{2\sigma^2}} dy\]</span></p>
+<p><strong>The Problem:</strong> There is no antiderivative for <span class="math inline">\(e^{-x^2}\)</span> that uses basic functions (like <span class="math inline">\(\sin, \log,\)</span> or polynomials). You cannot solve this by hand. =&gt; We map this to a standardized distribution that was already solved numerically and just read the result from this mapping.</p>
+<section id="example" class="level4">
+<h4 class="anchored" data-anchor-id="example">Example</h4>
+<p>Suppose we have a random variable <span class="math inline">\(X \sim N(10, 4)\)</span>. We want to calculate: <span class="math display">\[P(X \le 13) = F_X(13)\]</span></p>
+<p>Following our definition, we set up the integral: <span class="math display">\[F_X(13) = \int_{-\infty}^{13} \frac{1}{\sqrt{2\pi(4)}} e^{-\frac{(y-10)^2}{2(4)}} dy\]</span></p>
+</section>
+<section id="solution-standardization-z-score" class="level4">
+<h4 class="anchored" data-anchor-id="solution-standardization-z-score">Solution: Standardization (Z-score)</h4>
+<p>Since we can’t solve the integral for every different <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\sigma\)</span>, we transform our “Specific <span class="math inline">\(X\)</span>” into the “Standard <span class="math inline">\(Z\)</span>”. We use the formula: <span class="math display">\[Z = \frac{X - \mu}{\sigma}\]</span></p>
+<p>For our example (<span class="math inline">\(X=13, \mu=10, \sigma=2\)</span>): <span class="math display">\[z = \frac{13 - 10}{2} = 1.5\]</span></p>
+<p>Now, instead of solving that impossible integral, we look up the value for <span class="math inline">\(1.5\)</span> in a <strong>Standard Normal Table</strong>.</p>
+<p><span class="math display">\[P(X \le 13) = P(Z \le 1.5) \approx 0.9332\]</span></p>
+</section>
+</section>
+<section id="expected-value-and-variance" class="level3">
+<h3 class="anchored" data-anchor-id="expected-value-and-variance">Expected Value and Variance</h3>
+<section id="expected-value-the-mean" class="level4">
+<h4 class="anchored" data-anchor-id="expected-value-the-mean">Expected Value (The Mean)</h4>
+<p><span class="math display">\[\mu = E[X] = \int_{-\infty}^{\infty} x f_X(x) dx\]</span></p>
+</section>
+<section id="variance-the-spread" class="level4">
+<h4 class="anchored" data-anchor-id="variance-the-spread">Variance (The Spread)</h4>
+<p><span class="math display">\[\sigma^2 = Var(X) = E[(X - \mu)^2]\]</span></p>
+<p><strong>Computational Trick:</strong> In practice, might be good in computer graphics, it is often easier to calculate variance like this since we know (<span class="math inline">\(E[X]\)</span>) and (<span class="math inline">\(E[X^2]\)</span>): <span class="math display">\[Var(X) = E[X^2] - (E[X])^2\]</span></p>
+</section>
+</section>
+</section>
+<section id="uniform-distribution-x-sim-ua-b" class="level2">
+<h2 class="anchored" data-anchor-id="uniform-distribution-x-sim-ua-b">2. Uniform Distribution <span class="math inline">\(X \sim U(a, b)\)</span></h2>
+<p>X counts the number of events that occurred in a fixed time interval. Perfectly fairness</p>
+<section id="pdf-1" class="level4">
+<h4 class="anchored" data-anchor-id="pdf-1">PDF</h4>
+<p><span class="math display">\[f_X(x) = \frac{1}{b - a} \quad \text{for } a \le x \le b\]</span></p>
+</section>
+<section id="application-example" class="level4">
+<h4 class="anchored" data-anchor-id="application-example">Application example:</h4>
+<p>Imagine you are waiting for a train that arrives exactly every 10 minutes, but you have no idea what the schedule is. Your wait time <span class="math inline">\(X\)</span> is distributed as <span class="math inline">\(U(0, 10)\)</span>. * The probability of waiting between 0 and 10 minutes is 1. * The probability of waiting exactly between 5 and 7 minutes is: <span class="math display">\[P(5 &lt; X &lt; 7) = \int_{5}^{7} \frac{1}{10-0} dx = \frac{7-5}{10} = 0.2\]</span></p>
+</section>
+</section>
+<section id="exponential-distribution-x-sim-textexplambda" class="level2">
+<h2 class="anchored" data-anchor-id="exponential-distribution-x-sim-textexplambda">3. Exponential Distribution <span class="math inline">\(X \sim \text{Exp}(\lambda)\)</span></h2>
+<p>X counts the time to the next event. Remember, <strong>it is about time until the next event</strong>.</p>
+<section id="pdf-2" class="level4">
+<h4 class="anchored" data-anchor-id="pdf-2">PDF</h4>
+<p><span class="math display">\[f_X(x) = \lambda e^{-\lambda x} \quad \text{for } x \ge 0\]</span></p>
+</section>
+<section id="key-parameters" class="level4">
+<h4 class="anchored" data-anchor-id="key-parameters">Key Parameters</h4>
+<ul>
+<li><strong><span class="math inline">\(\lambda\)</span> (Rate):</strong> The average number of events per unit of time.</li>
+<li><strong><span class="math inline">\(\mu\)</span> (Mean):</strong> The average time <em>between</em> events, calculated as <span class="math inline">\(\mu = 1/\lambda\)</span>.</li>
+</ul>
+</section>
+<section id="application-example-1" class="level4">
+<h4 class="anchored" data-anchor-id="application-example-1">Application example:</h4>
+<p>The Exponential distribution is famous for being “memoryless.” If you are modeling the time between incoming phone calls: For example, if calls arrive at a rate (<span class="math inline">\(\lambda\)</span>) of <strong>2 per hour</strong>, the average time between calls (<span class="math inline">\(\mu\)</span>) is <strong><span class="math inline">\(1/2\)</span> an hour</strong> (30 minutes).</p>
+</section>
+</section>
+<section id="geometric-distribution-x-sim-textgeomp" class="level2">
+<h2 class="anchored" data-anchor-id="geometric-distribution-x-sim-textgeomp">4. Geometric Distribution <span class="math inline">\(X \sim \text{Geom}(p)\)</span></h2>
+<p><span class="math inline">\(X\)</span> counts the number of <strong>failures</strong> before the first <strong>success</strong> occurs in a series of independent trials (Bernoulli trials).</p>
+<section id="pmf" class="level4">
+<h4 class="anchored" data-anchor-id="pmf">PMF</h4>
+<p><span class="math display">\[P(X = k) = (1-p)^k \cdot p\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(p\)</span> is the probability of success in each trial.</li>
+<li><span class="math inline">\((1-p)\)</span> is the probability of failure.</li>
+<li><span class="math inline">\(k\)</span> is the number of failures (<span class="math inline">\(k = 0, 1, 2, \dots\)</span>).</li>
+</ul>
+</section>
+<section id="application-example-2" class="level4">
+<h4 class="anchored" data-anchor-id="application-example-2">Application example:</h4>
+<p>What is the probability you miss 3 times and make it on the 4th try with success probability <span class="math inline">\(p=0.2\)</span>?</p>
+<p><strong>Calculation:</strong> Here, <span class="math inline">\(k=3\)</span>. <span class="math display">\[P(X = 3) = (0.8)^3 \cdot (0.2) = 0.512 \cdot 0.2 = 0.1024\]</span> There is roughly a <strong>10.2%</strong> chance that your first success happens exactly after 3 misses.</p>
+</section>
+</section>
+<section id="bernoulli-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="bernoulli-distribution">5. Bernoulli Distribution</h2>
+<p>X counts the number of <strong>successes</strong> in a single trial. actually only <span class="math inline">\(0\)</span> or <span class="math inline">\(1\)</span>. Cannot be simpler than this.</p>
+<ul>
+<li><strong>Values:</strong> <span class="math inline">\(X\)</span> can only be <span class="math inline">\(1\)</span> (success) or <span class="math inline">\(0\)</span> (failure).</li>
+<li><strong>Probabilities:</strong> * <span class="math inline">\(P(X=1) = p\)</span>
+<ul>
+<li><span class="math inline">\(P(X=0) = q\)</span>, where <span class="math inline">\(q = 1-p\)</span>.</li>
+</ul></li>
+</ul>
+</section>
+<section id="binomial-distribution-x-sim-bn-p" class="level2">
+<h2 class="anchored" data-anchor-id="binomial-distribution-x-sim-bn-p">6. Binomial Distribution <span class="math inline">\(X \sim B(n, p)\)</span></h2>
+<p>X counts the number of successes in a fixed number of <strong>independent</strong> Bernoulli trials (<span class="math inline">\(n\)</span>).</p>
+<p>The probability of getting exactly <span class="math inline">\(k\)</span> successes in <span class="math inline">\(n\)</span> trials is: <span class="math display">\[P(X = k) = \binom{n}{k} p^k q^{n-k}\]</span></p>
+</section>
+<section id="poisson-distribution-x-sim-textpoislambda" class="level2">
+<h2 class="anchored" data-anchor-id="poisson-distribution-x-sim-textpoislambda">7. Poisson Distribution <span class="math inline">\(X \sim \text{Pois}(\lambda)\)</span></h2>
+<p>X counts the number of times an event occurs in a <strong>fixed interval of time or space</strong>. It assumes events happen at a known constant rate (<span class="math inline">\(\lambda\)</span>) and independently of one another.</p>
+<p><span class="math display">\[P(X = k) = \frac{e^{-\lambda} \lambda^k}{k!}\]</span></p>
+<ul>
+<li><strong>The Parameter (<span class="math inline">\(\lambda\)</span>):</strong> This represents the average number of occurrences in that interval.</li>
+<li><strong>Range:</strong> Technically, <span class="math inline">\(k\)</span> can go from <span class="math inline">\(0\)</span> all the way to infinity (<span class="math inline">\(\infty\)</span>).</li>
+</ul>
+<p><strong>Example:</strong> The number of emails received in an hour or the number of typos on a page. Unlike the Binomial, there is no fixed number of “trials”—the events just “arrive.” &gt; * Number of shooting stars seen in a night. &gt; * Number of customers entering a shop between 9:00 and 10:00 AM. &gt; * Number of mutations in a specific stretch of DNA.</p>
+<section id="numerical-example-the-bus-stop-scenario" class="level3">
+<h3 class="anchored" data-anchor-id="numerical-example-the-bus-stop-scenario">Numerical Example: The “Bus Stop” Scenario</h3>
+<p>Imagine you are standing at a bus stop. You know from historical data that, on average, <strong>3 buses arrive every hour</strong>.</p>
+<ul>
+<li><strong><span class="math inline">\(\lambda = 3\)</span></strong> (This is your average rate per hour).</li>
+<li><strong><span class="math inline">\(X\)</span></strong> = The number of buses that <em>actually</em> show up in the next hour.</li>
+</ul>
+<section id="scenario-a-what-is-the-probability-that-exactly-3-buses-arrive" class="level4">
+<h4 class="anchored" data-anchor-id="scenario-a-what-is-the-probability-that-exactly-3-buses-arrive">Scenario A: What is the probability that exactly 3 buses arrive?</h4>
+<p>You might think this is 100% since the average is 3, but in a random world, you might get lucky (4 buses) or unlucky (1 bus).</p>
+<p>Using the formula <span class="math inline">\(P(X = k) = \frac{e^{-\lambda} \lambda^k}{k!}\)</span> with <span class="math inline">\(\lambda = 3\)</span> and <span class="math inline">\(k = 3\)</span>:</p>
+<p><span class="math display">\[P(X = 3) = \frac{e^{-3} \cdot 3^3}{3!} = \frac{0.0498 \cdot 27}{6} \approx 0.224\]</span></p>
+<p>There is only a <strong>22.4% chance</strong> that exactly 3 buses will show up.</p>
+</section>
+<section id="scenario-b-what-is-the-probability-that-no-buses-arrive" class="level4">
+<h4 class="anchored" data-anchor-id="scenario-b-what-is-the-probability-that-no-buses-arrive">Scenario B: What is the probability that NO buses arrive?</h4>
+<p>This is the “frustrated commuter” scenario (<span class="math inline">\(k=0\)</span>).</p>
+<p><span class="math display">\[P(X = 0) = \frac{e^{-3} \cdot 3^0}{0!} = \frac{0.0498 \cdot 1}{1} \approx 0.05\]</span></p>
+<p>There is a <strong>5% chance</strong> you will be left waiting with zero buses for the entire hour.</p>
+</section>
+<section id="scenario-c-what-if-we-change-the-time-interval" class="level4">
+<h4 class="anchored" data-anchor-id="scenario-c-what-if-we-change-the-time-interval">Scenario C: What if we change the time interval?</h4>
+<p>The beauty of the Poisson rate <span class="math inline">\(\lambda\)</span> is that it scales linearly. If the rate is 3 buses per <strong>60 minutes</strong>, then for a <strong>20-minute</strong> interval, your new <span class="math inline">\(\lambda\)</span> would be 1.</p>
+</section>
+</section>
+</section>
+<section id="comparison-of-discrete-distributions" class="level2">
+<h2 class="anchored" data-anchor-id="comparison-of-discrete-distributions">Comparison of Discrete Distributions</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Distribution</th>
+<th style="text-align: left;">What does <span class="math inline">\(X\)</span> count?</th>
+<th style="text-align: left;">Key Parameter(s)</th>
+<th style="text-align: left;">Range of <span class="math inline">\(X\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Geometric</strong></td>
+<td style="text-align: left;">Success after <span class="math inline">\(k\)</span> failures</td>
+<td style="text-align: left;"><span class="math inline">\(p\)</span> (prob. of success)</td>
+<td style="text-align: left;"><span class="math inline">\(\{0, 1, \dots, \infty\}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Bernoulli</strong></td>
+<td style="text-align: left;">Success in 1 trial</td>
+<td style="text-align: left;"><span class="math inline">\(p\)</span> (prob. of success)</td>
+<td style="text-align: left;"><span class="math inline">\(\{0, 1\}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Binomial</strong></td>
+<td style="text-align: left;">Successes in <span class="math inline">\(n\)</span> trials</td>
+<td style="text-align: left;"><span class="math inline">\(n\)</span> (trials) and <span class="math inline">\(p\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\{0, 1, \dots, n\}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Poisson</strong></td>
+<td style="text-align: left;">Occurrences over time/space</td>
+<td style="text-align: left;"><span class="math inline">\(\lambda\)</span> (average rate)</td>
+<td style="text-align: left;"><span class="math inline">\(\{0, 1, \dots, \infty\}\)</span></td>
+</tr>
+</tbody>
+</table>
+<blockquote class="blockquote">
+<p><strong>The Connection:</strong> When <span class="math inline">\(n\)</span> is very large and <span class="math inline">\(p\)</span> is very small, the Binomial distribution actually converges to the Poisson distribution. This is often called the “Law of Rare Events.”</p>
+</blockquote>
+</section>
+</section>
+<section id="poisson-approximation-for-binomial" class="level1">
+<h1>Poisson Approximation for Binomial</h1>
+<p>For example, if we want to calculate the probability of getting between 400 and 600 heads in 1000 tosses, we must <strong>summarize</strong> like this:</p>
+<p><span class="math display">\[P(k_1 \le X \le k_2) = \sum_{k=k_1}^{k_2} \binom{n}{k} p^k q^{n-k}\]</span></p>
+<p>But the factorial (<span class="math inline">\(n!\)</span>) is a <strong>huge</strong> number. For example <span class="math inline">\(100! \approx 9.33 \times 10^{157}\)</span>.</p>
+<p>Computers will simply return an <strong>“Overflow Error”</strong> because the number is too massive to store. Even if you can compute it, you then have to multiply it by tiny decimals like <span class="math inline">\(0.5^{100}\)</span>, leading to extreme precision errors.</p>
+<section id="solution-poisson-approximation" class="level2">
+<h2 class="anchored" data-anchor-id="solution-poisson-approximation">Solution: Poisson Approximation</h2>
+<p>When <span class="math inline">\(n\)</span> is very large (the number of trials) and <span class="math inline">\(p\)</span> is very small (the probability of success), the Binomial distribution starts to behave exactly like a Poisson distribution.</p>
+<section id="approximation-rule" class="level4">
+<h4 class="anchored" data-anchor-id="approximation-rule">Approximation Rule</h4>
+<p>If <span class="math inline">\(n \ge 100\)</span> and <span class="math inline">\(np \le 10\)</span>, we can “swap” the Binomial parameters for a Poisson rate: <span class="math display">\[\lambda = n \cdot p\]</span></p>
+<p>Now, instead of fighting with factorials like <span class="math inline">\(100!\)</span>, you can use the much simpler Poisson formula: <span class="math display">\[P(X = k) \approx \frac{e^{-\lambda} \lambda^k}{k!}\]</span></p>
+</section>
+<section id="example-1" class="level4">
+<h4 class="anchored" data-anchor-id="example-1">Example</h4>
+<p>Suppose a factory produces 1,000 silicon chips, and the probability of a chip being defective is <span class="math inline">\(p = 0.002\)</span>.</p>
+<ul>
+<li><strong>Binomial way:</strong> Calculating <span class="math inline">\(P(X=3)\)</span> requires <span class="math inline">\(\binom{1000}{3} (0.002)^3 (0.998)^{997}\)</span>. Basically we have to calculate <span class="math inline">\(1000!\)</span>.</li>
+<li><strong>Poisson way:</strong> 1. Calculate <span class="math inline">\(\lambda = np = 1000 \times 0.002 = 2\)</span>. We only need to calculate <span class="math inline">\(3!\)</span>.
+<ol start="2" type="1">
+<li><span class="math inline">\(P(X=3) \approx \frac{e^{-2} \cdot 2^3}{3!} = \frac{0.1353 \cdot 8}{6} \approx 0.1804\)</span>.</li>
+</ol></li>
+</ul>
+</section>
+<section id="derivation" class="level4">
+<h4 class="anchored" data-anchor-id="derivation">Derivation</h4>
+<p>I dont remember, but it is based on the fact that the convergence happen as <span class="math inline">\(n \to \infty\)</span> and <span class="math inline">\(p \to 0\)</span>:</p>
+<p>Just start from here: <span class="math display">\[P_n(k) = \frac{n!}{k!(n-k)!} p^k (1-p)^{n-k}\]</span></p>
+<p><span class="math display">\[P_n(k) = \frac{n!}{k!(n-k)!} p^k (1-p)^{n} (1-p)^{-k}\]</span></p>
+<p><span class="math display">\[P_n(k) = \underbrace{\frac{n(n-1)\dots(n-k+1)}{n^k}}_{\text{Part A}} \cdot \underbrace{\frac{(np)^k}{k!}}_{\text{Part B}} \cdot \underbrace{(1 - np/n)^n}_{\text{Part C}} \cdot \underbrace{(1 - np/n)^{-k}}_{\text{Part D}}\]</span></p>
+<p><span class="math display">\[P_n(k) \approx (1) \cdot \frac{\lambda^k}{k!} \cdot e^{-\lambda} \cdot (1)\]</span></p>
+<ul>
+<li>Part A: <span class="math inline">\(\frac{n}{n} \cdot \frac{n-1}{n} \cdot \dots \cdot \frac{n-k+1}{n}\)</span>.Each of these <span class="math inline">\(k\)</span> fractions (like <span class="math inline">\(1 - \frac{1}{n}\)</span>) tends toward 1 (unity).</li>
+<li>Part B: Since <span class="math inline">\(np = \lambda\)</span>, replace <span class="math inline">\(p\)</span> with <span class="math inline">\(\frac{\lambda}{n}\)</span>.</li>
+<li>Part C: <span class="math inline">\(\lim_{n \to \infty} (1 - \frac{\lambda}{n})^n = \mathbf{e^{-\lambda}}\)</span>.</li>
+<li>Part D: As <span class="math inline">\(n \to \infty\)</span>, the term <span class="math inline">\((1 - \frac{\lambda}{n})^{-k}\)</span> becomes <span class="math inline">\((1 - 0)^{-k} = 1^{-k}\)</span>, which is 1.</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="conditional-distribution-f_xx-b" class="level1">
+<h1>Conditional Distribution (<span class="math inline">\(F_X(x | B)\)</span>)</h1>
+<section id="direction-b-1-hard-conditioning-f_xxb" class="level2">
+<h2 class="anchored" data-anchor-id="direction-b-1-hard-conditioning-f_xxb">Direction B-1: Hard Conditioning (<span class="math inline">\(F_X(x|B)\)</span>)</h2>
+<p>We decide that some values are now impossible (Probability = 0) and others are possible. We cut the PDF and regrow the remaining part to keep the area at 1. The updated conditional distribution is the probability that <span class="math inline">\(X \le x\)</span> given that we know event <span class="math inline">\(B\)</span> is true:</p>
+<p><span class="math display">\[F_X(x | B) = P(X \le x | B) = \frac{P(\{X \le x\} \cap B)}{P(B)}\]</span></p>
+<p><span class="math display">\[f_X(x | B) = \frac{d}{dx}F_X(x | B)\]</span></p>
+<section id="example-2" class="level4">
+<h4 class="anchored" data-anchor-id="example-2">Example</h4>
+<p>Imagine a random variable <span class="math inline">\(X\)</span> representing a wait time, uniformly distributed between 0 and 10 minutes: <span class="math inline">\(X \sim U(0, 10)\)</span>.</p>
+<ul>
+<li><strong>Original PDF:</strong> <span class="math inline">\(f_X(x) = 1/10\)</span> for <span class="math inline">\(0 \le x \le 10\)</span>.</li>
+<li><strong>Original CDF:</strong> <span class="math inline">\(F_X(x) = x/10\)</span> for <span class="math inline">\(0 \le x \le 10\)</span>.</li>
+<li><strong>Condition (<span class="math inline">\(B\)</span>):</strong> You receive a text saying, <em>“I know for a fact the wait is less than or equal to 5 minutes”</em> (<span class="math inline">\(B = \{X \le 5\}\)</span>).</li>
+</ul>
+<section id="step-1-update-the-cdf" class="level5">
+<h5 class="anchored" data-anchor-id="step-1-update-the-cdf">Step 1: Update the CDF</h5>
+<p>For values where <span class="math inline">\(x \le 5\)</span>, we scale the original CDF by the probability of the condition <span class="math inline">\(P(B)\)</span>:</p>
+<ol type="1">
+<li>Calculate <span class="math inline">\(P(B) = F_X(5) = 5/10 = 0.5\)</span>. <strong>THIS VALUE IS FIXED</strong></li>
+<li>For <span class="math inline">\(x \le 5\)</span>: <span class="math inline">\(F_X(x | X \le 5) = \frac{x/10}{0.5} = \frac{x}{5}\)</span>. <strong>THIS IS THE NEW CDF FUNCTION</strong></li>
+<li>For <span class="math inline">\(x &gt; 5\)</span>: The probability is now <span class="math inline">\(1\)</span> (it is certain the value is <span class="math inline">\(\le x\)</span> because we know it’s <span class="math inline">\(\le 5\)</span>).</li>
+</ol>
+</section>
+<section id="step-2-update-the-pdf" class="level5">
+<h5 class="anchored" data-anchor-id="step-2-update-the-pdf">Step 2: Update the PDF</h5>
+<p>Using the derivative of our new CDF:</p>
+<ol type="1">
+<li>For <span class="math inline">\(x \le 5\)</span>: <span class="math inline">\(f_X(x | B) = \frac{d}{dx}(\frac{x}{5}) = 1/5\)</span>.</li>
+<li>For <span class="math inline">\(x &gt; 5\)</span>: <span class="math inline">\(f_X(x | B) = 0\)</span>.</li>
+</ol>
+<p>When the event B is <span class="math inline">\(B = \{a &lt; X \le b\}\)</span> find the <strong>Conditional CDF</strong> <span class="math inline">\(F_X(x | B)\)</span>, we look at the overlap between the event <span class="math inline">\(\{X \le x\}\)</span> and our new known interval <span class="math inline">\(\{a &lt; X \le b\}\)</span>. The denominator is simply the probability of the interval itself: <span class="math inline">\(F_X(b) - F_X(a)\)</span>.</p>
+<ol type="1">
+<li><strong>For <span class="math inline">\(x &lt; a\)</span> (Below the window):</strong> The probability is <strong>0</strong>.</li>
+<li><strong>For <span class="math inline">\(a \le x &lt; b\)</span> (Inside the window):</strong> <span class="math display">\[F_X(x | B) = \frac{F_X(x) - F_X(a)}{F_X(b) - F_X(a)}\]</span></li>
+<li><strong>For <span class="math inline">\(x \ge b\)</span> (Above the window):</strong> The probability is <strong>1</strong>.</li>
+</ol>
+</section>
+</section>
+<section id="example-3" class="level4">
+<h4 class="anchored" data-anchor-id="example-3">Example</h4>
+<p>Imagine <span class="math inline">\(X\)</span> is your exam score, ranging from 0 to 100. Let’s say the original distribution was <span class="math inline">\(U(0, 100)\)</span>.</p>
+<p><strong>Condition <span class="math inline">\(B\)</span>:</strong> I tell you, “You passed!” (Assuming a pass is <span class="math inline">\(B = \{50 &lt; X \le 100\}\)</span>).</p>
+<ul>
+<li><strong>The Lower Bound:</strong> Any score below 50 now has a conditional probability of <strong>0</strong>. It is no longer possible that you got a 40.</li>
+<li><strong>The Scaling Effect:</strong> The denominator <span class="math inline">\(P(B)\)</span> is <span class="math inline">\(1.0 - 0.5 = 0.5\)</span>.</li>
+<li><strong>The New Probability:</strong> Because we are dividing the original probabilities by <span class="math inline">\(0.5\)</span>, the likelihood of any specific passing score (like an 85) has effectively <strong>doubled</strong>.</li>
+</ul>
+</section>
+</section>
+<section id="direction-b-2-soft-conditioning-f_xa" class="level2">
+<h2 class="anchored" data-anchor-id="direction-b-2-soft-conditioning-f_xa">Direction B-2: Soft Conditioning (<span class="math inline">\(f_{X|A}\)</span>)</h2>
+<p>If our sensor is imperfect, <span class="math inline">\(P(A | X=x)\)</span> might be <span class="math inline">\(0.8\)</span> instead of <span class="math inline">\(1.0\)</span>. We multiply the original PDF by these weights and then re-normalize. =&gt; <strong>RESHAPE THE WHOLE DISTRIBUTION, NOT JUST SCALING</strong></p>
+<ul>
+<li><strong>Goal:</strong> “Given that I know the signal is ON (<span class="math inline">\(A_1\)</span>), what does the distribution (<span class="math inline">\(f_{X|A}(x | A)\)</span>) of random variable (<span class="math inline">\(X\)</span>) look like?”</li>
+</ul>
+<p><span class="math display">\[f_{X|A}(x | A) = \frac{P(A | X = x) f_X(x)}{P(A)}\]</span></p>
+<p><span class="math display">\[f_{X|A}(x | A) = \frac{P(A | X = x) f_X(x)}{\int_{-\infty}^{+\infty} P(A | X = x) f_X(x)dx}\]</span></p>
+<section id="example-soft-conditioning-reshaping" class="level4">
+<h4 class="anchored" data-anchor-id="example-soft-conditioning-reshaping">Example: Soft Conditioning (Reshaping)</h4>
+<p>In this scenario, we don’t “cut” the distribution; we “tilt” it based on an unreliable sensor. Instead of a hard threshold, we use a probabilistic weight.</p>
+<section id="the-setup" class="level5">
+<h5 class="anchored" data-anchor-id="the-setup">1. The Setup</h5>
+<ul>
+<li><strong>Prior Belief:</strong> Temperature <span class="math inline">\(X \sim N(20, 4)\)</span> with <span class="math inline">\(\mu=20\)</span> and <span class="math inline">\(\sigma^2=4\)</span>.</li>
+<li><strong>The “Soft” Alarm (<span class="math inline">\(A\)</span>):</strong> This sensor is noisy. The hotter it gets, the more likely it is to trigger, but it doesn’t have a sharp cutoff.</li>
+<li><strong>The Likelihood <span class="math inline">\(P(A | X=x)\)</span>:</strong> We define this as a linear weight function <span class="math inline">\(w(x) = 0.02x\)</span>.
+<ul>
+<li>At 10°C, <span class="math inline">\(P(A | X=10) = 0.2\)</span></li>
+<li>At 20°C, <span class="math inline">\(P(A | X=20) = 0.4\)</span></li>
+<li>At 30°C, <span class="math inline">\(P(A | X=30) = 0.6\)</span> <em>(Note: This remains a valid probability between 0 and 1 for the relevant temperature range).</em></li>
+</ul></li>
+</ul>
+</section>
+<section id="calculating-the-numerator-weighting" class="level5">
+<h5 class="anchored" data-anchor-id="calculating-the-numerator-weighting">2. Calculating the Numerator (Weighting)</h5>
+<p>We multiply the original Normal PDF by our weight function <span class="math inline">\(0.02x\)</span> to find the unnormalized posterior: <span class="math display">\[\text{Numerator} = (0.02x) \cdot f_X(x)\]</span></p>
+</section>
+<section id="calculating-the-denominator-normalization" class="level5">
+<h5 class="anchored" data-anchor-id="calculating-the-denominator-normalization">3. Calculating the Denominator (Normalization)</h5>
+<p>The denominator <span class="math inline">\(P(A)\)</span> is the “total weight,” which is the expected value of our weight function across the entire prior distribution: <span class="math display">\[P(A) = \int_{-\infty}^{\infty} (0.02x) f_X(x) \, dx = 0.02 \cdot E[X]\]</span></p>
+<p>Since the prior mean <span class="math inline">\(E[X] = 20\)</span>: <span class="math display">\[P(A) = 0.02 \cdot 20 = 0.4\]</span></p>
+</section>
+<section id="the-final-posterior-pdf-f_xaxa" class="level5">
+<h5 class="anchored" data-anchor-id="the-final-posterior-pdf-f_xaxa">4. The Final Posterior PDF <span class="math inline">\(f_{X|A}(x|A)\)</span></h5>
+<p>Combining the numerator and the denominator gives us the updated PDF: <span class="math display">\[f_{X|A}(x|A) = \frac{0.02x \cdot f_X(x)}{0.4} = \frac{x}{20} f_X(x)\]</span></p>
+<blockquote class="blockquote">
+<p><strong>Observation:</strong> Notice that the new distribution is essentially the old distribution scaled by <span class="math inline">\(x/20\)</span>. Values higher than 20 are amplified, and values lower than 20 are suppressed, effectively “tilting” the bell curve to the right without creating a sharp “cliff.”</p>
+</blockquote>
+</section>
+</section>
+<section id="example-2---hard-conditioning-but-can-be-applied-same-formula" class="level4">
+<h4 class="anchored" data-anchor-id="example-2---hard-conditioning-but-can-be-applied-same-formula">Example 2 - Hard Conditioning but can be applied same formula</h4>
+<p>Imagine we have a temperature sensor <span class="math inline">\(X\)</span> in a server room. Usually, the temperature follows a Normal distribution <span class="math inline">\(X \sim N(20, 4)\)</span> (Mean 20°C, Variance 4).</p>
+<p><strong>Event (<span class="math inline">\(A\)</span>):</strong> A low-cost backup alarm triggers only if the temperature is <strong>above 22°C</strong>. We receive a notification: <strong>“Alarm A has triggered.”</strong></p>
+<p><strong>Goal:</strong> Find the new PDF of the temperature, <span class="math inline">\(f_{X|A}(x | A)\)</span>, now that we know the alarm is active.</p>
+<section id="step-1-define-the-components" class="level5">
+<h5 class="anchored" data-anchor-id="step-1-define-the-components">Step 1: Define the components</h5>
+<ul>
+<li><strong>Prior PDF <span class="math inline">\(f_X(x)\)</span>:</strong> The original <span class="math inline">\(N(20, 4)\)</span> curve.</li>
+<li><strong>Likelihood <span class="math inline">\(P(A | X = x)\)</span>:</strong> This is a “Step Function.”
+<ul>
+<li>If <span class="math inline">\(x \le 22\)</span>, <span class="math inline">\(P(A | X=x) = 0\)</span> (The alarm cannot trigger).</li>
+<li>If <span class="math inline">\(x &gt; 22\)</span>, <span class="math inline">\(P(A | X=x) = 1\)</span> (The alarm must trigger).</li>
+</ul></li>
+<li><strong>Prior Probability <span class="math inline">\(P(A)\)</span>:</strong> The probability the alarm triggers under normal conditions. Using Z-scores: <span class="math inline">\(Z = (22-20)/2 = 1\)</span>. From tables, <span class="math inline">\(P(X &gt; 22) \approx 0.1587\)</span>.</li>
+</ul>
+</section>
+<section id="step-2-apply-the-formula" class="level5">
+<h5 class="anchored" data-anchor-id="step-2-apply-the-formula">Step 2: Apply the Formula</h5>
+<p>Using the formula: <span class="math display">\[f_{X|A}(x | A) = \frac{P(A | X = x) f_X(x)}{P(A)}\]</span></p>
+<ul>
+<li><strong>For <span class="math inline">\(x \le 22\)</span>:</strong> The numerator is <span class="math inline">\(0 \cdot f_X(x)\)</span>, so the new density is <strong>0</strong>.</li>
+<li><strong>For <span class="math inline">\(x &gt; 22\)</span>:</strong> The numerator is <span class="math inline">\(1 \cdot f_X(x)\)</span>. We divide the original bell curve by the constant <span class="math inline">\(0.1587\)</span>.</li>
+</ul>
+</section>
+<section id="step-3-the-result" class="level5">
+<h5 class="anchored" data-anchor-id="step-3-the-result">Step 3: The Result</h5>
+<p>The new distribution <span class="math inline">\(f_{X|A}(x | A)\)</span> looks like the “tail” of the original bell curve, but it has been <strong>amplified</strong> (scaled up by <span class="math inline">\(\approx 6.3\times\)</span>) so that the area under that specific tail now equals <strong>1</strong>.</p>
+</section>
+</section>
+</section>
+<section id="direction-b-3-updating-the-probability-of-a-future-event-pba-beta-distribution-laplaces-rule-of-smoothed-succession" class="level2">
+<h2 class="anchored" data-anchor-id="direction-b-3-updating-the-probability-of-a-future-event-pba-beta-distribution-laplaces-rule-of-smoothed-succession">Direction B-3: Updating the Probability of a Future Event (<span class="math inline">\(P(B|A)\)</span>) (Beta Distribution + Laplace’s Rule of Smoothed Succession)</h2>
+<p>We aren’t just looking at the past; we are updating our “brain” to predict the future. Imagine you are monitoring a wireless channel. You want to know the probability that the <strong>very next packet</strong> (the <span class="math inline">\((n+1)^{th}\)</span>) will experience a collision.</p>
+<p>Since we have no data yet, we assume total uncertainty. Our prior p.d.f. <span class="math inline">\(f_p(p)\)</span> is a <strong>Uniform Distribution</strong> over <span class="math inline">\((0, 1)\)</span>. We believe any rate from 0% to 100% is equally likely.</p>
+<p>Then we observe some data, We transmit <span class="math inline">\(n\)</span> packets and observe that exactly <span class="math inline">\(k\)</span> of them collided in a specific order: <span class="math inline">\(P(A | P = p) = p^k (1-p)^{n-k}\)</span>.</p>
+<p>To update our belief, we first need the denominator (the evidence). We integrate the likelihood across our uniform prior: <span class="math display">\[P(A) = \int_{0}^{1} p^k (1-p)^{n-k} dp = \frac{(n-k)!k!}{(n+1)!}\]</span></p>
+<blockquote class="blockquote">
+<p><strong>Example:</strong> If you sent <span class="math inline">\(n=2\)</span> packets and saw <span class="math inline">\(k=1\)</span> collision, <span class="math inline">\(P(A) = \frac{1!1!}{3!} = 1/6\)</span>.</p>
+</blockquote>
+<p>Now we update the distribution of <span class="math inline">\(p\)</span> to get the <strong>A-posteriori p.d.f.</strong> <span class="math inline">\(f_{P|A}(p|A)\)</span>. This is our updated knowledge of the collision rate <span class="math inline">\(p\)</span> after seeing the data.</p>
+<p><span class="math display">\[f_{P|A}(p|A) = \frac{P(A | p) f_p(p)}{P(A)}\]</span> We have <span class="math inline">\(f_p(p) = 1\)</span> and <span class="math inline">\(P(A | P = p) = p^k (1-p)^{n-k}\)</span> <span class="math display">\[f_{P|A}(p|A) = \frac{p^k (1-p)^{n-k}}{\left[ \frac{k! (n-k)!}{(n+1)!} \right]}\]</span> <span class="math display">\[f_{P|A}(p|A) = \frac{(n+1)!}{(n-k)!k!} p^k (1-p)^{n-k}\]</span></p>
+<p><strong>VERY IMPORTANT, BETA DISTRIBUTION</strong></p>
+<ul>
+<li><strong>Before (Prior):</strong> A flat horizontal line (Uniform).</li>
+<li><strong>After (Posterior):</strong> A “Beta Distribution” curve that peaks near the observed ratio <span class="math inline">\(k/n\)</span>.</li>
+</ul>
+<p>Finally, we calculate the probability that the <strong>next</strong> packet (<span class="math inline">\(B\)</span>) will collide. We do this by taking the expected value of <span class="math inline">\(p\)</span> over our updated density:</p>
+<p><span class="math display">\[P(B) = \int_{0}^{1} p \cdot f_{P|A}(p|A) dp\]</span></p>
+<p>Substituting our updated density: <span class="math display">\[P(B) = \int_{0}^{1} p \cdot \left[ \frac{(n+1)!}{(n-k)!k!} p^k (1-p)^{n-k} \right] dp\]</span></p>
+<p>After simplifying the factorials, we arrive at a <strong>VERY VERY VERY IMPORTANT AND INTUITIVE LAPLACE RULE OF SUCCESSION</strong>: <span class="math display">\[P(B) = \frac{k+1}{n+2}\]</span></p>
+<p>Kiểu như là assume mình có thêm 2 quan sát, 1 là success, 1 là failure, thì cái xác suất của mình nó sẽ được “trung bình” lại, không bị lệch quá về phía quan sát của mình.</p>
+<section id="so-yeah-it-is-not-simply-kn" class="level3">
+<h3 class="anchored" data-anchor-id="so-yeah-it-is-not-simply-kn">So yeah it is not simply <span class="math inline">\(k/n\)</span>?</h3>
+<p>If you sent 1 packet and it collided (<span class="math inline">\(k=1, n=1\)</span>), the raw ratio <span class="math inline">\(k/n\)</span> would suggest a 100% collision rate for the future. That’s unrealistic! Laplace’s Rule gives you: <span class="math display">\[P(B) = \frac{1+1}{1+2} = \frac{2}{3} \approx 66.7\%\]</span></p>
+<p><strong>Conclusion:</strong> Laplace’s Rule of Succession “smooths” our estimates. It accounts for the fact that with small sample sizes, our observations might be extreme, providing a much more reliable prediction for the <span class="math inline">\((n+1)^{th}\)</span> event.</p>
+</section>
+</section>
+</section>
+<section id="bayesian-inference-updating-beliefs-with-x-x" class="level1">
+<h1>Bayesian Inference: Updating Beliefs with <span class="math inline">\(X = x\)</span></h1>
+<section id="direction-a-1-updating-the-probability-of-an-event-pa-xx" class="level2">
+<h2 class="anchored" data-anchor-id="direction-a-1-updating-the-probability-of-an-event-pa-xx">Direction A-1: Updating the Probability of an Event (<span class="math inline">\(P(A | X=x)\)</span>)</h2>
+<p><strong>Goal:</strong> You have a measurement (<span class="math inline">\(X=x=1.5\)</span>) and you want to know the probability that a specific event <span class="math inline">\(A=ON\)</span> is true.</p>
+<p><span class="math display">\[P(A | X = x) = \frac{f_X(x | A)}{f_X(x)} P(A)\]</span></p>
+<section id="example-4" class="level4">
+<h4 class="anchored" data-anchor-id="example-4">Example</h4>
+<p>Imagine we are monitoring a communication channel where a signal <span class="math inline">\(A\)</span> is either <strong>ON</strong> (<span class="math inline">\(A_1\)</span>) or <strong>OFF</strong> (<span class="math inline">\(A_0\)</span>).</p>
+<ul>
+<li><strong>Prior Knowledge:</strong> Based on history, <span class="math inline">\(P(A_1) = 0.6\)</span> and <span class="math inline">\(P(A_0) = 0.4\)</span>.</li>
+<li><strong>The Noise:</strong> Our measurement device <span class="math inline">\(X\)</span> adds Gaussian noise <span class="math inline">\(N(\mu, 1)\)</span>.
+<ul>
+<li>If the signal is <strong>OFF</strong>, the mean is 0: <span class="math inline">\(f_X(x | A_0) \sim N(0, 1)\)</span>.</li>
+<li>If the signal is <strong>ON</strong>, the mean is 2: <span class="math inline">\(f_X(x | A_1) \sim N(2, 1)\)</span>.</li>
+</ul></li>
+</ul>
+<p><strong>The Observation:</strong> We measure a specific value <strong><span class="math inline">\(X = 1.5\)</span></strong>. <strong>The Goal:</strong> Calculate the updated (Posterior) probability that the signal is actually ON.</p>
+<section id="step-1-calculate-the-likelihoods" class="level5">
+<h5 class="anchored" data-anchor-id="step-1-calculate-the-likelihoods">Step 1: Calculate the Likelihoods</h5>
+<p>We plug <span class="math inline">\(x=1.5\)</span> into the Gaussian PDF formula for both scenarios:</p>
+<ul>
+<li><strong>Likelihood if OFF:</strong> <span class="math inline">\(f_X(1.5 | A_0) = \frac{1}{\sqrt{2\pi}} e^{-(1.5-0)^2 / 2} \approx 0.129\)</span></li>
+<li><strong>Likelihood if ON:</strong> <span class="math inline">\(f_X(1.5 | A_1) = \frac{1}{\sqrt{2\pi}} e^{-(1.5-2)^2 / 2} \approx 0.352\)</span></li>
+</ul>
+</section>
+<section id="step-2-calculate-the-total-evidence" class="level5">
+<h5 class="anchored" data-anchor-id="step-2-calculate-the-total-evidence">Step 2: Calculate the Total Evidence</h5>
+<p>We find the total probability density at <span class="math inline">\(x=1.5\)</span> by weighing both scenarios: <span class="math display">\[f_X(1.5) = [f_X(1.5 | A_1) \cdot P(A_1)] + [f_X(1.5 | A_0) \cdot P(A_0)]\]</span> <span class="math display">\[f_X(1.5) = (0.352 \cdot 0.6) + (0.129 \cdot 0.4) = 0.2628\]</span></p>
+</section>
+<section id="step-3-apply-bayes-theorem" class="level5">
+<h5 class="anchored" data-anchor-id="step-3-apply-bayes-theorem">Step 3: Apply Bayes’ Theorem</h5>
+<p>Now, we find the updated probability that the signal is ON: <span class="math display">\[P(A_1 | X = 1.5) = \frac{f_X(1.5 | A_1) \cdot P(A_1)}{f_X(1.5)}\]</span> <span class="math display">\[P(A_1 | X = 1.5) = \frac{0.2112}{0.2628} \approx \mathbf{0.8037}\]</span></p>
+<ul>
+<li><strong>Before the measurement (A-priori):</strong> We were <strong>60%</strong> sure the signal was ON.</li>
+<li><strong>After measuring 1.5 (Posterior):</strong> Because 1.5 is closer to the “ON” mean (2) than the “OFF” mean (0), our confidence increased to <strong>80.37%</strong>.</li>
+</ul>
+<p>This shows how a single point observation (<span class="math inline">\(X=x\)</span>) shifts our understanding of the world from a prior state to a more informed posterior state.</p>
+</section>
+</section>
+</section>
+<section id="direction-a-2-updating-the-probability-of-an-event-with-interval-observations" class="level2">
+<h2 class="anchored" data-anchor-id="direction-a-2-updating-the-probability-of-an-event-with-interval-observations">Direction A-2: Updating the Probability of an Event with Interval Observations</h2>
+<p>In previous chapters, we updated our beliefs based on a specific point (<span class="math inline">\(X=x\)</span>). However, in many real-world scenarios, we only know that a value fell within a certain <strong>range</strong> or <strong>interval</strong>.</p>
+<p><span class="math display">\[P(A | x_1 &lt; X \le x_2) = \frac{\int_{x_1}^{x_2} f_X(x | A)dx}{\int_{x_1}^{x_2} f_X(x)dx} P(A)\]</span></p>
+<section id="example-5" class="level4">
+<h4 class="anchored" data-anchor-id="example-5">Example</h4>
+<ul>
+<li><strong>Event <span class="math inline">\(A\)</span> (Overheating):</strong> Prior probability <span class="math inline">\(P(A) = 0.10\)</span>.</li>
+<li><strong>Event <span class="math inline">\(A^c\)</span> (Normal):</strong> Prior probability <span class="math inline">\(P(A^c) = 0.90\)</span>.</li>
+<li><strong>Distribution of Temperature (<span class="math inline">\(X\)</span>):</strong>
+<ul>
+<li><strong>Normal State:</strong> <span class="math inline">\(X \sim N(70, 10^2)\)</span> (Mean 70°C, SD 10°C).</li>
+<li><strong>Overheating State:</strong> <span class="math inline">\(X \sim N(100, 10^2)\)</span> (Mean 100°C, SD 10°C).</li>
+</ul></li>
+<li><strong>The Observation (<span class="math inline">\(B\)</span>):</strong> A sensor reports the temperature is between <strong>90°C and 110°C</strong>.</li>
+</ul>
+<section id="step-1-calculate-the-numerator-pbapa" class="level5">
+<h5 class="anchored" data-anchor-id="step-1-calculate-the-numerator-pbapa">Step 1: Calculate the Numerator <span class="math inline">\(P(B|A)P(A)\)</span></h5>
+<p>First, we find the probability of seeing this temperature range <em>if</em> the machine is actually overheating (<span class="math inline">\(X \sim N(100, 10^2)\)</span>).</p>
+<ul>
+<li>Standardizing: <span class="math inline">\(z_1 = \frac{90-100}{10} = -1\)</span> and <span class="math inline">\(z_2 = \frac{110-100}{10} = 1\)</span>.</li>
+<li>Using the 68% rule: <span class="math inline">\(P(B|A) \approx 0.6827\)</span>.</li>
+<li><strong>Numerator:</strong> <span class="math inline">\(0.6827 \times 0.10 = \mathbf{0.06827}\)</span>.</li>
+</ul>
+</section>
+<section id="step-2-calculate-the-denominator-pb" class="level5">
+<h5 class="anchored" data-anchor-id="step-2-calculate-the-denominator-pb">Step 2: Calculate the Denominator <span class="math inline">\(P(B)\)</span></h5>
+<p>The total probability of the temperature being in this range is the sum of both states:</p>
+<ol type="1">
+<li><p><strong>From Overheating:</strong> <span class="math inline">\(0.06827\)</span> (calculated above).</p></li>
+<li><p><strong>From Normal State (<span class="math inline">\(X \sim N(70, 10^2)\)</span>):</strong></p>
+<ul>
+<li><span class="math inline">\(z_1 = \frac{90-70}{10} = 2\)</span> and <span class="math inline">\(z_2 = \frac{110-70}{10} = 4\)</span>.</li>
+<li><span class="math inline">\(P(B|A^c) = G(4) - G(2) \approx 0.9999 - 0.9772 = 0.0227\)</span>.</li>
+<li>Contribution: <span class="math inline">\(0.0227 \times 0.90 = 0.02043\)</span>.</li>
+</ul></li>
+</ol>
+<p><strong>Total <span class="math inline">\(P(B)\)</span>:</strong> <span class="math inline">\(0.06827 + 0.02043 = \mathbf{0.0887}\)</span>.</p>
+</section>
+<section id="step-3-apply-bayes-theorem-1" class="level5">
+<h5 class="anchored" data-anchor-id="step-3-apply-bayes-theorem-1">Step 3: Apply Bayes’ Theorem</h5>
+<p><span class="math display">\[P(A|B) = \frac{0.06827}{0.0887} \approx \mathbf{0.7697}\]</span></p>
+<ul>
+<li><strong>Conclusion:</strong> Our belief that the machine is overheating jumped from <strong>10% to nearly 77%</strong>.</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="direction-a-3-updating-with-multiple-observations" class="level2">
+<h2 class="anchored" data-anchor-id="direction-a-3-updating-with-multiple-observations">Direction A-3: Updating with Multiple Observations</h2>
+<p>What happens if we don’t just have one measurement, but a series of measurements <span class="math inline">\(\mathbf{x} = \{x_1, x_2, \dots, x_n\}\)</span>? If the observations are <strong>independent and identically distributed (i.i.d.)</strong>, each new piece of data allows us to update our belief further.</p>
+<p><span class="math display">\[P(A | x_1, x_2, \dots, x_n) = \frac{f(x_1, x_2, \dots, x_n | A) P(A)}{f(x_1, x_2, \dots, x_n)}\]</span></p>
+<p>Because the observations are independent, we can simplify the likelihood into a product:</p>
+<p><span class="math display">\[P(A | \mathbf{x}) = \frac{\left[ \prod_{i=1}^{n} f_X(x_i | A) \right] P(A)}{f(\mathbf{x})}\]</span></p>
+<section id="example-confirming-the-overheat" class="level4">
+<h4 class="anchored" data-anchor-id="example-confirming-the-overheat">Example: Confirming the Overheat</h4>
+<p>Let’s return to our Overheating Machine example.</p>
+<ul>
+<li><strong>Prior:</strong> <span class="math inline">\(P(A) = 0.10\)</span> (Overheating), <span class="math inline">\(P(A^c) = 0.90\)</span> (Normal).</li>
+<li><strong>Normal State (<span class="math inline">\(A^c\)</span>):</strong> <span class="math inline">\(X \sim N(70, 10^2)\)</span>.</li>
+<li><strong>Overheating State (<span class="math inline">\(A\)</span>):</strong> <span class="math inline">\(X \sim N(100, 10^2)\)</span>.</li>
+</ul>
+<p><strong>The New Data:</strong> Instead of an interval, a digital logger gives us <strong>two precise readings</strong>: <span class="math inline">\(x_1 = 92\)</span> and <span class="math inline">\(x_2 = 98\)</span>.</p>
+<section id="step-1-calculate-likelihoods-for-state-a-overheating" class="level5">
+<h5 class="anchored" data-anchor-id="step-1-calculate-likelihoods-for-state-a-overheating">Step 1: Calculate Likelihoods for State <span class="math inline">\(A\)</span> (Overheating)</h5>
+<p>We use the PDF formula for <span class="math inline">\(N(100, 10^2)\)</span>:</p>
+<ul>
+<li><span class="math inline">\(f(92 | A) = \frac{1}{10\sqrt{2\pi}} e^{-\frac{(92-100)^2}{200}} \approx 0.0287\)</span></li>
+<li><span class="math inline">\(f(98 | A) = \frac{1}{10\sqrt{2\pi}} e^{-\frac{(98-100)^2}{200}} \approx 0.0391\)</span></li>
+<li><strong>Joint Likelihood <span class="math inline">\((A)\)</span>:</strong> <span class="math inline">\(0.0287 \times 0.0391 = 0.001122\)</span></li>
+</ul>
+</section>
+<section id="step-2-calculate-likelihoods-for-state-ac-normal" class="level5">
+<h5 class="anchored" data-anchor-id="step-2-calculate-likelihoods-for-state-ac-normal">Step 2: Calculate Likelihoods for State <span class="math inline">\(A^c\)</span> (Normal)</h5>
+<p>We use the PDF formula for <span class="math inline">\(N(70, 10^2)\)</span>:</p>
+<ul>
+<li><span class="math inline">\(f(92 | A^c) = \frac{1}{10\sqrt{2\pi}} e^{-\frac{(92-70)^2}{200}} \approx 0.0035\)</span></li>
+<li><span class="math inline">\(f(98 | A^c) = \frac{1}{10\sqrt{2\pi}} e^{-\frac{(98-70)^2}{200}} \approx 0.0008\)</span></li>
+<li><strong>Joint Likelihood <span class="math inline">\((A^c)\)</span>:</strong> <span class="math inline">\(0.0035 \times 0.0008 = 0.0000028\)</span></li>
+</ul>
+</section>
+<section id="step-3-apply-bayes-theorem-2" class="level5">
+<h5 class="anchored" data-anchor-id="step-3-apply-bayes-theorem-2">Step 3: Apply Bayes’ Theorem</h5>
+<p>First, find the total evidence (denominator): <span class="math display">\[f(\mathbf{x}) = (0.001122 \times 0.10) + (0.0000028 \times 0.90)\]</span> <span class="math display">\[f(\mathbf{x}) = 0.0001122 + 0.00000252 = 0.00011472\]</span></p>
+<p>Now, find the Posterior <span class="math inline">\(P(A | \mathbf{x})\)</span>: <span class="math display">\[P(A | \mathbf{x}) = \frac{0.0001122}{0.00011472} \approx \mathbf{0.978}\]</span></p>
+
+
+
+</section>
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
