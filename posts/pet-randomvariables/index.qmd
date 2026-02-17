@@ -1,0 +1,607 @@
+---
+title: "Random Variables"
+date: "2026-02-13"
+categories: [Statistics, Probability]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+
+# Definition
+
+
+## 1. The Probability Framework $(\Omega, \mathcal{F}, P)$
+
+
+- **World:** $\Omega$ (All possible outcomes $\xi$) of an experiment (e.g. $\Omega = \{HH, HT, TH, TT\}$)
+- **Validation Set:** $\mathcal{F}$ (The list of all valid events, usually the Power Set)
+- **Probability Measure:** $P$ is the rule that assigns a likelihood [0,1] to those events. (e.g. $P(\{HH\}) = 1/4$)
+- **Scoreboard:** $X(\xi)$ (The function mapping outcomes to numbers - Random Variable)
+- **Validation Rule:** $X^{-1}(B) \in \mathcal{F}$ (Condition for $X$ to be a Random Variable)
+
+
+---
+
+## 2. What is a Random Variable ($X$)?
+
+Despite the name, a **Random Variable** is not actually a variable in the algebraic sense—it is a **FUNCTIONNNN**, or a **Scoreboard**.
+
+A random variable $X$ takes an outcome $\xi$ ("xi") from the sample space $\Omega$ and maps it to a unique point $x$ in $\mathbb{R}$.
+
+$$X: \Omega \to \mathbb{R}, X(\xi) = x$$
+
+**Example: Let $X$ be the "Number of Heads" in two coin flips.**
+
+| Outcome ($\xi$) | Calculation | Value ($x$) |
+|:---:|:---:|:---:|
+| $HH$ | $X(HH)$ | $2$ |
+| $HT$ | $X(HT)$ | $1$ |
+| $TH$ | $X(TH)$ | $1$ |
+| $TT$ | $X(TT)$ | $0$ |
+
+> **Important:** The above randomness values come from the sample space $\Omega$. $X$ is simply the consistent rule (the function) that maps outcomes to numbers.
+
+## 3. How to calculate Probabilities? Inverse Mapping
+
+How do we determine the probability of a numerical value like $X = 2$? We have to look "backward" from the real numbers to our original sample space. This is called **Inverse Mapping**.
+
+Given a set $B$ (a subset of the real numbers $\mathbb{R}$), we must find the event $A$ in our sample space that "maps" to $B$.
+
+$$A = X^{-1}(B) = \{\xi \in \Omega : X(\xi) \in B\}$$
+
+Probability is taken directly from the sample $P(A)$.
+$$P(X \in B) = P(A)$$
+
+Example: Finding $P(B) = P(X = 2)$ => Find outcomes $\xi$ result in a score of 2? $A = X^{-1}(2) = \{HH\}$. Then we calculate $P(X = 2) = P(\{HH\}) = \frac{1}{4}$
+
+
+
+## 4. Or Calculating Probability with the CDF
+
+Once we have the Cumulative Distribution Function $F_X(x)$, no longer need to go back to the sample space $\Omega$ every time; we can just subtract two values from the CDF.
+
+### So what is the CDF? 
+The **Cumulative Distribution Function (CDF)** of a random variable $X$ is the non-decreasing function $F_X: \mathbb{R} \to [0, 1]$ defined by:
+
+$$F_X(x) = P(X \le x) = P(\{\xi \in \Omega \mid X(\xi) \le x\})$$
+
+Probability is taken directly from the CDF:
+$$P(x_1 < X \le x_2) = F_X(x_2) - F_X(x_1)$$
+
+
+## 5. Or calculating probability via the PDF
+
+It is the **derivative** of the Cumulative Distribution Function (CDF). 
+
+$$f_X(x) = \frac{d}{dx}F_X(x)$$
+
+Probability is equivalent to the **area under the curve** of the PDF:
+
+$$P(x_1 < X \le x_2) = F_X(x_2) - F_X(x_1) = \int_{x_1}^{x_2} f_X(x) dx$$
+
+
+
+### Important
+* **PDF $f_X(x)$:** This is **not** a probability. The probability at a single point $P(X = x)$ is always **0**. But the area under the curve of the PDF is the probability.
+* **CDF $F_X(x)$:** This **is** a probability - a piled up probability.
+
+# Some Distributions
+
+## 1. The Gaussian (Normal) Distribution $X \sim N(\mu, \sigma^2)$
+
+X counts the number of events that occurred in a fixed time interval.
+
+### PDF
+$$f_X(x) = \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}$$
+
+### CDF (area of PDF)
+$$F_X(x) = \int_{-\infty}^{x} \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{(y-\mu)^2}{2\sigma^2}} dy$$
+
+**The Problem:** There is no antiderivative for $e^{-x^2}$ that uses basic functions (like $\sin, \log,$ or polynomials). You cannot solve this by hand.
+=> We map this to a standardized distribution that was already solved numerically and just read the result from this mapping.
+
+#### Example
+
+Suppose we have a random variable $X \sim N(10, 4)$. We want to calculate:
+$$P(X \le 13) = F_X(13)$$
+
+Following our definition, we set up the integral:
+$$F_X(13) = \int_{-\infty}^{13} \frac{1}{\sqrt{2\pi(4)}} e^{-\frac{(y-10)^2}{2(4)}} dy$$
+
+#### Solution: Standardization (Z-score)
+Since we can't solve the integral for every different $\mu$ and $\sigma$, we transform our "Specific $X$" into the "Standard $Z$". We use the formula:
+$$Z = \frac{X - \mu}{\sigma}$$
+
+For our example ($X=13, \mu=10, \sigma=2$):
+$$z = \frac{13 - 10}{2} = 1.5$$
+
+Now, instead of solving that impossible integral, we look up the value for $1.5$ in a **Standard Normal Table**.
+
+$$P(X \le 13) = P(Z \le 1.5) \approx 0.9332$$
+
+### Expected Value and Variance
+
+#### Expected Value (The Mean)
+$$\mu = E[X] = \int_{-\infty}^{\infty} x f_X(x) dx$$
+
+#### Variance (The Spread)
+$$\sigma^2 = Var(X) = E[(X - \mu)^2]$$
+
+**Computational Trick:**
+In practice, might be good in computer graphics, it is often easier to calculate variance like this since we know ($E[X]$) and ($E[X^2]$):
+$$Var(X) = E[X^2] - (E[X])^2$$
+
+## 2. Uniform Distribution $X \sim U(a, b)$
+
+X counts the number of events that occurred in a fixed time interval. Perfectly fairness
+
+#### PDF
+$$f_X(x) = \frac{1}{b - a} \quad \text{for } a \le x \le b$$
+
+#### Application example:
+Imagine you are waiting for a train that arrives exactly every 10 minutes, but you have no idea what the schedule is. Your wait time $X$ is distributed as $U(0, 10)$.
+* The probability of waiting between 0 and 10 minutes is 1.
+* The probability of waiting exactly between 5 and 7 minutes is:
+  $$P(5 < X < 7) = \int_{5}^{7} \frac{1}{10-0} dx = \frac{7-5}{10} = 0.2$$
+
+
+## 3. Exponential Distribution $X \sim \text{Exp}(\lambda)$
+
+X counts the time to the next event. Remember, **it is about time until the next event**.
+
+#### PDF
+$$f_X(x) = \lambda e^{-\lambda x} \quad \text{for } x \ge 0$$
+
+#### Key Parameters
+* **$\lambda$ (Rate):** The average number of events per unit of time.
+* **$\mu$ (Mean):** The average time *between* events, calculated as $\mu = 1/\lambda$.
+
+#### Application example:
+The Exponential distribution is famous for being "memoryless." If you are modeling the time between incoming phone calls:
+For example, if calls arrive at a rate ($\lambda$) of **2 per hour**, the average time between calls ($\mu$) is **$1/2$ an hour** (30 minutes).
+
+## 4. Geometric Distribution $X \sim \text{Geom}(p)$
+
+$X$ counts the number of **failures** before the first **success** occurs in a series of independent trials (Bernoulli trials).
+
+#### PMF
+
+$$P(X = k) = (1-p)^k \cdot p$$
+
+Where:
+
+* $p$ is the probability of success in each trial.
+* $(1-p)$ is the probability of failure.
+* $k$ is the number of failures ($k = 0, 1, 2, \dots$).
+
+
+#### Application example:
+
+What is the probability you miss 3 times and make it on the 4th try with success probability $p=0.2$?
+
+**Calculation:** Here, $k=3$.
+$$P(X = 3) = (0.8)^3 \cdot (0.2) = 0.512 \cdot 0.2 = 0.1024$$
+There is roughly a **10.2%** chance that your first success happens exactly after 3 misses.
+
+
+## 5. Bernoulli Distribution
+
+X counts the number of **successes** in a single trial. actually only $0$ or $1$. Cannot be simpler than this.
+
+* **Values:** $X$ can only be $1$ (success) or $0$ (failure).
+* **Probabilities:** * $P(X=1) = p$
+    * $P(X=0) = q$, where $q = 1-p$.
+
+## 6. Binomial Distribution $X \sim B(n, p)$
+
+X counts the number of successes in a fixed number of **independent** Bernoulli trials ($n$).
+
+The probability of getting exactly $k$ successes in $n$ trials is:
+$$P(X = k) = \binom{n}{k} p^k q^{n-k}$$
+
+## 7. Poisson Distribution $X \sim \text{Pois}(\lambda)$
+
+X counts the number of times an event occurs in a **fixed interval of time or space**. It assumes events happen at a known constant rate ($\lambda$) and independently of one another.
+
+$$P(X = k) = \frac{e^{-\lambda} \lambda^k}{k!}$$
+
+* **The Parameter ($\lambda$):** This represents the average number of occurrences in that interval.
+* **Range:** Technically, $k$ can go from $0$ all the way to infinity ($\infty$).
+
+
+**Example:** The number of emails received in an hour or the number of typos on a page. Unlike the Binomial, there is no fixed number of "trials"—the events just "arrive."
+> * Number of shooting stars seen in a night.
+> * Number of customers entering a shop between 9:00 and 10:00 AM.
+> * Number of mutations in a specific stretch of DNA.
+
+### Numerical Example: The "Bus Stop" Scenario
+
+Imagine you are standing at a bus stop. You know from historical data that, on average, **3 buses arrive every hour**. 
+
+* **$\lambda = 3$** (This is your average rate per hour).
+* **$X$** = The number of buses that *actually* show up in the next hour.
+
+
+
+#### Scenario A: What is the probability that exactly 3 buses arrive?
+You might think this is 100% since the average is 3, but in a random world, you might get lucky (4 buses) or unlucky (1 bus).
+
+Using the formula $P(X = k) = \frac{e^{-\lambda} \lambda^k}{k!}$ with $\lambda = 3$ and $k = 3$:
+
+$$P(X = 3) = \frac{e^{-3} \cdot 3^3}{3!} = \frac{0.0498 \cdot 27}{6} \approx 0.224$$
+
+There is only a **22.4% chance** that exactly 3 buses will show up.
+
+#### Scenario B: What is the probability that NO buses arrive?
+This is the "frustrated commuter" scenario ($k=0$).
+
+$$P(X = 0) = \frac{e^{-3} \cdot 3^0}{0!} = \frac{0.0498 \cdot 1}{1} \approx 0.05$$
+
+There is a **5% chance** you will be left waiting with zero buses for the entire hour.
+
+#### Scenario C: What if we change the time interval?
+The beauty of the Poisson rate $\lambda$ is that it scales linearly. If the rate is 3 buses per **60 minutes**, then for a **20-minute** interval, your new $\lambda$ would be 1.
+
+
+## Comparison of Discrete Distributions
+
+| Distribution | What does $X$ count? | Key Parameter(s) | Range of $X$ |
+|:---|:---|:---|:---|
+| **Geometric** | Success after $k$ failures | $p$ (prob. of success) | $\{0, 1, \dots, \infty\}$ |
+| **Bernoulli** | Success in 1 trial | $p$ (prob. of success) | $\{0, 1\}$ |
+| **Binomial** | Successes in $n$ trials | $n$ (trials) and $p$ | $\{0, 1, \dots, n\}$ |
+| **Poisson** | Occurrences over time/space | $\lambda$ (average rate) | $\{0, 1, \dots, \infty\}$ |
+
+> **The Connection:** When $n$ is very large and $p$ is very small, the Binomial distribution actually converges to the Poisson distribution. This is often called the "Law of Rare Events."
+
+# Poisson Approximation for Binomial
+
+For example, if we want to calculate the probability of getting between 400 and 600 heads in 1000 tosses, we must **summarize** like this:
+
+$$P(k_1 \le X \le k_2) = \sum_{k=k_1}^{k_2} \binom{n}{k} p^k q^{n-k}$$
+
+But the factorial ($n!$) is a **huge** number. For example $100! \approx 9.33 \times 10^{157}$.
+
+Computers will simply return an **"Overflow Error"** because the number is too massive to store. Even if you can compute it, you then have to multiply it by tiny decimals like $0.5^{100}$, leading to extreme precision errors.
+
+
+
+## Solution: Poisson Approximation
+
+When $n$ is very large (the number of trials) and $p$ is very small (the probability of success), the Binomial distribution starts to behave exactly like a Poisson distribution. 
+
+#### Approximation Rule
+If $n \ge 100$ and $np \le 10$, we can "swap" the Binomial parameters for a Poisson rate:
+$$\lambda = n \cdot p$$
+
+Now, instead of fighting with factorials like $100!$, you can use the much simpler Poisson formula:
+$$P(X = k) \approx \frac{e^{-\lambda} \lambda^k}{k!}$$
+
+
+#### Example
+Suppose a factory produces 1,000 silicon chips, and the probability of a chip being defective is $p = 0.002$. 
+
+* **Binomial way:** Calculating $P(X=3)$ requires $\binom{1000}{3} (0.002)^3 (0.998)^{997}$. Basically we have to calculate $1000!$.
+* **Poisson way:** 1. Calculate $\lambda = np = 1000 \times 0.002 = 2$. We only need to calculate $3!$.
+    2. $P(X=3) \approx \frac{e^{-2} \cdot 2^3}{3!} = \frac{0.1353 \cdot 8}{6} \approx 0.1804$.
+
+#### Derivation
+I dont remember, but it is based on the fact that the convergence happen as $n \to \infty$ and $p \to 0$:
+
+Just start from here:
+$$P_n(k) = \frac{n!}{k!(n-k)!} p^k (1-p)^{n-k}$$
+
+$$P_n(k) = \frac{n!}{k!(n-k)!} p^k (1-p)^{n} (1-p)^{-k}$$
+
+$$P_n(k) = \underbrace{\frac{n(n-1)\dots(n-k+1)}{n^k}}_{\text{Part A}} \cdot \underbrace{\frac{(np)^k}{k!}}_{\text{Part B}} \cdot \underbrace{(1 - np/n)^n}_{\text{Part C}} \cdot \underbrace{(1 - np/n)^{-k}}_{\text{Part D}}$$
+
+$$P_n(k) \approx (1) \cdot \frac{\lambda^k}{k!} \cdot e^{-\lambda} \cdot (1)$$
+
+* Part A: $\frac{n}{n} \cdot \frac{n-1}{n} \cdot \dots \cdot \frac{n-k+1}{n}$.Each of these $k$ fractions (like $1 - \frac{1}{n}$) tends toward 1 (unity).
+* Part B: Since $np = \lambda$, replace $p$ with $\frac{\lambda}{n}$.
+* Part C: $\lim_{n \to \infty} (1 - \frac{\lambda}{n})^n = \mathbf{e^{-\lambda}}$.
+* Part D: As $n \to \infty$, the term $(1 - \frac{\lambda}{n})^{-k}$ becomes $(1 - 0)^{-k} = 1^{-k}$, which is 1.
+
+
+
+# Conditional Distribution ($F_X(x | B)$)
+
+## Direction B-1: Hard Conditioning ($F_X(x|B)$)
+We decide that some values are now impossible (Probability = 0) and others are possible. We cut the PDF and regrow the remaining part to keep the area at 1.
+The updated conditional distribution is the probability that $X \le x$ given that we know event $B$ is true:
+
+$$F_X(x | B) = P(X \le x | B) = \frac{P(\{X \le x\} \cap B)}{P(B)}$$
+
+$$f_X(x | B) = \frac{d}{dx}F_X(x | B)$$
+
+
+#### Example
+Imagine a random variable $X$ representing a wait time, uniformly distributed between 0 and 10 minutes: $X \sim U(0, 10)$.
+
+* **Original PDF:** $f_X(x) = 1/10$ for $0 \le x \le 10$.
+* **Original CDF:** $F_X(x) = x/10$ for $0 \le x \le 10$.
+* **Condition ($B$):** You receive a text saying, *"I know for a fact the wait is less than or equal to 5 minutes"* ($B = \{X \le 5\}$).
+
+##### Step 1: Update the CDF
+For values where $x \le 5$, we scale the original CDF by the probability of the condition $P(B)$:
+
+1. Calculate $P(B) = F_X(5) = 5/10 = 0.5$. **THIS VALUE IS FIXED**
+2. For $x \le 5$: $F_X(x | X \le 5) = \frac{x/10}{0.5} = \frac{x}{5}$. **THIS IS THE NEW CDF FUNCTION**
+3. For $x > 5$: The probability is now $1$ (it is certain the value is $\le x$ because we know it's $\le 5$).
+
+
+
+##### Step 2: Update the PDF
+Using the derivative of our new CDF:
+
+1. For $x \le 5$: $f_X(x | B) = \frac{d}{dx}(\frac{x}{5}) = 1/5$.
+2. For $x > 5$: $f_X(x | B) = 0$.
+
+
+When the event B is $B = \{a < X \le b\}$ find the **Conditional CDF** $F_X(x | B)$, we look at the overlap between the event $\{X \le x\}$ and our new known interval $\{a < X \le b\}$. The denominator is simply the probability of the interval itself: $F_X(b) - F_X(a)$.
+
+
+1. **For $x < a$ (Below the window):** The probability is **0**.
+2. **For $a \le x < b$ (Inside the window):** $$F_X(x | B) = \frac{F_X(x) - F_X(a)}{F_X(b) - F_X(a)}$$
+3. **For $x \ge b$ (Above the window):** The probability is **1**.
+
+#### Example
+Imagine $X$ is your exam score, ranging from 0 to 100. Let's say the original distribution was $U(0, 100)$.
+
+**Condition $B$:** I tell you, "You passed!" (Assuming a pass is $B = \{50 < X \le 100\}$).
+
+* **The Lower Bound:** Any score below 50 now has a conditional probability of **0**. It is no longer possible that you got a 40.
+* **The Scaling Effect:** The denominator $P(B)$ is $1.0 - 0.5 = 0.5$. 
+* **The New Probability:** Because we are dividing the original probabilities by $0.5$, the likelihood of any specific passing score (like an 85) has effectively **doubled**. 
+
+
+## Direction B-2: Soft Conditioning ($f_{X|A}$)
+If our sensor is imperfect, $P(A | X=x)$ might be $0.8$ instead of $1.0$. We multiply the original PDF by these weights and then re-normalize. => **RESHAPE THE WHOLE DISTRIBUTION, NOT JUST SCALING**
+
+* **Goal:** "Given that I know the signal is ON ($A_1$), what does the distribution ($f_{X|A}(x | A)$) of random variable ($X$) look like?" 
+
+$$f_{X|A}(x | A) = \frac{P(A | X = x) f_X(x)}{P(A)}$$
+
+$$f_{X|A}(x | A) = \frac{P(A | X = x) f_X(x)}{\int_{-\infty}^{+\infty} P(A | X = x) f_X(x)dx}$$
+
+#### Example: Soft Conditioning (Reshaping)
+
+In this scenario, we don't "cut" the distribution; we "tilt" it based on an unreliable sensor. Instead of a hard threshold, we use a probabilistic weight.
+
+##### 1. The Setup
+* **Prior Belief:** Temperature $X \sim N(20, 4)$ with $\mu=20$ and $\sigma^2=4$.
+* **The "Soft" Alarm ($A$):** This sensor is noisy. The hotter it gets, the more likely it is to trigger, but it doesn't have a sharp cutoff.
+* **The Likelihood $P(A | X=x)$:** We define this as a linear weight function $w(x) = 0.02x$.
+    * At 10°C, $P(A | X=10) = 0.2$
+    * At 20°C, $P(A | X=20) = 0.4$
+    * At 30°C, $P(A | X=30) = 0.6$
+    *(Note: This remains a valid probability between 0 and 1 for the relevant temperature range).*
+
+
+
+##### 2. Calculating the Numerator (Weighting)
+We multiply the original Normal PDF by our weight function $0.02x$ to find the unnormalized posterior:
+$$\text{Numerator} = (0.02x) \cdot f_X(x)$$
+
+##### 3. Calculating the Denominator (Normalization)
+The denominator $P(A)$ is the "total weight," which is the expected value of our weight function across the entire prior distribution:
+$$P(A) = \int_{-\infty}^{\infty} (0.02x) f_X(x) \, dx = 0.02 \cdot E[X]$$
+
+Since the prior mean $E[X] = 20$:
+$$P(A) = 0.02 \cdot 20 = 0.4$$
+
+##### 4. The Final Posterior PDF $f_{X|A}(x|A)$
+Combining the numerator and the denominator gives us the updated PDF:
+$$f_{X|A}(x|A) = \frac{0.02x \cdot f_X(x)}{0.4} = \frac{x}{20} f_X(x)$$
+
+> **Observation:** Notice that the new distribution is essentially the old distribution scaled by $x/20$. Values higher than 20 are amplified, and values lower than 20 are suppressed, effectively "tilting" the bell curve to the right without creating a sharp "cliff."
+
+
+
+
+
+#### Example 2 - Hard Conditioning but can be applied same formula
+Imagine we have a temperature sensor $X$ in a server room. Usually, the temperature follows a Normal distribution $X \sim N(20, 4)$ (Mean 20°C, Variance 4).
+
+**Event ($A$):** A low-cost backup alarm triggers only if the temperature is **above 22°C**. We receive a notification: **"Alarm A has triggered."**
+
+**Goal:**
+Find the new PDF of the temperature, $f_{X|A}(x | A)$, now that we know the alarm is active.
+
+
+##### Step 1: Define the components
+* **Prior PDF $f_X(x)$:** The original $N(20, 4)$ curve.
+* **Likelihood $P(A | X = x)$:** This is a "Step Function." 
+    * If $x \le 22$, $P(A | X=x) = 0$ (The alarm cannot trigger).
+    * If $x > 22$, $P(A | X=x) = 1$ (The alarm must trigger).
+* **Prior Probability $P(A)$:** The probability the alarm triggers under normal conditions. Using Z-scores: $Z = (22-20)/2 = 1$. From tables, $P(X > 22) \approx 0.1587$.
+
+##### Step 2: Apply the Formula
+Using the formula:
+$$f_{X|A}(x | A) = \frac{P(A | X = x) f_X(x)}{P(A)}$$
+
+* **For $x \le 22$:** The numerator is $0 \cdot f_X(x)$, so the new density is **0**.
+* **For $x > 22$:** The numerator is $1 \cdot f_X(x)$. We divide the original bell curve by the constant $0.1587$.
+
+##### Step 3: The Result
+The new distribution $f_{X|A}(x | A)$ looks like the "tail" of the original bell curve, but it has been **amplified** (scaled up by $\approx 6.3\times$) so that the area under that specific tail now equals **1**.
+
+
+
+## Direction B-3: Updating the Probability of a Future Event ($P(B|A)$) (Beta Distribution + Laplace's Rule of Smoothed Succession)
+
+We aren't just looking at the past; we are updating our "brain" to predict the future. Imagine you are monitoring a wireless channel. You want to know the probability that the **very next packet** (the $(n+1)^{th}$) will experience a collision.
+
+Since we have no data yet, we assume total uncertainty. Our prior p.d.f. $f_p(p)$ is a **Uniform Distribution** over $(0, 1)$. We believe any rate from 0% to 100% is equally likely.
+
+Then we observe some data, We transmit $n$ packets and observe that exactly $k$ of them collided in a specific order: $P(A | P = p) = p^k (1-p)^{n-k}$.
+
+To update our belief, we first need the denominator (the evidence). We integrate the likelihood across our uniform prior:
+$$P(A) = \int_{0}^{1} p^k (1-p)^{n-k} dp = \frac{(n-k)!k!}{(n+1)!}$$
+
+> **Example:** If you sent $n=2$ packets and saw $k=1$ collision, $P(A) = \frac{1!1!}{3!} = 1/6$.
+
+Now we update the distribution of $p$ to get the **A-posteriori p.d.f.** $f_{P|A}(p|A)$. This is our updated knowledge of the collision rate $p$ after seeing the data.
+
+$$f_{P|A}(p|A) = \frac{P(A | p) f_p(p)}{P(A)}$$ We have $f_p(p) = 1$ and $P(A | P = p) = p^k (1-p)^{n-k}$
+$$f_{P|A}(p|A) = \frac{p^k (1-p)^{n-k}}{\left[ \frac{k! (n-k)!}{(n+1)!} \right]}$$ 
+$$f_{P|A}(p|A) = \frac{(n+1)!}{(n-k)!k!} p^k (1-p)^{n-k}$$
+
+**VERY IMPORTANT, BETA DISTRIBUTION**
+
+* **Before (Prior):** A flat horizontal line (Uniform).
+* **After (Posterior):** A "Beta Distribution" curve that peaks near the observed ratio $k/n$. 
+
+Finally, we calculate the probability that the **next** packet ($B$) will collide. We do this by taking the expected value of $p$ over our updated density:
+
+$$P(B) = \int_{0}^{1} p \cdot f_{P|A}(p|A) dp$$
+
+Substituting our updated density:
+$$P(B) = \int_{0}^{1} p \cdot \left[ \frac{(n+1)!}{(n-k)!k!} p^k (1-p)^{n-k} \right] dp$$
+
+After simplifying the factorials, we arrive at a **VERY VERY VERY IMPORTANT AND INTUITIVE LAPLACE RULE OF SUCCESSION**:
+$$P(B) = \frac{k+1}{n+2}$$
+
+Kiểu như là assume mình có thêm 2 quan sát, 1 là success, 1 là failure, thì cái xác suất của mình nó sẽ được "trung bình" lại, không bị lệch quá về phía quan sát của mình.
+
+### So yeah it is not simply $k/n$?
+If you sent 1 packet and it collided ($k=1, n=1$), the raw ratio $k/n$ would suggest a 100% collision rate for the future. That's unrealistic!
+Laplace's Rule gives you:
+$$P(B) = \frac{1+1}{1+2} = \frac{2}{3} \approx 66.7\%$$
+
+**Conclusion:** Laplace's Rule of Succession "smooths" our estimates. It accounts for the fact that with small sample sizes, our observations might be extreme, providing a much more reliable prediction for the $(n+1)^{th}$ event.
+
+
+
+
+
+
+
+
+
+
+# Bayesian Inference: Updating Beliefs with $X = x$
+
+## Direction A-1: Updating the Probability of an Event ($P(A | X=x)$)
+**Goal:** You have a measurement ($X=x=1.5$) and you want to know the probability that a specific event $A=ON$ is true.
+
+$$P(A | X = x) = \frac{f_X(x | A)}{f_X(x)} P(A)$$
+
+#### Example
+Imagine we are monitoring a communication channel where a signal $A$ is either **ON** ($A_1$) or **OFF** ($A_0$).
+
+* **Prior Knowledge:** Based on history, $P(A_1) = 0.6$ and $P(A_0) = 0.4$.
+* **The Noise:** Our measurement device $X$ adds Gaussian noise $N(\mu, 1)$.
+    * If the signal is **OFF**, the mean is 0: $f_X(x | A_0) \sim N(0, 1)$.
+    * If the signal is **ON**, the mean is 2: $f_X(x | A_1) \sim N(2, 1)$.
+
+**The Observation:** We measure a specific value **$X = 1.5$**.
+**The Goal:** Calculate the updated (Posterior) probability that the signal is actually ON.
+
+##### Step 1: Calculate the Likelihoods
+We plug $x=1.5$ into the Gaussian PDF formula for both scenarios:
+
+* **Likelihood if OFF:** $f_X(1.5 | A_0) = \frac{1}{\sqrt{2\pi}} e^{-(1.5-0)^2 / 2} \approx 0.129$
+* **Likelihood if ON:** $f_X(1.5 | A_1) = \frac{1}{\sqrt{2\pi}} e^{-(1.5-2)^2 / 2} \approx 0.352$
+
+##### Step 2: Calculate the Total Evidence
+We find the total probability density at $x=1.5$ by weighing both scenarios:
+$$f_X(1.5) = [f_X(1.5 | A_1) \cdot P(A_1)] + [f_X(1.5 | A_0) \cdot P(A_0)]$$
+$$f_X(1.5) = (0.352 \cdot 0.6) + (0.129 \cdot 0.4) = 0.2628$$
+
+##### Step 3: Apply Bayes' Theorem
+Now, we find the updated probability that the signal is ON:
+$$P(A_1 | X = 1.5) = \frac{f_X(1.5 | A_1) \cdot P(A_1)}{f_X(1.5)}$$
+$$P(A_1 | X = 1.5) = \frac{0.2112}{0.2628} \approx \mathbf{0.8037}$$
+
+* **Before the measurement (A-priori):** We were **60%** sure the signal was ON.
+* **After measuring 1.5 (Posterior):** Because 1.5 is closer to the "ON" mean (2) than the "OFF" mean (0), our confidence increased to **80.37%**.
+
+This shows how a single point observation ($X=x$) shifts our understanding of the world from a prior state to a more informed posterior state.
+
+
+
+## Direction A-2: Updating the Probability of an Event with Interval Observations
+
+In previous chapters, we updated our beliefs based on a specific point ($X=x$). However, in many real-world scenarios, we only know that a value fell within a certain **range** or **interval**. 
+
+$$P(A | x_1 < X \le x_2) = \frac{\int_{x_1}^{x_2} f_X(x | A)dx}{\int_{x_1}^{x_2} f_X(x)dx} P(A)$$
+
+#### Example
+
+* **Event $A$ (Overheating):** Prior probability $P(A) = 0.10$.
+* **Event $A^c$ (Normal):** Prior probability $P(A^c) = 0.90$.
+* **Distribution of Temperature ($X$):**
+    * **Normal State:** $X \sim N(70, 10^2)$ (Mean 70°C, SD 10°C).
+    * **Overheating State:** $X \sim N(100, 10^2)$ (Mean 100°C, SD 10°C).
+* **The Observation ($B$):** A sensor reports the temperature is between **90°C and 110°C**. 
+
+##### Step 1: Calculate the Numerator $P(B|A)P(A)$
+First, we find the probability of seeing this temperature range *if* the machine is actually overheating ($X \sim N(100, 10^2)$).
+
+* Standardizing: $z_1 = \frac{90-100}{10} = -1$ and $z_2 = \frac{110-100}{10} = 1$.
+* Using the 68% rule: $P(B|A) \approx 0.6827$.
+* **Numerator:** $0.6827 \times 0.10 = \mathbf{0.06827}$.
+
+##### Step 2: Calculate the Denominator $P(B)$
+The total probability of the temperature being in this range is the sum of both states:
+
+1. **From Overheating:** $0.06827$ (calculated above).
+2. **From Normal State ($X \sim N(70, 10^2)$):**
+
+    * $z_1 = \frac{90-70}{10} = 2$ and $z_2 = \frac{110-70}{10} = 4$.
+    * $P(B|A^c) = G(4) - G(2) \approx 0.9999 - 0.9772 = 0.0227$.
+    * Contribution: $0.0227 \times 0.90 = 0.02043$.
+
+**Total $P(B)$:** $0.06827 + 0.02043 = \mathbf{0.0887}$.
+
+##### Step 3: Apply Bayes' Theorem
+$$P(A|B) = \frac{0.06827}{0.0887} \approx \mathbf{0.7697}$$
+
+* **Conclusion:** Our belief that the machine is overheating jumped from **10% to nearly 77%**.
+
+
+## Direction A-3: Updating with Multiple Observations
+
+What happens if we don't just have one measurement, but a series of measurements $\mathbf{x} = \{x_1, x_2, \dots, x_n\}$? If the observations are **independent and identically distributed (i.i.d.)**, each new piece of data allows us to update our belief further.
+
+$$P(A | x_1, x_2, \dots, x_n) = \frac{f(x_1, x_2, \dots, x_n | A) P(A)}{f(x_1, x_2, \dots, x_n)}$$
+
+Because the observations are independent, we can simplify the likelihood into a product:
+
+$$P(A | \mathbf{x}) = \frac{\left[ \prod_{i=1}^{n} f_X(x_i | A) \right] P(A)}{f(\mathbf{x})}$$
+
+#### Example: Confirming the Overheat
+
+Let's return to our Overheating Machine example.
+
+* **Prior:** $P(A) = 0.10$ (Overheating), $P(A^c) = 0.90$ (Normal).
+* **Normal State ($A^c$):** $X \sim N(70, 10^2)$.
+* **Overheating State ($A$):** $X \sim N(100, 10^2)$.
+
+**The New Data:** Instead of an interval, a digital logger gives us **two precise readings**: $x_1 = 92$ and $x_2 = 98$.
+
+##### Step 1: Calculate Likelihoods for State $A$ (Overheating)
+We use the PDF formula for $N(100, 10^2)$:
+
+* $f(92 | A) = \frac{1}{10\sqrt{2\pi}} e^{-\frac{(92-100)^2}{200}} \approx 0.0287$
+* $f(98 | A) = \frac{1}{10\sqrt{2\pi}} e^{-\frac{(98-100)^2}{200}} \approx 0.0391$
+* **Joint Likelihood $(A)$:** $0.0287 \times 0.0391 = 0.001122$
+
+##### Step 2: Calculate Likelihoods for State $A^c$ (Normal)
+We use the PDF formula for $N(70, 10^2)$:
+
+* $f(92 | A^c) = \frac{1}{10\sqrt{2\pi}} e^{-\frac{(92-70)^2}{200}} \approx 0.0035$
+* $f(98 | A^c) = \frac{1}{10\sqrt{2\pi}} e^{-\frac{(98-70)^2}{200}} \approx 0.0008$
+* **Joint Likelihood $(A^c)$:** $0.0035 \times 0.0008 = 0.0000028$
+
+##### Step 3: Apply Bayes' Theorem
+First, find the total evidence (denominator):
+$$f(\mathbf{x}) = (0.001122 \times 0.10) + (0.0000028 \times 0.90)$$
+$$f(\mathbf{x}) = 0.0001122 + 0.00000252 = 0.00011472$$
+
+Now, find the Posterior $P(A | \mathbf{x})$:
+$$P(A | \mathbf{x}) = \frac{0.0001122}{0.00011472} \approx \mathbf{0.978}$$
+

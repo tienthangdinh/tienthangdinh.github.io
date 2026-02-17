@@ -46,5 +46,26 @@
   },
   "posts/cg1-opengl/index.qmd": {
     "index.html": "c42bcfa3"
+  },
+  "posts/cg2-modelling/index.qmd": {
+    "index.html": "ca3f9eca"
+  },
+  "posts/ml4r-learning-from-demonstration/index.qmd": {
+    "index.html": "328627d7"
+  },
+  "posts/ml4r-control/index.qmd": {
+    "index.html": "c1e1e00b"
+  },
+  "posts/ml4r-reinforcement-learning/index.qmd": {
+    "index.html": "18bdef00"
+  },
+  "posts/ml4r-bayesian-optimization/index.qmd": {
+    "index.html": "9d14e8c0"
+  },
+  "posts/pet-randomvariables/index.qmd": {
+    "index.html": "3f9cd718"
+  },
+  "posts/ml4r-autoencoder-dreamer/index.qmd": {
+    "index.html": "4e7ea972"
   }
 }
