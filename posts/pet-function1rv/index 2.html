@@ -6,8 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="dcterms.date" content="2026-02-18">
 
-<title>໒(⊙ᴗ⊙)७✎▤ – silent brachistochrone</title>
+<title>Functions of a Random Variable – silent brachistochrone</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,25 +24,23 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -69,35 +68,6 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
-
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -129,7 +99,7 @@ window.Quarto = {
 };
 </script>
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../../styles.css">
 </head>
 
 <body class="nav-fixed quarto-light">
@@ -139,7 +109,7 @@ window.Quarto = {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">silent brachistochrone</span>
     </a>
   </div>
@@ -150,7 +120,7 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./about.html"> 
+    <a class="nav-link" href="../../about.html"> 
 <span class="menu-text">Đinh Tiến Thắng</span></a>
   </li>  
 </ul>
@@ -163,238 +133,110 @@ window.Quarto = {
 <!-- content -->
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page">
-      <h1 class="title">໒(⊙ᴗ⊙)७✎▤</h1>
-                      </div>
+    <div class="quarto-title column-body">
+      <h1 class="title">Functions of a Random Variable</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">Statistics</div>
+                <div class="quarto-category">Probability</div>
+              </div>
+                  </div>
   </div>
     
   
-  <div class="quarto-title-meta column-page">
+  <div class="quarto-title-meta">
 
       
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">February 18, 2026</p>
+      </div>
+    </div>
     
       
     </div>
     
   
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#determining-the-distribution-of-y-basically-just-inverse-transform" id="toc-determining-the-distribution-of-y-basically-just-inverse-transform" class="nav-link active" data-scroll-target="#determining-the-distribution-of-y-basically-just-inverse-transform">Determining the Distribution of <span class="math inline">\(Y\)</span> (basically just Inverse Transform)</a>
+  <ul class="collapse">
+  <li><a href="#but-how-to-find-this-distribution-of-y" id="toc-but-how-to-find-this-distribution-of-y" class="nav-link" data-scroll-target="#but-how-to-find-this-distribution-of-y">But how to find this distribution of <span class="math inline">\(Y\)</span>?</a>
+  <ul class="collapse">
+  <li><a href="#example-1-square-transformation-y-x2" id="toc-example-1-square-transformation-y-x2" class="nav-link" data-scroll-target="#example-1-square-transformation-y-x2">Example 1: Square Transformation (<span class="math inline">\(Y = X^2\)</span>)</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
-<main class="content quarto-banner-title-block column-page" id="quarto-document-content">
+<main class="content quarto-banner-title-block" id="quarto-document-content">
 
 
 
 
 
+<section id="determining-the-distribution-of-y-basically-just-inverse-transform" class="level1">
+<h1>Determining the Distribution of <span class="math inline">\(Y\)</span> (basically just Inverse Transform)</h1>
+<p>When we have a random variable <span class="math inline">\(X\)</span> and a function <span class="math inline">\(g(x)\)</span>, Y is also a random variable:</p>
+<p><span class="math display">\[Y = g(X)\]</span></p>
+<p>The probability of <span class="math inline">\(Y\)</span> is equal to the probability of the set of all <span class="math inline">\(X\)</span> values that map into <span class="math inline">\(B\)</span>:</p>
+<p><span class="math display">\[P(Y \in B) = P(X \in g^{-1}(B))\]</span></p>
+<section id="but-how-to-find-this-distribution-of-y" class="level2">
+<h2 class="anchored" data-anchor-id="but-how-to-find-this-distribution-of-y">But how to find this distribution of <span class="math inline">\(Y\)</span>?</h2>
+<p>To find the distribution of <span class="math inline">\(Y\)</span>, we <strong>HAVE TO START</strong> with the <strong>CDF - aka the Probability</strong> and then differentiate to find the <strong>PDF</strong>.</p>
+<ol start="0" type="1">
+<li><p><strong>Find the Inverse Transform:</strong> <span class="math display">\[Y = g(X) \iff X = g^{-1}(Y)\]</span></p></li>
+<li><p><strong>The CDF of <span class="math inline">\(Y\)</span> (important inverse transform):</strong> <span class="math display">\[F_Y(y) = P(Y \le y) = P(g(X) \le y) = P(X \in \{x \mid g(x) \le y\}) = P(X \in g^{-1}(y))\]</span></p></li>
+<li><p><strong>The PDF of <span class="math inline">\(Y\)</span>:</strong> <span class="math display">\[f_Y(y) = \frac{d}{dy}F_Y(y)\]</span></p></li>
+</ol>
+<section id="example-1-square-transformation-y-x2" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-square-transformation-y-x2">Example 1: Square Transformation (<span class="math inline">\(Y = X^2\)</span>)</h3>
+<section id="find-the-inverse-transform" class="level4">
+<h4 class="anchored" data-anchor-id="find-the-inverse-transform">0. Find the Inverse Transform:</h4>
+<p><span class="math display">\[Y = X^2 \iff X = \pm \sqrt{y}\]</span></p>
+</section>
+<section id="finding-the-cdf" class="level4">
+<h4 class="anchored" data-anchor-id="finding-the-cdf">1. Finding the CDF</h4>
+<p><span class="math display">\[F_Y(y) = P(X^2 \le y) = P(-\sqrt{y} \le X \le \sqrt{y}) = F_X(\sqrt{y}) - F_X(-\sqrt{y})\]</span></p>
+</section>
+<section id="finding-the-pdf" class="level4">
+<h4 class="anchored" data-anchor-id="finding-the-pdf">2. Finding the PDF</h4>
+<p>Derivative with respect to <span class="math inline">\(y\)</span> using the Chain Rule:</p>
+<p><span class="math display">\[f_Y(y) = \frac{d}{dy} [F_X(\sqrt{y}) - F_X(-\sqrt{y})]\]</span> <span class="math display">\[f_Y(y) = f_X(\sqrt{y}) \cdot \frac{1}{2\sqrt{y}} + f_X(-\sqrt{y}) \cdot \frac{1}{2\sqrt{y}}\]</span> <span class="math display">\[f_Y(y) = \frac{1}{2\sqrt{y}} [f_X(\sqrt{y}) + f_X(-\sqrt{y})], \quad y &gt; 0\]</span></p>
+</section>
+<section id="apply-number" class="level4">
+<h4 class="anchored" data-anchor-id="apply-number">3. Apply Number</h4>
+<p>If <span class="math inline">\(X\)</span> is normal distributed <span class="math inline">\(X \sim N(0,1)\)</span>, its density is <span class="math inline">\(f_X(x) = \frac{1}{\sqrt{2\pi}} e^{-x^2/2}\)</span>. Because it is symmetric, <span class="math inline">\(f_X(\sqrt{y}) = f_X(-\sqrt{y})\)</span>. We apply numbers on the above formula. <span class="math display">\[f_Y(y) = \frac{1}{2\sqrt{y}} \left[ 2 \cdot \frac{1}{\sqrt{2\pi}} e^{-(\sqrt{y})^2/2} \right] = \frac{1}{\sqrt{2\pi y}} e^{-y/2}\]</span> <em>This is the <strong>Chi-square distribution</strong> with 1 degree of freedom.</em></p>
+<p>If <span class="math inline">\(X \sim U(-1, 1)\)</span> uniformly distributed. <span class="math inline">\(f_X(x) = \frac{1}{2}\)</span> for <span class="math inline">\(x \in [-1, 1]\)</span>. So <span class="math inline">\(f_X(\sqrt{y}) = 1/2 = f_X(-\sqrt{y})\)</span>. Plugging these in: <span class="math display">\[f_Y(y) = \frac{1}{2\sqrt{y}} \left[ \frac{1}{2} + \frac{1}{2} \right] = \frac{1}{2\sqrt{y}}\]</span></p>
+<p>[Image of the PDF of Y = X^2 where X is Uniform between -1 and 1 showing the spike at 0]</p>
+</section>
+<section id="why-the-spike-intuition" class="level4">
+<h4 class="anchored" data-anchor-id="why-the-spike-intuition">3. Why the “Spike”? (Intuition)</h4>
+<p>Look at how <span class="math inline">\(X\)</span> values map to <span class="math inline">\(Y\)</span> values: * If <span class="math inline">\(X\)</span> is between <span class="math inline">\(0\)</span> and <span class="math inline">\(0.1\)</span>, its “width” is <span class="math inline">\(0.1\)</span>. * The resulting <span class="math inline">\(Y\)</span> values (<span class="math inline">\(X^2\)</span>) are between <span class="math inline">\(0\)</span> and <span class="math inline">\(0.01\)</span>. Its “width” is now only <span class="math inline">\(0.01\)</span>.</p>
+<p><strong>The math of the “Clump”:</strong> We have “squeezed” a segment of width <strong>0.1</strong> into a tiny space of width <strong>0.01</strong>. Because probability must be conserved (the area under the curve must stay the same), the density (height) must shoot up to compensate for the lost width.</p>
+<p>As <span class="math inline">\(y\)</span> approaches <span class="math inline">\(0\)</span>, the term <span class="math inline">\(\frac{1}{2\sqrt{y}}\)</span> approaches infinity. This is a “vertical asymptote” representing the fact that <span class="math inline">\(x^2\)</span> stays near zero for a relatively long time compared to when <span class="math inline">\(x\)</span> is near 1.</p>
+<p>[Image comparing the uniform PDF of X and the transformed PDF of Y = X^2 to illustrate probability conservation]</p>
+</section>
+<section id="verification-integration" class="level4">
+<h4 class="anchored" data-anchor-id="verification-integration">4. Verification (Integration)</h4>
+<p>For <span class="math inline">\(f_Y(y)\)</span> to be a valid PDF, its total area must be 1: <span class="math display">\[\int_{0}^{1} \frac{1}{2\sqrt{y}} dy = \left[ \sqrt{y} \right]_0^1 = 1 - 0 = 1\]</span> The math holds up!</p>
+<p><em>The density <span class="math inline">\(f_Y(y)\)</span> is very high near <span class="math inline">\(0\)</span>. Because when you square numbers near zero (like <span class="math inline">\(0.1\)</span> or <span class="math inline">\(-0.1\)</span>), they “clump” together into even smaller numbers (<span class="math inline">\(0.01\)</span>). This “clumping” effect creates the high density (the spike) near zero.</em></p>
 
 
 
+</section>
+</section>
+</section>
+</section>
 
-<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="U3RhdGlzdGljcyUyQ1Byb2JhYmlsaXR5" data-listing-date-sort="1771369200000" data-listing-file-modified-sort="1771607089206" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1428">
-<div class="thumbnail"><a href="./posts/pet-function1rv/index.html" class="no-external">
-
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/pet-function1rv/index.html" class="no-external">Functions of a Random Variable</a>
-</h3>
-<div class="delink listing-description"><a href="./posts/pet-function1rv/index.html" class="no-external">
-When we have a random variable <span class="math inline">\(X\)</span> and a function <span class="math inline">\(g(x)\)</span>, Y is also a random variable:
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/pet-function1rv/index.html" class="no-external">
-<div class="listing-date">
-Feb 18, 2026
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-categories="U3RhdGlzdGljcyUyQ1Byb2JhYmlsaXR5" data-listing-date-sort="1770937200000" data-listing-file-modified-sort="1771363649805" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="22" data-listing-word-count-sort="4206">
-<div class="thumbnail"><a href="./posts/pet-randomvariables/index.html" class="no-external">
-
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/pet-randomvariables/index.html" class="no-external">Random Variables</a>
-</h3>
-<div class="delink listing-description"><a href="./posts/pet-randomvariables/index.html" class="no-external">
-Despite the name, a <strong>Random Variable</strong> is not actually a variable in the algebraic sense—it is a <strong>FUNCTIONNNN</strong>, or a <strong>Scoreboard</strong>.
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/pet-randomvariables/index.html" class="no-external">
-<div class="listing-date">
-Feb 13, 2026
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="2" data-categories="Q29tcHV0ZXIlMjBHcmFwaGljcyUyQ0FkdmFuY2VkJTIwTW9kZWxsaW5n" data-listing-date-sort="1754604000000" data-listing-file-modified-sort="1754955434449" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="26" data-listing-word-count-sort="5030">
-<div class="thumbnail"><a href="./posts/cg2-modelling/index.html" class="no-external">
-
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/cg2-modelling/index.html" class="no-external">Advanced Modelling</a>
-</h3>
-<div class="delink listing-description"><a href="./posts/cg2-modelling/index.html" class="no-external">
-<strong>Given an image of a space warped implicit surface, argue whether it was generated via a Tapper, Twist or Bend transformation!</strong> we know
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/cg2-modelling/index.html" class="no-external">
-<div class="listing-date">
-Aug 8, 2025
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="3" data-categories="Q29tcHV0ZXIlMjBHcmFwaGljcyUyQ1N1cmZhY2UlMjBBbmFseXNpcw==" data-listing-date-sort="1754258400000" data-listing-file-modified-sort="1754605299815" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="25" data-listing-word-count-sort="4968">
-<div class="thumbnail"><a href="./posts/cg1-meshprocessing/index.html" class="no-external">
-
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/cg1-meshprocessing/index.html" class="no-external">Surface Analysis</a>
-</h3>
-<div class="delink listing-description"><a href="./posts/cg1-meshprocessing/index.html" class="no-external">
-There are three main ways to represent an analytic surface:
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/cg1-meshprocessing/index.html" class="no-external">
-<div class="listing-date">
-Aug 4, 2025
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="4" data-categories="Q29tcHV0ZXIlMjBHcmFwaGljcyUyQ1BvbHlnb25hbCUyME1lc2g=" data-listing-date-sort="1753826400000" data-listing-file-modified-sort="1754605299815" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="11" data-listing-word-count-sort="2149">
-<div class="thumbnail"><a href="./posts/cg1-polygonalmesh/index.html" class="no-external">
-
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/cg1-polygonalmesh/index.html" class="no-external">Polygonal Mesh</a>
-</h3>
-<div class="delink listing-description"><a href="./posts/cg1-polygonalmesh/index.html" class="no-external">
-Goal idea: resembling 2D plane everywhere on the surface:
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/cg1-polygonalmesh/index.html" class="no-external">
-<div class="listing-date">
-Jul 30, 2025
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="5" data-categories="TWFjaGluZSUyMExlYXJuaW5nJTJDSW1hZ2UlMjBQcm9jZXNzaW5nJTJDTW9kZWwtYmFzZWQlMjBMZWFybmluZyUyQ1JlaW5mb3JjZW1lbnQlMjBMZWFybmluZw==" data-listing-date-sort="1752271200000" data-listing-file-modified-sort="1752606034251" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="21" data-listing-word-count-sort="4072">
-<div class="thumbnail"><a href="./posts/ml4r-autoencoder-dreamer/index.html" class="no-external">
-
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/ml4r-autoencoder-dreamer/index.html" class="no-external">From Autoencoder to Dreamer</a>
-</h3>
-<div class="delink listing-description"><a href="./posts/ml4r-autoencoder-dreamer/index.html" class="no-external">
-<strong>Key Idea:</strong> Instead of mapping an input to a single point in the latent space, VAE maps it to parameters of a probability distribution (typically a Gaussian distribution) in…
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/ml4r-autoencoder-dreamer/index.html" class="no-external">
-<div class="listing-date">
-Jul 12, 2025
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="6" data-categories="Q29udHJvbCUyMFRoZW9yeSUyQ09wdGltaXphdGlvbiUyQ0R5bmFtaWNzJTJDTW9kZWwtYmFzZWQlMjBMZWFybmluZyUyQ1JlaW5mb3JjZW1lbnQlMjBMZWFybmluZw==" data-listing-date-sort="1751839200000" data-listing-file-modified-sort="1752315507877" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="36" data-listing-word-count-sort="7058">
-<div class="thumbnail"><a href="./posts/ml4r-control/index.html" class="no-external">
-
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/ml4r-control/index.html" class="no-external">From Control to Model-based Learning</a>
-</h3>
-<div class="delink listing-description"><a href="./posts/ml4r-control/index.html" class="no-external">
-A PID controller is a feedback control loop that continuously calculates an “error” value <span class="math inline">\(e(t)\)</span> as the difference between a desired setpoint <span class="math inline">\(r(t)\)</span> and a measured…<span class="math inline"></span>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/ml4r-control/index.html" class="no-external">
-<div class="listing-date">
-Jul 7, 2025
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="7" data-categories="TWFjaGluZSUyMExlYXJuaW5nJTJDT3B0aW1pemF0aW9uJTJDQmF5ZXNpYW4lMjBTdGF0aXN0aWNz" data-listing-date-sort="1751666400000" data-listing-file-modified-sort="1753129007211" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="19" data-listing-word-count-sort="3729">
-<div class="thumbnail"><a href="./posts/ml4r-bayesian-optimization/index.html" class="no-external">
-
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/ml4r-bayesian-optimization/index.html" class="no-external">Gaussian Process &amp; Bayesian Optimization</a>
-</h3>
-<div class="delink listing-description"><a href="./posts/ml4r-bayesian-optimization/index.html" class="no-external">
-<span class="math inline">\(P(f | \mathcal{D}) \propto P(\mathcal{D} | f) P(f)\)</span> is a real multiplication of probability densities. However, when dealing with functions and multivariate Gaussians…
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/ml4r-bayesian-optimization/index.html" class="no-external">
-<div class="listing-date">
-Jul 5, 2025
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="8" data-categories="TWFjaGluZSUyMExlYXJuaW5nJTJDUmVpbmZvcmNlbWVudCUyMExlYXJuaW5nJTJDTW9kZWwtZnJlZSUyMExlYXJuaW5n" data-listing-date-sort="1750802400000" data-listing-file-modified-sort="1752606459880" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="31" data-listing-word-count-sort="6004">
-<div class="thumbnail"><a href="./posts/ml4r-reinforcement-learning/index.html" class="no-external">
-
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/ml4r-reinforcement-learning/index.html" class="no-external">Model-free Reinforcement Learning</a>
-</h3>
-<div class="delink listing-description"><a href="./posts/ml4r-reinforcement-learning/index.html" class="no-external">
-An agent’s interaction with the environment is usually modeled as a <strong>Markov Decision Process (MDP)</strong>:
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/ml4r-reinforcement-learning/index.html" class="no-external">
-<div class="listing-date">
-Jun 25, 2025
-</div>
-</a>
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">No matching items</div>
-</div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
@@ -467,7 +309,7 @@ Jun 25, 2025
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+        var filterRegex = new RegExp('/' + window.location.host + '/');
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
