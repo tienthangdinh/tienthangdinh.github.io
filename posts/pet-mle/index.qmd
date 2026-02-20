@@ -1,0 +1,168 @@
+---
+title: "Maximum Likelihood Estimation"
+date: "2026-02-20"
+categories: [Statistics, Probability, Estimation]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+
+# The Maximum Likelihood Estimator (MLE)
+Up until now, we have assumed that we know the parameters of our distributions, like a Normal distribution with $\mu=20$ and $\sigma=5$. 
+
+But in the real world, nature doesn't tell us $\mu$ and $\sigma$, or even $\theta$ as in Machine Learning. Instead we have measured a handful of data points $\{x_1, x_2, \dots, x_n\}$, and it is our job to work backward to find the parameters $\mu$ and $\sigma$ that produced them. 
+
+>find the "best" $\{\mu, \sigma\}$ that makes the data $\{x_1, x_2, \dots, x_n\}$ the most probable
+
+The Likelihood Function is the joint probability of seeing this specific data for a given $\theta$:
+$$L(\theta) = f(x_1, x_2, \dots, x_n | \theta)$$
+Because the observations are independent, the joint density is just the product of the individual densities:
+$$L(\theta) = \prod_{i=1}^{n} f(x_i | \theta)$$
+Since the natural logarithm ($\ln$) is a strictly increasing function, the $\theta$ that maximizes $L(\theta)$ will also maximize $\ln L(\theta)$, so we define the log-likelihood function as:
+$$\ell(\theta) = \ln L(\theta) = \sum_{i=1}^{n} \ln f(x_i | \theta)$$
+And our goal is to find the $\theta$ that maximizes this log-likelihood function:
+$$\hat{\theta} = \arg\max_{\theta} \ell(\theta)$$
+
+And to find the $\hat{\theta}$, we set the derivative of the log-likelihood function to zero:
+$$\frac{\partial \ell(\theta)}{\partial \theta} = \frac{\partial \log f_X(x_1, x_2, \dots, x_n | \theta)}{\partial \theta} \bigg|_{\theta = \hat{\theta}_{ML}} = 0$$
+
+This is basically how Machine Learning find $\theta$.
+
+>The beautiful thing is that, we assume the data is normally distributed around $\theta$
+
+Example:
+If you have three independent measurements ($10.1, 9.9, 10.3$) from a normal distribution with an unknown mean $\theta$:
+
+* The likelihood function is the product of three bell curves.
+* The log-likelihood turns that product into a sum of squares.
+* Taking the derivative and setting it to zero results in the sample mean: $\hat{\theta}_{ML} = \frac{10.1 + 9.9 + 10.3}{3} = 10.1$.
+
+# Linear Estimator
+
+## Example 1: Normal Distribution
+### 1. Define the Joint PDF (Likelihood Function)
+We start with $n$ independent observations $X_i = \theta + w_i$, where the noise $w_i$ follows a Normal distribution $N(0, \sigma^2)$. This means each observation $X_i$ is an independent Normal random variable $X_i \sim N(\theta, \sigma^2)$.
+$$f_X(x_1, \dots, x_n; \theta) = \prod_{i=1}^{n} \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{(x_i - \theta)^2}{2\sigma^2}}$$
+
+### 2. Convert to Log-Likelihood
+$$L(\theta) = \log \left( \prod_{i=1}^{n} \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{(x_i - \theta)^2}{2\sigma^2}} \right)$$
+Using log properties ($\log(ab) = \log a + \log b$ and $\log(e^u) = u$):
+$$L(\theta) = \sum_{i=1}^{n} \left[ \log \left( \frac{1}{\sigma \sqrt{2\pi}} \right) - \frac{(x_i - \theta)^2}{2\sigma^2} \right]$$
+
+### 3. Take Derivative
+$$\frac{\partial L}{\partial \theta} = \frac{\partial}{\partial \theta} \sum_{i=1}^{n} \left[ \text{constant} - \frac{(x_i - \theta)^2}{2\sigma^2} \right]$$
+$$\frac{\partial L}{\partial \theta} = \sum_{i=1}^{n} \frac{2(x_i - \theta)}{2\sigma^2} = \frac{1}{\sigma^2} \sum_{i=1}^{n} (x_i - \theta)$$
+
+### 4. Set Derivative to Zero
+$$\frac{1}{\sigma^2} \sum_{i=1}^{n} (x_i - \hat{\theta}_{ML}) = 0$$
+$$\sum_{i=1}^{n} x_i - \sum_{i=1}^{n} \hat{\theta}_{ML} = 0$$
+$$\sum_{i=1}^{n} x_i - n\hat{\theta}_{ML} = 0$$
+$$\hat{\theta}_{ML} = \frac{1}{n} \sum_{i=1}^{n} x_i$$
+
+A Mean Estimator is best for Normal Distribution. But what if the distribution is not Normal? idk yet
+
+### Expectation Value
+$$E[\hat{\theta}_{ML}(x)] = \frac{1}{n} \sum_{i=1}^{n} E(X_i)$$
+$$E[\hat{\theta}_{ML}(x)] = \frac{1}{n} \sum_{i=1}^{n} \theta = \theta$$
+
+Conclusion: Because the average value of our estimator exactly equals the desired parameter, there is no bias. These types of "ideal" estimators are formally known as unbiased estimators.
+
+### Variance
+$$\text{Var}(\hat{\theta}_{ML}) = E[(\hat{\theta}_{ML} - \theta)^2]$$
+$$\text{Var}(\hat{\theta}_{ML}) = \frac{1}{n^2} E[(\sum_{i=1}^{n} (X_i - \theta))^2]$$
+$$\text{Var}(\hat{\theta}_{ML}) = \frac{1}{n^2} \sum_{i=1}^{n} E[(X_i - \theta)^2]$$
+$$\text{Var}(\hat{\theta}_{ML}) = \frac{1}{n^2} \sum_{i=1}^{n} \sigma^2$$
+$$\text{Var}(\hat{\theta}_{ML}) = \frac{1}{n^2} (n \sigma^2)$$
+$$\text{Var}(\hat{\theta}_{ML}) = \frac{\sigma^2}{n}$$
+
+
+Conclusion: the more measurements you take, the more "certain" your estimate becomes.
+
+
+
+## Example 2: Exponential distribution
+
+### 1. Define the Joint PDF (Likelihood Function)
+We start with $n$ independent observations $X_1, \dots, X_n$. We assume they follow an Exponential distribution with an unknown rate parameter $\theta$ (where $\theta > 0$). The individual PDF is $f(x; \theta) = \theta e^{-\theta x}$.
+$$f_X(x_1, \dots, x_n; \theta) = \prod_{i=1}^{n} \theta e^{-\theta x_i}$$
+
+### 2. Convert to Log-Likelihood
+$$L(\theta) = \log \left( \prod_{i=1}^{n} \theta e^{-\theta x_i} \right)$$
+Because $\log(a^n) = n \log a$ and $\log(e^u) = u$:
+$$L(\theta) = \sum_{i=1}^{n} [ \log \theta - \theta x_i ]$$
+$$L(\theta) = n \log \theta - \theta \sum_{i=1}^{n} x_i$$
+
+### 3. Take Derivative
+$$\frac{\partial L}{\partial \theta} = \frac{\partial}{\partial \theta} \left[ n \log \theta - \theta \sum_{i=1}^{n} x_i \right]$$
+$$\frac{\partial L}{\partial \theta} = \frac{n}{\theta} - \sum_{i=1}^{n} x_i$$
+
+4. Set Derivative to Zero
+$$\frac{n}{\hat{\theta}_{ML}} - \sum_{i=1}^{n} x_i = 0$$
+$$\frac{n}{\hat{\theta}_{ML}} = \sum_{i=1}^{n} x_i$$
+$$\hat{\theta}_{ML} = \frac{n}{\sum_{i=1}^{n} x_i} = \frac{1}{\bar{x}}$$
+
+Conclusion: For the Exponential distribution, the Maximum Likelihood Estimator for the rate $\theta$ is the inverse of the sample mean.
+
+Expectation Value and Variance in general also similar to normal distribution.
+
+
+## Example 3: Poisson Distribution
+1. Define the Joint PDF (Likelihood Function)
+We have $n$ independent observations $X_1, \dots, X_n$. We assume they follow a Poisson distribution with an unknown rate $\lambda$ (the average number of events). The individual probability mass function (PMF) is $P(X=x; \lambda) = \frac{\lambda^x e^{-\lambda}}{x!}$.
+$$f_X(x_1, \dots, x_n; \lambda) = \prod_{i=1}^{n} \frac{\lambda^{x_i} e^{-\lambda}}{x_i!}$$
+
+2. Convert to Log-Likelihood
+$$L(\lambda) = \log \left( \prod_{i=1}^{n} \frac{\lambda^{x_i} e^{-\lambda}}{x_i!} \right)$$
+$$L(\lambda) = \sum_{i=1}^{n} \left[ \log(\lambda^{x_i}) + \log(e^{-\lambda}) - \log(x_i!) \right]$$
+$$L(\lambda) = \sum_{i=1}^{n} [ x_i \log \lambda - \lambda - \log(x_i!) ]$$
+$$L(\lambda) = (\log \lambda) \sum_{i=1}^{n} x_i - n\lambda - \sum_{i=1}^{n} \log(x_i!)$$
+
+3. Take Derivative
+Note that the last term $\sum \log(x_i!)$ does not contain $\lambda$, so it becomes zero (constant):
+$$\frac{\partial L}{\partial \lambda} = \frac{1}{\lambda} \sum_{i=1}^{n} x_i - n$$
+
+4. Set Derivative to Zero
+$$\frac{1}{\hat{\lambda}_{ML}} \sum_{i=1}^{n} x_i - n = 0$$
+$$\frac{1}{\hat{\lambda}_{ML}} \sum_{i=1}^{n} x_i = n$$
+$$\hat{\lambda}_{ML} = \frac{1}{n} \sum_{i=1}^{n} x_i = \bar{x}$$
+
+Conclusion: For the Poisson distribution, the Maximum Likelihood Estimator for the rate $\lambda$ is simply the sample mean.
+
+Expectation Value:
+$$E[\hat{\lambda}_{ML}] = E\left[ \frac{1}{n} \sum_{i=1}^{n} X_i \right] = \frac{1}{n} \sum_{i=1}^{n} E[X_i] = \lambda$$
+
+Variance:
+$$\text{Var}(\hat{\lambda}_{ML}) = \text{Var}\left( \frac{1}{n} \sum_{i=1}^{n} X_i \right) = \frac{1}{n^2} \sum_{i=1}^{n} \text{Var}(X_i)$$
+For Poisson, the variance is also $\lambda$.
+$$\text{Var}(\hat{\lambda}_{ML}) = \frac{1}{n^2} (n\lambda) = \frac{\lambda}{n}$$
+
+
+
+
+## Example 4: Binomial Distribution
+1. Define the Joint PDF (Likelihood Function)
+Suppose we conduct $n$ independent experiments. In each experiment, we perform $m$ trials and count the number of successes $X_i$. We assume $X_i \sim \text{Binomial}(m, p)$, where $m$ is known and $p$ is the unknown parameter we want to estimate.The individual probability mass function (PMF) is $P(X=x; p) = \binom{m}{x} p^x (1-p)^{m-x}$.
+$$f_X(x_1, \dots, x_n; p) = \prod_{i=1}^{n} \binom{m}{x_i} p^{x_i} (1-p)^{m-x_i}$$
+2. Convert to Log-Likelihood
+$$L(p) = \log \left( \prod_{i=1}^{n} \binom{m}{x_i} p^{x_i} (1-p)^{m-x_i} \right)$$
+$$L(p) = \sum_{i=1}^{n} \left[ \log \binom{m}{x_i} + x_i \log p + (m-x_i) \log(1-p) \right]$$
+$$L(p) = \sum_{i=1}^{n} \log \binom{m}{x_i} + (\log p) \sum_{i=1}^{n} x_i + \log(1-p) \sum_{i=1}^{n} (m-x_i)$$
+
+Then set derivative to zero and so on... you know what to do
+
+
+# Non-Linear Estimator
+### The Mathematical Hurdle
+Consider a scenario where the mean of our Normal distribution isn't just $\theta$, but a non-linear function like $h(\theta) = \sqrt{\theta^2 + 1}$.
+The log-likelihood derivative would look like this:
+$$\frac{\partial \ell}{\partial \theta} = \sum_{i=1}^{n} \frac{(x_i - h(\theta))}{\sigma^2} \cdot \frac{\partial h(\theta)}{\partial \theta} = 0$$
+If $h(\theta)$ is non-linear, you usually cannot isolate $\theta$ on one side of the equation.
+
+### Numerical Optimization
+Since we cannot find a "closed-form" solution (like $\bar{x}$), we need to use numerical optimization techniques to find the value of $\theta$ that maximizes the likelihood function.
+
+* Gradient Descent: Moving "uphill" on the likelihood curve until you reach the peak.
+* Newton-Raphson Method: Using the second derivative (curvature) to jump toward the maximum.
+* Expectation-Maximization (EM): A specialized algorithm used when some data is missing or hidden.

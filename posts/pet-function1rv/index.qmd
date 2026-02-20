@@ -1,0 +1,226 @@
+---
+title: "Functions of a Random Variable"
+date: "2026-02-18"
+categories: [Statistics, Probability]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+
+# Determining the Distribution of $Y$ ($g(x)$ is Monotonic) (basically just Inverse Transform)
+
+When we have a random variable $X$ and a function $g(x)$, Y is also a random variable:
+
+$$Y = g(X)$$
+
+The probability of $Y$ is equal to the probability of the set of all $X$ values that map into $B$:
+
+$$P(Y \in B) = P(X \in g^{-1}(B))$$
+
+## But how to find this distribution of $Y$?
+
+To find the distribution of $Y$, we **HAVE TO START** with the **CDF - aka the Probability** and then differentiate to find the **PDF**.
+
+0. **Find the Inverse Transform:**
+   $$Y = g(X) \iff X = g^{-1}(Y)$$
+
+1. **The CDF of $Y$ (important inverse transform):**
+   $$F_Y(y) = F_X(g^{-1}(y)) = F_{X2}(g^{-1}(y)) - F_{X1}(g^{-1}(y))$$
+
+2. **The PDF of $Y$:**
+   $$f_Y(y) = \frac{d}{dy}F_Y(y) = \frac{d}{dy}F_X(g^{-1}(y)) = \frac{d}{dy}[F_{X2}(g^{-1}(y)) - F_{X1}(g^{-1}(y))]$$
+
+### Example 1: Square Transformation ($Y = X^2$)    
+
+#### 0. Find the Inverse Transform:
+$$Y = X^2 \iff X = \pm \sqrt{y}$$
+
+#### 1. Finding the CDF
+$$F_Y(y) = P(X^2 \le y) = P(-\sqrt{y} \le X \le \sqrt{y}) = F_X(\sqrt{y}) - F_X(-\sqrt{y})$$
+
+#### 2. Finding the PDF
+Derivative with respect to $y$ using the Chain Rule:
+
+$$f_Y(y) = \frac{d}{dy} [F_X(\sqrt{y}) - F_X(-\sqrt{y})]$$
+$$f_Y(y) = f_X(\sqrt{y}) \cdot \frac{1}{2\sqrt{y}} + f_X(-\sqrt{y}) \cdot \frac{1}{2\sqrt{y}}$$
+$$f_Y(y) = \frac{1}{2\sqrt{y}} [f_X(\sqrt{y}) + f_X(-\sqrt{y})], \quad y > 0$$
+
+
+
+#### 3. Apply Number
+If $X$ is normal distributed $X \sim N(0,1)$, its density is $f_X(x) = \frac{1}{\sqrt{2\pi}} e^{-x^2/2}$. Because it is symmetric, $f_X(\sqrt{y}) = f_X(-\sqrt{y})$. We apply numbers on the above formula.
+$$f_Y(y) = \frac{1}{2\sqrt{y}} \left[ 2 \cdot \frac{1}{\sqrt{2\pi}} e^{-(\sqrt{y})^2/2} \right] = \frac{1}{\sqrt{2\pi y}} e^{-y/2}$$
+*This is the **Chi-square distribution** with 1 degree of freedom.*
+
+If $X \sim U(-1, 1)$ uniformly distributed. $f_X(x) = \frac{1}{2}$ for $x \in [-1, 1]$. So $f_X(\sqrt{y}) = 1/2 = f_X(-\sqrt{y})$. Plugging these in:
+$$f_Y(y) = \frac{1}{2\sqrt{y}} \left[ \frac{1}{2} + \frac{1}{2} \right] = \frac{1}{2\sqrt{y}}$$
+*The density $f_Y(y)$ is very high near $0$. Because when you square numbers near zero (like $0.1$ or $-0.1$), they "clump" together into even smaller numbers ($0.01$). This "clumping" effect creates the high density (the spike) near zero.*
+
+### Example 2: Heterogeneous function
+
+What if at different range the function looks different?
+$$Y = g(X) = \begin{cases} X - c, & X > c \\ 0, & -c < X \le c \\ X + c, & X \le -c \end{cases}$$
+
+Just do exactly the same thing above at each those range
+
+
+#### 1. $y = 0$
+$$P(Y = 0) = P(-c < X \le c) = F_X(c) - F_X(-c)$$
+
+#### 2. $y > 0$
+$$F_Y(y) = P(Y \le y) = P(X - c \le y) = P(X \le y + c)$$
+$$F_Y(y) = F_X(y + c), \quad y > 0$$
+
+#### 3. $y < 0$
+$$F_Y(y) = P(Y \le y) = P(X + c \le y) = P(X \le y - c)$$
+$$F_Y(y) = F_X(y - c), \quad y < 0$$
+
+
+#### 4. Determining the PDF
+To find the PDF, we differentiate the CDF
+$$F_Y(y) = F_X(y + c)$$
+$$f_Y(y) = \frac{d}{dy}[F_X(y + c)]$$
+$$f_Y(y) = f_X(y + c) \cdot \frac{d}{dy}(y + c)$$
+Since $\frac{d}{dy}(y + c) = 1$, we are left with:
+$$f_Y(y) = f_X(y + c)$$
+Therefore:
+$$f_Y(y) = \begin{cases} f_X(y + c), & y > 0 \\ [F_X(c) - F_X(-c)]\delta(y), & y = 0 \\ f_X(y - c), & y < 0 \end{cases}$$
+
+# How about Non-monotonic functions $g(x)$?
+For a non-monotonic function, we cannot do the inverse transform. Therefore, we sum the densities at all roots $x_i$ where $g(x_i) = y$:
+$$f_Y(y) = \sum_{i} \frac{f_X(x_i)}{|g'(x_i)|}$$
+
+Let's derive it:
+$$P\{y < Y(\xi) \le y + \Delta y\} = F_Y(y) = \int_{y}^{y+\Delta y} f_Y(y) \cdot \Delta y$$
+Where:
+$$f_Y(y) \Delta y = \sum_{i} f_X(x_i) \Delta x_i$$
+
+$$f_Y(y) = \sum_{i} f_X(x_i) \frac{|\Delta x_i|}{\Delta y} = \sum_{i} \frac{1}{|\Delta y / \Delta x_i|} f_X(x_i)$$
+$$f_Y(y) = \sum_{i} \frac{1}{|g'(x_i)|} f_X(x_i)$$
+
+After that we integrate back to get the CDF:
+$$F_Y(y) = \int_{y}^{y+\Delta y} f_Y(y) \cdot \Delta y$$
+
+### Example 1: $Y = \sin(X)$
+Approach:
+$$f_Y(y) = \sum_{i} \frac{f_X(x_i)}{|g'(x_i)|}$$
+For $Y = \sin(X)$, since $g'(x) = \cos(x)$ and $\cos(x) = \sqrt{1 - \sin^2(x)} = \sqrt{1 - y^2}$, the formula becomes:
+$$f_Y(y) = \sum_{i} \frac{f_X(x_i)}{\sqrt{1 - y^2}}, \quad -1 < y < 1$$
+
+If $X$ is Uniformly distributed between $-\pi$ and $\pi$, i.e., $X \sim U(-\pi, \pi)$:$f_X(x) = \frac{1}{2\pi}$ for $-\pi < x < \pi$.
+
+For any $y \in (-1, 1)$, there are two values of $x$ in one period that satisfy $\sin(x) = y$.Applying the summation formula:
+$$f_Y(y) = \frac{1}{2\pi \sqrt{1 - y^2}} + \frac{1}{2\pi \sqrt{1 - y^2}} = \frac{1}{\pi \sqrt{1 - y^2}}, \quad -1 < y < 1$$
+
+### Example 2: $Y = X^2$
+Approach:
+$$f_Y(y) = \sum_{i} \frac{f_X(x_i)}{|g'(x_i)|}$$ 
+
+
+
+Calculate the derivative:
+$$g(x) = x^2 \implies |g'(x)| = 2x$$
+
+Identify the Roots - yeah, still have to find inverse transform, we solve $x^2 = y$ to find the roots:
+
+* $x_1 = \sqrt{y} \implies |g'(x_1)| = |2\sqrt{y}| = 2\sqrt{y}$
+* $x_2 = -\sqrt{y} \implies |g'(x_2)| = |-2\sqrt{y}| = 2\sqrt{y}$
+
+Apply the Formula:
+$$f_Y(y) = \frac{f_X(\sqrt{y})}{2\sqrt{y}} + \frac{f_X(-\sqrt{y})}{2\sqrt{y}}$$
+$$f_Y(y) = \frac{1}{2\sqrt{y}} \left[ f_X(\sqrt{y}) + f_X(-\sqrt{y}) \right], \quad y > 0$$
+
+If $X$ follows a standard normal distribution, $f_X(x) = \frac{1}{\sqrt{2\pi}} e^{-x^2/2}$.
+Since the normal distribution is symmetric ($f_X(x) = f_X(-x)$):
+$$f_Y(y) = \frac{1}{2\sqrt{y}} \left[ \frac{1}{\sqrt{2\pi}} e^{-y/2} + \frac{1}{\sqrt{2\pi}} e^{-y/2} \right] = \frac{1}{\sqrt{2\pi y}} e^{-y/2}, \quad y > 0$$
+
+
+### Example 3: $Y = \tan(X)$
+Always start with the derivative:
+$$g'(x) = \sec^2(x)$$
+Since $\sec^2(x) = 1 + \tan^2(x)$:
+$$|g'(x)| = 1 + \tan^2(x) = 1 + y^2$$
+Apply in the formula:
+$$f_Y(y) = \sum_{k} \frac{f_X(x_k)}{|g'(x_k)|} = \sum_{k} \frac{f_X(\arctan(y))}{1 + y^2}$$
+If $X$ is uniformly distributed over exactly one period of the tangent function:$f_X(x) = \frac{1}{\pi}$ for $-\pi/2 < x < \pi/2$. there is only one root ($k=0$) that falls inside the bounds where $f_X(x)$ is non-zero.
+$$f_Y(y) = \frac{1}{\pi} \cdot \frac{1}{1 + y^2}, \quad -\infty < y < \infty$$
+
+
+### Example 4: Discrete Poisson distribution $X \sim P(\lambda)$
+* Poisson distribution PMF: $P(X=k) = \frac{\lambda^k e^{-\lambda}}{k!}$
+* Original X values: $k = 0, 1, 2, \dots$
+* Transformation: $Y = X^2 + 1$
+* New Y values: Since $X$ takes values $0, 1, 2, \dots$, $Y$ must take the values $0^2+1, 1^2+1, 2^2+1, \dots$ which simplifies to $1, 2, 5, 10, \dots, k^2+1, \dots$.
+
+OK, To find the probability for a specific value of $Y$ (let's call it $j$), you have to "look back" to see which $X$ produced it. If $j = k^2 + 1$, then $k = \sqrt{j - 1}$.
+
+The PMF for $Y$ is then calculated by plugging that "looked back" value into the original Poisson formula:
+$$P(Y = j) = P(X = \sqrt{j - 1}) = e^{-\lambda} \frac{\lambda^{\sqrt{j - 1}}}{(\sqrt{j - 1})!}$$
+for $j = 1, 2, 5, \dots$
+
+
+# We all know what is mean of x, how about mean of $Y = g(X)$?
+$$\mu_Y = E(Y) = \int_{-\infty}^{+\infty} y f_Y(y) dy$$
+
+But you know what is a good news? We don't need to calculate $f_Y(y)$ at all!
+
+$$\mu_Y = E(Y) = \int_{-\infty}^{+\infty} g(x) f_X(x) dx$$
+
+This means you can find the average value of $Y$ by simply integrating the function $g(x)$ weighted by the original density of $X$.
+
+**Because** the probability of $Y$ falling in a small increment $\Delta y$ can be related back to the multiple regions of $X$ that map to that interval:
+$$P(y < Y \le y + \Delta y) = \sum_{i} P(x_i < X \le x_i + \Delta x_i)$$
+where $x_i$ represent the multiple solutions to the equation $y = g(x_i)$.
+
+### Example 1: $Y = X^2$ with $X \sim N(0, 1)$
+We want to find the mean of $Y = X^2$
+$$\mu_Y = E(X^2) = \int_{-\infty}^{+\infty} x^2 f_X(x) dx$$
+$$E(X^2) = \int_{-\infty}^{+\infty} x^2 \left( \frac{1}{\sqrt{2\pi}} e^{-x^2/2} \right) dx$$
+
+
+### Example 2: $Y = X^2$ with Poisson distribution $X \sim P(\lambda)$
+We want to find the mean of $Y = X^2$
+$$\mu_Y = E(X^2) = \sum_{k=0}^{\infty} k^2 P(X=k)$$
+$$E(X^2) = \sum_{k=0}^{\infty} k^2 \frac{\lambda^k e^{-\lambda}}{k!}$$
+
+### Example 3: $Y = X^2$ with Binomial distribution $X \sim B(n, p)$
+
+We want to find the mean of $Y = X^2$
+$$\mu_Y = E(X^2) = \sum_{k=0}^{n} k^2 P(X=k)$$
+$$E(X^2) = \sum_{k=0}^{n} k^2 \frac{n!}{k!(n-k)!} p^k (1-p)^{n-k}$$
+
+That's also easy.
+
+
+# Variance of $Y = g(X)$
+
+## Firstly, for X:
+$$\text{Var}(X) = E[(X - \mu)^2] = \int_{-\infty}^{+\infty} (x - \mu)^2 f_X(x)dx$$
+Because $(x - \mu)^2 = x^2 - 2x\mu + \mu^2$, we have:
+$$\text{Var}(X) = \int_{-\infty}^{+\infty} x^2 f_X(x)dx - \int_{-\infty}^{+\infty} 2x\mu f_X(x)dx + \int_{-\infty}^{+\infty} \mu^2 f_X(x)dx$$
+$$\text{Var}(X) = \int_{-\infty}^{+\infty} x^2 f_X(x)dx - 2\mu \int_{-\infty}^{+\infty} x f_X(x)dx + \mu^2 \int_{-\infty}^{+\infty} f_X(x)dx$$
+$$\text{Var}(X) = E(X^2) - 2\mu E(X) + \mu^2 \cdot 1$$
+$$\text{Var}(X) = E(X^2) - 2\mu \cdot \mu + \mu^2$$
+$$\text{Var}(X) = E(X^2) - 2\mu^2 + \mu^2$$
+$$\text{Var}(X) = E(X^2) - \mu^2$$
+$$\text{Var}(X) = E(X^2) - [E(X)]^2$$
+
+### Example 1: Poisson distribution $X \sim P(\lambda)$
+
+* The mean $E(X) = \lambda$.
+* The second moment $E(X^2) = \lambda^2 + \lambda$.
+* Variance: $\sigma_X^2 = (\lambda^2 + \lambda) - \lambda^2 = \lambda$.
+So for a Poisson distribution, the mean and the variance are identical.
+
+
+
+## Now for $Y = g(X)$:
+$$\sigma_Y^2 = Var(Y) = E[(Y - \mu_Y)^2] = \int_{-\infty}^{+\infty} (y - \mu_Y)^2 f_Y(y) dy$$
+
+But you know what is a good news? We don't need to calculate $f_Y(y)$ at all!
+
+$$\sigma_Y^2 = Var(Y) = \int_{-\infty}^{+\infty} (g(x) - \mu_Y)^2 f_X(x) dx$$
+
+This means you can find the variance of $Y$ by simply integrating the function $(g(x) - \mu_Y)^2$ weighted by the original density of $X$.
