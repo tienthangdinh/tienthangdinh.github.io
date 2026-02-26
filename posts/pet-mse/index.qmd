@@ -1,0 +1,252 @@
+---
+title: "Mean Square Estimation"
+date: "2026-02-21"
+categories: [Statistics, Estimation]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+
+# Moving from MLE to MSE
+
+## Maximum Likelihood Estimator (MLE)
+
+* The Philosophy: $\theta$ is a fixed but unknown constant. There is no "probability" for $\theta$; it just is what it is.
+* The Goal: Maximize the Likelihood Function $f(x|\theta)$.
+* Process: We look for the value $\hat{\theta}$ that satisfies:
+$$\hat{\theta}_{MLE} = \arg \max_{\theta} L(\theta) = \arg \max_{\theta} \prod_{i=1}^{n} f(x_i | \theta)$$
+we solve:
+$$\frac{\partial}{\partial \theta} \ln L(\theta) = 0$$
+
+Key Character: It only cares about the data you just measured. It doesn't care about what you "expected" $\theta$ to be before the experiment.
+
+## Mean Square Estimation (MSE)
+* The Philosophy: $\theta$ is a Random Variable. We have a "Prior" belief about it ($f_{\theta}(\theta)$) and we update that belief with data ($f_{\theta|x}(\theta|x)$).
+* Goal: Minimize the Mean Square Error (MSE):
+$$\min E[ (\hat{\theta}(x) - \theta)^2 ] = \min \iint (\hat{\theta}(x) - \theta)^2 f_{x,\theta}(x, \theta) \, dx \, d\theta$$
+Because $f_{x,\theta}(x, \theta) = f_{\theta|x}(\theta|x) f_x(x)$:
+$$\min E[ (\hat{\theta}(x) - \theta)^2 ] = \min\int_{-\infty}^{\infty} \left[ \int_{-\infty}^{\infty} (\hat{\theta}(x) - \theta)^2 f_{\theta|x}(\theta|x) \, d\theta \right] f_x(x) \, dx$$
+The outer integral is over $x$, and the density $f_x(x)$ is always non-negative. To minimize the total integral, we simply need to minimize the inner term (the term in the brackets) for every single specific value of $x$. So, for a fixed $x$, we want to find the value $c$ (which represents our estimate $\hat{\theta}(x)$) that minimizes:
+$$J(c) = \int_{-\infty}^{\infty} (c - \theta)^2 f_{\theta|x}(\theta|x) \, d\theta$$
+$$\frac{dJ}{dc} = \frac{d}{dc} \int_{-\infty}^{\infty} (c^2 - 2c\theta + \theta^2) f_{\theta|x}(\theta|x) \, d\theta = 0$$
+$$\int_{-\infty}^{\infty} (2c - 2\theta) f_{\theta|x}(\theta|x) \, d\theta = 0$$
+$$2c \int_{-\infty}^{\infty} f_{\theta|x}(\theta|x) \, d\theta - 2 \int_{-\infty}^{\infty} \theta f_{\theta|x}(\theta|x) \, d\theta = 0$$
+$$2c(1) - 2E[\theta|x] = 0$$
+$$c = \hat{\theta}_{MSE}(x) = E[\theta|x]$$
+$$\hat{\theta}_{MSE} = E[\theta | x] = \int \theta f_{\theta|x}(\theta|x) \, d\theta$$
+
+Imagine the A-Posteriori distribution (the "Direction B" updated belief) is skewed:
+* MLE will point to the very highest peak (the most "likely" single value).
+* MSE will point to the center of mass (the "average" value).
+If the distribution is a perfect, symmetrical Gaussian Bell Curve, the peak (Mode) and the center (Mean) are the same. In that special case:
+$$\hat{\theta}_{MLE} = \hat{\theta}_{MSE}$$
+But for almost any other distribution, they will give you different answers.
+
+## Example 1: Wiener Filter for Signal Denoising
+* Prior Knowledge: We know from the manufacturer that the voltage is usually around $10\text{V}$, modeled as $\theta \sim N(10, 1)$.
+* The Measurement: We take one single, noisy measurement $X$ with noise distribution $N(0, 4)$
+* Your Goal: You see a specific value $X = 14$. You need to output an estimate $\hat{\theta}$.
+
+### The MLE Approach (The "Pure Observer")
+
+The MLE doesn't care about the manufacturer's manual. It only looks at the sensor.
+
+* Goal: Maximize $f(X|\theta)$
+* Logic: "I measured $14$. The most likely value to produce a $14$ is $14$."
+*Result: 
+$$\hat{\theta}_{MLE} = x = 14$$
+
+#### Derivation
+Principle: Maximize the Likelihood $f(x|\theta)$
+the measurement $X$ are naturally assumed to be Gaussian distributed with $\theta$ is $N(\theta, \sigma_n^2)$.
+1. Define the Joint PDF (Likelihood Function)
+We start with $n$ independent observations $X_i = \theta + w_i$, where the noise $w_i$ follows a Normal distribution $N(0, \sigma^2)$. This means each observation $X_i$ is an independent Normal random variable $X_i \sim N(\theta, \sigma^2)$.
+$$f_X(x_1, \dots, x_n; \theta) = \prod_{i=1}^{n} \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{(x_i - \theta)^2}{2\sigma^2}}$$
+
+2. Convert to Log-Likelihood
+$$L(\theta) = \log \left( \prod_{i=1}^{n} \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{(x_i - \theta)^2}{2\sigma^2}} \right)$$
+$$L(\theta) = \sum_{i=1}^{n} \left[ \log \left( \frac{1}{\sigma \sqrt{2\pi}} \right) - \frac{(x_i - \theta)^2}{2\sigma^2} \right]$$
+
+3. Take Derivative
+$$\frac{\partial L}{\partial \theta} = \frac{\partial}{\partial \theta} \sum_{i=1}^{n} \left[ \text{constant} - \frac{(x_i - \theta)^2}{2\sigma^2} \right]$$
+$$\frac{\partial L}{\partial \theta} = \sum_{i=1}^{n} \frac{2(x_i - \theta)}{2\sigma^2} = \frac{1}{\sigma^2} \sum_{i=1}^{n} (x_i - \theta)$$
+
+4. Set to Zero and Solve
+$$\frac{1}{\sigma^2} \sum_{i=1}^{n} (x_i - \theta) = 0$$
+$$\sum_{i=1}^{n} x_i - \sum_{i=1}^{n} \theta = 0$$
+$$\sum_{i=1}^{n} x_i - n\theta = 0$$
+$$\theta = \frac{1}{n} \sum_{i=1}^{n} x_i$$
+
+5. Since we only observed one data point $X = 14$, we have $n=1$, so:
+$$\hat{\theta}_{MLE} = \frac{1}{1} (14) = 14$$
+
+### The MSE Approach (The "Pragmatic Smoother")
+
+The MSE approach uses the Prior information.
+$$\hat{\theta}_{MSE} = \frac{\sigma_n^2}{\sigma_p^2 + \sigma_n^2}\mu_p + \frac{\sigma_p^2}{\sigma_p^2 + \sigma_n^2}X$$
+
+Or signal processing community also like the Kalman Filter style, like trust the prior first, then add the observed noise
+$$\hat{\theta}_{MSE} = \mu_p + K(X - \mu_p)$$
+Where the gain $K$ is:
+$$K = \frac{\sigma_p^2}{\sigma_p^2 + \sigma_n^2}$$
+
+Plugging in numbers ($\mu_p = 10, \sigma_p^2 = 1, \sigma_n^2 = 4, X = 14$):
+$$\hat{\theta}_{MSE} = \frac{4}{1+4}(10) + \frac{1}{1+4}(14)$$
+$$\hat{\theta}_{MSE} = 0.8(10) + 0.2(14) = 8 + 2.8 = 10.8\text{V}$$
+
+
+**Little Intuition:**
+
+* **Prior Trust:** Because our sensor is quite noisy ($\sigma_n^2=4$) compared to our prior knowledge ($\sigma_p^2=1$), the MSE "trusts" the prior more. It pulls the measurement of 14 back towards the expected 10.
+* **Limit Cases:**
+    * If $\sigma_n^2 \ll \sigma_p^2$ (Clean Sensor): $\hat{\theta}_{MSE} \approx X$. We trust the measurement completely.
+    * If $\sigma_n^2 \gg \sigma_p^2$ (Broken Sensor): $\hat{\theta}_{MSE} \approx \mu_p$. We ignore the sensor and stick to our prior belief.
+
+#### Derivation
+Principle: Find the Conditional Mean:
+$$\hat{\theta}_{MSE} = E[\theta|x] = \int \theta f(\theta|x) d\theta$$
+once we see data $x$, the "new" distribution for our parameter is $f(\theta|x)$, therefore the "new" mean (the best guess under MSE) is the average of all possible $\theta$.
+
+To do this, we first need the Posterior PDF $f(\theta|x)$ using Bayes' Theorem (Direction B):
+$$f(\theta|x) = \frac{f(x|\theta)f(\theta)}{f(x)}$$
+
+Step 1: Multiply the Prior and Likelihood
+
+Both are Gaussian, so the posterior is also Gaussian:
+$$f(\theta|x) \propto \exp \left( -\frac{(x-\theta)^2}{2\sigma_n^2} + -\frac{(\theta-\mu_p)^2}{2\sigma_p^2} \right)$$
+
+The total exponent of the posterior is the sum:
+$$\text{Exponent} = -\frac{1}{2} \left[ \frac{(\theta - \mu_p)^2}{\sigma_p^2} + \frac{(x - \theta)^2}{\sigma_n^2} \right]$$
+
+Step 2: Complete the Square
+
+In probability theory, when you multiply two Gaussians, the result is a new Gaussian. A Gaussian PDF always looks like $e^{-\frac{(\theta - \mu_{new})^2}{2\sigma_{new}^2}}$.
+
+**Important**, now we want to find the "center" ($\mu_{new}$) of this new bell curve. The term is a quadratic symmetric function of $\theta$, and **magically** the center of the new bell curve is the same as the center of the original bell curve. So now we just need to find the center of the term/aka also the bell curve by finding the minimum of quadratic symmetric function:
+$$\text{Exponent} = -\frac{1}{2} \left[ \frac{\theta^2 - 2\theta x + x^2}{\sigma_n^2} + \frac{\theta^2 - 2\theta \mu_p + \mu_p^2}{\sigma_p^2} \right]$$
+$$\text{Exponent} = -\frac{1}{2} \left[ \theta^2 \left( \frac{1}{\sigma_n^2} + \frac{1}{\sigma_p^2} \right) - 2\theta \left( \frac{x}{\sigma_n^2} + \frac{\mu_p}{\sigma_p^2} \right) + \left( \frac{x^2}{\sigma_n^2} + \frac{\mu_p^2}{\sigma_p^2} \right) \right]$$
+Remember in secondary school, In any quadratic like $A\theta^2 + B\theta + C$, the peak (the mean) is always at $\theta = -B / 2A$:
+
+* $A = \frac{1}{\sigma_n^2} + \frac{1}{\sigma_p^2}$
+* $B = -2 \left( \frac{x}{\sigma_n^2} + \frac{\mu_p}{\sigma_p^2} \right)$
+$$\mu_{new} = \frac{-B}{2A} = \frac{2 \left( \frac{x}{\sigma_n^2} + \frac{\mu_p}{\sigma_p^2} \right)}{2 \left( \frac{1}{\sigma_n^2} + \frac{1}{\sigma_p^2} \right)} = \frac{\frac{x}{\sigma_n^2} + \frac{\mu_p}{\sigma_p^2}}{\frac{1}{\sigma_n^2} + \frac{1}{\sigma_p^2}}$$
+Step 3: Solve the Integral
+Since we now know $f(\theta|x)$ is a Gaussian with mean $\mu_{new}$, the MSE integral becomes easy:
+$$\hat{\theta}_{MSE} = \int_{-\infty}^{\infty} \theta \cdot \frac{1}{\sqrt{2\pi\sigma_{new}^2}} \exp\left( -\frac{(\theta - \mu_{new})^2}{2\sigma_{new}^2} \right) d\theta$$
+Let $u = \theta - \mu_{new}$, which means $d\theta = du$ and $\theta = u + \mu_{new}$
+$$\hat{\theta}_{MSE} = \int_{-\infty}^{\infty} (u + \mu_{new}) \cdot \frac{1}{\sqrt{2\pi\sigma_{new}^2}} e^{-\frac{u^2}{2\sigma_{new}^2}} du$$
+$$\hat{\theta}_{MSE} = \underbrace{\int_{-\infty}^{\infty} u \cdot \frac{1}{\sqrt{2\pi\sigma_{new}^2}} e^{-\frac{u^2}{2\sigma_{new}^2}} du}_{\text{Part A}} + \underbrace{\mu_{new} \int_{-\infty}^{\infty} \frac{1}{\sqrt{2\pi\sigma_{new}^2}} e^{-\frac{u^2}{2\sigma_{new}^2}} du}_{\text{Part B}}$$
+* Part A is 0: The integrand is an odd function ($u$ is odd, the Gaussian part is even) integrated over a symmetric interval. It vanishes.
+* Part B is $\mu_{new}$: The integral part is simply the area under a standard Gaussian curve, which is exactly 1.
+$$\hat{\theta}_{MSE} = 0 + \mu_{new} \cdot 1 = \mu_{new}$$
+The average of a Gaussian is simply its center point. Therefore:
+$$\hat{\theta}_{MSE} = \mu_{new} = \frac{\frac{1}{\sigma_p^2}\mu_p + \frac{1}{\sigma_n^2}x}{\frac{1}{\sigma_p^2} + \frac{1}{\sigma_n^2}}$$
+$$\hat{\theta}_{MSE} = \frac{\frac{10}{1} + \frac{14}{4}}{\frac{1}{1} + \frac{1}{4}} = \frac{10 + 3.5}{1.25} = \mathbf{10.8V}$$
+
+
+# Independent and Identically Distributed (i.i.d)
+When we repeat a random experiment, we are essentially looking at a combined experiment, denoted by $S = S_1 \times \dots \times S_n$ and the resulting random variables $X_i$ are both independent and identically distributed:
+
+* Same Distribution: It follows from the experimental setup that the distribution $F_i(x_i)$ of each component $X_i$ is identical to the distribution $F_x(x)$ of the original random variable $X$.
+* Independence + Identity: When an experiment is performed $n$ times, the resulting random variables $X_i$ are both independent and identically distributed.
+
+## Foundations: Joint and Multivariate Densities
+Given observations as a random vector $X = [X_1, X_2, \dots, X_n]$, we define the joint probability density function (PDF) as:
+$$f(X) = f(x_1, x_2, \dots, x_n)$$
+$$P\{X \in D\} = \int_D f(X) dX$$
+
+Example:
+$$P(20 \le X_1 \le 25, 30 \le X_2 \le 40) = \int_{30}^{40} \int_{20}^{25} f(x_1, x_2) \, dx_1 \, dx_2$$
+
+Marginal density (PDF), just set others into from $-\infty$ to $+\infty$:
+$$f_{X_1}(x_1) = \int_{-\infty}^{+\infty} \dots \int_{-\infty}^{+\infty} f(x_1, x_2, \dots, x_n) \, dx_2 \dots dx_n$$
+
+## Transformation of Random Variables
+Given a random vector $X = [X_1, X_2, \dots, X_n]$ and a set of $k$ functions $g_1, g_2, \dots, g_k$, we can form a new set of random variables:
+$$Y_1 = g_1(X), Y_2 = g_2(X), \dots, Y_k = g_k(X)$$
+
+Our goal is to find the joint density $f_y(y_1, y_2, \dots, y_n)$, 
+
+1. First, write the transformation as:
+$$y_1 = g_1(x_1, x_2, \dots, x_n)$$
+$$y_2 = g_2(x_1, x_2, \dots, x_n)$$
+$$\vdots$$
+$$y_n = g_n(x_1, x_2, \dots, x_n)$$
+
+2. Find the inverse transformation - aka solving the system above for $x_i$ in terms of $y_i$:
+$$x_1 = g_1^{-1}(y_1, y_2, \dots, y_n)$$
+$$x_2 = g_2^{-1}(y_1, y_2, \dots, y_n)$$
+$$\vdots$$
+$$x_n = g_n^{-1}(y_1, y_2, \dots, y_n)$$
+
+3. If there is a unique solution $X = [x_1, x_2, \dots, x_n]$, we use the multivariate version of the transformation formula:
+$$f_y(y_1, y_2, \dots, y_n) = \frac{f_x(x_1, x_2, \dots, x_n)}{|J(x_1, x_2, \dots, x_n)|}$$
+where $J$ is the Jacobian matrix of the transformation:
+$$J(x_1, \dots, x_n) = \begin{vmatrix} \frac{\partial g_1}{\partial x_1} & \dots & \frac{\partial g_1}{\partial x_n} \\ \vdots & \ddots & \vdots \\ \frac{\partial g_n}{\partial x_1} & \dots & \frac{\partial g_n}{\partial x_n} \end{vmatrix}$$
+
+### Example: Polar Coordinates
+transforming two i.i.d. Gaussian variables ($X_1, X_2$) into Polar coordinates ($R, \Theta$):
+#### 1. Identify the Relationships
+We start with the forward definitions for Polar coordinates:
+
+$$y_1 = \sqrt{x_1^2 + x_2^2}$$ (The distance from the origin $r$)
+$$y_2 = \arctan\left(\frac{x_2}{x_1}\right)$$ (The angle $\theta$)
+
+Isolate the Ratio
+From the angle equation: $$ \tan(y_2) = \frac{x_2}{x_1} \implies x_2 = x_1 \tan(y_2) $$
+
+Substitute into the Radius Equation
+Now plug $x_2$ into the squared radius equation ($y_1^2 = x_1^2 + x_2^2$): $$ y_1^2 = x_1^2 + (x_1 \tan(y_2))^2 $$ $$ y_1^2 = x_1^2 (1 + \tan^2(y_2)) $$
+
+Use Trigonometric Identity
+Recall the identity $1 + \tan^2(\theta) = \sec^2(\theta) = \frac{1}{\cos^2(\theta)}$: $$ y_1^2 = x_1^2 \cdot \frac{1}{\cos^2(y_2)} $$
+
+Solve for $x_1$
+Move $\cos^2(y_2)$ to the other side and take the square root: $$ x_1^2 = y_1^2 \cos^2(y_2) \implies \mathbf{x_1 = y_1 \cos(y_2)} $$
+
+Solve for $x_2$
+Now go back to our substitution from Step 2: $$ x_2 = x_1 \tan(y_2) $$ $$ x_2 = (y_1 \cos(y_2)) \cdot \frac{\sin(y_2)}{\cos(y_2)} $$ $$ \mathbf{x_2 = y_1 \sin(y_2)} $$
+
+This confirms that the inverse is simply the standard mapping from Polar $(r, \theta)$ to Cartesian $(x, y)$.
+
+#### 2. Jacobian
+First, we find the derivatives of $y_1$:
+$$\frac{\partial y_1}{\partial x_1} = \frac{1}{2\sqrt{x_1^2 + x_2^2}} \cdot 2x_1 = \frac{x_1}{\sqrt{x_1^2 + x_2^2}}$$
+$$\frac{\partial y_1}{\partial x_2} = \frac{1}{2\sqrt{x_1^2 + x_2^2}} \cdot 2x_2 = \frac{x_2}{\sqrt{x_1^2 + x_2^2}}$$
+Next, we find the derivatives of $y_2$:
+$$\frac{\partial y_2}{\partial x_1} = \frac{1}{1 + (x_2/x_1)^2} \cdot \left(-\frac{x_2}{x_1^2}\right) = \frac{-x_2}{x_1^2 + x_2^2}$$
+$$\frac{\partial y_2}{\partial x_2} = \frac{1}{1 + (x_2/x_1)^2} \cdot \left(\frac{1}{x_1}\right) = \frac{x_1}{x_1^2 + x_2^2}$$
+
+$$J(x_1, x_2) = \begin{vmatrix} \frac{\partial y_1}{\partial x_1} & \frac{\partial y_1}{\partial x_2} \\ \frac{\partial y_2}{\partial x_1} & \frac{\partial y_2}{\partial x_2} \end{vmatrix} = \begin{vmatrix} \frac{x_1}{\sqrt{x_1^2 + x_2^2}} & \frac{x_2}{\sqrt{x_1^2 + x_2^2}} \\ \frac{-x_2}{x_1^2 + x_2^2} & \frac{1}{x_1^2 + x_2^2} \end{vmatrix}$$
+
+Determinant:
+$$|J(x_1, x_2)| = \frac{1}{\sqrt{x_1^2 + x_2^2}}$$
+Since $y_1 = \sqrt{x_1^2 + x_2^2}$, we have:
+$$|J(x_1, x_2)| = \frac{1}{y_1}$$
+
+#### 3. PDF
+$$f_y(y_1, y_2) = \frac{f_x(x_1, x_2)}{|J(x_1, x_2)|} = \frac{f_x(y_1 \cos(y_2), y_1 \sin(y_2))}{1/y_1}$$
+$$f_y(y_1, y_2) = y_1 f_x(y_1 \cos(y_2), y_1 \sin(y_2))$$
+
+#### 4. Plug in Numbers
+
+Assume $X_1, X_2 \sim N(0, 1)$. Their individual probability density functions (p.d.f.) are:
+$$f_X(x) = \frac{1}{\sqrt{2\pi}} e^{-\frac{x^2}{2}}$$
+Since they are independent, their joint p.d.f. is the product of their individual p.d.f.s:
+$$f_{X_1, X_2}(x_1, x_2) = \left( \frac{1}{\sqrt{2\pi}} e^{-\frac{x_1^2}{2}} \right) \left( \frac{1}{\sqrt{2\pi}} e^{-\frac{x_2^2}{2}} \right) = \frac{1}{2\pi} e^{-\frac{x_1^2 + x_2^2}{2}}$$
+We use the transformation $x_1 = r \cos \theta$ and $x_2 = r \sin \theta$.Substitute these into the exponent:
+$$x_1^2 + x_2^2 = (r \cos \theta)^2 + (r \sin \theta)^2 = r^2(\cos^2 \theta + \sin^2 \theta) = r^2$$
+Now, substitute this into the joint p.d.f. of $X$:
+$$f_{X_1, X_2}(r \cos \theta, r \sin \theta) = \frac{1}{2\pi} e^{-\frac{r^2}{2}}$$
+Final:
+$$f_{R, \Theta}(r, \theta) = f_{X_1, X_2}(r \cos \theta, r \sin \theta) \cdot r$$$$f_{R, \Theta}(r, \theta) = \frac{r}{2\pi} e^{-\frac{r^2}{2}}$$
+
+(optional)
+
+4. Finding the Marginal Density of the Radius (R)
+To find the marginal density $f_R(r)$, we integrate out the other variable, $\theta$, over its entire range:
+$$f_R(r) = \int_{0}^{2\pi} f_{R, \Theta}(r, \theta) d\theta = \int_{0}^{2\pi} \frac{r}{2\pi} e^{-\frac{r^2}{2}} d\theta$$
+Since the expression $\frac{r}{2\pi} e^{-\frac{r^2}{2}}$ does not depend on $\theta$, we can move it outside the integral:
+$$f_R(r) = \frac{r}{2\pi} e^{-\frac{r^2}{2}} \int_{0}^{2\pi} d\theta = \frac{r}{2\pi} e^{-\frac{r^2}{2}} \cdot [2\pi - 0]$$$$f_R(r) = r e^{-\frac{r^2}{2}}, \quad r \ge 0$$
