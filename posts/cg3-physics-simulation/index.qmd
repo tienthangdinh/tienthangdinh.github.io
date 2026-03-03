@@ -1,0 +1,557 @@
+---
+title: "Physics Simulation"
+date: "2026-02-26"
+categories: [Physics, Simulation]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+# Physics
+## Harmonic Oscillator
+* Hooke's Law $F = -kx$  ($k$ is stiffness constant)
+* Newton 2nd Law $F = ma = m\ddot{x} = -kx$
+
+So Original equation is 
+$$m\ddot{x} + kx = 0$$
+
+Now we add $B\dot{x}$ term (damping force) It creates a force that is proportional to the velocity ($dx/dt$). The faster you move, the harder the "air" pushes back against you
+$$m\ddot{x} + B\dot{x} + kx = 0$$
+
+Then we add actual A (unormalized actual strength unlike $F(t) = \sin(t)$ only between -1 and 1)
+$$m\ddot{x} + B\dot{x} + kx = A(t)$$
+
+### Analytical Solution
+**Idea** Because the acceleration $\ddot{x}$ is proportional to the negative position $-x$, the solution is a sine/cosine wave.
+$$x(t) = A \cdot \cos(\omega t + \phi)$$
+$$\dot{x}(t) = -\omega A \cdot \sin(\omega t + \phi)$$
+$$\ddot{x}(t) = -\omega^2 A \cdot \cos(\omega t + \phi)$$
+
+### Numerical Solution
+Let's create a state vector and Euler method:
+$$\vec{y} = \begin{pmatrix} x \\ v \equiv \dot{x} \end{pmatrix} \quad \vec{y}_{i+1} = \vec{y}_i + h\dot{\vec{y}}_i$$
+
+So where to find $\dot{\vec{y}}_i$? We have observed that: $\dot{x} = v$ and $\dot{v} = -\omega^2 x$, just ignore the $v$
+$$\dot{\vec{y}}_i = \begin{pmatrix} \dot{x} \\ \dot{v} \end{pmatrix} = \begin{pmatrix} 0 & 1 \\ -\omega^2 & 0 \end{pmatrix} \begin{pmatrix} x \\ v \end{pmatrix}$$
+
+## Physical Quantities
+### Physical Units
+Base units: Kelvin, meter, kg, second, candela,...
+How to find unit of a constant?
+Example:
+$$m \frac{d^2x}{dt^2} + B \frac{dx}{dt} + kx = F(t)$$
+Each term in this equation represents a force, so every term must also be Force: $\text{kg} \cdot \text{m} \cdot \text{s}^{-2}$ (Newtons). Now we can find unit of $B$ damping consant:
+$$[B] = \frac{[F(t)]}{[dx/dt]} = \frac{\text{kg} \cdot \text{m} \cdot \text{s}^{-2}}{\text{m} \cdot \text{s}^{-1}} = \text{kg} \cdot \text{s}^{-1}$$ 
+
+**Candela & Luminous Intensity**
+The Candela ($cd$) is the SI unit of luminous intensity, defined as the luminous intensity of a monochromatic source of light emitting radiation of frequency 540 THz (green light) with a radiant intensity of 1/683 W/sr.
+
+Solid Angle ($\Omega$) (Unit: steradians, $sr$): measures the "area" covered by a set of directions on the surface of a unit sphere $$\Omega = A / r^2$$
+
+### Nondimensionalization
+Substituting variables so that the resulting equations are governed by all pure numbers
+
+#### Example: Harmonic Oscillator
+$$m \frac{d^2x}{dt^2} + B \frac{dx}{dt} + kx = AF(t)$$
+
+Redefine variables time ($t_c$) and position ($x_c$) and  $\tau$ and $\chi$ are all scales of $t$ and $x$. So we replace every $t = \tau t_c$ and every $x = \chi x_c$.
+$$m \frac{d^2(\chi x_c)}{(d\tau t_c)^2} + B \frac{d(\chi x_c)}{d\tau t_c} + k(\chi x_c) = AF(t)$$
+$$m \frac{x_c}{t_c^2} \frac{d^2\chi}{d\tau^2} + B \frac{x_c}{t_c} \frac{d\chi}{d\tau} + k x_c \chi = AF(t)$$
+
+Divide the entire equation by $m \frac{x_c}{t_c^2}$:
+$$\frac{d^2\chi}{d\tau^2} + t_c \frac{B}{m} \frac{d\chi}{d\tau} + t_c^2 \frac{k}{m} \chi = \frac{t_c^2}{mx_c} Af(\tau)$$
+
+Choose the Smart Constants. To make it simple, we choose $t_c$ and $x_c$ based on the system's own properties:
+
+* Characteristic Time: $t_c = \sqrt{m/k}$ (the inverse of the natural frequency).
+* Characteristic Position: $x_c = A/k$ (the static displacement under force $A$).
+
+But WTF why so random? what are the principles? have a look agai, our goal is make as many terms to 1 as possible:
+$$\frac{d^2\chi}{d\tau^2} + \underbrace{\left( t_c \frac{B}{m} \right)}_{\text{Term 1}} \frac{d\chi}{d\tau} + \underbrace{\left( t_c^2 \frac{k}{m} \right)}_{\text{Term 2}} \chi = \underbrace{\left( \frac{t_c^2 A}{m x_c} \right)}_{\text{Term 3}} f(\tau)$$
+Look at Term 2, isn't it convenient when we have $m$ is in kg, $k$ is in kg/s², how about we take $t_c^2 = \frac{m}{k}$ to make everything 1 and also the units cancel each other out? Yeah let's do it.
+
+Now we substitute $t_c$ in Term 3 ($\frac{t_c^2 A}{m x_c}$). We already decided $t_c^2 = m/k$, so let's plug that in: 
+$$\left( \frac{(m/k) A}{m x_c} \right) \implies \frac{A}{k x_c}$$. To make this term 1, we must set $x_c = A/k$.
+
+Now we substitute $t_c$ in Term 1 ($\frac{t_c B}{m}$). We already decided $t_c^2 = m/k$, so let's plug that in: 
+$$\sqrt{\frac{m}{k}} \cdot \frac{B}{m} = \frac{B}{\sqrt{mk}}$$
+This "leftover" becomes the Damping Ratio ($2\zeta$)
+
+Once again, everything left is dimensionless:
+$$\frac{d^2\chi}{d\tau^2} + 2\zeta \frac{d\chi}{d\tau} + \chi = f(\tau)$$
+Where the damping ratio is defined as:
+$$2\zeta = \frac{B}{\sqrt{mk}}$$
+
+But why?
+
+* Reason 1: If now I say set $B = 10$, you have no idea if the system will wobble or not When we nondimensionalize, we find that the behavior doesn't depend on $B$ alone, but on the ratio $B / \sqrt{mk}$.
+* Reason 2: All the variables now regarding the time or positions are $t_c^2 = \frac{m}{k}$ and $x_c = \frac{A}{k}$, they are:
+
+    * the dimensions are canceled out, so they are just parameter
+    * they are on the scales (axes) of these variables, not the scale of second or meter anymore
+
+## Applied Analysis
+2 ways to calculate in physics:
+
+* **Field-based**: You look at fixed points in space (like a grid) and measure how properties like velocity or density change at those specific locations as time passes. Easy to implement for things like smoke or large-scale fluid volumes. e.g: each grid has a $\rho(x,y,z)$ and $v(x,y,z)$
+* **Particle-based**: You follow individual "pieces" of matter as they move through space, "conceptually simple" because you just track the position and mass of each particle. e.g: each particle has a $m$ and $v$ and $p$
+
+* **Field -> Particle**: randomly **sample particles** based on the density.
+
+* **Particle -> Field**: sum all particles in a grid cell to get the density.
+
+### Conservative Force, Potential Energy
+What is force? negative gradient of a potential energy field $\phi(\underline{x})$:
+$$\vec{F} = -\vec{\nabla}_{\underline{x}} \phi(\underline{x})$$
+
+What is Work ($W$)? energy transferred by a force acting over a path $\underline{x}(t)$: 
+$$W = \int_{\underline{x}_0}^{\underline{x}_1} \vec{F} d\underline{x}$$
+A force is conservative if and only if its curl vanishes everywhere ($\vec{0}$):
+$$\vec{\nabla}_{\underline{x}} \times \vec{F} = \begin{pmatrix} \frac{\partial F_z}{\partial y} - \frac{\partial F_y}{\partial z} \\ \frac{\partial F_x}{\partial z} - \frac{\partial F_z}{\partial x} \\ \frac{\partial F_y}{\partial x} - \frac{\partial F_x}{\partial y} \end{pmatrix} = \vec{0}$$
+
+#### Example 1
+1. From Potential Energy ($\phi$) to Force ($\vec{F}$)We start with a given potential energy function:$$\phi(\underline{x}) = x^2 + 2xy - y^2$$
+
+2. The forces are negative partial derivatives for each component ($F_x$ and $F_y$):
+$$F_x = -\partial_x \phi = -2x - 2y$$
+$$F_y = -\partial_y \phi = -2x + 2y$$
+$$\vec{F} = -2 \begin{pmatrix} x+y \\ x-y \end{pmatrix}$$
+
+3. Force is conservative only if its curl is zero. Let's check it:
+$$\vec{\nabla}_{\underline{x}} \times \vec{F} = \begin{pmatrix} \frac{\partial F_z}{\partial y} - \frac{\partial F_y}{\partial z} \\ \frac{\partial F_x}{\partial z} - \frac{\partial F_z}{\partial x} \\ \frac{\partial F_y}{\partial x} - \frac{\partial F_x}{\partial y} \end{pmatrix} = \begin{pmatrix} 0 - 0 \\ 0 - 0 \\ -2 - (-2) \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \\ 0 \end{pmatrix}$$
+
+4. Reconstruct Potential Energy from Force
+Given the force field:$$\vec{F} = \begin{pmatrix} -2x - 2y \\ -2x + 2y \end{pmatrix}$$
+
+We know that $F_x = -\partial_x \phi$ and $F_y = -\partial_y \phi$. We can integrate each component separately to find the potential energy function $\phi(x, y)$.
+
+Integrate $F_x$ with respect to $x$ (treating $y$ as a constant):
+$$\phi(x, y) = -\int F_x dx = -\int (-2x - 2y) dx = x^2 + 2xy + C_1(y)$$
+
+Integrate $F_y$ with respect to $y$ (treating $x$ as a constant):
+$$\phi(x, y) = -\int F_y dy = -\int (-2x + 2y) dy = 2xy - y^2 + C_2(x)$$
+
+We have two expressions for $\phi(x, y)$. Let's compare them:
+$$\phi(x, y) = x^2 + 2xy + C_1(y) = 2xy - y^2 + C_2(x)$$
+$$C_1(y) = C - y^2$$
+$$C_2(x) = C + x^2$$
+$$\phi(x, y) = x^2 + 2xy - y^2 + C$$
+
+### Solid Angle ($\Omega$) 
+Solid angle is the "area" covered by a set of directions on the surface of a unit sphere. Unit is steradians ($sr$). A full sphere is $4\pi$ sr.
+
+To define solid angle better, let's start from Spherical Coordinates. A unit vector $\omega$ is then defined as:
+$$\omega = \begin{pmatrix} \cos\phi \sin\theta \\ \sin\phi \sin\theta \\ \cos\theta \end{pmatrix}$$
+Where $\theta \in [0, \pi]$ is the polar angle and $\phi \in [0, 2\pi)$ is the azimuthal angle.
+
+#### Differential solid angle
+We have $\sin\theta$ because in z direction the arc is moving relative to $\sin\theta$:
+$$d\Omega = \sin\theta d\theta d\phi$$
+
+#### Full sphere:
+$$\int_{all \Omega} 1 d\Omega = \int_{0}^{2\pi} \left( \int_{0}^{\pi} \sin\theta d\theta \right) 1 d\phi = \int_{0}^{2\pi} 2 d\phi = 4\pi$$
+Outer integral: $\int_{0}^{2\pi} 1 d\phi = [\phi]_{0}^{2\pi} = 2\pi$
+Inner integral: $\int_{0}^{\pi} \sin\theta d\theta = [-\cos\theta]_{0}^{\pi} = -\cos\pi - (-\cos0) = -(-1) - (-1) = 2$
+
+Therefore: $\int_{all \Omega} 1 d\Omega = 2\pi \times 2 = 4\pi$
+
+## Minimization Principles
+### Principle of Least Action
+#### Lagrangian
+Lagrangian $L$ of a system is the difference between kinetic energy ($T$) and potential energy ($V$):
+$$L(x, \dot{x}) = T - V$$
+
+If you take a path $\vec{\mathbf{y}}(t)$ and then slightly change (or perturb) it to a nearby path, the change in the total cost ($\delta S$) is zero to the first order. This is exactly how you find the top or bottom of a curve in single-variable calculus: you find the point where the slope (derivative) is zero. So it is also the case here, we find the path that with slight change, the action is still the same.
+
+We formulate it like this:
+
+#### Euler-Lagrange Equations
+$$\forall x: \quad \frac{d}{dt}\left(\frac{\partial L}{\partial \dot{x}}\right) = \frac{\partial L}{\partial x}$$
+
+Derivation approach:
+$$S = \int_{t_1}^{t_2} L(x, \dot{x}, t) dt$$
+Imagine the true path is $x(t)$. We perturb it by a tiny amount $\delta x(t)$. This change in the path also changes the velocity by $\delta \dot{x}(t)$.When we calculate how much the total Action $S$ changes ($\delta S$), we use the chain rule:
+$$\delta S = \int_{t_1}^{t_2} \left( \frac{\partial L}{\partial x} \delta x + \frac{\partial L}{\partial \dot{x}} \delta \dot{x} \right) dt = 0$$
+
+#### Example: Harmonic Oscillator
+
+**1. Define the Lagrangian**
+For a mass $m$ attached to a spring with stiffness $k$ (where $x$ is the position and $\dot{x}$ is the velocity):
+
+* Kinetic Energy: $T = \frac{1}{2}m\dot{x}^2$
+* Potential Energy: $V = \frac{1}{2}kx^2$
+$$L = T - V = \frac{1}{2}m\dot{x}^2 - \frac{1}{2}kx^2$$
+
+**2. Apply Euler-Lagrange Equations**
+We have two terms in the Lagrangian:
+
+* The term with velocity: $\frac{\partial L}{\partial \dot{x}} = m\dot{x}$
+* The term with position: $\frac{\partial L}{\partial x} = -kx$
+
+Now, we plug these into the Euler-Lagrange equation:
+$$\frac{d}{dt}\left(\frac{\partial L}{\partial \dot{x}}\right) = \frac{\partial L}{\partial x}$$
+$$\frac{d}{dt}(m\dot{x}) = -kx$$
+$$m\ddot{x} = -kx$$
+$$m\ddot{x} + kx = 0$$
+$$m\ddot{x} = -kx$$
+
+This result, $m\ddot{x} = -kx$, is precisely Hooke's Law combined with Newton's Second Law ($F=ma$). 
+
+So using the Principle of Stationary Action, we can derive equations of motion from the Lagrangian.
+
+### Fermat's Principle of Least Time
+the path taken by a ray of light between two points is the path that can be traversed in the least amount of time. This principle can derive Snell's Law & Law of Reflection.
+
+**1. Law of Reflection**
+path of least time occurs when the angle of incidence ($\theta_i$) equals the angle of reflection ($\theta_r$). Any other path would result in a longer travel time.
+
+**2. Snell's Law**
+Light must travel faster in the medium with the lower refractive index. To minimize the total travel time, the light spends less time in the slower medium by bending toward the normal.
+$$n_1 \sin \theta_1 = n_2 \sin \theta_2$$
+
+
+# Numerical Methods for solving ODEs
+## General Setup
+### First step: Order Reduction to First-Order System
+This is important because most numerical solvers are designed to solve first-order ODEs.
+Basically in general, we have a phase space vector $y$:
+$$\vec{y}(t) = \left( x(t), \dot{x}(t), \ddot{x}(t), \dots, \frac{\partial^{n-1}}{\partial t^{n-1}}x(t) \right)$$
+with a time evolution function $\dot{y}$ or $f$, **ALSO THE VECTOR FIELD!!!**:
+$$\dot{\vec{y}}(t) = \vec{f}(t, \vec{y}(t))$$
+
+#### Example: Harmonic Oscillator
+Phase space vector $y$:
+$$\vec{y}(t) = \begin{pmatrix} x(t) \\ v(t) \end{pmatrix}$$
+Time evolution function $\dot{y}$ or $f$:
+$$\dot{\vec{y}}(t) = \begin{pmatrix} v(t) \\ -\omega^2 x(t) \end{pmatrix} = \vec{f}(t, \vec{y}(t))$$
+
+### Lipschitz Condition
+In order for the solution to be stable and unique, the "arrows" in your vector field cannot change abruptly or infinitely fast as you move from one point to another, for example collision:
+$$\|\vec{f}(t, \vec{y}_1) - \vec{f}(t, \vec{y}_2)\| \le L \cdot \|\vec{y}_1 - \vec{y}_2\|$$
+
+For example, harmonic oscillator:
+$$\|\vec{f}(t, \vec{y}_1) - \vec{f}(t, \vec{y}_2)\| = \|\begin{pmatrix} v_1 - v_2 \\ -\omega^2(x_1 - x_2) \end{pmatrix}\| = \sqrt{(v_1 - v_2)^2 + \omega^4(x_1 - x_2)^2} \le L \cdot \|\vec{y}_1 - \vec{y}_2\|$$
+
+### Steps
+1. **Starting Point**:
+To begin any simulation, we restate the two components we've discussed:
+
+* Initial State: $\vec{y}(0) = \vec{y}_0$ (Where the system is at the very beginning).
+* The Rules: $\dot{\vec{y}}(t) = \vec{f}(t, \vec{y}(t))$ (How the state changes at any given moment).
+
+2. **Integration**:
+$$\vec{y}(t) = \vec{y}_0 + \int_{0}^{t} \vec{f}(\tilde{t}, \vec{y}(\tilde{t}))d\tilde{t}$$
+
+### Approximation Order
+* **Step Error**: Error between the true solution and the numerical solution at each step:
+$$\varepsilon_i = \|\vec{y}_{i+1} - \underline{\vec{y}}_i(t_{i+1})\|$$
+* **Euler**: $\vec{y}_{i+1} = \vec{y}_i + h \cdot \vec{f}(t_i, \vec{y}_i)$
+* **Taylor**: $\underline{\vec{y}}_i(t_{i+1}) = \vec{y}_i + h \cdot \vec{f}(t_i, \vec{y}_i) + O(h^2)$
+Notice they are identical for the first two terms. The only difference is the remainder term $O(h^2)$.
+=> Therefore, the step error of Euler method is $O(h^2)$. 
+
+* **Accumulated Error**: Even though the error per step for Explicit Euler is proportional to $h^2$, the accumulated error grows with $O(h)$.
+
+* **Sum up**: If a method has a step error of $h^{k+1}$, its total accumulated error grows with $O(h^k)$. So Explicit Euler is an "Order 1" method.
+
+
+## Euler Method
+
+* Explicit Euler Method: Energy increases
+$$
+\begin{aligned}
+\mathbf{x}_{n+1} &= \mathbf{x}_n + h \cdot \mathbf{v}_n \\
+\mathbf{v}_{n+1} &= \mathbf{v}_n + h \cdot \mathbf{a}_n
+\end{aligned}
+$$
+* Implicit Euler Method: Energy decreases. This is a linear system of equations **2 phương trình 2 ẩn**, we can solve it analytically normally, no problem!!!
+$$
+\begin{aligned}
+\mathbf{x}_{n+1} &= \mathbf{x}_n + h \cdot \mathbf{v}_{n+1} \\
+\mathbf{v}_{n+1} &= \mathbf{v}_n + h \cdot \mathbf{a}_{n+1}
+\end{aligned}
+$$
+* Symplectic Euler Method (Euler Cromer): Energy conserved
+$$
+\begin{aligned}
+\mathbf{v}_{n+1} &= \mathbf{v}_n + h \cdot \mathbf{a}_n \\
+\mathbf{x}_{n+1} &= \mathbf{x}_n + h \cdot \mathbf{v}_{n+1}
+\end{aligned}
+$$
+
+But why sympletic Euler energy conserved?
+you calculate the new velocity first using the current acceleration, and then immediately use that new velocity to calculate the new position => avoid energy explosion.
+
+## Verlet Method
+
+$$\underline{x}_{i+1} = 2\underline{x}_i - \underline{x}_{i-1} + h^2 \ddot{x}_i$$
+$$\underline{v}_{i+1} = \frac{\underline{x}_{i+1} - \underline{x}_{i-1}}{2h}$$
+
+### How did we derive this?
+Let's look at two Taylor series expansions—one moving forward in time ($+h$) and one moving backward in time ($-h$):
+$$\underline{x}(t_i + h) = \underline{x}(t_i) + h \cdot \dot{\underline{x}}(t_i) + \frac{1}{2}h^2 \cdot \ddot{\underline{x}}(t_i) + \frac{1}{6}h^3 \cdot \dddot{\underline{x}}(t_i) + O(h^4)$$
+$$\underline{x}(t_i - h) = \underline{x}(t_i) - h \cdot \dot{\underline{x}}(t_i) + \frac{1}{2}h^2 \cdot \ddot{\underline{x}}(t_i) - \frac{1}{6}h^3 \cdot \dddot{\underline{x}}(t_i) + O(h^4)$$
+
+Adding these two equations together cancels out the odd-powered terms (the $h$ and $h^3$ terms). Btw as now we have local error $O(h^4)$, we can say that Verlet has **approximate order 3**.
+$$\underline{x}(t_i + h) + \underline{x}(t_i - h) = 2\underline{x}(t_i) + h^2 \ddot{\underline{x}}(t_i) + O(h^4)$$
+
+Finally, solving for $\underline{x}_{i+1}$ yields the position update rule:
+$$\underline{x}_{i+1} = 2\underline{x}_i - \underline{x}_{i-1} + h^2 \underline{a}_i$$
+
+To obtain the velocity update rule, we can subtract the backward Taylor expansion from the forward Taylor expansion, which cancels out the even-powered terms (the $h^2$ and $h^4$ terms):
+$$\underline{x}(t_i + h) - \underline{x}(t_i - h) = 2h \cdot \dot{\underline{x}}(t_i) + \frac{2}{6}h^3 \cdot \dddot{\underline{x}}(t_i) + O(h^5)$$
+$$\underline{x}_{i+1} - \underline{x}_{i-1} = 2h \cdot \dot{\underline{x}}(t_i) + O(h^3)$$
+
+Rearranging this equation to solve for the velocity term $\dot{\underline{x}}(t_i)$ gives us the central difference formula for velocity:
+$$\dot{\underline{x}}(t_i) = \frac{\underline{x}(t_i + h) - \underline{x}(t_i - h)}{2h}$$
+$$\underline{v}_i = \frac{\underline{x}_{i+1} - \underline{x}_{i-1}}{2h}$$
+
+### Wait, we thought Verlet is order 3, but actually it is even order 2!!!
+That's correct, when we use central difference:
+$$\underline{x}_{i+1} = 2\underline{x}_i - \underline{x}_{i-1} + h^2 \ddot{x}_i$$
+$$\underline{x}_{i+1} - \underline{x}_i = (\underline{x}_i - \underline{x}_{i-1}) + h^2 \ddot{x}_i$$
+$$\frac{\underline{x}_{i+1} - \underline{x}_i}{h} = \frac{\underline{x}_i - \underline{x}_{i-1}}{h} + h \ddot{x}_i$$
+$$\underline{v}_{i+1/2} = \underline{v}_{i-1/2} + h \ddot{x}_i$$
+And at the same time we have:
+$$\vec{v}_{i+1/2} = \frac{\underline{x}_{i+1} - \underline{x}_i}{h}$$
+Therefore:
+$$\underline{x}_{i+1} = \underline{x}_i + h \vec{v}_{i+1/2}$$
+
+This is also **Leapfrog** method.
+
+
+## Runge-Kutta
+Magic: To achieve an approximation order of $n$, the method typically requires $n$ evaluations of the time evolution function $\vec{f}$ per time step
+
+### The popular RK4
+Has approximation order of 4. This means its local error is $O(h^5)$. To do that, it RK4 probes the vector field at four different points ($\vec{k}_1$ through $\vec{k}_4$) within a single time step $h$:
+
+$$\vec{y}_{i+1} = \vec{y}_i + h \cdot \frac{1}{6}(\vec{k}_1 + 2\vec{k}_2 + 2\vec{k}_3 + \vec{k}_4) + O(h^5)$$
+
+* $\vec{k}_1 = \vec{f}(t_i, \vec{y}_i)$: The slope at the beginning of the interval (this is what standard Euler uses).
+* $\vec{k}_2 = \vec{f}(t_i + \frac{h}{2}, \vec{y}_i + \frac{h}{2}\vec{k}_1)$: A slope f at the midpoint of $k_1$.
+* $\vec{k}_3 = \vec{f}(t_i + \frac{h}{2}, \vec{y}_i + \frac{h}{2}\vec{k}_2)$: Another slope f at the midpoint of $k_2$.
+* $\vec{k}_4 = \vec{f}(t_i + h, \vec{y}_i + h\vec{k}_3)$: A slope f at the end of $k_3$.
+
+## A-Stability
+a critical metric used to determine if a numerical integration method is robust enough to handle "stiff" differential equations. We use Dahlquist equation to test it:
+$$\dot{y}(t) = -\lambda \cdot y(t)$$
+
+* This equation represents a system that decays toward zero over time.
+* **True Analytic Solution**: The true, perfect solution is $y(t) = e^{-\lambda \cdot t}$.
+* **Goal**: Any good numerical method should also decay toward the t-axis (zero), just like the real physics does.
+
+A numerical method is A-stable, if it can decay toward the t-axis (zero) no matter how large timestep $h$ or stiffness $\lambda$ is.
+
+# Particle Method
+## Stochastic Source
+Basically a sampling process, we sample from a distribution to generate particles, direction, velocity, etc.
+
+Example: A circular burst of particles 
+
+$\vec{v}_0$: The base direction the emitter is pointing.
+
+The Random Offset: The formula adds a random direction (using $\sin$ and $\cos$ for the angle) and a random magnitude ($\rho_1$) scaled by the desired spread ($\Delta v_x, \Delta v_y$).Result: $\vec{v}_{rand} = \vec{v}_0 + \rho_1 \binom{\Delta v_x \cos(2\pi\rho_2)}{\Delta v_y \sin(2\pi\rho_2)}$.
+
+So what are $\rho_1$ and $\rho_2$? $\rho_1$ is a random number between 0 and 1, $\rho_2$ is a random number between 0 and 2$\pi$. $\Delta v_x$ and $\Delta v_y$ are the spread of the emitter in the x and y directions.
+
+## Boids
+to simulate the collective motion of animals like flocks of birds not based on physical rules but based on **behavior rules**. Each boid can see a certain radius around it and:
+
+* Steer to avoid crowding or crashing into local flockmates.
+* Steer towards the average heading of local flockmates.
+* Steer towards the center of mass of local flockmates.
+
+## Natural Weathering
+### $\gamma$-tons Propagation and Update Loop
+$\gamma$-tons are particles (rain, dusts,...) generated by sources, like a outer hemisphere surrounding the scene. 
+
+Each particle has a velocity $\vec{v}$, a position $\vec{p}$, a lifetime $\tau$, and type of particle $t$ (rain, dust, snow, etc.). 
+
+When these particles interact with a surface, the information is stored directly in the surface to calculate aging and other physical effects (moss, rust, etc.) as well as rendering effects.
+
+### Representation
+Objects are represented as point clouds, each point saves the accumulated information from the particles that have interacted with it. When particles interact, it can add, remove or chemically change the surface.
+
+## Cloth Simulation
+### Provot Model
+Spring-Mass system with:
+
+* structural springs: squares
+* shear springs: diagonal to avoid shearing
+* flexion springs: to avoid folding, bending
+
+### Kelvin-Voigt Model
+For a cloth system with $N$ particles, the global behavior is defined by:
+$$M\mathbf{\ddot{x}} + C\mathbf{\dot{x}} + K\mathbf{x} = \mathbf{f}_{ext}$$
+
+#### Example with real numbers
+
+##### Setup
+Imagine a 1D "cloth" strip consisting of 3 particles connected in a line.
+
+* Mass ($m$): $1\text{ kg}$ for each particle.
+* Stiffness ($k$): $100\text{ N/m}$.
+* Damping ($c$): $10\text{ kg/s}$.
+
+The global state is defined by the displacement vector $\mathbf{x} = [x_1, x_2, x_3]^T$.
+
+Based on the formulas provided, our system matrices are:
+
+* Mass Matrix ($M$):$$M = \begin{bmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix}$$
+* Stiffness Matrix ($K$):$$K = \begin{bmatrix} 100 & -100 & 0 \\ -100 & 200 & -100 \\ 0 & -100 & 100 \end{bmatrix}$$
+* Damping Matrix ($C$):$$C = \begin{bmatrix} 10 & -10 & 0 \\ -10 & 20 & -10 \\ 0 & -10 & 10 \end{bmatrix}$$
+
+Current State at time $t$:
+
+* Positions ($\mathbf{x}$): $\begin{bmatrix} 0 \\ 0.1 \\ 0 \end{bmatrix}$ (Middle particle is stretched 10cm).
+* Velocities ($\dot{\mathbf{x}}$): $\begin{bmatrix} 0 \\ -2 \\ 0 \end{bmatrix}$ (Middle particle is moving left at 2m/s).
+
+##### Calculate Force
+
+The total internal force is $\mathbf{f}_{int} = -(K\mathbf{x} + C\dot{\mathbf{x}})$.
+
+* Stiffness Force:
+$$K\mathbf{x} = \begin{bmatrix} 100 & -100 & 0 \\ -100 & 200 & -100 \\ 0 & -100 & 100 \end{bmatrix} \begin{bmatrix} 0 \\ 0.1 \\ 0 \end{bmatrix} = \begin{bmatrix} (100 \cdot 0) + (-100 \cdot 0.1) + (0 \cdot 0) \\ (-100 \cdot 0) + (200 \cdot 0.1) + (-100 \cdot 0) \\ (0 \cdot 0) + (-100 \cdot 0.1) + (100 \cdot 0) \end{bmatrix} = \begin{bmatrix} -10 \\ 20 \\ -10 \end{bmatrix}$$
+
+* Visciocity Force:
+$$C\dot{\mathbf{x}} = \begin{bmatrix} 10 & -10 & 0 \\ -10 & 20 & -10 \\ 0 & -10 & 10 \end{bmatrix} \begin{bmatrix} 0 \\ -2 \\ 0 \end{bmatrix} = \begin{bmatrix} (10 \cdot 0) + (-10 \cdot -2) + (0 \cdot 0) \\ (-10 \cdot 0) + (20 \cdot -2) + (-10 \cdot 0) \\ (0 \cdot 0) + (-10 \cdot -2) + (10 \cdot 0) \end{bmatrix} = \begin{bmatrix} 20 \\ -40 \\ 20 \end{bmatrix}$$
+
+* Total Force: We combine these into the total force and divide by Mass ($M$). Since $M$ is the identity matrix ($1\text{kg}$), $\ddot{\mathbf{x}} = \mathbf{f}_{total}$.
+$$\mathbf{f}_{total} = - \left( \underbrace{\begin{bmatrix} -10 \\ 20 \\ -10 \end{bmatrix}}_{\text{Stiffness}} + \underbrace{\begin{bmatrix} 20 \\ -40 \\ 20 \end{bmatrix}}_{\text{Damping}} \right) = - \begin{bmatrix} 10 \\ -20 \\ 10 \end{bmatrix} = \begin{bmatrix} -10 \\ 20 \\ -10 \end{bmatrix}$$
+
+* Sympletic Euler
+$$\mathbf{v}_{n+1} = \mathbf{v}_n + h \cdot \ddot{\mathbf{x}} = \begin{bmatrix} 0 \\ -2 \\ 0 \end{bmatrix} + 0.01 \cdot \begin{bmatrix} -10 \\ 20 \\ -10 \end{bmatrix} = \begin{bmatrix} -0.1 \\ -1.8 \\ -0.1 \end{bmatrix}$$
+$$\mathbf{x}_{n+1} = \mathbf{x}_n + h \cdot \mathbf{v}_{n+1} = \begin{bmatrix} 0 \\ 0.1 \\ 0 \end{bmatrix} + 0.01 \cdot \begin{bmatrix} -0.1 \\ -1.8 \\ -0.1 \end{bmatrix} = \begin{bmatrix} -0.001 \\ 0.082 \\ -0.001 \end{bmatrix}$$
+
+##### Why did we only have internal force? Because we didn't add any external force.
+The formula $M\ddot{\mathbf{x}} + C\dot{\mathbf{x}} + K\mathbf{x} = \mathbf{f}$ is the Equation of Motion. It states that the sum of all internal and external forces equals mass times acceleration ($F = ma$).If we rearrange that equation to solve for the mass-acceleration term ($M\ddot{\mathbf{x}}$), we get:
+$$M\ddot{\mathbf{x}} = \mathbf{f} - C\dot{\mathbf{x}} - K\mathbf{x}$$
+where:
+
+* $\mathbf{f}$: Represents external forces (like gravity or a user pulling on the cloth).
+* $-(K\mathbf{x} + C\dot{\mathbf{x}})$: Represents the internal forces ($\mathbf{f}_{int}$). These are the forces the cloth exerts on itself to resist stretching and moving.
+
+# Rigid Body
+Core components:
+
+* Placement ($\underline{X}; \mathbf{R}$) $\implies$ Kinematics ($\vec{V}; \vec{\omega}$)
+* Dynamics ($M \implies \vec{P} \implies \vec{F}; \quad \mathbf{I} \implies \vec{L} \implies \vec{T}$): Mass ($M$), momentum ($\vec{P}$), and force ($\vec{F}$), alongside rotational equivalents like the inertia tensor ($\mathbf{I}$), angular momentum ($\vec{L}$), and torque ($\vec{T}$).  
+
+$$\vec{y} = \begin{pmatrix} \underline{X} \\ \mathbf{R} \\ \vec{P} \\ \vec{L} \end{pmatrix} \implies \dot{\vec{y}} = \begin{pmatrix} M^{-1}\vec{P} \\ \mathbf{I}^{-1}\vec{L} \\ \vec{F} \\ \vec{T} \end{pmatrix}$$
+
+$\dot{\vec{y}}$: rate of change for each component.
+
+* The rate of change of position ($\underline{X}$) is velocity = $M^{-1}\vec{P}$ (momentum divided by mass), **because $p=mv$**
+* The change in rotation ($\mathbf{R}$) also angular momentum divided by inertia ($\mathbf{I}^{-1}\vec{L}$), **because $L=I\omega$**
+* Momentum ($\vec{P}$) changes based on net Force ($\vec{F}$), **because $F=\frac{dp}{dt} = m\frac{dv}{dt} = m\frac{d^2x}{dt^2}$**
+* Angular momentum ($\vec{L}$) changes based on net Torque ($\vec{T}$), **because $T=\frac{dL}{dt} = I\frac{d\omega}{dt} = I\frac{d^2\theta}{dt^2}$**
+
+> Momentum means quantity of motion.
+
+> Force is the rate of change of this quantity.
+
+
+## Decompose Vector a to b
+$$|a_{||\vec{b}}| = \|\vec{a}\| \cos(\theta)$$
+$$\cos(\theta) = \frac{\vec{a} \cdot \vec{b}}{\|\vec{a}\|\|\vec{b}\|}$$
+$$|a_{||\vec{b}}| = \|\vec{a}\| \left( \frac{\vec{a} \cdot \vec{b}}{\|\vec{a}\|\|\vec{b}\|} \right) = \frac{\vec{a} \cdot \vec{b}}{\|\vec{b}\|}$$
+$$\vec{a}_{||\vec{b}} = \left( \frac{\vec{a} \cdot \vec{b}}{\|\vec{b}\|} \right) \frac{\vec{b}}{\|\vec{b}\|}$$
+$$\vec{a}_{||\vec{b}} = \frac{(\vec{a}^T\vec{b})}{\vec{b}^2}\vec{b}$$
+
+## Kinematics
+There is nothing much to talk about Linear, so let's talk about Angular. We have $$\mathbf{\dot{R}} = \vec{\omega}^* \mathbf{R}_{current}$$
+
+But where does that skew-symmetric matrix come from? 
+
+$\vec{\omega} = \frac{d\alpha}{dt}\hat{n}$ is the original angular velocity. To perform rotational math efficiently, the angular velocity vector $\vec{\omega}$ is often converted into a skew-symmetric matrix $\vec{\omega}^*$ (also denoted as $[\vec{\omega}]_{\times}$):
+$$\vec{\omega}^* = \begin{pmatrix} 0 & -\omega_z & \omega_y \\ \omega_z & 0 & -\omega_x \\ -\omega_y & \omega_x & 0 \end{pmatrix}$$
+Multiplying a vector by this matrix is mathematically equivalent to a cross product: $\vec{\omega}^* \vec{r} = \vec{\omega} \times \vec{r}$.
+
+After all $$\mathbf{R}_{next} = \mathbf{R}_{current} + h \cdot \mathbf{\dot{R}}$$
+
+## Dynamics
+
+| Feature | Linear Dynamics | Angular Dynamics |
+| :--- | :--- | :--- |
+| **Base** | $M$ | $\mathbf{I} = m (\vec{r}^2 \mathbf{1} - \vec{r} \vec{r}^T)$ |
+| **Momentum** | $\vec{P} = M\vec{V}$ | $\vec{L} = \mathbf{I}\vec{\omega}$ |
+| **Force / Torque** | $\vec{F} =\dot{\vec{P}} =  M\dot{\vec{V}}$ | $\vec{T} = \vec{r} \times \vec{F} = \dot{L} = \mathbf{I}\dot{\vec{\omega}}$ |
+| **Update Rule** | $\vec{P}_{next} = \vec{P}_{current} + h \cdot \vec{F}$ | $\vec{L}_{next} = \vec{L}_{current} + h \cdot \vec{T}$ |
+
+### Angular Dynamic of a Point on a Mass
+Start looking at a point on that Mass object. Point $m_i$ circles around the center of mass $\underline{X}$ at a distance (lever arm) of $\vec{r}_i$.
+
+* Velocity: $\vec{v}_i = \vec{\omega} \times \vec{r}_i$.
+* Acceleration:  $\dot{\vec{v}}_i = \dot{\vec{\omega}} \times \vec{r}_i$
+* Force: $\vec{F}_i = m_i \dot{\vec{v}}_i = m_i (\dot{\vec{\omega}} \times \vec{r}_i)$
+* Torque: $\vec{T}_i = \vec{r}_i \times \vec{F}_i = \vec{r}_i \times m_i (\dot{\vec{\omega}} \times \vec{r}_i) = m_i \vec{r}_i \times (\dot{\vec{\omega}} \times \vec{r}_i)$
+
+Because  $\vec{a} \times (\vec{b} \times \vec{c}) = (\vec{a} \cdot \vec{c})\vec{b} - (\vec{a} \cdot \vec{b})\vec{c}$, we have:
+$$\vec{T}_i = m_i [(\vec{r}_i \cdot \vec{r}_i)\dot{\vec{\omega}} - (\vec{r}_i \cdot \dot{\vec{\omega}})\vec{r}_i]$$
+$$\vec{T}_i = m_i [\vec{r}_i^2 \dot{\vec{\omega}} - (\vec{r}_i \cdot \dot{\vec{\omega}})\vec{r}_i]$$
+
+Remember now we have:
+
+* $\vec{r}_i^2$: This is $x^2 + y^2 + z^2$ (a single number).
+* $\dot{\vec{\omega}}$: This is $[\dot{\omega}_x, \dot{\omega}_y, \dot{\omega}_z]^T$ (a direction and magnitude of spin change).
+
+Now we want to extract a matrix (potentially a intertia tensor), we do the following:
+
+* The first term: $\vec{r}_i^2 \dot{\vec{\omega}}$ is equivalent to $(\vec{r}_i^2 \mathbf{1}) \dot{\vec{\omega}}$, where $\mathbf{1}$ is the $3 \times 3$ identity matrix.
+* The second term: The dot product $\vec{r}_i \cdot \dot{\vec{\omega}}$ can be written as $\vec{r}_i^T \dot{\vec{\omega}}$. Therefore, $(\vec{r}_i \cdot \dot{\vec{\omega}})\vec{r}_i$ becomes $\vec{r}_i (\vec{r}_i^T \dot{\vec{\omega}})$, which by associativity is $(\vec{r}_i \vec{r}_i^T) \dot{\vec{\omega}}$.
+
+$$\vec{T}_i = m_i (\vec{r}_i^2 \mathbf{1} - \vec{r}_i \vec{r}_i^T) \dot{\vec{\omega}}$$
+
+#### Numerical Example
+Let's see this in action for a point mass of $1\text{ kg}$ at position $\vec{r}_i = [1, 0, 0]^T$ being accelerated around the Z-axis by $\dot{\vec{\omega}} = [0, 0, 1]^T$.
+
+* Using Vectors:
+$$\dot{\vec{\omega}} \times \vec{r}_i = [0, 1, 0]^T$$
+$$\vec{r}_i \times (\dot{\vec{\omega}} \times \vec{r}_i) = [1, 0, 0]^T \times [0, 1, 0]^T = [0, 0, 1]^T$$
+$$\vec{T}_i = 1 \cdot [0, 0, 1]^T = \mathbf{[0, 0, 1]^T}$$
+
+* Using the Matrix $(\vec{r}_i^2 \mathbf{1} - \vec{r}_i \vec{r}_i^T)$:$$\vec{r}_i^2 = 1^2 = 1$$
+$$\vec{r}_i^2 \mathbf{1} = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}$$
+$$\vec{r}_i \vec{r}_i^T = \begin{pmatrix} 1 \\ 0 \\ 0 \end{pmatrix} \begin{pmatrix} 1 & 0 & 0 \end{pmatrix} = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 0 & 0 \\ 0 & 0 & 0 \end{pmatrix}$$
+Subtracting them: $\begin{pmatrix} 1-1 & 0 & 0 \\ 0 & 1-0 & 0 \\ 0 & 0 & 1-0 \end{pmatrix} = \begin{pmatrix} 0 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}$.Multiply by $\dot{\vec{\omega}}$: $\begin{pmatrix} 0 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix} \begin{pmatrix} 0 \\ 0 \\ 1 \end{pmatrix} = \mathbf{[0, 0, 1]^T}$.The results match! This matrix $m(\vec{r}_i^2 \mathbf{1} - \vec{r}_i \vec{r}_i^T)$ is the Inertia Tensor of point $i$.
+
+### Angular Dynamic of a whole Mass
+If we have a Mass made up of $n$ point masses, the inertia tensor for the whole mass is the sum of the inertia tensors of all the point masses:
+$$\mathbf{I} = \sum_{i=1}^{n} \mathbf{I}_i = \sum_{i=1}^{n} m_i (\vec{r}_i^2 \mathbf{1} - \vec{r}_i \vec{r}_i^T)$$
+Or where $\rho(\vec{r})$ is the mass density at position $\vec{r}$:
+$$\mathbf{I} = \int \rho(\vec{r}) (\vec{r}^2 \mathbf{1} - \vec{r} \vec{r}^T) dV$$
+
+If you think a little bit, you can see that:
+$$\vec{r}_i^2 \mathbf{1} - \vec{r}_i \vec{r}_i^T = \begin{pmatrix} y^2+z^2 & -xy & -xz \\ -xy & x^2+z^2 & -yz \\ -xz & -yz & x^2+y^2 \end{pmatrix}$$
+
+
+#### Numerical Example: 2 Point Dumbbell
+Imagine two masses ($1\text{ kg}$ each) on a rod. One is at $\vec{r}_1 = [1, 0, 0]$ and the other is at $\vec{r}_2 = [-1, 0, 0]$.
+
+* Tensor for Point 1 ($\mathbf{I}_1$):We already calculated that for a mass at $[1, 0, 0]$, the tensor is:$$\begin{pmatrix} 0 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}$$
+* Tensor for Point 2 ($\mathbf{I}_2$):Since $\vec{r}_2 = [-1, 0, 0]$, the square is still $\vec{r}_2^2 = 1$, and $\vec{r}_2 \vec{r}_2^T$ is still the same matrix. So $\mathbf{I}_2$ is identical:$$\begin{pmatrix} 0 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}$$
+* Total Object Tensor ($\mathbf{I}_{total}$):$$\mathbf{I}_{total} = \mathbf{I}_1 + \mathbf{I}_2 = \begin{pmatrix} 0 & 0 & 0 \\ 0 & 2 & 0 \\ 0 & 0 & 2 \end{pmatrix}$$
+
+#### Continuous Example: a Cuboid
+$$I = \int_{-c/2}^{c/2} \int_{-b/2}^{b/2} \int_{-a/2}^{a/2} \rho_0 \begin{pmatrix} y^2+z^2 & -xy & -xz \\ -xy & x^2+z^2 & -yz \\ -xz & -yz & x^2+y^2 \end{pmatrix} dx dy dz$$
+
+### When is Wobble? Inertia Tensor is not always Constant like Mass
+Looking at the inertia tensor, we can see that it is a symmetric matrix. The object will not wobble if all the off-diagonal elements are zero. And thankfully, for every object mass, we can find that coordinate system, we call it natural coordinate system:
+
+$$\mathbf{I} = \begin{pmatrix} I_{xx} & 0 & 0 \\ 0 & I_{yy} & 0 \\ 0 & 0 & I_{zz} \end{pmatrix}$$
+Because here I is constant, we have the Torque equation:
+$$\vec{T} = \mathbf{I}\dot{\vec{\omega}}$$
+
+On a cuboid, the natural coordinate system is the one where the axes align with the edges of the cuboid. Because well $\sum xy = 0$, $\sum xz = 0$, and $\sum yz = 0$ along each of these axes.
+
+To convert to world coordinate system:
+$$\mathbf{I}_W = \mathbf{R} \mathbf{I}_O \mathbf{R}^T$$
+And now since $\mathbf{I}_W$ is not constant, we have the general Torque equation:
+$$\vec{T} = \mathbf{I}_W\dot{\vec{\omega}} + \vec{\omega}^* \vec{L}$$
+
+
+
+
+

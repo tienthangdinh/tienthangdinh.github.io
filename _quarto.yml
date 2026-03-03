@@ -2,7 +2,7 @@ project:
   type: website
 
 website:
-  title: "silent brachistochrone"
+  title: "the brachistochrone traveller"
   navbar:
     right:
       - about.qmd
