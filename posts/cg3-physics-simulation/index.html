@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-02-26">
+
+<title>Physics Simulation – the brachistochrone traveller</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">the brachistochrone traveller</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Đinh Tiến Thắng</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Physics Simulation</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">Physics</div>
+                <div class="quarto-category">Simulation</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">February 26, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#physics" id="toc-physics" class="nav-link active" data-scroll-target="#physics">Physics</a>
+  <ul class="collapse">
+  <li><a href="#harmonic-oscillator" id="toc-harmonic-oscillator" class="nav-link" data-scroll-target="#harmonic-oscillator">Harmonic Oscillator</a>
+  <ul class="collapse">
+  <li><a href="#analytical-solution" id="toc-analytical-solution" class="nav-link" data-scroll-target="#analytical-solution">Analytical Solution</a></li>
+  <li><a href="#numerical-solution" id="toc-numerical-solution" class="nav-link" data-scroll-target="#numerical-solution">Numerical Solution</a></li>
+  </ul></li>
+  <li><a href="#physical-quantities" id="toc-physical-quantities" class="nav-link" data-scroll-target="#physical-quantities">Physical Quantities</a>
+  <ul class="collapse">
+  <li><a href="#physical-units" id="toc-physical-units" class="nav-link" data-scroll-target="#physical-units">Physical Units</a></li>
+  <li><a href="#nondimensionalization" id="toc-nondimensionalization" class="nav-link" data-scroll-target="#nondimensionalization">Nondimensionalization</a></li>
+  </ul></li>
+  <li><a href="#applied-analysis" id="toc-applied-analysis" class="nav-link" data-scroll-target="#applied-analysis">Applied Analysis</a>
+  <ul class="collapse">
+  <li><a href="#conservative-force-potential-energy" id="toc-conservative-force-potential-energy" class="nav-link" data-scroll-target="#conservative-force-potential-energy">Conservative Force, Potential Energy</a></li>
+  <li><a href="#solid-angle-omega" id="toc-solid-angle-omega" class="nav-link" data-scroll-target="#solid-angle-omega">Solid Angle (<span class="math inline">\(\Omega\)</span>)</a></li>
+  </ul></li>
+  <li><a href="#minimization-principles" id="toc-minimization-principles" class="nav-link" data-scroll-target="#minimization-principles">Minimization Principles</a>
+  <ul class="collapse">
+  <li><a href="#principle-of-least-action" id="toc-principle-of-least-action" class="nav-link" data-scroll-target="#principle-of-least-action">Principle of Least Action</a></li>
+  <li><a href="#fermats-principle-of-least-time" id="toc-fermats-principle-of-least-time" class="nav-link" data-scroll-target="#fermats-principle-of-least-time">Fermat’s Principle of Least Time</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#numerical-methods-for-solving-odes" id="toc-numerical-methods-for-solving-odes" class="nav-link" data-scroll-target="#numerical-methods-for-solving-odes">Numerical Methods for solving ODEs</a>
+  <ul class="collapse">
+  <li><a href="#general-setup" id="toc-general-setup" class="nav-link" data-scroll-target="#general-setup">General Setup</a>
+  <ul class="collapse">
+  <li><a href="#first-step-order-reduction-to-first-order-system" id="toc-first-step-order-reduction-to-first-order-system" class="nav-link" data-scroll-target="#first-step-order-reduction-to-first-order-system">First step: Order Reduction to First-Order System</a></li>
+  <li><a href="#lipschitz-condition" id="toc-lipschitz-condition" class="nav-link" data-scroll-target="#lipschitz-condition">Lipschitz Condition</a></li>
+  <li><a href="#steps" id="toc-steps" class="nav-link" data-scroll-target="#steps">Steps</a></li>
+  <li><a href="#approximation-order" id="toc-approximation-order" class="nav-link" data-scroll-target="#approximation-order">Approximation Order</a></li>
+  </ul></li>
+  <li><a href="#euler-method" id="toc-euler-method" class="nav-link" data-scroll-target="#euler-method">Euler Method</a></li>
+  <li><a href="#verlet-method" id="toc-verlet-method" class="nav-link" data-scroll-target="#verlet-method">Verlet Method</a>
+  <ul class="collapse">
+  <li><a href="#how-did-we-derive-this" id="toc-how-did-we-derive-this" class="nav-link" data-scroll-target="#how-did-we-derive-this">How did we derive this?</a></li>
+  <li><a href="#wait-we-thought-verlet-is-order-3-but-actually-it-is-even-order-2" id="toc-wait-we-thought-verlet-is-order-3-but-actually-it-is-even-order-2" class="nav-link" data-scroll-target="#wait-we-thought-verlet-is-order-3-but-actually-it-is-even-order-2">Wait, we thought Verlet is order 3, but actually it is even order 2!!!</a></li>
+  </ul></li>
+  <li><a href="#runge-kutta" id="toc-runge-kutta" class="nav-link" data-scroll-target="#runge-kutta">Runge-Kutta</a>
+  <ul class="collapse">
+  <li><a href="#the-popular-rk4" id="toc-the-popular-rk4" class="nav-link" data-scroll-target="#the-popular-rk4">The popular RK4</a></li>
+  </ul></li>
+  <li><a href="#a-stability" id="toc-a-stability" class="nav-link" data-scroll-target="#a-stability">A-Stability</a></li>
+  </ul></li>
+  <li><a href="#particle-method" id="toc-particle-method" class="nav-link" data-scroll-target="#particle-method">Particle Method</a>
+  <ul class="collapse">
+  <li><a href="#stochastic-source" id="toc-stochastic-source" class="nav-link" data-scroll-target="#stochastic-source">Stochastic Source</a></li>
+  <li><a href="#boids" id="toc-boids" class="nav-link" data-scroll-target="#boids">Boids</a></li>
+  <li><a href="#natural-weathering" id="toc-natural-weathering" class="nav-link" data-scroll-target="#natural-weathering">Natural Weathering</a>
+  <ul class="collapse">
+  <li><a href="#gamma-tons-propagation-and-update-loop" id="toc-gamma-tons-propagation-and-update-loop" class="nav-link" data-scroll-target="#gamma-tons-propagation-and-update-loop"><span class="math inline">\(\gamma\)</span>-tons Propagation and Update Loop</a></li>
+  <li><a href="#representation" id="toc-representation" class="nav-link" data-scroll-target="#representation">Representation</a></li>
+  </ul></li>
+  <li><a href="#cloth-simulation" id="toc-cloth-simulation" class="nav-link" data-scroll-target="#cloth-simulation">Cloth Simulation</a>
+  <ul class="collapse">
+  <li><a href="#provot-model" id="toc-provot-model" class="nav-link" data-scroll-target="#provot-model">Provot Model</a></li>
+  <li><a href="#kelvin-voigt-model" id="toc-kelvin-voigt-model" class="nav-link" data-scroll-target="#kelvin-voigt-model">Kelvin-Voigt Model</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#rigid-body" id="toc-rigid-body" class="nav-link" data-scroll-target="#rigid-body">Rigid Body</a>
+  <ul class="collapse">
+  <li><a href="#decompose-vector-a-to-b" id="toc-decompose-vector-a-to-b" class="nav-link" data-scroll-target="#decompose-vector-a-to-b">Decompose Vector a to b</a></li>
+  <li><a href="#kinematics" id="toc-kinematics" class="nav-link" data-scroll-target="#kinematics">Kinematics</a></li>
+  <li><a href="#dynamics" id="toc-dynamics" class="nav-link" data-scroll-target="#dynamics">Dynamics</a>
+  <ul class="collapse">
+  <li><a href="#angular-dynamic-of-a-point-on-a-mass" id="toc-angular-dynamic-of-a-point-on-a-mass" class="nav-link" data-scroll-target="#angular-dynamic-of-a-point-on-a-mass">Angular Dynamic of a Point on a Mass</a></li>
+  <li><a href="#angular-dynamic-of-a-whole-mass" id="toc-angular-dynamic-of-a-whole-mass" class="nav-link" data-scroll-target="#angular-dynamic-of-a-whole-mass">Angular Dynamic of a whole Mass</a></li>
+  <li><a href="#when-is-wobble-inertia-tensor-is-not-always-constant-like-mass" id="toc-when-is-wobble-inertia-tensor-is-not-always-constant-like-mass" class="nav-link" data-scroll-target="#when-is-wobble-inertia-tensor-is-not-always-constant-like-mass">When is Wobble? Inertia Tensor is not always Constant like Mass</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="physics" class="level1">
+<h1>Physics</h1>
+<section id="harmonic-oscillator" class="level2">
+<h2 class="anchored" data-anchor-id="harmonic-oscillator">Harmonic Oscillator</h2>
+<ul>
+<li>Hooke’s Law <span class="math inline">\(F = -kx\)</span> (<span class="math inline">\(k\)</span> is stiffness constant)</li>
+<li>Newton 2nd Law <span class="math inline">\(F = ma = m\ddot{x} = -kx\)</span></li>
+</ul>
+<p>So Original equation is <span class="math display">\[m\ddot{x} + kx = 0\]</span></p>
+<p>Now we add <span class="math inline">\(B\dot{x}\)</span> term (damping force) It creates a force that is proportional to the velocity (<span class="math inline">\(dx/dt\)</span>). The faster you move, the harder the “air” pushes back against you <span class="math display">\[m\ddot{x} + B\dot{x} + kx = 0\]</span></p>
+<p>Then we add actual A (unormalized actual strength unlike <span class="math inline">\(F(t) = \sin(t)\)</span> only between -1 and 1) <span class="math display">\[m\ddot{x} + B\dot{x} + kx = A(t)\]</span></p>
+<section id="analytical-solution" class="level3">
+<h3 class="anchored" data-anchor-id="analytical-solution">Analytical Solution</h3>
+<p><strong>Idea</strong> Because the acceleration <span class="math inline">\(\ddot{x}\)</span> is proportional to the negative position <span class="math inline">\(-x\)</span>, the solution is a sine/cosine wave. <span class="math display">\[x(t) = A \cdot \cos(\omega t + \phi)\]</span> <span class="math display">\[\dot{x}(t) = -\omega A \cdot \sin(\omega t + \phi)\]</span> <span class="math display">\[\ddot{x}(t) = -\omega^2 A \cdot \cos(\omega t + \phi)\]</span></p>
+</section>
+<section id="numerical-solution" class="level3">
+<h3 class="anchored" data-anchor-id="numerical-solution">Numerical Solution</h3>
+<p>Let’s create a state vector and Euler method: <span class="math display">\[\vec{y} = \begin{pmatrix} x \\ v \equiv \dot{x} \end{pmatrix} \quad \vec{y}_{i+1} = \vec{y}_i + h\dot{\vec{y}}_i\]</span></p>
+<p>So where to find <span class="math inline">\(\dot{\vec{y}}_i\)</span>? We have observed that: <span class="math inline">\(\dot{x} = v\)</span> and <span class="math inline">\(\dot{v} = -\omega^2 x\)</span>, just ignore the <span class="math inline">\(v\)</span> <span class="math display">\[\dot{\vec{y}}_i = \begin{pmatrix} \dot{x} \\ \dot{v} \end{pmatrix} = \begin{pmatrix} 0 &amp; 1 \\ -\omega^2 &amp; 0 \end{pmatrix} \begin{pmatrix} x \\ v \end{pmatrix}\]</span></p>
+</section>
+</section>
+<section id="physical-quantities" class="level2">
+<h2 class="anchored" data-anchor-id="physical-quantities">Physical Quantities</h2>
+<section id="physical-units" class="level3">
+<h3 class="anchored" data-anchor-id="physical-units">Physical Units</h3>
+<p>Base units: Kelvin, meter, kg, second, candela,… How to find unit of a constant? Example: <span class="math display">\[m \frac{d^2x}{dt^2} + B \frac{dx}{dt} + kx = F(t)\]</span> Each term in this equation represents a force, so every term must also be Force: <span class="math inline">\(\text{kg} \cdot \text{m} \cdot \text{s}^{-2}\)</span> (Newtons). Now we can find unit of <span class="math inline">\(B\)</span> damping consant: <span class="math display">\[[B] = \frac{[F(t)]}{[dx/dt]} = \frac{\text{kg} \cdot \text{m} \cdot \text{s}^{-2}}{\text{m} \cdot \text{s}^{-1}} = \text{kg} \cdot \text{s}^{-1}\]</span></p>
+<p><strong>Candela &amp; Luminous Intensity</strong> The Candela (<span class="math inline">\(cd\)</span>) is the SI unit of luminous intensity, defined as the luminous intensity of a monochromatic source of light emitting radiation of frequency 540 THz (green light) with a radiant intensity of 1/683 W/sr.</p>
+<p>Solid Angle (<span class="math inline">\(\Omega\)</span>) (Unit: steradians, <span class="math inline">\(sr\)</span>): measures the “area” covered by a set of directions on the surface of a unit sphere <span class="math display">\[\Omega = A / r^2\]</span></p>
+</section>
+<section id="nondimensionalization" class="level3">
+<h3 class="anchored" data-anchor-id="nondimensionalization">Nondimensionalization</h3>
+<p>Substituting variables so that the resulting equations are governed by all pure numbers</p>
+<section id="example-harmonic-oscillator" class="level4">
+<h4 class="anchored" data-anchor-id="example-harmonic-oscillator">Example: Harmonic Oscillator</h4>
+<p><span class="math display">\[m \frac{d^2x}{dt^2} + B \frac{dx}{dt} + kx = AF(t)\]</span></p>
+<p>Redefine variables time (<span class="math inline">\(t_c\)</span>) and position (<span class="math inline">\(x_c\)</span>) and <span class="math inline">\(\tau\)</span> and <span class="math inline">\(\chi\)</span> are all scales of <span class="math inline">\(t\)</span> and <span class="math inline">\(x\)</span>. So we replace every <span class="math inline">\(t = \tau t_c\)</span> and every <span class="math inline">\(x = \chi x_c\)</span>. <span class="math display">\[m \frac{d^2(\chi x_c)}{(d\tau t_c)^2} + B \frac{d(\chi x_c)}{d\tau t_c} + k(\chi x_c) = AF(t)\]</span> <span class="math display">\[m \frac{x_c}{t_c^2} \frac{d^2\chi}{d\tau^2} + B \frac{x_c}{t_c} \frac{d\chi}{d\tau} + k x_c \chi = AF(t)\]</span></p>
+<p>Divide the entire equation by <span class="math inline">\(m \frac{x_c}{t_c^2}\)</span>: <span class="math display">\[\frac{d^2\chi}{d\tau^2} + t_c \frac{B}{m} \frac{d\chi}{d\tau} + t_c^2 \frac{k}{m} \chi = \frac{t_c^2}{mx_c} Af(\tau)\]</span></p>
+<p>Choose the Smart Constants. To make it simple, we choose <span class="math inline">\(t_c\)</span> and <span class="math inline">\(x_c\)</span> based on the system’s own properties:</p>
+<ul>
+<li>Characteristic Time: <span class="math inline">\(t_c = \sqrt{m/k}\)</span> (the inverse of the natural frequency).</li>
+<li>Characteristic Position: <span class="math inline">\(x_c = A/k\)</span> (the static displacement under force <span class="math inline">\(A\)</span>).</li>
+</ul>
+<p>But WTF why so random? what are the principles? have a look agai, our goal is make as many terms to 1 as possible: <span class="math display">\[\frac{d^2\chi}{d\tau^2} + \underbrace{\left( t_c \frac{B}{m} \right)}_{\text{Term 1}} \frac{d\chi}{d\tau} + \underbrace{\left( t_c^2 \frac{k}{m} \right)}_{\text{Term 2}} \chi = \underbrace{\left( \frac{t_c^2 A}{m x_c} \right)}_{\text{Term 3}} f(\tau)\]</span> Look at Term 2, isn’t it convenient when we have <span class="math inline">\(m\)</span> is in kg, <span class="math inline">\(k\)</span> is in kg/s², how about we take <span class="math inline">\(t_c^2 = \frac{m}{k}\)</span> to make everything 1 and also the units cancel each other out? Yeah let’s do it.</p>
+<p>Now we substitute <span class="math inline">\(t_c\)</span> in Term 3 (<span class="math inline">\(\frac{t_c^2 A}{m x_c}\)</span>). We already decided <span class="math inline">\(t_c^2 = m/k\)</span>, so let’s plug that in: <span class="math display">\[\left( \frac{(m/k) A}{m x_c} \right) \implies \frac{A}{k x_c}\]</span>. To make this term 1, we must set <span class="math inline">\(x_c = A/k\)</span>.</p>
+<p>Now we substitute <span class="math inline">\(t_c\)</span> in Term 1 (<span class="math inline">\(\frac{t_c B}{m}\)</span>). We already decided <span class="math inline">\(t_c^2 = m/k\)</span>, so let’s plug that in: <span class="math display">\[\sqrt{\frac{m}{k}} \cdot \frac{B}{m} = \frac{B}{\sqrt{mk}}\]</span> This “leftover” becomes the Damping Ratio (<span class="math inline">\(2\zeta\)</span>)</p>
+<p>Once again, everything left is dimensionless: <span class="math display">\[\frac{d^2\chi}{d\tau^2} + 2\zeta \frac{d\chi}{d\tau} + \chi = f(\tau)\]</span> Where the damping ratio is defined as: <span class="math display">\[2\zeta = \frac{B}{\sqrt{mk}}\]</span></p>
+<p>But why?</p>
+<ul>
+<li><p>Reason 1: If now I say set <span class="math inline">\(B = 10\)</span>, you have no idea if the system will wobble or not When we nondimensionalize, we find that the behavior doesn’t depend on <span class="math inline">\(B\)</span> alone, but on the ratio <span class="math inline">\(B / \sqrt{mk}\)</span>.</p></li>
+<li><p>Reason 2: All the variables now regarding the time or positions are <span class="math inline">\(t_c^2 = \frac{m}{k}\)</span> and <span class="math inline">\(x_c = \frac{A}{k}\)</span>, they are:</p>
+<ul>
+<li>the dimensions are canceled out, so they are just parameter</li>
+<li>they are on the scales (axes) of these variables, not the scale of second or meter anymore</li>
+</ul></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="applied-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="applied-analysis">Applied Analysis</h2>
+<p>2 ways to calculate in physics:</p>
+<ul>
+<li><p><strong>Field-based</strong>: You look at fixed points in space (like a grid) and measure how properties like velocity or density change at those specific locations as time passes. Easy to implement for things like smoke or large-scale fluid volumes. e.g: each grid has a <span class="math inline">\(\rho(x,y,z)\)</span> and <span class="math inline">\(v(x,y,z)\)</span></p></li>
+<li><p><strong>Particle-based</strong>: You follow individual “pieces” of matter as they move through space, “conceptually simple” because you just track the position and mass of each particle. e.g: each particle has a <span class="math inline">\(m\)</span> and <span class="math inline">\(v\)</span> and <span class="math inline">\(p\)</span></p></li>
+<li><p><strong>Field -&gt; Particle</strong>: randomly <strong>sample particles</strong> based on the density.</p></li>
+<li><p><strong>Particle -&gt; Field</strong>: sum all particles in a grid cell to get the density.</p></li>
+</ul>
+<section id="conservative-force-potential-energy" class="level3">
+<h3 class="anchored" data-anchor-id="conservative-force-potential-energy">Conservative Force, Potential Energy</h3>
+<p>What is force? negative gradient of a potential energy field <span class="math inline">\(\phi(\underline{x})\)</span>: <span class="math display">\[\vec{F} = -\vec{\nabla}_{\underline{x}} \phi(\underline{x})\]</span></p>
+<p>What is Work (<span class="math inline">\(W\)</span>)? energy transferred by a force acting over a path <span class="math inline">\(\underline{x}(t)\)</span>: <span class="math display">\[W = \int_{\underline{x}_0}^{\underline{x}_1} \vec{F} d\underline{x}\]</span> A force is conservative if and only if its curl vanishes everywhere (<span class="math inline">\(\vec{0}\)</span>): <span class="math display">\[\vec{\nabla}_{\underline{x}} \times \vec{F} = \begin{pmatrix} \frac{\partial F_z}{\partial y} - \frac{\partial F_y}{\partial z} \\ \frac{\partial F_x}{\partial z} - \frac{\partial F_z}{\partial x} \\ \frac{\partial F_y}{\partial x} - \frac{\partial F_x}{\partial y} \end{pmatrix} = \vec{0}\]</span></p>
+<section id="example-1" class="level4">
+<h4 class="anchored" data-anchor-id="example-1">Example 1</h4>
+<ol type="1">
+<li><p>From Potential Energy (<span class="math inline">\(\phi\)</span>) to Force (<span class="math inline">\(\vec{F}\)</span>)We start with a given potential energy function:<span class="math display">\[\phi(\underline{x}) = x^2 + 2xy - y^2\]</span></p></li>
+<li><p>The forces are negative partial derivatives for each component (<span class="math inline">\(F_x\)</span> and <span class="math inline">\(F_y\)</span>): <span class="math display">\[F_x = -\partial_x \phi = -2x - 2y\]</span> <span class="math display">\[F_y = -\partial_y \phi = -2x + 2y\]</span> <span class="math display">\[\vec{F} = -2 \begin{pmatrix} x+y \\ x-y \end{pmatrix}\]</span></p></li>
+<li><p>Force is conservative only if its curl is zero. Let’s check it: <span class="math display">\[\vec{\nabla}_{\underline{x}} \times \vec{F} = \begin{pmatrix} \frac{\partial F_z}{\partial y} - \frac{\partial F_y}{\partial z} \\ \frac{\partial F_x}{\partial z} - \frac{\partial F_z}{\partial x} \\ \frac{\partial F_y}{\partial x} - \frac{\partial F_x}{\partial y} \end{pmatrix} = \begin{pmatrix} 0 - 0 \\ 0 - 0 \\ -2 - (-2) \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \\ 0 \end{pmatrix}\]</span></p></li>
+<li><p>Reconstruct Potential Energy from Force Given the force field:<span class="math display">\[\vec{F} = \begin{pmatrix} -2x - 2y \\ -2x + 2y \end{pmatrix}\]</span></p></li>
+</ol>
+<p>We know that <span class="math inline">\(F_x = -\partial_x \phi\)</span> and <span class="math inline">\(F_y = -\partial_y \phi\)</span>. We can integrate each component separately to find the potential energy function <span class="math inline">\(\phi(x, y)\)</span>.</p>
+<p>Integrate <span class="math inline">\(F_x\)</span> with respect to <span class="math inline">\(x\)</span> (treating <span class="math inline">\(y\)</span> as a constant): <span class="math display">\[\phi(x, y) = -\int F_x dx = -\int (-2x - 2y) dx = x^2 + 2xy + C_1(y)\]</span></p>
+<p>Integrate <span class="math inline">\(F_y\)</span> with respect to <span class="math inline">\(y\)</span> (treating <span class="math inline">\(x\)</span> as a constant): <span class="math display">\[\phi(x, y) = -\int F_y dy = -\int (-2x + 2y) dy = 2xy - y^2 + C_2(x)\]</span></p>
+<p>We have two expressions for <span class="math inline">\(\phi(x, y)\)</span>. Let’s compare them: <span class="math display">\[\phi(x, y) = x^2 + 2xy + C_1(y) = 2xy - y^2 + C_2(x)\]</span> <span class="math display">\[C_1(y) = C - y^2\]</span> <span class="math display">\[C_2(x) = C + x^2\]</span> <span class="math display">\[\phi(x, y) = x^2 + 2xy - y^2 + C\]</span></p>
+</section>
+</section>
+<section id="solid-angle-omega" class="level3">
+<h3 class="anchored" data-anchor-id="solid-angle-omega">Solid Angle (<span class="math inline">\(\Omega\)</span>)</h3>
+<p>Solid angle is the “area” covered by a set of directions on the surface of a unit sphere. Unit is steradians (<span class="math inline">\(sr\)</span>). A full sphere is <span class="math inline">\(4\pi\)</span> sr.</p>
+<p>To define solid angle better, let’s start from Spherical Coordinates. A unit vector <span class="math inline">\(\omega\)</span> is then defined as: <span class="math display">\[\omega = \begin{pmatrix} \cos\phi \sin\theta \\ \sin\phi \sin\theta \\ \cos\theta \end{pmatrix}\]</span> Where <span class="math inline">\(\theta \in [0, \pi]\)</span> is the polar angle and <span class="math inline">\(\phi \in [0, 2\pi)\)</span> is the azimuthal angle.</p>
+<section id="differential-solid-angle" class="level4">
+<h4 class="anchored" data-anchor-id="differential-solid-angle">Differential solid angle</h4>
+<p>We have <span class="math inline">\(\sin\theta\)</span> because in z direction the arc is moving relative to <span class="math inline">\(\sin\theta\)</span>: <span class="math display">\[d\Omega = \sin\theta d\theta d\phi\]</span></p>
+</section>
+<section id="full-sphere" class="level4">
+<h4 class="anchored" data-anchor-id="full-sphere">Full sphere:</h4>
+<p><span class="math display">\[\int_{all \Omega} 1 d\Omega = \int_{0}^{2\pi} \left( \int_{0}^{\pi} \sin\theta d\theta \right) 1 d\phi = \int_{0}^{2\pi} 2 d\phi = 4\pi\]</span> Outer integral: <span class="math inline">\(\int_{0}^{2\pi} 1 d\phi = [\phi]_{0}^{2\pi} = 2\pi\)</span> Inner integral: <span class="math inline">\(\int_{0}^{\pi} \sin\theta d\theta = [-\cos\theta]_{0}^{\pi} = -\cos\pi - (-\cos0) = -(-1) - (-1) = 2\)</span></p>
+<p>Therefore: <span class="math inline">\(\int_{all \Omega} 1 d\Omega = 2\pi \times 2 = 4\pi\)</span></p>
+</section>
+</section>
+</section>
+<section id="minimization-principles" class="level2">
+<h2 class="anchored" data-anchor-id="minimization-principles">Minimization Principles</h2>
+<section id="principle-of-least-action" class="level3">
+<h3 class="anchored" data-anchor-id="principle-of-least-action">Principle of Least Action</h3>
+<section id="lagrangian" class="level4">
+<h4 class="anchored" data-anchor-id="lagrangian">Lagrangian</h4>
+<p>Lagrangian <span class="math inline">\(L\)</span> of a system is the difference between kinetic energy (<span class="math inline">\(T\)</span>) and potential energy (<span class="math inline">\(V\)</span>): <span class="math display">\[L(x, \dot{x}) = T - V\]</span></p>
+<p>If you take a path <span class="math inline">\(\vec{\mathbf{y}}(t)\)</span> and then slightly change (or perturb) it to a nearby path, the change in the total cost (<span class="math inline">\(\delta S\)</span>) is zero to the first order. This is exactly how you find the top or bottom of a curve in single-variable calculus: you find the point where the slope (derivative) is zero. So it is also the case here, we find the path that with slight change, the action is still the same.</p>
+<p>We formulate it like this:</p>
+</section>
+<section id="euler-lagrange-equations" class="level4">
+<h4 class="anchored" data-anchor-id="euler-lagrange-equations">Euler-Lagrange Equations</h4>
+<p><span class="math display">\[\forall x: \quad \frac{d}{dt}\left(\frac{\partial L}{\partial \dot{x}}\right) = \frac{\partial L}{\partial x}\]</span></p>
+<p>Derivation approach: <span class="math display">\[S = \int_{t_1}^{t_2} L(x, \dot{x}, t) dt\]</span> Imagine the true path is <span class="math inline">\(x(t)\)</span>. We perturb it by a tiny amount <span class="math inline">\(\delta x(t)\)</span>. This change in the path also changes the velocity by <span class="math inline">\(\delta \dot{x}(t)\)</span>.When we calculate how much the total Action <span class="math inline">\(S\)</span> changes (<span class="math inline">\(\delta S\)</span>), we use the chain rule: <span class="math display">\[\delta S = \int_{t_1}^{t_2} \left( \frac{\partial L}{\partial x} \delta x + \frac{\partial L}{\partial \dot{x}} \delta \dot{x} \right) dt = 0\]</span></p>
+</section>
+<section id="example-harmonic-oscillator-1" class="level4">
+<h4 class="anchored" data-anchor-id="example-harmonic-oscillator-1">Example: Harmonic Oscillator</h4>
+<p><strong>1. Define the Lagrangian</strong> For a mass <span class="math inline">\(m\)</span> attached to a spring with stiffness <span class="math inline">\(k\)</span> (where <span class="math inline">\(x\)</span> is the position and <span class="math inline">\(\dot{x}\)</span> is the velocity):</p>
+<ul>
+<li>Kinetic Energy: <span class="math inline">\(T = \frac{1}{2}m\dot{x}^2\)</span></li>
+<li>Potential Energy: <span class="math inline">\(V = \frac{1}{2}kx^2\)</span> <span class="math display">\[L = T - V = \frac{1}{2}m\dot{x}^2 - \frac{1}{2}kx^2\]</span></li>
+</ul>
+<p><strong>2. Apply Euler-Lagrange Equations</strong> We have two terms in the Lagrangian:</p>
+<ul>
+<li>The term with velocity: <span class="math inline">\(\frac{\partial L}{\partial \dot{x}} = m\dot{x}\)</span></li>
+<li>The term with position: <span class="math inline">\(\frac{\partial L}{\partial x} = -kx\)</span></li>
+</ul>
+<p>Now, we plug these into the Euler-Lagrange equation: <span class="math display">\[\frac{d}{dt}\left(\frac{\partial L}{\partial \dot{x}}\right) = \frac{\partial L}{\partial x}\]</span> <span class="math display">\[\frac{d}{dt}(m\dot{x}) = -kx\]</span> <span class="math display">\[m\ddot{x} = -kx\]</span> <span class="math display">\[m\ddot{x} + kx = 0\]</span> <span class="math display">\[m\ddot{x} = -kx\]</span></p>
+<p>This result, <span class="math inline">\(m\ddot{x} = -kx\)</span>, is precisely Hooke’s Law combined with Newton’s Second Law (<span class="math inline">\(F=ma\)</span>).</p>
+<p>So using the Principle of Stationary Action, we can derive equations of motion from the Lagrangian.</p>
+</section>
+</section>
+<section id="fermats-principle-of-least-time" class="level3">
+<h3 class="anchored" data-anchor-id="fermats-principle-of-least-time">Fermat’s Principle of Least Time</h3>
+<p>the path taken by a ray of light between two points is the path that can be traversed in the least amount of time. This principle can derive Snell’s Law &amp; Law of Reflection.</p>
+<p><strong>1. Law of Reflection</strong> path of least time occurs when the angle of incidence (<span class="math inline">\(\theta_i\)</span>) equals the angle of reflection (<span class="math inline">\(\theta_r\)</span>). Any other path would result in a longer travel time.</p>
+<p><strong>2. Snell’s Law</strong> Light must travel faster in the medium with the lower refractive index. To minimize the total travel time, the light spends less time in the slower medium by bending toward the normal. <span class="math display">\[n_1 \sin \theta_1 = n_2 \sin \theta_2\]</span></p>
+</section>
+</section>
+</section>
+<section id="numerical-methods-for-solving-odes" class="level1">
+<h1>Numerical Methods for solving ODEs</h1>
+<section id="general-setup" class="level2">
+<h2 class="anchored" data-anchor-id="general-setup">General Setup</h2>
+<section id="first-step-order-reduction-to-first-order-system" class="level3">
+<h3 class="anchored" data-anchor-id="first-step-order-reduction-to-first-order-system">First step: Order Reduction to First-Order System</h3>
+<p>This is important because most numerical solvers are designed to solve first-order ODEs. Basically in general, we have a phase space vector <span class="math inline">\(y\)</span>: <span class="math display">\[\vec{y}(t) = \left( x(t), \dot{x}(t), \ddot{x}(t), \dots, \frac{\partial^{n-1}}{\partial t^{n-1}}x(t) \right)\]</span> with a time evolution function <span class="math inline">\(\dot{y}\)</span> or <span class="math inline">\(f\)</span>, <strong>ALSO THE VECTOR FIELD!!!</strong>: <span class="math display">\[\dot{\vec{y}}(t) = \vec{f}(t, \vec{y}(t))\]</span></p>
+<section id="example-harmonic-oscillator-2" class="level4">
+<h4 class="anchored" data-anchor-id="example-harmonic-oscillator-2">Example: Harmonic Oscillator</h4>
+<p>Phase space vector <span class="math inline">\(y\)</span>: <span class="math display">\[\vec{y}(t) = \begin{pmatrix} x(t) \\ v(t) \end{pmatrix}\]</span> Time evolution function <span class="math inline">\(\dot{y}\)</span> or <span class="math inline">\(f\)</span>: <span class="math display">\[\dot{\vec{y}}(t) = \begin{pmatrix} v(t) \\ -\omega^2 x(t) \end{pmatrix} = \vec{f}(t, \vec{y}(t))\]</span></p>
+</section>
+</section>
+<section id="lipschitz-condition" class="level3">
+<h3 class="anchored" data-anchor-id="lipschitz-condition">Lipschitz Condition</h3>
+<p>In order for the solution to be stable and unique, the “arrows” in your vector field cannot change abruptly or infinitely fast as you move from one point to another, for example collision: <span class="math display">\[\|\vec{f}(t, \vec{y}_1) - \vec{f}(t, \vec{y}_2)\| \le L \cdot \|\vec{y}_1 - \vec{y}_2\|\]</span></p>
+<p>For example, harmonic oscillator: <span class="math display">\[\|\vec{f}(t, \vec{y}_1) - \vec{f}(t, \vec{y}_2)\| = \|\begin{pmatrix} v_1 - v_2 \\ -\omega^2(x_1 - x_2) \end{pmatrix}\| = \sqrt{(v_1 - v_2)^2 + \omega^4(x_1 - x_2)^2} \le L \cdot \|\vec{y}_1 - \vec{y}_2\|\]</span></p>
+</section>
+<section id="steps" class="level3">
+<h3 class="anchored" data-anchor-id="steps">Steps</h3>
+<ol type="1">
+<li><strong>Starting Point</strong>: To begin any simulation, we restate the two components we’ve discussed:</li>
+</ol>
+<ul>
+<li>Initial State: <span class="math inline">\(\vec{y}(0) = \vec{y}_0\)</span> (Where the system is at the very beginning).</li>
+<li>The Rules: <span class="math inline">\(\dot{\vec{y}}(t) = \vec{f}(t, \vec{y}(t))\)</span> (How the state changes at any given moment).</li>
+</ul>
+<ol start="2" type="1">
+<li><strong>Integration</strong>: <span class="math display">\[\vec{y}(t) = \vec{y}_0 + \int_{0}^{t} \vec{f}(\tilde{t}, \vec{y}(\tilde{t}))d\tilde{t}\]</span></li>
+</ol>
+</section>
+<section id="approximation-order" class="level3">
+<h3 class="anchored" data-anchor-id="approximation-order">Approximation Order</h3>
+<ul>
+<li><p><strong>Step Error</strong>: Error between the true solution and the numerical solution at each step: <span class="math display">\[\varepsilon_i = \|\vec{y}_{i+1} - \underline{\vec{y}}_i(t_{i+1})\|\]</span></p></li>
+<li><p><strong>Euler</strong>: <span class="math inline">\(\vec{y}_{i+1} = \vec{y}_i + h \cdot \vec{f}(t_i, \vec{y}_i)\)</span></p></li>
+<li><p><strong>Taylor</strong>: <span class="math inline">\(\underline{\vec{y}}_i(t_{i+1}) = \vec{y}_i + h \cdot \vec{f}(t_i, \vec{y}_i) + O(h^2)\)</span> Notice they are identical for the first two terms. The only difference is the remainder term <span class="math inline">\(O(h^2)\)</span>. =&gt; Therefore, the step error of Euler method is <span class="math inline">\(O(h^2)\)</span>.</p></li>
+<li><p><strong>Accumulated Error</strong>: Even though the error per step for Explicit Euler is proportional to <span class="math inline">\(h^2\)</span>, the accumulated error grows with <span class="math inline">\(O(h)\)</span>.</p></li>
+<li><p><strong>Sum up</strong>: If a method has a step error of <span class="math inline">\(h^{k+1}\)</span>, its total accumulated error grows with <span class="math inline">\(O(h^k)\)</span>. So Explicit Euler is an “Order 1” method.</p></li>
+</ul>
+</section>
+</section>
+<section id="euler-method" class="level2">
+<h2 class="anchored" data-anchor-id="euler-method">Euler Method</h2>
+<ul>
+<li>Explicit Euler Method: Energy increases <span class="math display">\[
+\begin{aligned}
+\mathbf{x}_{n+1} &amp;= \mathbf{x}_n + h \cdot \mathbf{v}_n \\
+\mathbf{v}_{n+1} &amp;= \mathbf{v}_n + h \cdot \mathbf{a}_n
+\end{aligned}
+\]</span></li>
+<li>Implicit Euler Method: Energy decreases. This is a linear system of equations <strong>2 phương trình 2 ẩn</strong>, we can solve it analytically normally, no problem!!! <span class="math display">\[
+\begin{aligned}
+\mathbf{x}_{n+1} &amp;= \mathbf{x}_n + h \cdot \mathbf{v}_{n+1} \\
+\mathbf{v}_{n+1} &amp;= \mathbf{v}_n + h \cdot \mathbf{a}_{n+1}
+\end{aligned}
+\]</span></li>
+<li>Symplectic Euler Method (Euler Cromer): Energy conserved <span class="math display">\[
+\begin{aligned}
+\mathbf{v}_{n+1} &amp;= \mathbf{v}_n + h \cdot \mathbf{a}_n \\
+\mathbf{x}_{n+1} &amp;= \mathbf{x}_n + h \cdot \mathbf{v}_{n+1}
+\end{aligned}
+\]</span></li>
+</ul>
+<p>But why sympletic Euler energy conserved? you calculate the new velocity first using the current acceleration, and then immediately use that new velocity to calculate the new position =&gt; avoid energy explosion.</p>
+</section>
+<section id="verlet-method" class="level2">
+<h2 class="anchored" data-anchor-id="verlet-method">Verlet Method</h2>
+<p><span class="math display">\[\underline{x}_{i+1} = 2\underline{x}_i - \underline{x}_{i-1} + h^2 \ddot{x}_i\]</span> <span class="math display">\[\underline{v}_{i+1} = \frac{\underline{x}_{i+1} - \underline{x}_{i-1}}{2h}\]</span></p>
+<section id="how-did-we-derive-this" class="level3">
+<h3 class="anchored" data-anchor-id="how-did-we-derive-this">How did we derive this?</h3>
+<p>Let’s look at two Taylor series expansions—one moving forward in time (<span class="math inline">\(+h\)</span>) and one moving backward in time (<span class="math inline">\(-h\)</span>): <span class="math display">\[\underline{x}(t_i + h) = \underline{x}(t_i) + h \cdot \dot{\underline{x}}(t_i) + \frac{1}{2}h^2 \cdot \ddot{\underline{x}}(t_i) + \frac{1}{6}h^3 \cdot \dddot{\underline{x}}(t_i) + O(h^4)\]</span> <span class="math display">\[\underline{x}(t_i - h) = \underline{x}(t_i) - h \cdot \dot{\underline{x}}(t_i) + \frac{1}{2}h^2 \cdot \ddot{\underline{x}}(t_i) - \frac{1}{6}h^3 \cdot \dddot{\underline{x}}(t_i) + O(h^4)\]</span></p>
+<p>Adding these two equations together cancels out the odd-powered terms (the <span class="math inline">\(h\)</span> and <span class="math inline">\(h^3\)</span> terms). Btw as now we have local error <span class="math inline">\(O(h^4)\)</span>, we can say that Verlet has <strong>approximate order 3</strong>. <span class="math display">\[\underline{x}(t_i + h) + \underline{x}(t_i - h) = 2\underline{x}(t_i) + h^2 \ddot{\underline{x}}(t_i) + O(h^4)\]</span></p>
+<p>Finally, solving for <span class="math inline">\(\underline{x}_{i+1}\)</span> yields the position update rule: <span class="math display">\[\underline{x}_{i+1} = 2\underline{x}_i - \underline{x}_{i-1} + h^2 \underline{a}_i\]</span></p>
+<p>To obtain the velocity update rule, we can subtract the backward Taylor expansion from the forward Taylor expansion, which cancels out the even-powered terms (the <span class="math inline">\(h^2\)</span> and <span class="math inline">\(h^4\)</span> terms): <span class="math display">\[\underline{x}(t_i + h) - \underline{x}(t_i - h) = 2h \cdot \dot{\underline{x}}(t_i) + \frac{2}{6}h^3 \cdot \dddot{\underline{x}}(t_i) + O(h^5)\]</span> <span class="math display">\[\underline{x}_{i+1} - \underline{x}_{i-1} = 2h \cdot \dot{\underline{x}}(t_i) + O(h^3)\]</span></p>
+<p>Rearranging this equation to solve for the velocity term <span class="math inline">\(\dot{\underline{x}}(t_i)\)</span> gives us the central difference formula for velocity: <span class="math display">\[\dot{\underline{x}}(t_i) = \frac{\underline{x}(t_i + h) - \underline{x}(t_i - h)}{2h}\]</span> <span class="math display">\[\underline{v}_i = \frac{\underline{x}_{i+1} - \underline{x}_{i-1}}{2h}\]</span></p>
+</section>
+<section id="wait-we-thought-verlet-is-order-3-but-actually-it-is-even-order-2" class="level3">
+<h3 class="anchored" data-anchor-id="wait-we-thought-verlet-is-order-3-but-actually-it-is-even-order-2">Wait, we thought Verlet is order 3, but actually it is even order 2!!!</h3>
+<p>That’s correct, when we use central difference: <span class="math display">\[\underline{x}_{i+1} = 2\underline{x}_i - \underline{x}_{i-1} + h^2 \ddot{x}_i\]</span> <span class="math display">\[\underline{x}_{i+1} - \underline{x}_i = (\underline{x}_i - \underline{x}_{i-1}) + h^2 \ddot{x}_i\]</span> <span class="math display">\[\frac{\underline{x}_{i+1} - \underline{x}_i}{h} = \frac{\underline{x}_i - \underline{x}_{i-1}}{h} + h \ddot{x}_i\]</span> <span class="math display">\[\underline{v}_{i+1/2} = \underline{v}_{i-1/2} + h \ddot{x}_i\]</span> And at the same time we have: <span class="math display">\[\vec{v}_{i+1/2} = \frac{\underline{x}_{i+1} - \underline{x}_i}{h}\]</span> Therefore: <span class="math display">\[\underline{x}_{i+1} = \underline{x}_i + h \vec{v}_{i+1/2}\]</span></p>
+<p>This is also <strong>Leapfrog</strong> method.</p>
+</section>
+</section>
+<section id="runge-kutta" class="level2">
+<h2 class="anchored" data-anchor-id="runge-kutta">Runge-Kutta</h2>
+<p>Magic: To achieve an approximation order of <span class="math inline">\(n\)</span>, the method typically requires <span class="math inline">\(n\)</span> evaluations of the time evolution function <span class="math inline">\(\vec{f}\)</span> per time step</p>
+<section id="the-popular-rk4" class="level3">
+<h3 class="anchored" data-anchor-id="the-popular-rk4">The popular RK4</h3>
+<p>Has approximation order of 4. This means its local error is <span class="math inline">\(O(h^5)\)</span>. To do that, it RK4 probes the vector field at four different points (<span class="math inline">\(\vec{k}_1\)</span> through <span class="math inline">\(\vec{k}_4\)</span>) within a single time step <span class="math inline">\(h\)</span>:</p>
+<p><span class="math display">\[\vec{y}_{i+1} = \vec{y}_i + h \cdot \frac{1}{6}(\vec{k}_1 + 2\vec{k}_2 + 2\vec{k}_3 + \vec{k}_4) + O(h^5)\]</span></p>
+<ul>
+<li><span class="math inline">\(\vec{k}_1 = \vec{f}(t_i, \vec{y}_i)\)</span>: The slope at the beginning of the interval (this is what standard Euler uses).</li>
+<li><span class="math inline">\(\vec{k}_2 = \vec{f}(t_i + \frac{h}{2}, \vec{y}_i + \frac{h}{2}\vec{k}_1)\)</span>: A slope f at the midpoint of <span class="math inline">\(k_1\)</span>.</li>
+<li><span class="math inline">\(\vec{k}_3 = \vec{f}(t_i + \frac{h}{2}, \vec{y}_i + \frac{h}{2}\vec{k}_2)\)</span>: Another slope f at the midpoint of <span class="math inline">\(k_2\)</span>.</li>
+<li><span class="math inline">\(\vec{k}_4 = \vec{f}(t_i + h, \vec{y}_i + h\vec{k}_3)\)</span>: A slope f at the end of <span class="math inline">\(k_3\)</span>.</li>
+</ul>
+</section>
+</section>
+<section id="a-stability" class="level2">
+<h2 class="anchored" data-anchor-id="a-stability">A-Stability</h2>
+<p>a critical metric used to determine if a numerical integration method is robust enough to handle “stiff” differential equations. We use Dahlquist equation to test it: <span class="math display">\[\dot{y}(t) = -\lambda \cdot y(t)\]</span></p>
+<ul>
+<li>This equation represents a system that decays toward zero over time.</li>
+<li><strong>True Analytic Solution</strong>: The true, perfect solution is <span class="math inline">\(y(t) = e^{-\lambda \cdot t}\)</span>.</li>
+<li><strong>Goal</strong>: Any good numerical method should also decay toward the t-axis (zero), just like the real physics does.</li>
+</ul>
+<p>A numerical method is A-stable, if it can decay toward the t-axis (zero) no matter how large timestep <span class="math inline">\(h\)</span> or stiffness <span class="math inline">\(\lambda\)</span> is.</p>
+</section>
+</section>
+<section id="particle-method" class="level1">
+<h1>Particle Method</h1>
+<section id="stochastic-source" class="level2">
+<h2 class="anchored" data-anchor-id="stochastic-source">Stochastic Source</h2>
+<p>Basically a sampling process, we sample from a distribution to generate particles, direction, velocity, etc.</p>
+<p>Example: A circular burst of particles</p>
+<p><span class="math inline">\(\vec{v}_0\)</span>: The base direction the emitter is pointing.</p>
+<p>The Random Offset: The formula adds a random direction (using <span class="math inline">\(\sin\)</span> and <span class="math inline">\(\cos\)</span> for the angle) and a random magnitude (<span class="math inline">\(\rho_1\)</span>) scaled by the desired spread (<span class="math inline">\(\Delta v_x, \Delta v_y\)</span>).Result: <span class="math inline">\(\vec{v}_{rand} = \vec{v}_0 + \rho_1 \binom{\Delta v_x \cos(2\pi\rho_2)}{\Delta v_y \sin(2\pi\rho_2)}\)</span>.</p>
+<p>So what are <span class="math inline">\(\rho_1\)</span> and <span class="math inline">\(\rho_2\)</span>? <span class="math inline">\(\rho_1\)</span> is a random number between 0 and 1, <span class="math inline">\(\rho_2\)</span> is a random number between 0 and 2<span class="math inline">\(\pi\)</span>. <span class="math inline">\(\Delta v_x\)</span> and <span class="math inline">\(\Delta v_y\)</span> are the spread of the emitter in the x and y directions.</p>
+</section>
+<section id="boids" class="level2">
+<h2 class="anchored" data-anchor-id="boids">Boids</h2>
+<p>to simulate the collective motion of animals like flocks of birds not based on physical rules but based on <strong>behavior rules</strong>. Each boid can see a certain radius around it and:</p>
+<ul>
+<li>Steer to avoid crowding or crashing into local flockmates.</li>
+<li>Steer towards the average heading of local flockmates.</li>
+<li>Steer towards the center of mass of local flockmates.</li>
+</ul>
+</section>
+<section id="natural-weathering" class="level2">
+<h2 class="anchored" data-anchor-id="natural-weathering">Natural Weathering</h2>
+<section id="gamma-tons-propagation-and-update-loop" class="level3">
+<h3 class="anchored" data-anchor-id="gamma-tons-propagation-and-update-loop"><span class="math inline">\(\gamma\)</span>-tons Propagation and Update Loop</h3>
+<p><span class="math inline">\(\gamma\)</span>-tons are particles (rain, dusts,…) generated by sources, like a outer hemisphere surrounding the scene.</p>
+<p>Each particle has a velocity <span class="math inline">\(\vec{v}\)</span>, a position <span class="math inline">\(\vec{p}\)</span>, a lifetime <span class="math inline">\(\tau\)</span>, and type of particle <span class="math inline">\(t\)</span> (rain, dust, snow, etc.).</p>
+<p>When these particles interact with a surface, the information is stored directly in the surface to calculate aging and other physical effects (moss, rust, etc.) as well as rendering effects.</p>
+</section>
+<section id="representation" class="level3">
+<h3 class="anchored" data-anchor-id="representation">Representation</h3>
+<p>Objects are represented as point clouds, each point saves the accumulated information from the particles that have interacted with it. When particles interact, it can add, remove or chemically change the surface.</p>
+</section>
+</section>
+<section id="cloth-simulation" class="level2">
+<h2 class="anchored" data-anchor-id="cloth-simulation">Cloth Simulation</h2>
+<section id="provot-model" class="level3">
+<h3 class="anchored" data-anchor-id="provot-model">Provot Model</h3>
+<p>Spring-Mass system with:</p>
+<ul>
+<li>structural springs: squares</li>
+<li>shear springs: diagonal to avoid shearing</li>
+<li>flexion springs: to avoid folding, bending</li>
+</ul>
+</section>
+<section id="kelvin-voigt-model" class="level3">
+<h3 class="anchored" data-anchor-id="kelvin-voigt-model">Kelvin-Voigt Model</h3>
+<p>For a cloth system with <span class="math inline">\(N\)</span> particles, the global behavior is defined by: <span class="math display">\[M\mathbf{\ddot{x}} + C\mathbf{\dot{x}} + K\mathbf{x} = \mathbf{f}_{ext}\]</span></p>
+<section id="example-with-real-numbers" class="level4">
+<h4 class="anchored" data-anchor-id="example-with-real-numbers">Example with real numbers</h4>
+<section id="setup" class="level5">
+<h5 class="anchored" data-anchor-id="setup">Setup</h5>
+<p>Imagine a 1D “cloth” strip consisting of 3 particles connected in a line.</p>
+<ul>
+<li>Mass (<span class="math inline">\(m\)</span>): <span class="math inline">\(1\text{ kg}\)</span> for each particle.</li>
+<li>Stiffness (<span class="math inline">\(k\)</span>): <span class="math inline">\(100\text{ N/m}\)</span>.</li>
+<li>Damping (<span class="math inline">\(c\)</span>): <span class="math inline">\(10\text{ kg/s}\)</span>.</li>
+</ul>
+<p>The global state is defined by the displacement vector <span class="math inline">\(\mathbf{x} = [x_1, x_2, x_3]^T\)</span>.</p>
+<p>Based on the formulas provided, our system matrices are:</p>
+<ul>
+<li>Mass Matrix (<span class="math inline">\(M\)</span>):<span class="math display">\[M = \begin{bmatrix} 1 &amp; 0 &amp; 0 \\ 0 &amp; 1 &amp; 0 \\ 0 &amp; 0 &amp; 1 \end{bmatrix}\]</span></li>
+<li>Stiffness Matrix (<span class="math inline">\(K\)</span>):<span class="math display">\[K = \begin{bmatrix} 100 &amp; -100 &amp; 0 \\ -100 &amp; 200 &amp; -100 \\ 0 &amp; -100 &amp; 100 \end{bmatrix}\]</span></li>
+<li>Damping Matrix (<span class="math inline">\(C\)</span>):<span class="math display">\[C = \begin{bmatrix} 10 &amp; -10 &amp; 0 \\ -10 &amp; 20 &amp; -10 \\ 0 &amp; -10 &amp; 10 \end{bmatrix}\]</span></li>
+</ul>
+<p>Current State at time <span class="math inline">\(t\)</span>:</p>
+<ul>
+<li>Positions (<span class="math inline">\(\mathbf{x}\)</span>): <span class="math inline">\(\begin{bmatrix} 0 \\ 0.1 \\ 0 \end{bmatrix}\)</span> (Middle particle is stretched 10cm).</li>
+<li>Velocities (<span class="math inline">\(\dot{\mathbf{x}}\)</span>): <span class="math inline">\(\begin{bmatrix} 0 \\ -2 \\ 0 \end{bmatrix}\)</span> (Middle particle is moving left at 2m/s).</li>
+</ul>
+</section>
+<section id="calculate-force" class="level5">
+<h5 class="anchored" data-anchor-id="calculate-force">Calculate Force</h5>
+<p>The total internal force is <span class="math inline">\(\mathbf{f}_{int} = -(K\mathbf{x} + C\dot{\mathbf{x}})\)</span>.</p>
+<ul>
+<li><p>Stiffness Force: <span class="math display">\[K\mathbf{x} = \begin{bmatrix} 100 &amp; -100 &amp; 0 \\ -100 &amp; 200 &amp; -100 \\ 0 &amp; -100 &amp; 100 \end{bmatrix} \begin{bmatrix} 0 \\ 0.1 \\ 0 \end{bmatrix} = \begin{bmatrix} (100 \cdot 0) + (-100 \cdot 0.1) + (0 \cdot 0) \\ (-100 \cdot 0) + (200 \cdot 0.1) + (-100 \cdot 0) \\ (0 \cdot 0) + (-100 \cdot 0.1) + (100 \cdot 0) \end{bmatrix} = \begin{bmatrix} -10 \\ 20 \\ -10 \end{bmatrix}\]</span></p></li>
+<li><p>Visciocity Force: <span class="math display">\[C\dot{\mathbf{x}} = \begin{bmatrix} 10 &amp; -10 &amp; 0 \\ -10 &amp; 20 &amp; -10 \\ 0 &amp; -10 &amp; 10 \end{bmatrix} \begin{bmatrix} 0 \\ -2 \\ 0 \end{bmatrix} = \begin{bmatrix} (10 \cdot 0) + (-10 \cdot -2) + (0 \cdot 0) \\ (-10 \cdot 0) + (20 \cdot -2) + (-10 \cdot 0) \\ (0 \cdot 0) + (-10 \cdot -2) + (10 \cdot 0) \end{bmatrix} = \begin{bmatrix} 20 \\ -40 \\ 20 \end{bmatrix}\]</span></p></li>
+<li><p>Total Force: We combine these into the total force and divide by Mass (<span class="math inline">\(M\)</span>). Since <span class="math inline">\(M\)</span> is the identity matrix (<span class="math inline">\(1\text{kg}\)</span>), <span class="math inline">\(\ddot{\mathbf{x}} = \mathbf{f}_{total}\)</span>. <span class="math display">\[\mathbf{f}_{total} = - \left( \underbrace{\begin{bmatrix} -10 \\ 20 \\ -10 \end{bmatrix}}_{\text{Stiffness}} + \underbrace{\begin{bmatrix} 20 \\ -40 \\ 20 \end{bmatrix}}_{\text{Damping}} \right) = - \begin{bmatrix} 10 \\ -20 \\ 10 \end{bmatrix} = \begin{bmatrix} -10 \\ 20 \\ -10 \end{bmatrix}\]</span></p></li>
+<li><p>Sympletic Euler <span class="math display">\[\mathbf{v}_{n+1} = \mathbf{v}_n + h \cdot \ddot{\mathbf{x}} = \begin{bmatrix} 0 \\ -2 \\ 0 \end{bmatrix} + 0.01 \cdot \begin{bmatrix} -10 \\ 20 \\ -10 \end{bmatrix} = \begin{bmatrix} -0.1 \\ -1.8 \\ -0.1 \end{bmatrix}\]</span> <span class="math display">\[\mathbf{x}_{n+1} = \mathbf{x}_n + h \cdot \mathbf{v}_{n+1} = \begin{bmatrix} 0 \\ 0.1 \\ 0 \end{bmatrix} + 0.01 \cdot \begin{bmatrix} -0.1 \\ -1.8 \\ -0.1 \end{bmatrix} = \begin{bmatrix} -0.001 \\ 0.082 \\ -0.001 \end{bmatrix}\]</span></p></li>
+</ul>
+</section>
+<section id="why-did-we-only-have-internal-force-because-we-didnt-add-any-external-force." class="level5">
+<h5 class="anchored" data-anchor-id="why-did-we-only-have-internal-force-because-we-didnt-add-any-external-force.">Why did we only have internal force? Because we didn’t add any external force.</h5>
+<p>The formula <span class="math inline">\(M\ddot{\mathbf{x}} + C\dot{\mathbf{x}} + K\mathbf{x} = \mathbf{f}\)</span> is the Equation of Motion. It states that the sum of all internal and external forces equals mass times acceleration (<span class="math inline">\(F = ma\)</span>).If we rearrange that equation to solve for the mass-acceleration term (<span class="math inline">\(M\ddot{\mathbf{x}}\)</span>), we get: <span class="math display">\[M\ddot{\mathbf{x}} = \mathbf{f} - C\dot{\mathbf{x}} - K\mathbf{x}\]</span> where:</p>
+<ul>
+<li><span class="math inline">\(\mathbf{f}\)</span>: Represents external forces (like gravity or a user pulling on the cloth).</li>
+<li><span class="math inline">\(-(K\mathbf{x} + C\dot{\mathbf{x}})\)</span>: Represents the internal forces (<span class="math inline">\(\mathbf{f}_{int}\)</span>). These are the forces the cloth exerts on itself to resist stretching and moving.</li>
+</ul>
+</section>
+</section>
+</section>
+</section>
+</section>
+<section id="rigid-body" class="level1">
+<h1>Rigid Body</h1>
+<p>Core components:</p>
+<ul>
+<li>Placement (<span class="math inline">\(\underline{X}; \mathbf{R}\)</span>) <span class="math inline">\(\implies\)</span> Kinematics (<span class="math inline">\(\vec{V}; \vec{\omega}\)</span>)</li>
+<li>Dynamics (<span class="math inline">\(M \implies \vec{P} \implies \vec{F}; \quad \mathbf{I} \implies \vec{L} \implies \vec{T}\)</span>): Mass (<span class="math inline">\(M\)</span>), momentum (<span class="math inline">\(\vec{P}\)</span>), and force (<span class="math inline">\(\vec{F}\)</span>), alongside rotational equivalents like the inertia tensor (<span class="math inline">\(\mathbf{I}\)</span>), angular momentum (<span class="math inline">\(\vec{L}\)</span>), and torque (<span class="math inline">\(\vec{T}\)</span>).</li>
+</ul>
+<p><span class="math display">\[\vec{y} = \begin{pmatrix} \underline{X} \\ \mathbf{R} \\ \vec{P} \\ \vec{L} \end{pmatrix} \implies \dot{\vec{y}} = \begin{pmatrix} M^{-1}\vec{P} \\ \mathbf{I}^{-1}\vec{L} \\ \vec{F} \\ \vec{T} \end{pmatrix}\]</span></p>
+<p><span class="math inline">\(\dot{\vec{y}}\)</span>: rate of change for each component.</p>
+<ul>
+<li>The rate of change of position (<span class="math inline">\(\underline{X}\)</span>) is velocity = <span class="math inline">\(M^{-1}\vec{P}\)</span> (momentum divided by mass), <strong>because <span class="math inline">\(p=mv\)</span></strong></li>
+<li>The change in rotation (<span class="math inline">\(\mathbf{R}\)</span>) also angular momentum divided by inertia (<span class="math inline">\(\mathbf{I}^{-1}\vec{L}\)</span>), <strong>because <span class="math inline">\(L=I\omega\)</span></strong></li>
+<li>Momentum (<span class="math inline">\(\vec{P}\)</span>) changes based on net Force (<span class="math inline">\(\vec{F}\)</span>), <strong>because <span class="math inline">\(F=\frac{dp}{dt} = m\frac{dv}{dt} = m\frac{d^2x}{dt^2}\)</span></strong></li>
+<li>Angular momentum (<span class="math inline">\(\vec{L}\)</span>) changes based on net Torque (<span class="math inline">\(\vec{T}\)</span>), <strong>because <span class="math inline">\(T=\frac{dL}{dt} = I\frac{d\omega}{dt} = I\frac{d^2\theta}{dt^2}\)</span></strong></li>
+</ul>
+<blockquote class="blockquote">
+<p>Momentum means quantity of motion.</p>
+</blockquote>
+<blockquote class="blockquote">
+<p>Force is the rate of change of this quantity.</p>
+</blockquote>
+<section id="decompose-vector-a-to-b" class="level2">
+<h2 class="anchored" data-anchor-id="decompose-vector-a-to-b">Decompose Vector a to b</h2>
+<p><span class="math display">\[|a_{||\vec{b}}| = \|\vec{a}\| \cos(\theta)\]</span> <span class="math display">\[\cos(\theta) = \frac{\vec{a} \cdot \vec{b}}{\|\vec{a}\|\|\vec{b}\|}\]</span> <span class="math display">\[|a_{||\vec{b}}| = \|\vec{a}\| \left( \frac{\vec{a} \cdot \vec{b}}{\|\vec{a}\|\|\vec{b}\|} \right) = \frac{\vec{a} \cdot \vec{b}}{\|\vec{b}\|}\]</span> <span class="math display">\[\vec{a}_{||\vec{b}} = \left( \frac{\vec{a} \cdot \vec{b}}{\|\vec{b}\|} \right) \frac{\vec{b}}{\|\vec{b}\|}\]</span> <span class="math display">\[\vec{a}_{||\vec{b}} = \frac{(\vec{a}^T\vec{b})}{\vec{b}^2}\vec{b}\]</span></p>
+</section>
+<section id="kinematics" class="level2">
+<h2 class="anchored" data-anchor-id="kinematics">Kinematics</h2>
+<p>There is nothing much to talk about Linear, so let’s talk about Angular. We have <span class="math display">\[\mathbf{\dot{R}} = \vec{\omega}^* \mathbf{R}_{current}\]</span></p>
+<p>But where does that skew-symmetric matrix come from?</p>
+<p><span class="math inline">\(\vec{\omega} = \frac{d\alpha}{dt}\hat{n}\)</span> is the original angular velocity. To perform rotational math efficiently, the angular velocity vector <span class="math inline">\(\vec{\omega}\)</span> is often converted into a skew-symmetric matrix <span class="math inline">\(\vec{\omega}^*\)</span> (also denoted as <span class="math inline">\([\vec{\omega}]_{\times}\)</span>): <span class="math display">\[\vec{\omega}^* = \begin{pmatrix} 0 &amp; -\omega_z &amp; \omega_y \\ \omega_z &amp; 0 &amp; -\omega_x \\ -\omega_y &amp; \omega_x &amp; 0 \end{pmatrix}\]</span> Multiplying a vector by this matrix is mathematically equivalent to a cross product: <span class="math inline">\(\vec{\omega}^* \vec{r} = \vec{\omega} \times \vec{r}\)</span>.</p>
+<p>After all <span class="math display">\[\mathbf{R}_{next} = \mathbf{R}_{current} + h \cdot \mathbf{\dot{R}}\]</span></p>
+</section>
+<section id="dynamics" class="level2">
+<h2 class="anchored" data-anchor-id="dynamics">Dynamics</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">Linear Dynamics</th>
+<th style="text-align: left;">Angular Dynamics</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Base</strong></td>
+<td style="text-align: left;"><span class="math inline">\(M\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\mathbf{I} = m (\vec{r}^2 \mathbf{1} - \vec{r} \vec{r}^T)\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Momentum</strong></td>
+<td style="text-align: left;"><span class="math inline">\(\vec{P} = M\vec{V}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\vec{L} = \mathbf{I}\vec{\omega}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Force / Torque</strong></td>
+<td style="text-align: left;"><span class="math inline">\(\vec{F} =\dot{\vec{P}} =  M\dot{\vec{V}}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\vec{T} = \vec{r} \times \vec{F} = \dot{L} = \mathbf{I}\dot{\vec{\omega}}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Update Rule</strong></td>
+<td style="text-align: left;"><span class="math inline">\(\vec{P}_{next} = \vec{P}_{current} + h \cdot \vec{F}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\vec{L}_{next} = \vec{L}_{current} + h \cdot \vec{T}\)</span></td>
+</tr>
+</tbody>
+</table>
+<section id="angular-dynamic-of-a-point-on-a-mass" class="level3">
+<h3 class="anchored" data-anchor-id="angular-dynamic-of-a-point-on-a-mass">Angular Dynamic of a Point on a Mass</h3>
+<p>Start looking at a point on that Mass object. Point <span class="math inline">\(m_i\)</span> circles around the center of mass <span class="math inline">\(\underline{X}\)</span> at a distance (lever arm) of <span class="math inline">\(\vec{r}_i\)</span>.</p>
+<ul>
+<li>Velocity: <span class="math inline">\(\vec{v}_i = \vec{\omega} \times \vec{r}_i\)</span>.</li>
+<li>Acceleration: <span class="math inline">\(\dot{\vec{v}}_i = \dot{\vec{\omega}} \times \vec{r}_i\)</span></li>
+<li>Force: <span class="math inline">\(\vec{F}_i = m_i \dot{\vec{v}}_i = m_i (\dot{\vec{\omega}} \times \vec{r}_i)\)</span></li>
+<li>Torque: <span class="math inline">\(\vec{T}_i = \vec{r}_i \times \vec{F}_i = \vec{r}_i \times m_i (\dot{\vec{\omega}} \times \vec{r}_i) = m_i \vec{r}_i \times (\dot{\vec{\omega}} \times \vec{r}_i)\)</span></li>
+</ul>
+<p>Because <span class="math inline">\(\vec{a} \times (\vec{b} \times \vec{c}) = (\vec{a} \cdot \vec{c})\vec{b} - (\vec{a} \cdot \vec{b})\vec{c}\)</span>, we have: <span class="math display">\[\vec{T}_i = m_i [(\vec{r}_i \cdot \vec{r}_i)\dot{\vec{\omega}} - (\vec{r}_i \cdot \dot{\vec{\omega}})\vec{r}_i]\]</span> <span class="math display">\[\vec{T}_i = m_i [\vec{r}_i^2 \dot{\vec{\omega}} - (\vec{r}_i \cdot \dot{\vec{\omega}})\vec{r}_i]\]</span></p>
+<p>Remember now we have:</p>
+<ul>
+<li><span class="math inline">\(\vec{r}_i^2\)</span>: This is <span class="math inline">\(x^2 + y^2 + z^2\)</span> (a single number).</li>
+<li><span class="math inline">\(\dot{\vec{\omega}}\)</span>: This is <span class="math inline">\([\dot{\omega}_x, \dot{\omega}_y, \dot{\omega}_z]^T\)</span> (a direction and magnitude of spin change).</li>
+</ul>
+<p>Now we want to extract a matrix (potentially a intertia tensor), we do the following:</p>
+<ul>
+<li>The first term: <span class="math inline">\(\vec{r}_i^2 \dot{\vec{\omega}}\)</span> is equivalent to <span class="math inline">\((\vec{r}_i^2 \mathbf{1}) \dot{\vec{\omega}}\)</span>, where <span class="math inline">\(\mathbf{1}\)</span> is the <span class="math inline">\(3 \times 3\)</span> identity matrix.</li>
+<li>The second term: The dot product <span class="math inline">\(\vec{r}_i \cdot \dot{\vec{\omega}}\)</span> can be written as <span class="math inline">\(\vec{r}_i^T \dot{\vec{\omega}}\)</span>. Therefore, <span class="math inline">\((\vec{r}_i \cdot \dot{\vec{\omega}})\vec{r}_i\)</span> becomes <span class="math inline">\(\vec{r}_i (\vec{r}_i^T \dot{\vec{\omega}})\)</span>, which by associativity is <span class="math inline">\((\vec{r}_i \vec{r}_i^T) \dot{\vec{\omega}}\)</span>.</li>
+</ul>
+<p><span class="math display">\[\vec{T}_i = m_i (\vec{r}_i^2 \mathbf{1} - \vec{r}_i \vec{r}_i^T) \dot{\vec{\omega}}\]</span></p>
+<section id="numerical-example" class="level4">
+<h4 class="anchored" data-anchor-id="numerical-example">Numerical Example</h4>
+<p>Let’s see this in action for a point mass of <span class="math inline">\(1\text{ kg}\)</span> at position <span class="math inline">\(\vec{r}_i = [1, 0, 0]^T\)</span> being accelerated around the Z-axis by <span class="math inline">\(\dot{\vec{\omega}} = [0, 0, 1]^T\)</span>.</p>
+<ul>
+<li><p>Using Vectors: <span class="math display">\[\dot{\vec{\omega}} \times \vec{r}_i = [0, 1, 0]^T\]</span> <span class="math display">\[\vec{r}_i \times (\dot{\vec{\omega}} \times \vec{r}_i) = [1, 0, 0]^T \times [0, 1, 0]^T = [0, 0, 1]^T\]</span> <span class="math display">\[\vec{T}_i = 1 \cdot [0, 0, 1]^T = \mathbf{[0, 0, 1]^T}\]</span></p></li>
+<li><p>Using the Matrix <span class="math inline">\((\vec{r}_i^2 \mathbf{1} - \vec{r}_i \vec{r}_i^T)\)</span>:<span class="math display">\[\vec{r}_i^2 = 1^2 = 1\]</span> <span class="math display">\[\vec{r}_i^2 \mathbf{1} = \begin{pmatrix} 1 &amp; 0 &amp; 0 \\ 0 &amp; 1 &amp; 0 \\ 0 &amp; 0 &amp; 1 \end{pmatrix}\]</span> <span class="math display">\[\vec{r}_i \vec{r}_i^T = \begin{pmatrix} 1 \\ 0 \\ 0 \end{pmatrix} \begin{pmatrix} 1 &amp; 0 &amp; 0 \end{pmatrix} = \begin{pmatrix} 1 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 0 \end{pmatrix}\]</span> Subtracting them: <span class="math inline">\(\begin{pmatrix} 1-1 &amp; 0 &amp; 0 \\ 0 &amp; 1-0 &amp; 0 \\ 0 &amp; 0 &amp; 1-0 \end{pmatrix} = \begin{pmatrix} 0 &amp; 0 &amp; 0 \\ 0 &amp; 1 &amp; 0 \\ 0 &amp; 0 &amp; 1 \end{pmatrix}\)</span>.Multiply by <span class="math inline">\(\dot{\vec{\omega}}\)</span>: <span class="math inline">\(\begin{pmatrix} 0 &amp; 0 &amp; 0 \\ 0 &amp; 1 &amp; 0 \\ 0 &amp; 0 &amp; 1 \end{pmatrix} \begin{pmatrix} 0 \\ 0 \\ 1 \end{pmatrix} = \mathbf{[0, 0, 1]^T}\)</span>.The results match! This matrix <span class="math inline">\(m(\vec{r}_i^2 \mathbf{1} - \vec{r}_i \vec{r}_i^T)\)</span> is the Inertia Tensor of point <span class="math inline">\(i\)</span>.</p></li>
+</ul>
+</section>
+</section>
+<section id="angular-dynamic-of-a-whole-mass" class="level3">
+<h3 class="anchored" data-anchor-id="angular-dynamic-of-a-whole-mass">Angular Dynamic of a whole Mass</h3>
+<p>If we have a Mass made up of <span class="math inline">\(n\)</span> point masses, the inertia tensor for the whole mass is the sum of the inertia tensors of all the point masses: <span class="math display">\[\mathbf{I} = \sum_{i=1}^{n} \mathbf{I}_i = \sum_{i=1}^{n} m_i (\vec{r}_i^2 \mathbf{1} - \vec{r}_i \vec{r}_i^T)\]</span> Or where <span class="math inline">\(\rho(\vec{r})\)</span> is the mass density at position <span class="math inline">\(\vec{r}\)</span>: <span class="math display">\[\mathbf{I} = \int \rho(\vec{r}) (\vec{r}^2 \mathbf{1} - \vec{r} \vec{r}^T) dV\]</span></p>
+<p>If you think a little bit, you can see that: <span class="math display">\[\vec{r}_i^2 \mathbf{1} - \vec{r}_i \vec{r}_i^T = \begin{pmatrix} y^2+z^2 &amp; -xy &amp; -xz \\ -xy &amp; x^2+z^2 &amp; -yz \\ -xz &amp; -yz &amp; x^2+y^2 \end{pmatrix}\]</span></p>
+<section id="numerical-example-2-point-dumbbell" class="level4">
+<h4 class="anchored" data-anchor-id="numerical-example-2-point-dumbbell">Numerical Example: 2 Point Dumbbell</h4>
+<p>Imagine two masses (<span class="math inline">\(1\text{ kg}\)</span> each) on a rod. One is at <span class="math inline">\(\vec{r}_1 = [1, 0, 0]\)</span> and the other is at <span class="math inline">\(\vec{r}_2 = [-1, 0, 0]\)</span>.</p>
+<ul>
+<li>Tensor for Point 1 (<span class="math inline">\(\mathbf{I}_1\)</span>):We already calculated that for a mass at <span class="math inline">\([1, 0, 0]\)</span>, the tensor is:<span class="math display">\[\begin{pmatrix} 0 &amp; 0 &amp; 0 \\ 0 &amp; 1 &amp; 0 \\ 0 &amp; 0 &amp; 1 \end{pmatrix}\]</span></li>
+<li>Tensor for Point 2 (<span class="math inline">\(\mathbf{I}_2\)</span>):Since <span class="math inline">\(\vec{r}_2 = [-1, 0, 0]\)</span>, the square is still <span class="math inline">\(\vec{r}_2^2 = 1\)</span>, and <span class="math inline">\(\vec{r}_2 \vec{r}_2^T\)</span> is still the same matrix. So <span class="math inline">\(\mathbf{I}_2\)</span> is identical:<span class="math display">\[\begin{pmatrix} 0 &amp; 0 &amp; 0 \\ 0 &amp; 1 &amp; 0 \\ 0 &amp; 0 &amp; 1 \end{pmatrix}\]</span></li>
+<li>Total Object Tensor (<span class="math inline">\(\mathbf{I}_{total}\)</span>):<span class="math display">\[\mathbf{I}_{total} = \mathbf{I}_1 + \mathbf{I}_2 = \begin{pmatrix} 0 &amp; 0 &amp; 0 \\ 0 &amp; 2 &amp; 0 \\ 0 &amp; 0 &amp; 2 \end{pmatrix}\]</span></li>
+</ul>
+</section>
+<section id="continuous-example-a-cuboid" class="level4">
+<h4 class="anchored" data-anchor-id="continuous-example-a-cuboid">Continuous Example: a Cuboid</h4>
+<p><span class="math display">\[I = \int_{-c/2}^{c/2} \int_{-b/2}^{b/2} \int_{-a/2}^{a/2} \rho_0 \begin{pmatrix} y^2+z^2 &amp; -xy &amp; -xz \\ -xy &amp; x^2+z^2 &amp; -yz \\ -xz &amp; -yz &amp; x^2+y^2 \end{pmatrix} dx dy dz\]</span></p>
+</section>
+</section>
+<section id="when-is-wobble-inertia-tensor-is-not-always-constant-like-mass" class="level3">
+<h3 class="anchored" data-anchor-id="when-is-wobble-inertia-tensor-is-not-always-constant-like-mass">When is Wobble? Inertia Tensor is not always Constant like Mass</h3>
+<p>Looking at the inertia tensor, we can see that it is a symmetric matrix. The object will not wobble if all the off-diagonal elements are zero. And thankfully, for every object mass, we can find that coordinate system, we call it natural coordinate system:</p>
+<p><span class="math display">\[\mathbf{I} = \begin{pmatrix} I_{xx} &amp; 0 &amp; 0 \\ 0 &amp; I_{yy} &amp; 0 \\ 0 &amp; 0 &amp; I_{zz} \end{pmatrix}\]</span> Because here I is constant, we have the Torque equation: <span class="math display">\[\vec{T} = \mathbf{I}\dot{\vec{\omega}}\]</span></p>
+<p>On a cuboid, the natural coordinate system is the one where the axes align with the edges of the cuboid. Because well <span class="math inline">\(\sum xy = 0\)</span>, <span class="math inline">\(\sum xz = 0\)</span>, and <span class="math inline">\(\sum yz = 0\)</span> along each of these axes.</p>
+<p>To convert to world coordinate system: <span class="math display">\[\mathbf{I}_W = \mathbf{R} \mathbf{I}_O \mathbf{R}^T\]</span> And now since <span class="math inline">\(\mathbf{I}_W\)</span> is not constant, we have the general Torque equation: <span class="math display">\[\vec{T} = \mathbf{I}_W\dot{\vec{\omega}} + \vec{\omega}^* \vec{L}\]</span></p>
+
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
