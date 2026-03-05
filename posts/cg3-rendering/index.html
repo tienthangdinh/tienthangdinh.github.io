@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-03-04">
+
+<title>Rendering – the brachistochrone traveller</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">the brachistochrone traveller</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Đinh Tiến Thắng</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Rendering</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">Computer Graphics</div>
+                <div class="quarto-category">Rendering</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">March 4, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-rendering-equation" id="toc-the-rendering-equation" class="nav-link active" data-scroll-target="#the-rendering-equation">The Rendering Equation</a>
+  <ul class="collapse">
+  <li><a href="#basic" id="toc-basic" class="nav-link" data-scroll-target="#basic">Basic</a></li>
+  <li><a href="#recursive-operator-form-of-the-rendering-equation" id="toc-recursive-operator-form-of-the-rendering-equation" class="nav-link" data-scroll-target="#recursive-operator-form-of-the-rendering-equation">Recursive Operator Form of the Rendering Equation</a></li>
+  <li><a href="#approaches-to-solve-rendering-equation" id="toc-approaches-to-solve-rendering-equation" class="nav-link" data-scroll-target="#approaches-to-solve-rendering-equation">Approaches to solve rendering equation</a>
+  <ul class="collapse">
+  <li><a href="#radiosity" id="toc-radiosity" class="nav-link" data-scroll-target="#radiosity">Radiosity</a></li>
+  <li><a href="#bidirectional-path-tracing-bdpt" id="toc-bidirectional-path-tracing-bdpt" class="nav-link" data-scroll-target="#bidirectional-path-tracing-bdpt">Bidirectional Path Tracing (BDPT)</a></li>
+  <li><a href="#more-about-monte-carlo-philosophy" id="toc-more-about-monte-carlo-philosophy" class="nav-link" data-scroll-target="#more-about-monte-carlo-philosophy">More about Monte Carlo Philosophy</a></li>
+  </ul></li>
+  <li><a href="#backwards" id="toc-backwards" class="nav-link" data-scroll-target="#backwards">Backwards</a>
+  <ul class="collapse">
+  <li><a href="#measurement-equation" id="toc-measurement-equation" class="nav-link" data-scroll-target="#measurement-equation">Measurement Equation</a></li>
+  <li><a href="#importance-function" id="toc-importance-function" class="nav-link" data-scroll-target="#importance-function">Importance Function</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#radiometry" id="toc-radiometry" class="nav-link" data-scroll-target="#radiometry">Radiometry</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="the-rendering-equation" class="level1">
+<h1>The Rendering Equation</h1>
+<section id="basic" class="level2">
+<h2 class="anchored" data-anchor-id="basic">Basic</h2>
+<p><span class="math display">\[L_{\lambda}^{\text{out}}(\mathbf{x}, \omega^{\text{out}}) = L_{\lambda}^{\text{emit}}(\mathbf{x}, \omega^{\text{out}}) + \iint_{\Omega^{\text{in}}} \rho(\mathbf{x}, \omega^{\text{in}}, \omega^{\text{out}}) L_{\lambda}^{\text{in}}(\mathbf{x}, \omega^{\text{in}}) \cos\theta^{\text{in}} d\Omega^{\text{in}}\]</span> whereby:</p>
+<ul>
+<li><span class="math inline">\(\cos\theta^{\text{in}}\)</span>: Lambertian cosine term. <span class="math inline">\(\theta^{\text{in}}\)</span> is the angle between the incoming direction <span class="math inline">\(\omega^{\text{in}}\)</span> and the surface normal <span class="math inline">\(\mathbf{n}\)</span>. The more senkrecht, the more energy reflected!</li>
+</ul>
+<p>Official rendering equation: <span class="math display">\[L_{\lambda}^{\text{out}}(\mathbf{x}, \omega^{\text{out}}) = L_{\lambda}^{\text{emit}}(\mathbf{x}, \omega^{\text{out}}) + \iint_{\Omega^{\text{in}}} \rho(\mathbf{x}, \omega^{\text{in}}, \omega^{\text{out}}) \mathbf{L_{\lambda}^{\text{out}}(\text{trace}(\mathbf{x}, \omega^{\text{in}}), -\omega^{\text{in}})} \cos\theta^{\text{in}} d\Omega^{\text{in}}\]</span></p>
+<p>And you know what is important? We have proved this: <span class="math display">\[d\Omega^{\text{in}} = \sin\theta^{\text{in}} d\theta^{\text{in}} d\phi\]</span></p>
+<p>Area-Based Rendering Equation: <span class="math display">\[\Delta\Omega_x = \frac{\cos\theta^{\mathbf{y} \to \mathbf{x}}}{||\mathbf{x} - \mathbf{y}||^2} \Delta A_y\]</span> <span class="math display">\[L_{\lambda}^{\text{out}}(\mathbf{x}, \omega^{\text{out}}) = L_{\lambda}^{\text{emit}}(\mathbf{x}, \omega^{\text{out}}) + \iint_{\mathbf{y} \in A} \rho(\mathbf{x}, \omega^{\mathbf{y} \to \mathbf{x}}, \omega^{\text{out}}) L_{\lambda}^{\text{out}}(\mathbf{y}, \omega^{\mathbf{y} \to \mathbf{x}}) \mathbf{V(\mathbf{x}, \mathbf{y})} \frac{\cos\theta^{\mathbf{x} \to \mathbf{y}} \cos\theta^{\mathbf{y} \to \mathbf{x}}}{||\mathbf{x} - \mathbf{y}||^2} d A_y\]</span></p>
+<p>Full Geometry Term: <span class="math display">\[G(\mathbf{x}, \mathbf{y}) = \mathbf{V(\mathbf{x}, \mathbf{y})}\frac{\cos\theta^{\mathbf{x} \to \mathbf{y}} \cos\theta^{\mathbf{y} \to \mathbf{x}}}{||\mathbf{x} - \mathbf{y}||^2}\]</span></p>
+</section>
+<section id="recursive-operator-form-of-the-rendering-equation" class="level2">
+<h2 class="anchored" data-anchor-id="recursive-operator-form-of-the-rendering-equation">Recursive Operator Form of the Rendering Equation</h2>
+<p><span class="math display">\[L_{\lambda}^{\text{out}} = L_{\lambda}^{\text{emit}} + \mathbf{R} \cdot \mathbf{T} \cdot L_{\lambda}^{\text{out}}\]</span></p>
+<ul>
+<li><span class="math inline">\(L_{\lambda}^{\text{out}}\)</span>: The total outgoing radiance (the unknown we want to solve for).</li>
+<li><span class="math inline">\(L_{\lambda}^{\text{emit}}\)</span>: The emitted light (the light sources).</li>
+<li><span class="math inline">\(\mathbf{T}: L_{\lambda}^{\text{in}}(\mathbf{x}, \omega) = L_{\lambda}^{\text{out}}(\text{trace}(\mathbf{x}, \omega), -\omega)\)</span></li>
+<li><span class="math inline">\(\mathbf{R}: L_{\lambda}^{\text{reflect}}(\mathbf{x}, \omega^{\text{out}}) = \iint_{\Omega^{\text{in}}} \rho(\mathbf{x}, \omega^{\text{in}}, \omega^{\text{out}}) L_{\lambda}^{\text{in}}(\mathbf{x}, \omega^{\text{in}}) \cos\theta^{\text{in}} d\Omega^{\text{in}}\)</span></li>
+<li><span class="math inline">\(\mathbf{R} \cdot \mathbf{T}\)</span>: The combined light transport operator. It takes light that is already outgoing from a surface (<span class="math inline">\(L_{\lambda}^{\text{out}}\)</span>), transports it to the next surface (<span class="math inline">\(T \cdot L_{\lambda}^{\text{out}} = L_{\lambda}^{\text{in}}\)</span>), and reflects it (<span class="math inline">\(R \cdot L_{\lambda}^{\text{in}} = L_{\lambda}^{\text{reflect}}\)</span>).</li>
+</ul>
+<p>But how to solve this equation? <span class="math display">\[L_{\lambda}^{\text{out}} = (\mathbf{I} - \mathbf{R} \cdot \mathbf{T})^{-1} L_{\lambda}^{\text{emit}}\]</span> Using Taylor series expansion: <span class="math display">\[L_{\lambda}^{\text{out}} = L_{\lambda}^{\text{emit}} + \mathbf{R} \mathbf{T} \cdot L_{\lambda}^{\text{emit}} + (\mathbf{R} \mathbf{T})^2 \cdot L_{\lambda}^{\text{emit}} + (\mathbf{R} \mathbf{T})^3 \cdot L_{\lambda}^{\text{emit}} + \dots\]</span></p>
+<p>where <span class="math inline">\(\mathbf{R} \mathbf{T}\)</span> means reflected once, <span class="math inline">\((\mathbf{R} \mathbf{T})^2\)</span> means reflected twice, etc.</p>
+</section>
+<section id="approaches-to-solve-rendering-equation" class="level2">
+<h2 class="anchored" data-anchor-id="approaches-to-solve-rendering-equation">Approaches to solve rendering equation</h2>
+<section id="radiosity" class="level3">
+<h3 class="anchored" data-anchor-id="radiosity">Radiosity</h3>
+<p>Idea: All surfaces are diffuse =&gt; from Integral Equation (solved by Monte Carlo) to just a Linear Equation <span class="math inline">\(Ax=b\)</span> solved by matrix inversion.</p>
+<p><span class="math display">\[E_{\lambda, i}^{\text{out}} = E_{\lambda, i}^{\text{emit}} + \sum_{j} \rho_i F_{i \to j} E_{\lambda, j}^{\text{out}}\]</span> where:</p>
+<ul>
+<li><span class="math inline">\(\rho_i\)</span>: The albedo of surface <span class="math inline">\(i\)</span>.</li>
+<li><span class="math inline">\(F_{i \to j}\)</span>: The form factor (geometric term) from surface <span class="math inline">\(i\)</span> to surface <span class="math inline">\(j\)</span>.</li>
+</ul>
+<section id="example" class="level4">
+<h4 class="anchored" data-anchor-id="example">Example</h4>
+<p>Imagine 4 patches forming a small square “room”:</p>
+<ul>
+<li>Patch 1 (Top): A light source. <span class="math inline">\(E_{1}^{\text{emit}} = 100\)</span>, <span class="math inline">\(\rho_1 = 0\)</span> (absorbing).</li>
+<li>Patch 2 (Bottom): A reflective floor. <span class="math inline">\(E_{2}^{\text{emit}} = 0\)</span>, <span class="math inline">\(\rho_2 = 0.8\)</span>.</li>
+<li>Patch 3 (Left): A wall. <span class="math inline">\(E_{3}^{\text{emit}} = 0\)</span>, <span class="math inline">\(\rho_3 = 0.5\)</span>.</li>
+<li>Patch 4 (Right): A wall. <span class="math inline">\(E_{4}^{\text{emit}} = 0\)</span>, <span class="math inline">\(\rho_4 = 0.5\)</span>.</li>
+</ul>
+<p>The Form Factors (<span class="math inline">\(F_{i \to j}\)</span>) Assume the geometry is such that patches see each other with the following visibility:</p>
+<ul>
+<li>Opposite patches (1 to 2, 3 to 4) have <span class="math inline">\(F = 0.6\)</span>.</li>
+<li>Adjacent patches (1 to 3, 1 to 4, etc.) have <span class="math inline">\(F = 0.2\)</span>.</li>
+<li>Patches cannot see themselves, so <span class="math inline">\(F_{ii} = 0\)</span>.</li>
+</ul>
+<p>Step 1: Set up the Equations The radiosity equation for each patch is: <span class="math inline">\(E_i = E_i^{\text{emit}} + \rho_i \sum (F_{ij} E_j)\)</span>.</p>
+<ul>
+<li><span class="math inline">\(E_1\)</span>: <span class="math inline">\(100 + 0 = \mathbf{100}\)</span> (Since <span class="math inline">\(\rho_1 = 0\)</span>, it only emits).</li>
+<li><span class="math inline">\(E_2\)</span>: <span class="math inline">\(0 + 0.8 \cdot (0.6 E_1 + 0.2 E_3 + 0.2 E_4)\)</span></li>
+<li><span class="math inline">\(E_3\)</span>: <span class="math inline">\(0 + 0.5 \cdot (0.2 E_1 + 0.2 E_2 + 0.6 E_4)\)</span></li>
+<li><span class="math inline">\(E_4\)</span>: <span class="math inline">\(0 + 0.5 \cdot (0.2 E_1 + 0.2 E_2 + 0.6 E_3)\)</span></li>
+</ul>
+<p>Step 2: Solve Iteratively (Gathering) Because these equations are interdependent (e.g., <span class="math inline">\(E_3\)</span> depends on <span class="math inline">\(E_4\)</span>, and <span class="math inline">\(E_4\)</span> depends on <span class="math inline">\(E_3\)</span>), we solve them in “bounces”.</p>
+<ul>
+<li>Iteration 1 (Direct Light only)</li>
+</ul>
+<p>We plug <span class="math inline">\(E_1 = 100\)</span> into the others, assuming <span class="math inline">\(E_{2,3,4} = 0\)</span> initially:</p>
+<ul>
+<li><p><span class="math inline">\(E_2\)</span>: <span class="math inline">\(0.8 \cdot (0.6 \cdot 100) = \mathbf{48.0}\)</span></p></li>
+<li><p><span class="math inline">\(E_3\)</span>: <span class="math inline">\(0.5 \cdot (0.2 \cdot 100) = \mathbf{10.0}\)</span></p></li>
+<li><p><span class="math inline">\(E_4\)</span>: <span class="math inline">\(0.5 \cdot (0.2 \cdot 100) = \mathbf{10.0}\)</span></p></li>
+<li><p>Iteration 2 (First Reflection/Bounce)</p></li>
+</ul>
+<p>Now we plug the values from Iteration 1 back into the equations to see how light bounces between the walls:</p>
+<ul>
+<li><span class="math inline">\(E_2\)</span>: <span class="math inline">\(0.8 \cdot (60 + 0.2 \cdot 10 + 0.2 \cdot 10) = 0.8 \cdot (64) = \mathbf{51.2}\)</span></li>
+<li><span class="math inline">\(E_3\)</span>: <span class="math inline">\(0.5 \cdot (20 + 0.2 \cdot 48 + 0.6 \cdot 10) = 0.5 \cdot (20 + 9.6 + 6) = \mathbf{17.8}\)</span></li>
+<li><span class="math inline">\(E_4\)</span>: <span class="math inline">\(0.5 \cdot (20 + 0.2 \cdot 48 + 0.6 \cdot 10) = 0.5 \cdot (20 + 9.6 + 6) = \mathbf{17.8}\)</span></li>
+</ul>
+<p>Step 3: Final Results If you continue this for 4–5 iterations, the numbers will stop changing (converge).</p>
+<ul>
+<li>Patch 1: 100 (The Sun)</li>
+<li>Patch 2: <span class="math inline">\(\approx 54\)</span> (Bright floor)</li>
+<li>Patch 3 &amp; 4: <span class="math inline">\(\approx 22\)</span> (Dimmer walls)</li>
+</ul>
+</section>
+<section id="still-this-example-but-what-if-not-diffuse-anymore" class="level4">
+<h4 class="anchored" data-anchor-id="still-this-example-but-what-if-not-diffuse-anymore">Still this example, but what if not diffuse anymore?</h4>
+<p>Imagine Patch 2 is a mirror. Now, instead of one value for <span class="math inline">\(E_2\)</span>, you need an infinite number of values for every possible direction <span class="math inline">\(\omega\)</span>. So for every point, we have this directional-based integral again: <span class="math display">\[L_o(x, \omega_o) = L_e(x, \omega_o) + \int_{\Omega} \rho(x, \omega_i, \omega_o) L_i(x, \omega_i) \cos \theta_i d\omega_i\]</span></p>
+<p>So what change? For example:</p>
+<ul>
+<li>Diffuse Rule: Light from the Bulb (1) hits the Floor (2) and splits 20% to Wall 3 and 20% to Wall 4.</li>
+<li>Glossy Rule: Light from the Bulb (1) hits the Floor (2). Because of the angle, 90% of that reflected light is directed at Wall 4, and 0% goes to Wall 3.</li>
+</ul>
+<p>So we dont have that 20% <span class="math inline">\(\rho\)</span> for every direction anymore, we have <span class="math inline">\(\rho(x, \omega_i, \omega_o)\)</span> always varying. We have to use Monte Carlo to sample the direction.</p>
+</section>
+</section>
+<section id="bidirectional-path-tracing-bdpt" class="level3">
+<h3 class="anchored" data-anchor-id="bidirectional-path-tracing-bdpt">Bidirectional Path Tracing (BDPT)</h3>
+<section id="path-sampling-both-direction-is-a-monte-carlo-framework" class="level4">
+<h4 class="anchored" data-anchor-id="path-sampling-both-direction-is-a-monte-carlo-framework">Path Sampling both Direction is a Monte Carlo Framework</h4>
+<p>We want to build this path: <span class="math inline">\(y_0 \to \dots \to y_j \to x_i \to \dots \to x_1\)</span>. There are so many thing that we randomly sample:</p>
+<ul>
+<li>Random point on light source</li>
+<li>Random pixel</li>
+<li>Random direction (BRDF)</li>
+<li>Russian Roulette at each bounce</li>
+</ul>
+<p>Each connection is a sample of the total light transport, so we Monte Carlo it: <span class="math display">\[F \approx \frac{1}{N} \sum_{i=1}^{N} \frac{f(x_i)}{p(x_i)}\]</span></p>
+</section>
+<section id="so-what-is-multi-importance-sampling-mis-in-bdpt" class="level4">
+<h4 class="anchored" data-anchor-id="so-what-is-multi-importance-sampling-mis-in-bdpt">So what is Multi Importance Sampling (MIS) in BDPT?</h4>
+<p>Using your 4-patch example (Light, Floor, Walls), imagine a path with 3 segments: Light <span class="math inline">\(\to\)</span> Floor <span class="math inline">\(\to\)</span> Wall <span class="math inline">\(\to\)</span> Eye. This path can be generated by:</p>
+<ul>
+<li>Tracing 3 steps from the light and 0 from the eye.</li>
+<li>Tracing 2 steps from the light and 1 from the eye.</li>
+<li>Tracing 1 step from the light and 2 from the eye.</li>
+</ul>
+<p>Each of these is a different sampling strategy for the exact same physical path. If you just added them together, the image would be far too bright and physically incorrect.</p>
+<p>MIS assigns a weight (<span class="math inline">\(w\)</span>) to each strategy so that the total contribution equals 1. It follows the Balance Heuristic: <span class="math display">\[w_i(P) = \frac{p_i(P)}{\sum_{j} p_j(P)}\]</span></p>
+<p><span class="math inline">\(p_i(P)\)</span>: The probability of generating path <span class="math inline">\(P\)</span> using strategy <span class="math inline">\(i\)</span>.</p>
+</section>
+<section id="but-how-to-assign-those-probabilities" class="level4">
+<h4 class="anchored" data-anchor-id="but-how-to-assign-those-probabilities">But how to assign those probabilities?</h4>
+<ol type="1">
+<li>Are probabilities for the Path or the Segment?</li>
+</ol>
+<p>The probability <span class="math inline">\(p\)</span> used in MIS is for the entire path. <span class="math display">\[p(\text{Path}) = p(x_0) \cdot p(x_1|x_0) \cdot p(x_2|x_1) \dots\]</span></p>
+<ol start="2" type="1">
+<li>How are <span class="math inline">\(p_A\)</span> and <span class="math inline">\(p_B\)</span> calculated automatically?</li>
+</ol>
+<p>To calculate the PDF for a strategy, the computer looks at the sampling rules used during the Monte Carlo process.</p>
+<ul>
+<li><p>Strategy A (Camera-heavy): <span class="math inline">\(p_A\)</span> = (Pixel PDF) <span class="math inline">\(\times\)</span> (BRDF PDF) <span class="math inline">\(\times\)</span> (Geometry Factor).</p></li>
+<li><p>Strategy B (Light-heavy): <span class="math inline">\(p_B\)</span> = (Light Area PDF) <span class="math inline">\(\times\)</span> (Emission PDF) <span class="math inline">\(\times\)</span> (BRDF Reflection PDF).</p></li>
+</ul>
+<p>Once the computer has these two numbers (<span class="math inline">\(p_A\)</span> and <span class="math inline">\(p_B\)</span>), it uses the Balance Heuristic automatically: <span class="math display">\[w_B = \frac{p_B}{p_A + p_B}\]</span></p>
+<p>If <span class="math inline">\(p_B\)</span> is 1000 and <span class="math inline">\(p_A\)</span> is 0.001 (because hitting a tiny bulb is hard), then <span class="math inline">\(w_B\)</span> becomes 0.9999.The computer doesn’t “know” it’s a glossy floor; it just sees that the math for Strategy B resulted in a much higher probability density for that specific path than Strategy A did.</p>
+</section>
+</section>
+<section id="more-about-monte-carlo-philosophy" class="level3">
+<h3 class="anchored" data-anchor-id="more-about-monte-carlo-philosophy">More about Monte Carlo Philosophy</h3>
+<p>We all know that the rendering equation has <strong>2 infinities: infinite dimensions and infinite samples</strong>: <span class="math display">\[L_{\lambda}^{\text{out}} = (\mathbf{I} - \mathbf{R} \cdot \mathbf{T})^{-1} L_{\lambda}^{\text{emit}} = L_{\lambda}^{\text{emit}} + \mathbf{R}\mathbf{T} \cdot L_{\lambda}^{\text{emit}} + (\mathbf{R}\mathbf{T})^2 \cdot L_{\lambda}^{\text{emit}} + \dots \quad \text{}\]</span> This is a <span class="math inline">\(2 \times 2 + 2 \times 2 + 2 \times 2 + \dots = \infty\)</span> dimensional integral. It is not like the same BRDF, here we zweig the directions too. So we still sum up, but using Monte Carlo philosophy, using importance sampling to approximate the integral.</p>
+<blockquote class="blockquote">
+<p>For normal integration, error grows with the number of dimensions. Remember the triangles? yes! =&gt; Let’s dig in Monte Carlo instead.</p>
+</blockquote>
+</section>
+</section>
+<section id="backwards" class="level2">
+<h2 class="anchored" data-anchor-id="backwards">Backwards</h2>
+<section id="measurement-equation" class="level3">
+<h3 class="anchored" data-anchor-id="measurement-equation">Measurement Equation</h3>
+<p>Imagine exactly like a camera model. <span class="math inline">\(j\)</span> is a pixel the image plane in the back. In front of the image plane is a hole/apeture of size <span class="math inline">\(A\)</span>, and <span class="math inline">\(x\)</span> is a point on that hole/apeture.</p>
+<p>The brightness (<span class="math inline">\(\Phi_{\lambda,j}\)</span>) of a pixel <span class="math inline">\(j\)</span>: <span class="math display">\[\Phi_{\lambda,j} = \iint_{x \in A} \iint_{\Omega_j^{in}(x)} W_\lambda^e(x, \omega^{in}) L_\lambda^{in}(x, \omega^{in}) \cos \theta^{in} d\Omega_j^{in} dA\]</span></p>
+<ul>
+<li>It integrates all incoming radiance (<span class="math inline">\(L_\lambda^{in}\)</span>) over each point <span class="math inline">\(x\)</span> on the apeture <span class="math inline">\(A\)</span>, and each direction <span class="math inline">\(\omega^{in}\)</span> that the light can come from. Some of the direction <span class="math inline">\(\omega^{in}\)</span> going through point <span class="math inline">\(x\)</span> will not point to pixel <span class="math inline">\(j\)</span>. But some will, we call this <span class="math inline">\(W_\lambda^e(x, \omega^{in})\)</span> as follow. this part is the most confusing part for me until now.</li>
+<li>If the ray coming from direction <span class="math inline">\(\omega^{\text{in}}\)</span> at point <span class="math inline">\(\mathbf{x}\)</span> hits the target pixel <span class="math inline">\(j\)</span>, then:<span class="math display">\[W_{\lambda}^e(\mathbf{x}, \omega^{\text{in}}) = 1\]</span></li>
+<li>If the ray misses pixel <span class="math inline">\(j\)</span> or the entire sensor, then:<span class="math display">\[W_{\lambda}^e(\mathbf{x}, \omega^{\text{in}}) = 0\]</span></li>
+</ul>
+</section>
+<section id="importance-function" class="level3">
+<h3 class="anchored" data-anchor-id="importance-function">Importance Function</h3>
+<p>Trace back a <strong>single race</strong> and see how much influence it has, 40% or 60%?… <span class="math display">\[W_\lambda^{in}(x, \omega^{in}) = W_\lambda^e(x, \omega^{in}) + \iint_{\Omega^{out}} \rho(x, \omega^{out}, \omega^{in}) W_\lambda^{in}(trace(x, \omega^{out}), -\omega^{out}) \cos \theta^{out} d\Omega^{out}\]</span></p>
+<p><strong>CẨN THẬN ĐỌC NHẦM, TÚM LẠI LÀ TRACE IN OUT NGƯỢC LẠI SO VỚI RENDERING</strong></p>
+<p>How to use this? Let’s make a simplified example. We have two surfaces, A and B. We want to find the Incoming Importance (<span class="math inline">\(W^{\text{in}}\)</span>) at a ray arriving at surface B from a light source.</p>
+<ul>
+<li>Pixel (<span class="math inline">\(\mathbf{x}_0\)</span>) has Sensor Efficiency <span class="math inline">\(W^e = W_{\lambda}^e(\mathbf{x}, \omega^{\text{in}}) = 1.0\)</span> (Max influence)</li>
+<li>Surface A (<span class="math inline">\(\mathbf{x}_1\)</span>) has BRDF <span class="math inline">\(\rho_{A} = 0.5\)</span> (Reflects 50% of influence)</li>
+<li>Surface B (<span class="math inline">\(\mathbf{x}_2\)</span>) has BRDF <span class="math inline">\(\rho_{B} = 0.8\)</span> (Reflects 80% of influence)</li>
+</ul>
+<p>Now we start at the sensor: <span class="math display">\[W_{\lambda}^{in}(\mathbf{x}, \omega^{\text{in}}) = W^{\text{in}}_{\text{Pixel}} = W_{\lambda}^e(\mathbf{x}, \omega^{\text{in}}) + 0 = 1.0 + 0 = 1.0\]</span></p>
+<p>That means influence leaving the pixel is <span class="math inline">\(W^{\text{out}}_{\text{Pixel}} = 1.0\)</span>.</p>
+<p>Now we go to surface A. Surface A is the first surface hit by the ray traced backward from the pixel. Outgoing Importance <span class="math inline">\(W^{\text{out}}_{\text{A}}\)</span> (Toward the Pixel): <span class="math display">\[W^{\text{out}}_{\text{A} \to \text{Pixel}} = W^{\text{in}}_{\text{Pixel}} = 1.0\]</span></p>
+<p>That means Influence leaving A toward the pixel = Influence arriving at the pixel from A.</p>
+<p>Now we see what is the incoming importance at A- <span class="math inline">\(W^{\text{in}}_{\text{A}}\)</span>: <span class="math display">\[W^{\text{in}}_{\text{A}} \approx \rho_{A} \cdot W^{\text{out}}_{\text{A} \to \text{Pixel}}\]</span> <span class="math display">\[W^{\text{in}}_{\text{A}} = 0.5 \cdot 1.0 = 0.5\]</span> That means a photon arriving at A only has <span class="math inline">\(50\%\)</span> of the initial pixel’s influence, because A is a <span class="math inline">\(50\%\)</span> reflector.</p>
+<p>Surface B is hit after the ray scatters from A. Influence leaving B toward A = Influence arriving at A from B. <span class="math display">\[W^{\text{out}}_{\text{B} \to \text{A}} = W^{\text{in}}_{\text{A}} = 0.5\]</span></p>
+<p>Now Incoming Importance (<span class="math inline">\(W^{\text{in}}\)</span>) at B. (which flows back to the light source): <span class="math display">\[W^{\text{in}}_{\text{B}} \approx \rho_{B} \cdot W^{\text{out}}_{\text{B} \to \text{A}}\]</span> <span class="math display">\[W^{\text{in}}_{\text{B}} = 0.8 \cdot 0.5 = 0.4\]</span></p>
+<p>Conclusion: The influence of <span class="math inline">\(1.0\)</span> started at the pixel, traveled backward, lost <span class="math inline">\(50\%\)</span> at surface A, and lost <span class="math inline">\(20\%\)</span> at surface B, resulting in an overall accumulated influence of <span class="math inline">\(0.4\)</span> for the entire path. The renderer now knows that if it finds a light path ending at B, that light must be weighted by <span class="math inline">\(0.4\)</span> to contribute correctly to the pixel.</p>
+</section>
+</section>
+</section>
+<section id="radiometry" class="level1">
+<h1>Radiometry</h1>
+<p>Let’s just start this simple, each chronomotic light in a interval of time <span class="math inline">\(t\)</span> brings some kind of power: <span class="math display">\[\Phi_{\lambda,t} = \frac{dQ{\lambda}}{dt} \quad (W)\]</span></p>
+<p>Irradiance is how much of <strong>that power in an area from ALL DIRECTIONS</strong>: <span class="math display">\[H_{\lambda}(\mathbf{x}) = \frac{d\Phi_{\lambda}^{\text{in}}}{dA} \quad (W/m^2)\]</span></p>
+<p>Radiance is how much of <strong>that power IN 1 SPECIFIC DIRECTION, REMEMBER ONLY DIRECTION, AREA DOESNT MATTER</strong>: <span class="math display">\[L_{\lambda}(\mathbf{x}, \omega) = \frac{d^2\Phi_{\lambda}}{dA_{\perp} d\Omega} \quad (\text{W} \cdot \text{m}^{-2} \cdot \text{sr}^{-1})\]</span></p>
+<p>Since the area in radiance does not matter, if we want to convert into irradiance, <span class="math inline">\(dA = \frac{dA_{\perp}}{\cos\theta}\)</span>.</p>
+<p>So we could see direct relationship between irradiance and radiance: <span class="math display">\[H_{\lambda}^{\text{in}}(\mathbf{x}) = \iint_{\Omega} L_{\lambda}(\mathbf{x}, \omega) \cos\theta d\Omega\]</span></p>
+<p>BRDF: <span class="math display">\[\rho_{\lambda}(\mathbf{x}, \omega^{\text{in}}, \omega^{\text{out}}) = \frac{dL_{\lambda}^{\text{reflect}}(\mathbf{x}, \omega^{\text{out}})}{dH_{\lambda}^{\text{in}}(\mathbf{x}, \omega^{\text{in}})}\]</span></p>
+<p>whereby: <span class="math inline">\(dH_{\lambda}^{\text{in}} = L_{\lambda}^{\text{in}} \cos\theta^{\text{in}} d\Omega^{\text{in}}\)</span></p>
+<p>Hemispherical Reflectance from a direction <strong>(Albedo)</strong>: <span class="math display">\[R_{\lambda}(\omega^{\text{in}}) = \iint_{\Omega^{\text{out}}} \rho_{\lambda}(\mathbf{x}, \omega^{\text{in}}, \omega^{\text{out}}) \cos\theta^{\text{out}} d\Omega^{\text{out}} \in [0, 1]\]</span></p>
+<p>Albedo of diffuse surface, where <span class="math inline">\(\rho\)</span> is constant for every direction: <span class="math display">\[\alpha_{\lambda}(\mathbf{x}) = \frac{1}{\pi} R_{\lambda}(\omega^{\text{in}})\]</span></p>
+
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
