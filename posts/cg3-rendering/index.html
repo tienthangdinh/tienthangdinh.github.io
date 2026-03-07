@@ -167,13 +167,13 @@ window.Quarto = {
   <ul>
   <li><a href="#the-rendering-equation" id="toc-the-rendering-equation" class="nav-link active" data-scroll-target="#the-rendering-equation">The Rendering Equation</a>
   <ul class="collapse">
-  <li><a href="#basic" id="toc-basic" class="nav-link" data-scroll-target="#basic">Basic</a></li>
+  <li><a href="#basics" id="toc-basics" class="nav-link" data-scroll-target="#basics">Basics</a></li>
   <li><a href="#recursive-operator-form-of-the-rendering-equation" id="toc-recursive-operator-form-of-the-rendering-equation" class="nav-link" data-scroll-target="#recursive-operator-form-of-the-rendering-equation">Recursive Operator Form of the Rendering Equation</a></li>
   <li><a href="#approaches-to-solve-rendering-equation" id="toc-approaches-to-solve-rendering-equation" class="nav-link" data-scroll-target="#approaches-to-solve-rendering-equation">Approaches to solve rendering equation</a>
   <ul class="collapse">
   <li><a href="#radiosity" id="toc-radiosity" class="nav-link" data-scroll-target="#radiosity">Radiosity</a></li>
+  <li><a href="#path-tracing-simple-version" id="toc-path-tracing-simple-version" class="nav-link" data-scroll-target="#path-tracing-simple-version">Path Tracing (Simple Version)</a></li>
   <li><a href="#bidirectional-path-tracing-bdpt" id="toc-bidirectional-path-tracing-bdpt" class="nav-link" data-scroll-target="#bidirectional-path-tracing-bdpt">Bidirectional Path Tracing (BDPT)</a></li>
-  <li><a href="#more-about-monte-carlo-philosophy" id="toc-more-about-monte-carlo-philosophy" class="nav-link" data-scroll-target="#more-about-monte-carlo-philosophy">More about Monte Carlo Philosophy</a></li>
   </ul></li>
   <li><a href="#backwards" id="toc-backwards" class="nav-link" data-scroll-target="#backwards">Backwards</a>
   <ul class="collapse">
@@ -182,6 +182,40 @@ window.Quarto = {
   </ul></li>
   </ul></li>
   <li><a href="#radiometry" id="toc-radiometry" class="nav-link" data-scroll-target="#radiometry">Radiometry</a></li>
+  <li><a href="#monte-carlo-integration" id="toc-monte-carlo-integration" class="nav-link" data-scroll-target="#monte-carlo-integration">Monte Carlo Integration</a>
+  <ul class="collapse">
+  <li><a href="#why-do-we-even-need-this-thing" id="toc-why-do-we-even-need-this-thing" class="nav-link" data-scroll-target="#why-do-we-even-need-this-thing">Why do we even need this thing?</a></li>
+  <li><a href="#formulate-monte-carlo-integration" id="toc-formulate-monte-carlo-integration" class="nav-link" data-scroll-target="#formulate-monte-carlo-integration">Formulate Monte Carlo Integration</a></li>
+  <li><a href="#importance-sampling" id="toc-importance-sampling" class="nav-link" data-scroll-target="#importance-sampling">Importance Sampling</a></li>
+  <li><a href="#example-1" id="toc-example-1" class="nav-link" data-scroll-target="#example-1">Example</a>
+  <ul class="collapse">
+  <li><a href="#step-1-taking-f-from-brdf" id="toc-step-1-taking-f-from-brdf" class="nav-link" data-scroll-target="#step-1-taking-f-from-brdf">Step 1: Taking F from BRDF</a></li>
+  <li><a href="#step-2-importance-sampling-pdf-from-brdf" id="toc-step-2-importance-sampling-pdf-from-brdf" class="nav-link" data-scroll-target="#step-2-importance-sampling-pdf-from-brdf">Step 2: Importance Sampling PDF from BRDF</a></li>
+  <li><a href="#step-3-the-monte-carlo-estimate" id="toc-step-3-the-monte-carlo-estimate" class="nav-link" data-scroll-target="#step-3-the-monte-carlo-estimate">Step 3: The Monte Carlo Estimate</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#the-stupid-ray-tracing-family" id="toc-the-stupid-ray-tracing-family" class="nav-link" data-scroll-target="#the-stupid-ray-tracing-family">The stupid Ray Tracing family</a>
+  <ul class="collapse">
+  <li><a href="#classic-ray-tracing" id="toc-classic-ray-tracing" class="nav-link" data-scroll-target="#classic-ray-tracing">Classic Ray Tracing</a></li>
+  <li><a href="#distributed-ray-tracing" id="toc-distributed-ray-tracing" class="nav-link" data-scroll-target="#distributed-ray-tracing">Distributed Ray Tracing</a></li>
+  <li><a href="#path-tracing-basically-distributed-ray-tracing-with-n1" id="toc-path-tracing-basically-distributed-ray-tracing-with-n1" class="nav-link" data-scroll-target="#path-tracing-basically-distributed-ray-tracing-with-n1">Path Tracing (basically Distributed Ray Tracing with <span class="math inline">\(N=1\)</span>)</a></li>
+  </ul></li>
+  <li><a href="#useless-effects" id="toc-useless-effects" class="nav-link" data-scroll-target="#useless-effects">Useless effects</a>
+  <ul class="collapse">
+  <li><a href="#depth-of-field" id="toc-depth-of-field" class="nav-link" data-scroll-target="#depth-of-field">Depth of Field</a></li>
+  <li><a href="#spatial-filtering" id="toc-spatial-filtering" class="nav-link" data-scroll-target="#spatial-filtering">Spatial Filtering</a></li>
+  <li><a href="#temporal-filtering" id="toc-temporal-filtering" class="nav-link" data-scroll-target="#temporal-filtering">Temporal Filtering</a></li>
+  <li><a href="#russian-roulette" id="toc-russian-roulette" class="nav-link" data-scroll-target="#russian-roulette">Russian Roulette</a></li>
+  </ul></li>
+  <li><a href="#monte-carlo-based-ray-tracing" id="toc-monte-carlo-based-ray-tracing" class="nav-link" data-scroll-target="#monte-carlo-based-ray-tracing">Monte Carlo-based Ray Tracing</a>
+  <ul class="collapse">
+  <li><a href="#indirect-light-sampling-keyword-cosin-brdf" id="toc-indirect-light-sampling-keyword-cosin-brdf" class="nav-link" data-scroll-target="#indirect-light-sampling-keyword-cosin-brdf">Indirect light sampling (keyword: cosin &amp; BRDF)</a>
+  <ul class="collapse">
+  <li><a href="#brdf-sampling" id="toc-brdf-sampling" class="nav-link" data-scroll-target="#brdf-sampling">1. BRDF sampling</a></li>
+  <li><a href="#cosine-sampling" id="toc-cosine-sampling" class="nav-link" data-scroll-target="#cosine-sampling">2. Cosine sampling</a></li>
+  </ul></li>
+  <li><a href="#direct-light-sampling-keyword-area" id="toc-direct-light-sampling-keyword-area" class="nav-link" data-scroll-target="#direct-light-sampling-keyword-area">Direct light sampling (keyword: Area)</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -194,8 +228,8 @@ window.Quarto = {
 
 <section id="the-rendering-equation" class="level1">
 <h1>The Rendering Equation</h1>
-<section id="basic" class="level2">
-<h2 class="anchored" data-anchor-id="basic">Basic</h2>
+<section id="basics" class="level2">
+<h2 class="anchored" data-anchor-id="basics">Basics</h2>
 <p><span class="math display">\[L_{\lambda}^{\text{out}}(\mathbf{x}, \omega^{\text{out}}) = L_{\lambda}^{\text{emit}}(\mathbf{x}, \omega^{\text{out}}) + \iint_{\Omega^{\text{in}}} \rho(\mathbf{x}, \omega^{\text{in}}, \omega^{\text{out}}) L_{\lambda}^{\text{in}}(\mathbf{x}, \omega^{\text{in}}) \cos\theta^{\text{in}} d\Omega^{\text{in}}\]</span> whereby:</p>
 <ul>
 <li><span class="math inline">\(\cos\theta^{\text{in}}\)</span>: Lambertian cosine term. <span class="math inline">\(\theta^{\text{in}}\)</span> is the angle between the incoming direction <span class="math inline">\(\omega^{\text{in}}\)</span> and the surface normal <span class="math inline">\(\mathbf{n}\)</span>. The more senkrecht, the more energy reflected!</li>
@@ -285,6 +319,22 @@ window.Quarto = {
 <p>So we dont have that 20% <span class="math inline">\(\rho\)</span> for every direction anymore, we have <span class="math inline">\(\rho(x, \omega_i, \omega_o)\)</span> always varying. We have to use Monte Carlo to sample the direction.</p>
 </section>
 </section>
+<section id="path-tracing-simple-version" class="level3">
+<h3 class="anchored" data-anchor-id="path-tracing-simple-version">Path Tracing (Simple Version)</h3>
+<p>In Path Tracing, we start with <span class="math inline">\(N=1\)</span> at the pixel, <span class="math inline">\(N=1\)</span> at the first bounce, <span class="math inline">\(N=1\)</span> at the second bounce, and so on, creates a single, complete light path. yeah basically <span class="math inline">\(N=1\)</span> everywhere. So yes, only <span class="math inline">\(N=1\)</span> sample per integration step.</p>
+<section id="the-approximation" class="level4">
+<h4 class="anchored" data-anchor-id="the-approximation">The Approximation</h4>
+<p>When <span class="math inline">\(N=1\)</span>, the average <span class="math inline">\(\frac{1}{N}\sum_{i=1}^N\)</span> becomes just a single term:<span class="math display">\[F = \int f(\mathbf{x}) d\mathbf{x} \approx \hat{f}_1 = \frac{f(\mathbf{x}_0)}{p(\mathbf{x}_0)} \quad \text{}\]</span></p>
+<ul>
+<li><span class="math inline">\(\mathbf{x}_0\)</span>: A single, randomly chosen light path direction</li>
+<li><span class="math inline">\(\hat{f}_1\)</span>: The result of this single, weighted sample</li>
+</ul>
+</section>
+<section id="but-if-n1-then-wehre-the-hell-is-the-averaged-estimation-of-monte-carlo" class="level4">
+<h4 class="anchored" data-anchor-id="but-if-n1-then-wehre-the-hell-is-the-averaged-estimation-of-monte-carlo">But if <span class="math inline">\(N=1\)</span> then wehre the hell is the averaged estimation of Monte Carlo?</h4>
+<p><strong>Averaging at the Pixel Level:</strong> THIS IS IMPORTANT!!! The averaging (<span class="math inline">\(\frac{1}{N}\)</span>) is moved outside the recursion. To get the final image, the renderer traces millions of these <span class="math inline">\(N=1\)</span> light paths (samples) for each pixel and averages the results together. This overall average still converges to the correct answer <span class="math inline">\(\bar{f}\)</span>, as proven by the Central Limit Theorem.</p>
+</section>
+</section>
 <section id="bidirectional-path-tracing-bdpt" class="level3">
 <h3 class="anchored" data-anchor-id="bidirectional-path-tracing-bdpt">Bidirectional Path Tracing (BDPT)</h3>
 <section id="path-sampling-both-direction-is-a-monte-carlo-framework" class="level4">
@@ -327,13 +377,6 @@ window.Quarto = {
 <p>Once the computer has these two numbers (<span class="math inline">\(p_A\)</span> and <span class="math inline">\(p_B\)</span>), it uses the Balance Heuristic automatically: <span class="math display">\[w_B = \frac{p_B}{p_A + p_B}\]</span></p>
 <p>If <span class="math inline">\(p_B\)</span> is 1000 and <span class="math inline">\(p_A\)</span> is 0.001 (because hitting a tiny bulb is hard), then <span class="math inline">\(w_B\)</span> becomes 0.9999.The computer doesn’t “know” it’s a glossy floor; it just sees that the math for Strategy B resulted in a much higher probability density for that specific path than Strategy A did.</p>
 </section>
-</section>
-<section id="more-about-monte-carlo-philosophy" class="level3">
-<h3 class="anchored" data-anchor-id="more-about-monte-carlo-philosophy">More about Monte Carlo Philosophy</h3>
-<p>We all know that the rendering equation has <strong>2 infinities: infinite dimensions and infinite samples</strong>: <span class="math display">\[L_{\lambda}^{\text{out}} = (\mathbf{I} - \mathbf{R} \cdot \mathbf{T})^{-1} L_{\lambda}^{\text{emit}} = L_{\lambda}^{\text{emit}} + \mathbf{R}\mathbf{T} \cdot L_{\lambda}^{\text{emit}} + (\mathbf{R}\mathbf{T})^2 \cdot L_{\lambda}^{\text{emit}} + \dots \quad \text{}\]</span> This is a <span class="math inline">\(2 \times 2 + 2 \times 2 + 2 \times 2 + \dots = \infty\)</span> dimensional integral. It is not like the same BRDF, here we zweig the directions too. So we still sum up, but using Monte Carlo philosophy, using importance sampling to approximate the integral.</p>
-<blockquote class="blockquote">
-<p>For normal integration, error grows with the number of dimensions. Remember the triangles? yes! =&gt; Let’s dig in Monte Carlo instead.</p>
-</blockquote>
 </section>
 </section>
 <section id="backwards" class="level2">
@@ -380,9 +423,159 @@ window.Quarto = {
 <p>whereby: <span class="math inline">\(dH_{\lambda}^{\text{in}} = L_{\lambda}^{\text{in}} \cos\theta^{\text{in}} d\Omega^{\text{in}}\)</span></p>
 <p>Hemispherical Reflectance from a direction <strong>(Albedo)</strong>: <span class="math display">\[R_{\lambda}(\omega^{\text{in}}) = \iint_{\Omega^{\text{out}}} \rho_{\lambda}(\mathbf{x}, \omega^{\text{in}}, \omega^{\text{out}}) \cos\theta^{\text{out}} d\Omega^{\text{out}} \in [0, 1]\]</span></p>
 <p>Albedo of diffuse surface, where <span class="math inline">\(\rho\)</span> is constant for every direction: <span class="math display">\[\alpha_{\lambda}(\mathbf{x}) = \frac{1}{\pi} R_{\lambda}(\omega^{\text{in}})\]</span></p>
+</section>
+<section id="monte-carlo-integration" class="level1">
+<h1>Monte Carlo Integration</h1>
+<section id="why-do-we-even-need-this-thing" class="level2">
+<h2 class="anchored" data-anchor-id="why-do-we-even-need-this-thing">Why do we even need this thing?</h2>
+<p>We all know that the rendering equation has <strong>2 infinities: infinite dimensions and infinite samples</strong>: <span class="math display">\[L_{\lambda}^{\text{out}} = (\mathbf{I} - \mathbf{R} \cdot \mathbf{T})^{-1} L_{\lambda}^{\text{emit}} = L_{\lambda}^{\text{emit}} + \mathbf{R}\mathbf{T} \cdot L_{\lambda}^{\text{emit}} + (\mathbf{R}\mathbf{T})^2 \cdot L_{\lambda}^{\text{emit}} + \dots \quad \text{}\]</span> This is a <span class="math inline">\(2 \times 2 + 2 \times 2 + 2 \times 2 + \dots = \infty\)</span> dimensional integral. It is not like the same BRDF, here we zweig the directions too. So we still sum up, but using Monte Carlo philosophy, using importance sampling to approximate the integral.</p>
+<blockquote class="blockquote">
+<p>VERY IMPORTANT ALERT</p>
+</blockquote>
+<p><strong>For normal integration, error grows with the dimensional-root of the number of samples (<span class="math inline">\(\epsilon = \Delta f / \sqrt[d]{N}\)</span>). Remember the triangles? yes! =&gt; But Monte Carlo error only grows with the square root of the number of samples (<span class="math inline">\(\sigma[\hat{f}_N] = \sigma_f / \sqrt{N}\)</span>), regardless of the dimension of the integral.</strong></p>
+</section>
+<section id="formulate-monte-carlo-integration" class="level2">
+<h2 class="anchored" data-anchor-id="formulate-monte-carlo-integration">Formulate Monte Carlo Integration</h2>
+<p>The ultimate goal is to estimate an integral or expectation value. <span class="math display">\[F = \int f(x) dx\]</span> But well, we could not afford to get all samples. So the magic happens when you realize that the integral <span class="math inline">\(F\)</span> can be estimated by simply taking the average of just a small amount of samples <span class="math inline">\(N\)</span>.</p>
+<p><strong>BUT</strong> with a condition, weighted each sample by its own probability density function <span class="math inline">\(p(\mathbf{x})\)</span>. <span class="math display">\[\hat{F} = \frac{1}{N} \sum \frac{f(x_i)}{p(x_i)}\]</span> Actually, it is: <span class="math display">\[\hat{F} = E [\frac{1}{N} \sum \frac{f(x_i)}{p(x_i)}]\]</span></p>
+<p>Because when we calculation multiple times, each time we get different result, and this means we take average of all of these results.</p>
+<p>The more samples we have, the smaller the variance <span class="math inline">\(V[\hat{F}]\)</span> and its standard deviation <span class="math inline">\(\sigma[\hat{F}]\)</span>: <span class="math display">\[V[\hat{F}] = \frac{\sigma^2}{N} \quad \text{and} \quad \sigma[\hat{F}] = \frac{\sigma}{\sqrt{N}}\]</span></p>
+<p>Where <span class="math inline">\(\sigma\)</span> is the real standard deviation of the function <span class="math inline">\(f(x)\)</span>.</p>
+<p>And you see what? This solves the curse of dimensionality! That means, the statistical error decreases with the square root of the number of samples (<span class="math inline">\(O(1/\sqrt{N})\)</span>), <strong>regardless of the dimension of the integral.</strong></p>
+</section>
+<section id="importance-sampling" class="level2">
+<h2 class="anchored" data-anchor-id="importance-sampling">Importance Sampling</h2>
+<p>OK, now we have created the framework - Monte Carlo. But well, we could not afford to get many samples, we need to be a little strategic about what samples to take so that the variance is minimized.</p>
+<p>So the ideal case is, the sampling distribution <span class="math inline">\(p(\mathbf{x})\)</span> is chosen to be proportional to the function <span class="math inline">\(f(\mathbf{x})\)</span>. <span class="math display">\[p(\mathbf{x}) \propto f(\mathbf{x})\]</span></p>
+<p>Since <span class="math inline">\(p(\mathbf{x})\)</span> must be a valid probability density function, the integral over the entire domain <span class="math inline">\(\Omega\)</span> must be <span class="math inline">\(1\)</span> (<span class="math inline">\(\int p(\mathbf{x}) d\mathbf{x} = 1\)</span>). This requires <span class="math inline">\(p(\mathbf{x})\)</span> to be normalized by the true value of the integral (<span class="math inline">\(F = \int f(\mathbf{x}) d\mathbf{x}\)</span>): <span class="math display">\[p(\mathbf{x}) = c \cdot f(\mathbf{x}), \quad \text{where } c = \frac{1}{F}\]</span> <span class="math display">\[p(\mathbf{x}) = \frac{f(\mathbf{x})}{F} = \frac{f(\mathbf{x})}{\int f(\mathbf{x}) d\mathbf{x}}\]</span></p>
+<p><strong>THIS IS SUPER IMPORTANT, WITHOUT THIS F, THERE WOULD BE NO SUM OF LIGHTS, OTHERWISE WOULD BE ONLY AVERAGED LIGHT</strong></p>
+</section>
+<section id="example-1" class="level2">
+<h2 class="anchored" data-anchor-id="example-1">Example</h2>
+<section id="step-1-taking-f-from-brdf" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-taking-f-from-brdf">Step 1: Taking F from BRDF</h3>
+<p>Let’s say at a bounce the BRDF of incoming light intensity <span class="math inline">\(f(x)\)</span> from angles between 0 and 2. We guess that the actual light intensity is also similar. <span class="math display">\[f(x) = 2x\]</span> First, we must calculate <span class="math inline">\(F\)</span>, basically integrating the BRDF. <span class="math display">\[F = \int_{0}^{2} f(x) \, dx = \int_{0}^{2} 2x \, dx\]</span> <span class="math display">\[F = [x^2]_0^2 = 2^2 - 0^2 = \mathbf{4}\]</span> BRDF is 4. If our Monte Carlo algorithm is good and the light really has the same intensity as BRDF, it will give us 4.</p>
+</section>
+<section id="step-2-importance-sampling-pdf-from-brdf" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-importance-sampling-pdf-from-brdf">Step 2: Importance Sampling PDF from BRDF</h3>
+<p>Now, we are going to build our Probability Density Function <span class="math inline">\(p(x)\)</span> using your exact formula: <span class="math inline">\(p(x) = \frac{f(x)}{F}\)</span>.Since we know <span class="math inline">\(f(x) = 2x\)</span> and <span class="math inline">\(F = 4\)</span>, we plug them in: <span class="math display">\[p(x) = \frac{2x}{4} = \frac{x}{2}\]</span></p>
+</section>
+<section id="step-3-the-monte-carlo-estimate" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-the-monte-carlo-estimate">Step 3: The Monte Carlo Estimate</h3>
+<p>What else, just plug numbers in: <span class="math display">\[\hat{F} = \frac{1}{N} \sum_{i=1}^{N} \frac{f(x_i)}{p(x_i)}\]</span></p>
+<p>Let’s take just one single random sample (<span class="math inline">\(N=1\)</span>).</p>
+<p>Scenario A: The computer randomly picks <span class="math inline">\(x = 1.5\)</span> <span class="math display">\[\hat{F} = \frac{f(1.5)}{p(1.5)} = \frac{3}{0.75} = \mathbf{4}\]</span></p>
+<p>Result: 4. With just ONE single ray, we got the exact perfect answer.</p>
+<p>Scenario B: The computer randomly picks a different number, <span class="math inline">\(x = 0.5\)</span> <span class="math display">\[\hat{F} = \frac{f(0.5)}{p(0.5)} = \frac{1}{0.25} = \mathbf{4}\]</span></p>
+<p>Result: 4.</p>
+<p>In reality, we actually dont know <span class="math inline">\(F\)</span>, so we “guess” a <span class="math inline">\(p(x)\)</span> that looks similar to <span class="math inline">\(f(x)\)</span> (mostly using the BRDF lobe), but it won’t be perfectly proportional. Because it’s not perfect, the math won’t cancel out cleanly to 4 every single time. Sometimes you’ll get 3.8, sometimes 4.2. Therefore we do it many times and take the average.</p>
+</section>
+</section>
+</section>
+<section id="the-stupid-ray-tracing-family" class="level1">
+<h1>The stupid Ray Tracing family</h1>
+<section id="classic-ray-tracing" class="level3">
+<h3 class="anchored" data-anchor-id="classic-ray-tracing">Classic Ray Tracing</h3>
+<p>For every pixel, you fire one ray. When it hits a surface, it does three things:</p>
+<ul>
+<li>Check if a light is visible (Shadow Ray).</li>
+<li>Bounce in the exact mirror direction (Reflection Ray).</li>
+<li>Bend in the exact refraction direction (Refraction Ray).</li>
+</ul>
+<p>Result: Everything looks perfectly sharp. Shadows have hard edges, mirrors are perfect, and glass has no blur.</p>
+<p>Weakness: It cannot simulate the “fuzziness” of the real world (like soft shadows or glossy surfaces). Therefore the upcoming Distributed Ray Tracing was introduced</p>
+</section>
+<section id="distributed-ray-tracing" class="level3">
+<h3 class="anchored" data-anchor-id="distributed-ray-tracing">Distributed Ray Tracing</h3>
+<p>It does some things differently:</p>
+<ul>
+<li>Many rays per pixel</li>
+<li>Many reflection samples per bounce, not just one mirror reflection =&gt; fuzzy blurry effect</li>
+</ul>
+<p>Achieved Goal: blurry effect</p>
+<p>Weakness: After each bounce, the number of rays grow exponentially.</p>
+<section id="example-2" class="level4">
+<h4 class="anchored" data-anchor-id="example-2">Example:</h4>
+<p>Scene:</p>
+<ul>
+<li>Camera (<span class="math inline">\(f_0\)</span>): The pixel sensitivity is 1.0.</li>
+<li>Surface 1 (<span class="math inline">\(f_1\)</span>): A glossy floor. Its BRDF value in the direction of the light is 0.4.</li>
+<li>Light (<span class="math inline">\(f_n\)</span>): A small area light emitting 1000 units of radiance.</li>
+</ul>
+<p>Monte Carlo <strong>for a single pixel</strong>:</p>
+<ul>
+<li><span class="math inline">\(p_0\)</span>: We picked a random spot on the lens/aperture. The probability (PDF) was 0.5. (<strong>THIS IS HOW WE CHOOSE THE RAY DIRECTION</strong>)</li>
+<li><span class="math inline">\(p_1\)</span>: We sampled the glossy BRDF to find a reflection direction. The PDF for picking this specific direction was 0.2.</li>
+<li><span class="math inline">\(p_n\)</span>: We picked a random point on the area light. The PDF for picking that point was 0.1. <span class="math display">\[\hat{J} = \frac{f_0 \cdot f_1 \cdot f_n}{p_0 \cdot p_1 \cdot p_n}\]</span> <span class="math display">\[\hat{J} = \frac{1 \cdot 0.4 \cdot 1000}{0.5 \cdot 0.2 \cdot 0.1} = \mathbf{40000}\]</span></li>
+</ul>
+<p>Because the path we took was rare 1%, 99% of others will it 0. So the average is <span class="math inline">\(\frac{1}{100} \cdot 40000 + \frac{99}{100} \cdot 0 = \mathbf{400}\)</span>.</p>
+</section>
+</section>
+<section id="path-tracing-basically-distributed-ray-tracing-with-n1" class="level3">
+<h3 class="anchored" data-anchor-id="path-tracing-basically-distributed-ray-tracing-with-n1">Path Tracing (basically Distributed Ray Tracing with <span class="math inline">\(N=1\)</span>)</h3>
+<p>At each bounce, one direct and one indirect ray is sampled. remember, <strong>AT EACH BOUNCE !!!</strong> <span class="math display">\[L_\lambda^{\text{out}} = L_\lambda^{\text{emit}} + \mathbf{R}\mathbf{T} \cdot L_\lambda^{\text{emit}} + (\mathbf{R}\mathbf{T})^2 \cdot L_\lambda^{\text{emit}} + \dots\]</span></p>
+<p>Using Monte Carlo estimation: <span class="math display">\[L_\lambda^{\text{out}}(\underline{x}_0, \omega_0^1) = \frac{w_{\lambda,1}}{p_1} \cdot \left( \frac{w_{\lambda,2}}{p_2} \cdot \left( \dots \left( \frac{w_{\lambda,n}}{p_n} L_{\lambda,n+1}^e \right) \dots \right) \right)\]</span></p>
+<p>where <span class="math display">\[w_{\lambda,j} = \rho(\dots) \cos\theta\]</span> is the “weight” of the light of that direction</p>
+<p>And you know what, it absolutely looks like this: <span class="math display">\[L_\lambda^{\text{out}} = \frac{w_1 \cdot w_2 \cdot \dots \cdot w_n}{p_1 \cdot p_2 \cdot \dots \cdot p_n} \cdot L^{\text{emit}}\]</span> <span class="math display">\[\hat{J} = \frac{f_0 \cdot f_1 \cdot \dots \cdot f_n}{p_0 \cdot p_1 \cdot \dots \cdot p_n}\]</span></p>
+</section>
+</section>
+<section id="useless-effects" class="level1">
+<h1>Useless effects</h1>
+<section id="depth-of-field" class="level2">
+<h2 class="anchored" data-anchor-id="depth-of-field">Depth of Field</h2>
+<p>So we want to model the blurriness of the lens. pixels are only sharp when they are placed at focal plane, if they are placed a little front or back, it becomes blur. And for a pixel, we integrate over all point x on the pixel area on this focal plane, and over allapeture area. <span class="math display">\[\Phi_{\lambda, j} = \mathbf{M}_{\lambda, j}^{\Omega^{\text{in}}(\mathbf{x}) \times A_j} L_{\lambda}^{\text{in}} \quad \text{}\]</span> * <span class="math inline">\(\Phi_{\lambda, j}\)</span> total spectral power (flux) for pixel <span class="math inline">\(j\)</span> (brightness) * <span class="math inline">\(\mathbf{M}_{\lambda, j}^{\Omega^{\text{in}}(\mathbf{x}) \times A_j}\)</span> (The Measurement Operator) * <span class="math inline">\(A_j\)</span>: The integral is performed over the pixel area defined on the focal plane. * <span class="math inline">\(\Omega^{\text{in}}(\mathbf{x})\)</span>: The integral is performed over the solid angle of directions that pass through the lens aperture (<span class="math inline">\(a\)</span>) and contribute to the point <span class="math inline">\(\mathbf{x}\)</span> on the focal plane. * <span class="math inline">\(L_{\lambda}^{\text{in}}\)</span> is just incoming light solved by the <strong>Rendering Equation</strong></p>
+</section>
+<section id="spatial-filtering" class="level2">
+<h2 class="anchored" data-anchor-id="spatial-filtering">Spatial Filtering</h2>
+<p>Goal: When a ray tracer calculates the color of a pixel, it draws multiple samples (light paths) within the pixel area. If these samples are simply averaged without weighting, it corresponds to a box filter. However, it can create Aliasing idk why.</p>
+<p>To fix, it is really simple! Weight the samples using a Gaußian filter. This filter weights samples closer to the pixel center more heavily than samples near the edges. <span class="math display">\[\text{Pixel Color} = \int_{-1}^{1} L(x) \cdot k(x) \, dx\]</span></p>
+</section>
+<section id="temporal-filtering" class="level2">
+<h2 class="anchored" data-anchor-id="temporal-filtering">Temporal Filtering</h2>
+<p>Goal: when the camera’s shutter is open for a finite amount of time, causing moving objects to appear stretched.</p>
+<p>This is done in the same way as spatial filtering, but instead of integrating over the pixel area (<span class="math inline">\(x, y\)</span>), the renderer integrates over a time interval. For example, a pixel might see different part of a moving ball at different timestamp when it emits the exact same ray direction!</p>
+</section>
+<section id="russian-roulette" class="level2">
+<h2 class="anchored" data-anchor-id="russian-roulette">Russian Roulette</h2>
+<p>At each bounce, a random decision is made to either continue tracing the path or terminate it.</p>
+</section>
+</section>
+<section id="monte-carlo-based-ray-tracing" class="level1">
+<h1>Monte Carlo-based Ray Tracing</h1>
+<p>General idea: <span class="math display">\[L_{\lambda}^{\text{reflect}}(\omega^{\text{out}}) = \iint_{\Omega^{\text{in}}} \rho(\omega^{\text{in}}, \omega^{\text{out}}) L_{\lambda}^{\text{in}}(\omega^{\text{in}})\cos\theta^{\text{in}} d\Omega^{\text{in}} \quad \text{}\]</span> is estimated by Monte Carlo: <span class="math display">\[L_{\lambda}^{\text{reflect}}(\omega^{\text{out}}) \approx \frac{1}{N} \sum_{i=1}^N \frac{\rho(\omega_i^{\text{in}}, \omega^{\text{out}})L_{\lambda}^{\text{in}}(\omega_i^{\text{in}})\cos\theta_i^{\text{in}}}{p(\omega_i^{\text{in}})} \quad \text{}\]</span></p>
+<p>Using Importance Sampling PDF from BRDF: <span class="math inline">\(f(\omega^{\text{in}}) = \rho(\omega_i^{\text{in}}, \omega^{\text{out}})L_{\lambda}^{\text{in}}(\omega_i^{\text{in}})\cos\theta_i^{\text{in}}\)</span>, is the function that the PDF <span class="math inline">\(p(\omega^{\text{in}})\)</span> should ideally be proportional to. We cannot sample all 3 components at once, so the PDF of each component must be split up.</p>
+<ul>
+<li>Cosine-weighted sampling using Nusselt’s analogy</li>
+<li>BRDF sampling by splitting again <span class="math inline">\(\rho = \rho_{diff} + \rho_{spec} + \rho_{mirr}\)</span> (for e.g.&nbsp;use 80% diffuse, 20% specular)</li>
+<li>Direct light sampling I still dont know what to sample here when we already know the direction.</li>
+</ul>
+<p>To put all these strategies together, at each bounce, we calculate the contribution of direct light (Area light sampling) and indirect light (cosine+BRDF) separately and take average of their weighted sum by MIS: <span class="math display">\[L_{\lambda}^{\text{reflect}} = L_{\lambda}^{\text{direct}} (\mathbf{x}, \omega^{\text{out}}) + L_{\lambda}^{\text{indirect}} (\mathbf{x}, \omega^{\text{out}}) \quad \text{}\]</span></p>
+<section id="indirect-light-sampling-keyword-cosin-brdf" class="level2">
+<h2 class="anchored" data-anchor-id="indirect-light-sampling-keyword-cosin-brdf">Indirect light sampling (keyword: cosin &amp; BRDF)</h2>
+<p>To calculate indirect light: <span class="math display">\[L_\lambda^{\text{indirect}}(x, \omega^{\text{out}}) = \iint_{\Omega^{\text{in}}} \rho(x, \omega^{\text{in}}, \omega^{\text{out}}) L_\lambda^{\text{reflect}}(\text{trace}(x, \omega^{\text{in}}), -\omega^{\text{in}}) \cos\theta^{\text{in}} d\Omega^{\text{in}}\]</span></p>
+<section id="brdf-sampling" class="level3">
+<h3 class="anchored" data-anchor-id="brdf-sampling">1. BRDF sampling</h3>
+<p>I think we all know what that is, quite intuitive that we want to sample according to BRDF lobe. But let’s discuss about this in another post.</p>
+</section>
+<section id="cosine-sampling" class="level3">
+<h3 class="anchored" data-anchor-id="cosine-sampling">2. Cosine sampling</h3>
+<p>Area of a unit circle is <span class="math inline">\(\pi r^2 = \pi (1)^2 = \pi\)</span>, so PDF is <span class="math inline">\(p(x, y) = 1/\pi\)</span>. We use this as the base to calculate PDF of each direction <span class="math inline">\(p_{\text{Nusselt}}(\omega^{in}) = \cos\theta^{in}/\pi\)</span>.</p>
+<p>Imagine we sample N random direction, this is our Monte Carlo estimation: <span class="math display">\[L_{\lambda,\text{Nusselt}}^{\text{reflect}}(\omega^{out}) \approx\frac{1}{N} \sum \frac{\rho(\omega_i^{in}, \omega^{out}) \cdot L_\lambda^{in}(\omega_i^{in}) \cdot \cos\theta^{in}}{\left(\frac{\cos\theta^{in}}{\pi}\right)}\]</span> <span class="math display">\[L_{\lambda,\text{Nusselt}}^{\text{reflect}}(\omega^{out}) \approx \frac{\pi}{N} \sum_i \rho(\omega_i^{in}, \omega^{out}) L_\lambda^{in}(\omega_i^{in})\]</span></p>
+</section>
+</section>
+<section id="direct-light-sampling-keyword-area" class="level2">
+<h2 class="anchored" data-anchor-id="direct-light-sampling-keyword-area">Direct light sampling (keyword: Area)</h2>
+<p>FOr direct light sampling we rewrite into integral over areas: <span class="math display">\[L_{\lambda,l}^{\text{direct,area}}(x, \omega^{\text{out}}) = \iint_{y \in A_l} \rho \cdot L_{\lambda,l}^{\text{emit,area}} \cdot V(x, y) \frac{\cos\theta^{x \to y} \cos\theta^{y \to x}}{\|x - y\|^2} dA_y\]</span></p>
+<p>We can also estimate this using Monte Carlo:</p>
+<ul>
+<li>For each area light <span class="math inline">\(l\)</span>, we need to sample a number <span class="math inline">\(N_l\)</span> of points <span class="math inline">\(\mathbf{y}_i\)</span> on the light source.</li>
+<li>The integral is then approximated by a sum, where each sample <span class="math inline">\(\mathbf{y}_i\)</span> is weighted by <span class="math inline">\(1/p(\mathbf{y}_i)\)</span>.</li>
+<li><span class="math inline">\(p(\mathbf{y}_i)\)</span>: The Probability Density Function for sampling a point <span class="math inline">\(\mathbf{y}_i\)</span> on the area light. <span class="math display">\[L_{\lambda}^{\text{direct,area}}(\mathbf{x}, \omega^{\text{out}}) \approx \frac{1}{N_l} \sum_{i=1}^{N_l} \frac{\rho(\mathbf{x}, \omega^{\mathbf{x} \to \mathbf{y}_i}, \omega^{\text{out}}) L_{\lambda}^{\text{emit,area}}(\mathbf{y}_i, \omega^{\mathbf{y}_i \to \mathbf{x}}) G(\mathbf{x}, \mathbf{y}_i)}{p(\mathbf{y}_i)} \quad \text{}\]</span></li>
+</ul>
 
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
