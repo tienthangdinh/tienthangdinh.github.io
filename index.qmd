@@ -1,5 +1,5 @@
 ---
-title: "໒(⊙ᴗ⊙)७✎▤"
+title: "໒(^ . ^)७✎▤"
 listing:
   contents: posts
   sort: "date desc"

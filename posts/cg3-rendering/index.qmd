@@ -10,7 +10,7 @@ format:
 ---
 # The Rendering Equation
 
-## Basic
+## Basics
 $$L_{\lambda}^{\text{out}}(\mathbf{x}, \omega^{\text{out}}) = L_{\lambda}^{\text{emit}}(\mathbf{x}, \omega^{\text{out}}) + \iint_{\Omega^{\text{in}}} \rho(\mathbf{x}, \omega^{\text{in}}, \omega^{\text{out}}) L_{\lambda}^{\text{in}}(\mathbf{x}, \omega^{\text{in}}) \cos\theta^{\text{in}} d\Omega^{\text{in}}$$
 whereby:
 
@@ -115,6 +115,18 @@ So what change? For example:
 
 So we dont have that 20% $\rho$ for every direction anymore, we have $\rho(x, \omega_i, \omega_o)$ always varying. We have to use Monte Carlo to sample the direction.
 
+### Path Tracing (Simple Version)
+In Path Tracing, we start with $N=1$ at the pixel, $N=1$ at the first bounce, $N=1$ at the second bounce, and so on, creates a single, complete light path. yeah basically $N=1$ everywhere. So yes, only $N=1$ sample per integration step.
+
+#### The Approximation
+When $N=1$, the average $\frac{1}{N}\sum_{i=1}^N$ becomes just a single term:$$F = \int f(\mathbf{x}) d\mathbf{x} \approx \hat{f}_1 = \frac{f(\mathbf{x}_0)}{p(\mathbf{x}_0)} \quad \text{}$$
+
+* $\mathbf{x}_0$: A single, randomly chosen light path direction
+* $\hat{f}_1$: The result of this single, weighted sample
+
+#### But if $N=1$ then wehre the hell is the averaged estimation of Monte Carlo?
+**Averaging at the Pixel Level:**  THIS IS IMPORTANT!!! The averaging ($\frac{1}{N}$) is moved outside the recursion. To get the final image, the renderer traces millions of these $N=1$ light paths (samples) for each pixel and averages the results together. This overall average still converges to the correct answer $\bar{f}$, as proven by the Central Limit Theorem.
+
 ### Bidirectional Path Tracing (BDPT)
 
 #### Path Sampling both Direction is a Monte Carlo Framework
@@ -162,13 +174,6 @@ Once the computer has these two numbers ($p_A$ and $p_B$), it uses the Balance H
 $$w_B = \frac{p_B}{p_A + p_B}$$
 
 If $p_B$ is 1000 and $p_A$ is 0.001 (because hitting a tiny bulb is hard), then $w_B$ becomes 0.9999.The computer doesn't "know" it's a glossy floor; it just sees that the math for Strategy B resulted in a much higher probability density for that specific path than Strategy A did.
-
-### More about Monte Carlo Philosophy
-We all know that the rendering equation has **2 infinities: infinite dimensions and infinite samples**:
-$$L_{\lambda}^{\text{out}} = (\mathbf{I} - \mathbf{R} \cdot \mathbf{T})^{-1} L_{\lambda}^{\text{emit}} = L_{\lambda}^{\text{emit}} + \mathbf{R}\mathbf{T} \cdot L_{\lambda}^{\text{emit}} + (\mathbf{R}\mathbf{T})^2 \cdot L_{\lambda}^{\text{emit}} + \dots \quad \text{}$$
-This is a $2 \times 2 + 2 \times 2 + 2 \times 2 + \dots = \infty$ dimensional integral. It is not like the same BRDF, here we zweig the directions too. So we still sum up, but using Monte Carlo philosophy, using importance sampling to approximate the integral.
-
-> For normal integration, error grows with the number of dimensions. Remember the triangles? yes! => Let's dig in Monte Carlo instead.
 
 ## Backwards
 ### Measurement Equation
@@ -246,4 +251,202 @@ $$R_{\lambda}(\omega^{\text{in}}) = \iint_{\Omega^{\text{out}}} \rho_{\lambda}(\
 
 Albedo of diffuse surface, where $\rho$ is constant for every direction:
 $$\alpha_{\lambda}(\mathbf{x}) = \frac{1}{\pi} R_{\lambda}(\omega^{\text{in}})$$
+
+# Monte Carlo Integration
+## Why do we even need this thing?
+We all know that the rendering equation has **2 infinities: infinite dimensions and infinite samples**:
+$$L_{\lambda}^{\text{out}} = (\mathbf{I} - \mathbf{R} \cdot \mathbf{T})^{-1} L_{\lambda}^{\text{emit}} = L_{\lambda}^{\text{emit}} + \mathbf{R}\mathbf{T} \cdot L_{\lambda}^{\text{emit}} + (\mathbf{R}\mathbf{T})^2 \cdot L_{\lambda}^{\text{emit}} + \dots \quad \text{}$$
+This is a $2 \times 2 + 2 \times 2 + 2 \times 2 + \dots = \infty$ dimensional integral. It is not like the same BRDF, here we zweig the directions too. So we still sum up, but using Monte Carlo philosophy, using importance sampling to approximate the integral.
+
+> VERY IMPORTANT ALERT
+
+**For normal integration, error grows with the dimensional-root of the number of samples ($\epsilon = \Delta f / \sqrt[d]{N}$). Remember the triangles? yes! => But Monte Carlo error only grows with the square root of the number of samples ($\sigma[\hat{f}_N] = \sigma_f / \sqrt{N}$), regardless of the dimension of the integral.**
+
+## Formulate Monte Carlo Integration
+The ultimate goal is to estimate an integral or expectation value. 
+$$F = \int f(x) dx$$
+But well, we could not afford to get all samples. So the magic happens when you realize that the integral $F$ can be estimated by simply taking the average of just a small amount of samples $N$. 
+
+**BUT** with a condition, weighted each sample by its own probability density function $p(\mathbf{x})$.
+$$\hat{F} = \frac{1}{N} \sum \frac{f(x_i)}{p(x_i)}$$
+Actually, it is:
+$$\hat{F} = E [\frac{1}{N} \sum \frac{f(x_i)}{p(x_i)}]$$
+
+Because when we calculation multiple times, each time we get different result, and this means we take average of all of these results.
+
+The more samples we have, the smaller the variance $V[\hat{F}]$ and its standard deviation $\sigma[\hat{F}]$:
+$$V[\hat{F}] = \frac{\sigma^2}{N} \quad \text{and} \quad \sigma[\hat{F}] = \frac{\sigma}{\sqrt{N}}$$
+
+Where $\sigma$ is the real standard deviation of the function $f(x)$.
+
+And you see what? This solves the curse of dimensionality! That means, the statistical error decreases with the square root of the number of samples ($O(1/\sqrt{N})$), **regardless of the dimension of the integral.**
+
+
+## Importance Sampling
+OK, now we have created the framework - Monte Carlo. But well, we could not afford to get many samples, we need to be a little strategic about what samples to take so that the variance is minimized.
+
+So the ideal case is, the sampling distribution $p(\mathbf{x})$ is chosen to be proportional to the function $f(\mathbf{x})$.
+$$p(\mathbf{x}) \propto f(\mathbf{x})$$
+
+Since $p(\mathbf{x})$ must be a valid probability density function, the integral over the entire domain $\Omega$ must be $1$ ($\int p(\mathbf{x}) d\mathbf{x} = 1$). This requires $p(\mathbf{x})$ to be normalized by the true value of the integral ($F = \int f(\mathbf{x}) d\mathbf{x}$):
+$$p(\mathbf{x}) = c \cdot f(\mathbf{x}), \quad \text{where } c = \frac{1}{F}$$
+$$p(\mathbf{x}) = \frac{f(\mathbf{x})}{F} = \frac{f(\mathbf{x})}{\int f(\mathbf{x}) d\mathbf{x}}$$
+
+**THIS IS SUPER IMPORTANT, WITHOUT THIS F, THERE WOULD BE NO SUM OF LIGHTS, OTHERWISE WOULD BE ONLY AVERAGED LIGHT**
+
+## Example
+### Step 1: Taking F from BRDF
+Let's say at a bounce the BRDF of incoming light intensity $f(x)$ from angles between 0 and 2. We guess that the actual light intensity is also similar.
+$$f(x) = 2x$$
+First, we must calculate $F$, basically integrating the BRDF.
+$$F = \int_{0}^{2} f(x) \, dx = \int_{0}^{2} 2x \, dx$$
+$$F = [x^2]_0^2 = 2^2 - 0^2 = \mathbf{4}$$
+BRDF is 4. If our Monte Carlo algorithm is good and the light really has the same intensity as BRDF, it will give us 4.
+
+### Step 2: Importance Sampling PDF from BRDF
+Now, we are going to build our Probability Density Function $p(x)$ using your exact formula: $p(x) = \frac{f(x)}{F}$.Since we know $f(x) = 2x$ and $F = 4$, we plug them in:
+$$p(x) = \frac{2x}{4} = \frac{x}{2}$$
+
+### Step 3: The Monte Carlo Estimate
+What else, just plug numbers in:
+$$\hat{F} = \frac{1}{N} \sum_{i=1}^{N} \frac{f(x_i)}{p(x_i)}$$
+
+Let's take just one single random sample ($N=1$).
+
+Scenario A: The computer randomly picks $x = 1.5$
+$$\hat{F} = \frac{f(1.5)}{p(1.5)} = \frac{3}{0.75} = \mathbf{4}$$
+
+Result: 4. With just ONE single ray, we got the exact perfect answer.
+
+Scenario B: The computer randomly picks a different number, $x = 0.5$
+$$\hat{F} = \frac{f(0.5)}{p(0.5)} = \frac{1}{0.25} = \mathbf{4}$$
+
+Result: 4.
+
+In reality, we actually dont know $F$, so we "guess" a $p(x)$ that looks similar to $f(x)$ (mostly using the BRDF lobe), but it won't be perfectly proportional. Because it's not perfect, the math won't cancel out cleanly to 4 every single time. Sometimes you'll get 3.8, sometimes 4.2. Therefore we do it many times and take the average.
+
+# The stupid Ray Tracing family
+
+### Classic Ray Tracing
+For every pixel, you fire one ray. When it hits a surface, it does three things:
+
+* Check if a light is visible (Shadow Ray).
+* Bounce in the exact mirror direction (Reflection Ray).
+* Bend in the exact refraction direction (Refraction Ray).
+
+Result: Everything looks perfectly sharp. Shadows have hard edges, mirrors are perfect, and glass has no blur.
+
+Weakness: It cannot simulate the "fuzziness" of the real world (like soft shadows or glossy surfaces). Therefore the upcoming Distributed Ray Tracing was introduced
+
+
+
+### Distributed Ray Tracing 
+
+It does some things differently:
+
+* Many rays per pixel
+* Many reflection samples per bounce, not just one mirror reflection => fuzzy blurry effect
+
+Achieved Goal: blurry effect
+
+Weakness: After each bounce, the number of rays grow exponentially.
+
+#### Example:
+Scene:
+
+* Camera ($f_0$): The pixel sensitivity is 1.0.
+* Surface 1 ($f_1$): A glossy floor. Its BRDF value in the direction of the light is 0.4.
+* Light ($f_n$): A small area light emitting 1000 units of radiance.
+
+Monte Carlo **for a single pixel**:
+
+* $p_0$: We picked a random spot on the lens/aperture. The probability (PDF) was 0.5. (**THIS IS HOW WE CHOOSE THE RAY DIRECTION**)
+* $p_1$: We sampled the glossy BRDF to find a reflection direction. The PDF for picking this specific direction was 0.2.
+* $p_n$: We picked a random point on the area light. The PDF for picking that point was 0.1.
+$$\hat{J} = \frac{f_0 \cdot f_1 \cdot f_n}{p_0 \cdot p_1 \cdot p_n}$$
+$$\hat{J} = \frac{1 \cdot 0.4 \cdot 1000}{0.5 \cdot 0.2 \cdot 0.1} = \mathbf{40000}$$
+
+Because the path we took was rare 1%, 99% of others will it 0. So the average is $\frac{1}{100} \cdot 40000 + \frac{99}{100} \cdot 0 = \mathbf{400}$.
+
+### Path Tracing (basically Distributed Ray Tracing with $N=1$)
+
+At each bounce, one direct and one indirect ray is sampled. remember, **AT EACH BOUNCE !!!**
+$$L_\lambda^{\text{out}} = L_\lambda^{\text{emit}} + \mathbf{R}\mathbf{T} \cdot L_\lambda^{\text{emit}} + (\mathbf{R}\mathbf{T})^2 \cdot L_\lambda^{\text{emit}} + \dots$$
+
+Using Monte Carlo estimation:
+$$L_\lambda^{\text{out}}(\underline{x}_0, \omega_0^1) = \frac{w_{\lambda,1}}{p_1} \cdot \left( \frac{w_{\lambda,2}}{p_2} \cdot \left( \dots \left( \frac{w_{\lambda,n}}{p_n} L_{\lambda,n+1}^e \right) \dots \right) \right)$$
+
+where $$w_{\lambda,j} = \rho(\dots) \cos\theta$$ is the "weight" of the light of that direction
+
+And you know what, it absolutely looks like this:
+$$L_\lambda^{\text{out}} = \frac{w_1 \cdot w_2 \cdot \dots \cdot w_n}{p_1 \cdot p_2 \cdot \dots \cdot p_n} \cdot L^{\text{emit}}$$
+$$\hat{J} = \frac{f_0 \cdot f_1 \cdot \dots \cdot f_n}{p_0 \cdot p_1 \cdot \dots \cdot p_n}$$
+
+
+
+# Useless effects
+## Depth of Field
+So we want to model the blurriness of the lens. pixels are only sharp when they are placed at focal plane, if they are placed a little front or back, it becomes blur. And for a pixel, we integrate over all point x on the pixel area on this focal plane, and over allapeture area.
+$$\Phi_{\lambda, j} = \mathbf{M}_{\lambda, j}^{\Omega^{\text{in}}(\mathbf{x}) \times A_j} L_{\lambda}^{\text{in}} \quad \text{}$$
+* $\Phi_{\lambda, j}$ total spectral power (flux) for pixel $j$ (brightness)
+* $\mathbf{M}_{\lambda, j}^{\Omega^{\text{in}}(\mathbf{x}) \times A_j}$ (The Measurement Operator)
+* $A_j$: The integral is performed over the pixel area defined on the focal plane.
+* $\Omega^{\text{in}}(\mathbf{x})$: The integral is performed over the solid angle of directions that pass through the lens aperture ($a$) and contribute to the point $\mathbf{x}$ on the focal plane.
+* $L_{\lambda}^{\text{in}}$ is just incoming light solved by the **Rendering Equation**
+
+
+## Spatial Filtering
+Goal: When a ray tracer calculates the color of a pixel, it draws multiple samples (light paths) within the pixel area. If these samples are simply averaged without weighting, it corresponds to a box filter. However, it can create Aliasing idk why.
+
+To fix, it is really simple! Weight the samples using a Gaußian filter. This filter weights samples closer to the pixel center more heavily than samples near the edges.
+$$\text{Pixel Color} = \int_{-1}^{1} L(x) \cdot k(x) \, dx$$
+
+## Temporal Filtering
+Goal: when the camera's shutter is open for a finite amount of time, causing moving objects to appear stretched.
+
+This is done in the same way as spatial filtering, but instead of integrating over the pixel area ($x, y$), the renderer integrates over a time interval. For example, a pixel might see different part of a moving ball at different timestamp when it emits the exact same ray direction! 
+
+## Russian Roulette
+At each bounce, a random decision is made to either continue tracing the path or terminate it.
+
+
+# Monte Carlo-based Ray Tracing
+General idea:
+$$L_{\lambda}^{\text{reflect}}(\omega^{\text{out}}) = \iint_{\Omega^{\text{in}}} \rho(\omega^{\text{in}}, \omega^{\text{out}}) L_{\lambda}^{\text{in}}(\omega^{\text{in}})\cos\theta^{\text{in}} d\Omega^{\text{in}} \quad \text{}$$
+is estimated by Monte Carlo:
+$$L_{\lambda}^{\text{reflect}}(\omega^{\text{out}}) \approx \frac{1}{N} \sum_{i=1}^N \frac{\rho(\omega_i^{\text{in}}, \omega^{\text{out}})L_{\lambda}^{\text{in}}(\omega_i^{\text{in}})\cos\theta_i^{\text{in}}}{p(\omega_i^{\text{in}})} \quad \text{}$$
+
+Using Importance Sampling PDF from BRDF: $f(\omega^{\text{in}}) = \rho(\omega_i^{\text{in}}, \omega^{\text{out}})L_{\lambda}^{\text{in}}(\omega_i^{\text{in}})\cos\theta_i^{\text{in}}$, is the function that the PDF $p(\omega^{\text{in}})$ should ideally be proportional to. We cannot sample all 3 components at once, so the PDF of each component must be split up.
+
+* Cosine-weighted sampling using Nusselt's analogy
+* BRDF sampling by splitting again $\rho = \rho_{diff} + \rho_{spec} + \rho_{mirr}$ (for e.g. use 80% diffuse, 20% specular)
+* Direct light sampling I still dont know what to sample here when we already know the direction.
+
+To put all these strategies together, at each bounce, we calculate the contribution of direct light (Area light sampling) and indirect light (cosine+BRDF) separately and take average of their weighted sum by MIS:
+$$L_{\lambda}^{\text{reflect}} = L_{\lambda}^{\text{direct}} (\mathbf{x}, \omega^{\text{out}}) + L_{\lambda}^{\text{indirect}} (\mathbf{x}, \omega^{\text{out}}) \quad \text{}$$
+
+## Indirect light sampling (keyword: cosin & BRDF)
+To calculate indirect light:
+$$L_\lambda^{\text{indirect}}(x, \omega^{\text{out}}) = \iint_{\Omega^{\text{in}}} \rho(x, \omega^{\text{in}}, \omega^{\text{out}}) L_\lambda^{\text{reflect}}(\text{trace}(x, \omega^{\text{in}}), -\omega^{\text{in}}) \cos\theta^{\text{in}} d\Omega^{\text{in}}$$
+
+### 1. BRDF sampling
+I think we all know what that is, quite intuitive that we want to sample according to BRDF lobe. But let's discuss about this in another post.
+
+### 2. Cosine sampling
+Area of a unit circle is $\pi r^2 = \pi (1)^2 = \pi$, so PDF is $p(x, y) = 1/\pi$. We use this as the base to calculate PDF of each direction $p_{\text{Nusselt}}(\omega^{in}) = \cos\theta^{in}/\pi$.
+
+Imagine we sample N random direction, this is our Monte Carlo estimation:
+$$L_{\lambda,\text{Nusselt}}^{\text{reflect}}(\omega^{out}) \approx\frac{1}{N} \sum \frac{\rho(\omega_i^{in}, \omega^{out}) \cdot L_\lambda^{in}(\omega_i^{in}) \cdot \cos\theta^{in}}{\left(\frac{\cos\theta^{in}}{\pi}\right)}$$
+$$L_{\lambda,\text{Nusselt}}^{\text{reflect}}(\omega^{out}) \approx \frac{\pi}{N} \sum_i \rho(\omega_i^{in}, \omega^{out}) L_\lambda^{in}(\omega_i^{in})$$
+
+## Direct light sampling (keyword: Area)
+FOr direct light sampling we rewrite into integral over areas:
+$$L_{\lambda,l}^{\text{direct,area}}(x, \omega^{\text{out}}) = \iint_{y \in A_l} \rho \cdot L_{\lambda,l}^{\text{emit,area}} \cdot V(x, y) \frac{\cos\theta^{x \to y} \cos\theta^{y \to x}}{\|x - y\|^2} dA_y$$
+
+We can also estimate this using Monte Carlo:
+
+* For each area light $l$, we need to sample a number $N_l$ of points $\mathbf{y}_i$ on the light source.
+* The integral is then approximated by a sum, where each sample $\mathbf{y}_i$ is weighted by $1/p(\mathbf{y}_i)$.
+* $p(\mathbf{y}_i)$: The Probability Density Function for sampling a point $\mathbf{y}_i$ on the area light.
+$$L_{\lambda}^{\text{direct,area}}(\mathbf{x}, \omega^{\text{out}}) \approx \frac{1}{N_l} \sum_{i=1}^{N_l} \frac{\rho(\mathbf{x}, \omega^{\mathbf{x} \to \mathbf{y}_i}, \omega^{\text{out}}) L_{\lambda}^{\text{emit,area}}(\mathbf{y}_i, \omega^{\mathbf{y}_i \to \mathbf{x}}) G(\mathbf{x}, \mathbf{y}_i)}{p(\mathbf{y}_i)} \quad \text{}$$
 

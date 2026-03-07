@@ -82,5 +82,8 @@
   },
   "posts/cg3-rendering/index.qmd": {
     "index.html": "8d24ae3c"
+  },
+  "posts/cg3-montecarlo/index.qmd": {
+    "index.html": "8143df5e"
   }
 }
