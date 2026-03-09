@@ -1,0 +1,181 @@
+---
+title: "Path-based vs Cache-based Lighting"
+date: "2026-03-10"
+categories: [Computer Graphics, Global Illumination]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+
+# Light Tracing (primitive version)
+Light tracing starts by sampling paths from light sources. Once a path is finished (often terminated by Russian Roulette), it must be connected to the camera
+
+Cons: Uneven Sampling: Because light bounces randomly, some pixels might receive many samples, while others might receive none at all => very efficient for specific effects (like caustics) but difficult for rendering a clean, full image.
+
+## Procedure
+1. Sample Buffer: Construct a buffer with a per-pixel accumulator ($A_{ij}$) and a sample count ($c_{ij}$). This is necessary because, unlike path tracing, we don't know which pixel a ray will hit until the path is complete.
+2. Path Generation: Loop over light paths to generate a path $x$ by sampling direction BRDF, cosine term and compute its probability $p(x)$ until terminated by RR
+3. Contribution: For each path, determine which pixel $(i, j)$ it lands on, compute the pixel contribution $f(x)$, and add the weighted value $f(x)/p(x)$ to the accumulator.
+4. Final Image: The final color for each pixel is the average of its accumulated values: $I_{ij} = A_{ij} / c_{ij}$.
+
+
+
+
+# Bidirectional Path Tracing
+## Why we combine things like this?
+You’ve seen that Path Tracing is great at finding large light sources, but Light Tracing is better at finding small, focused light like caustics. Some light paths are nearly impossible for standard Path Tracing to find, and pixel are also nearly impossible for standard Light Tracing to find. So we make sure the both ends first.
+
+## Foundation: Path Measure for fixed length $k$
+When we implement BPT, we aren't just tracing individual rays; we are sampling from a high-dimensional space of potential paths. To do this mathematically, we need a way to measure the "size" of a set of paths.
+
+### Surface Area Sampling
+Every location $x_i$ along a path is sampled according to the surface area measure $dA_i$.Think of this as picking a random point on the physical surface of an object in your scene.
+
+### Product Measure ($d\mu_k$)
+To measure a whole path of length $k$, we combine the individual area measures of all its vertices ($x_0$ to $x_k$). 
+
+* On the set $\Omega_k$ (the set of all possible paths with $k$ segments), we define a product measure:$$d\mu_k = \prod_{i=0}^{k} dA_i \quad \text{}$$
+* This treats the path as a single point in a very high-dimensional space (e.g., for $k=2$, it is a 6D space because each of the 3 vertices has a 2D surface position).
+
+#### Numerical Example: Average Path Length
+For $k=2$ (average length of all paths with length 2 aka 2 segments and 3 vertices x0, x1, x2), you integrate over the entire scene surface area ($A_{scn}$) twice and the lens area ($A_{lns}$) once:
+$$\bar{l}_k = \frac{1}{A_{scn}^2 A_{lns}} \int_{A_{scn}} \int_{A_{scn}} \int_{A_{lns}} (\|x_1 - x_0\| + \|x_2 - x_1\|) dA_2 dA_1 dA_0 \quad \text{}$$
+
+In actual rendering, we don't just want the "average length." We want the average light. By defining this path measure, we can use Monte Carlo integration to estimate the total light through a pixel by randomly sampling points from this "Path Space".
+
+## Formulate BPT
+the final pixel value $I_j$ is an integral over all paths in path space $\Omega$:
+$$I_j = \int_{x \in \Omega} f_j(x) d\mu(x)$$
+
+where $f_j(x)$ is the contribution of path $x$ to pixel $j$, and $d\mu(x)$ is the path measure.
+
+To estimate this, we can also Monte Carlo:
+$$I_j = \int_{x \in \Omega} f_j(x) d\mu(x) \approx \hat{I}_{j,N} = \frac{1}{N} \sum_{i}^N \frac{f_j(x_i)}{p(x_i)}$$
+
+* $I_j$ (The Goal): The total light (irradiance/radiance) for pixel $j$.
+* $f_j(x)$ (The Integrand): This is the "contribution" function. It calculates how much light actually reaches the camera along path $x$, accounting for light emission, BRDFs, and visibility.
+* $d\mu(x)$: product of the surface area measures ($dA$) of every vertex that makes up the path. $dA_i$ is the standard 2D surface area element at vertex $x_i$ (like $dx \cdot dy$ on a flat surface).:
+    $$d\mu_k = dA_0 \times dA_1 \times \dots \times dA_k = \prod_{i=0}^{k} dA_i$$
+
+* $p(x_i)$ (The PDF): This is the probability density of choosing that specific unique path $x_i$ using your chosen sampling scheme. **And where to find $p(x_i)$? Exactly the same as we did in Path Tracing: BRDF, cosin term, and RR**
+$$p(x) = p(\text{pixel}) \times p(\text{bounce}_1) \times p(\text{RR}) \times p(\text{bounce}_2) \dots$$
+
+### Let's break down the $f_j(x)$
+The contribution function $f_j(x)$ for a path $x = x_0x_1 \dots x_k$ is decomposed into three main parts:
+
+* $L_e(x_0, \omega_0^1)$: The initial radiance emitted from the light source at $x_0$ in the direction of the first vertex $x_1$.
+* $T(x)$: The Path Throughput, **basically accumulated BRDF along the whole path, just that formulated in Area integration**.
+* $W_e(x_k, \omega_k^{k-1})$: The sensor sensitivity (importance) of the camera at the final vertex $x_k$.
+
+#### Path Throughput $T(x)$ (basically like accumualed BRDF)
+Throughput $T(x)$ represents the "loss" or "transfer" of light at every bounce and along every segment, **basically accumulated BRDF, just that formulated in Area integration**:
+$$T(x) = G(x_0, x_1) \prod_{i=1}^{k-1} \rho(x_i, \omega_i^{i-1}, \omega_i^{i+1}) G(x_i, x_{i+1})$$
+
+### Procedure
+#### Initialization
+Given $M$ pixels, we try to create $25*M$ pairs of eye-light-paths.
+
+* Eye Path ($z$): Sample a pixel and lens location, then trace into the scene using Russian Roulette (RR). You must track the total probability $p_e(z)$ of this path.
+* Light Path ($y$): Sample a location on a light source and trace it into the scene with RR. Similarly, calculate the total probability $p_l(y)$.
+
+#### Interconnection
+For **every** vertex on the eye path and **every** vertex on the light path, you try to draw a connecting edge. Basically from **two** independent "half-paths" into **many complete light paths**. In standard path tracing, you only get one complete path at the very end when you hit a light. In BPT, you treat every vertex as a potential connection point.
+
+If you have an eye path with vertices $E_0, E_1$ and a light path with vertices $L_0, L_1, L_2$, you don't just make one connection. You try to connect:
+
+* $E_0$ to $L_0$, $L_1$, $L_2$.
+* $E_1$ to $L_0$, $L_1$, $L_2$.
+
+End effect: The Path Length $k \le s + t + 1$ ($k = 1, 2, 3,..., s + t + 1$)
+
+* The probability of this combined path is the product of the two **sub-path** probabilities: $p(x_\alpha) = p_l(y_\alpha) \cdot p_e(z_\alpha)$. Because the two sub-paths are sampled independently, calculating the probability density (PDF) for the combined path is straightforward multiplication.
+
+### Converting Directional PDFs to Area PDFs
+Light Tracing Path PDF ($p_l$): $$p_l(x_i) = p_l(x_0)p_l(x_1|x_0) \cdot \dots \cdot p_l(x_k|x_0x_1 \dots x_{k-1})$$
+Path Tracing Path PDF ($p_e$): $$p_e(x_i) = p_e(x_k)p_e(x_{k-1}|x_k) \cdot \dots \cdot p_e(x_0|x_1 \dots x_k)$$
+
+In standard path tracing, we usually sample an outgoing direction $\omega_i^{i+1}$ from a surface point. However, the path integral framework we've been discussing relies on the surface area measure $dA$. To bridge these two worlds, direction-based PDFs must be multiplied by a geometry factor ($G$):
+$$p(x_{i+1} | x_0x_1 \dots x_i) = p(\omega_i^{i+1} | x_0x_1 \dots x_i) \cdot \frac{\cos\theta_i^{i+1} \cos\theta_{i+1}^i}{\|x_i - x_{i+1}\|^2}$$
+
+
+## Numerical Example
+Imagine we want to calculate the contribution of a path with 4 vertices ($x_0, x_1, x_2, x_3$). In BPT, we don't just "find" this path once; we can build it in multiple ways. Let's look at one specific way: 1 light bounce and 1 eye bounce.
+
+### 1. Generating the 2 Sub-Paths
+The Light Sub-path ($y$):
+
+* $x_0$ (Light): We pick a point on a $2m^2$ light bulb. Probability $p_l(x_0) = 1/2 = 0.5$.
+* $x_1$ (Wall): We sample an outgoing direction $\omega_0^1$ from the light. Let's say $p(\omega) = 0.1$.
+* We also have $G_{01} = 0.2$
+
+The Eye Sub-path ($z$):
+
+* $x_3$ (Camera): We pick a point on the lens. Probability $p_e(x_3) = 1.0$.
+* $x_2$ (Table): We sample a direction through a pixel. Let's say $p(\omega) = 0.8$.
+* We also have $G_{23} = 0.5$
+
+### 2. Interconnection
+Now we try to connect the last light vertex ($x_1$) to the last eye vertex ($x_2$).
+
+### 3. Calculating the Throughput (aka accumulated BRDF)
+
+Emission: Light starts at $x_0$ with brightness $100$.
+
+Throughput ($T$): This path has two bounces ($x_1$ and $x_2$).
+
+* At $x_1$ (Wall), the BRDF $\rho$ is $0.1$ (it absorbs 90% of light).
+* At $x_2$ (Table), the BRDF $\rho$ is $0.5$.We also multiply by the "bridge" geometry term $G_{12}$ (let's say $G_{12} = 0.3$).
+
+This is f:
+$$f_j = \text{Light} \cdot G_{01} \cdot \rho_1 \cdot G_{12} \cdot \rho_2 \cdot G_{23} \cdot \text{Camera}$$$$f_j = 100 \cdot \mathbf{0.2} \cdot 0.1 \cdot 0.3 \cdot 0.5 \cdot \mathbf{0.5} \cdot 1.0 = \mathbf{0.15}$$
+
+this is p:
+$$p_{\text{area}} = p(x_0) \cdot p_A(x_1|x_0) \cdot p(x_3) \cdot p_A(x_2|x_3)$$$$p_{\text{area}} = 0.5 \cdot (\mathbf{0.02}) \cdot 1.0 \cdot (\mathbf{0.4}) = \mathbf{0.004}$$
+
+### 4. Monte Carlo estimated
+$$\text{Sample Value} = \frac{f_j}{p(x)} = \frac{1.5}{0.004} = \mathbf{375}$$
+
+**Wait, where do the "Direct" samplings fit in?**
+
+Dont worry, BPT considers every possible connection:
+
+* Direct Eye Sampling: Connecting $x_1$ directly to the camera ($x_3$). This is effectively a 3-vertex path ($x_0, x_1, x_3$).
+* Direct Light Sampling: Connecting $x_2$ directly to the light ($x_0$). This is effectively a different 3-vertex path ($x_3, x_2, x_0$).
+
+We will eventually later add them all together using MIS in the next chapter.
+
+## MIS in BPT
+
+### The Scenario: One Path, Many Strategies
+Recall our path $x = \{x_0, x_1, x_2, x_3\}$ (Light $\to$ Wall $\to$ Table $\to$ Camera). In BPT, there are 5 different ways to build this same 4-vertex path:
+
+* Strategy $s_0$: 0 light vertices, 4 eye vertices (Pure Path Tracing hitting a light by luck).
+* Strategy $s_1$: 1 light vertex, 3 eye vertices (Direct Light Sampling/Next Event Estimation).
+* Strategy $s_2$: 2 light vertices, 2 eye vertices (Connecting two "half-paths" in the middle).
+* Strategy $s_3$: 3 light vertices, 1 eye vertex (Direct Eye Sampling/Light Tracing).Strategy $s_4$: 4 light vertices, 0 eye vertices (Light path hitting the camera lens by luck).
+
+For any specific strategy $i$, the MIS weight $w_i$ is:
+$$w_i(x) = \frac{p_i(x)}{\sum_{k=0}^{n} p_k(x)}$$
+
+* $p_i(x)$: The probability of the path using the current strategy you just calculated.
+* Denominator: The sum of probabilities for every other way you could have made that exact same path.
+
+And then eventually:
+
+$$\hat{f}^N_{\text{MIS}} = \sum_{i=1}^m \frac{1}{n_i} \sum_{j=1}^{n_i} \omega_i(x_{i,j}) \frac{f(x_{i,j})}{p_i(x_{i,j})} \quad \text{}$$
+
+# Metropolis Sampling
+
+Target Function ($f$): A non-negative function $f: \Omega \to R^+$ representing the desired distribution (e.g., image brightness).
+
+Objective: Output a sample chain $x_i$ distributed according to the probability density function (PDF) $f(x)$$
+
+## Markov Chain Monte Carlo
+* Initial State: Start with an initial point $x_0 \in \Omega$.
+* each $x$ has a Gaußian kernel representing transition probability to its neighbors $T(x->x')$.
+* Now we generate chain of samples $x_i$:
+    * using the Gaußian kernel to sample next $x'$
+    * Accept $x'$ if $f(x') > f(x)$
+    * Otherwise only accept $x'$ with probability of $\frac{f(x')}{f(x)}$

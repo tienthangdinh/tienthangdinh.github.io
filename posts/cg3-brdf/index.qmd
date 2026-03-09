@@ -1,0 +1,139 @@
+---
+title: "BRDF"
+date: "2026-03-10"
+categories: [Computer Graphics, Global Illumination]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+# Starting point
+$$f(x) = L_e \cdot \underbrace{f_r(x_1)}_{\text{Oren-Nayar}} \cdot G_1 \cdot \underbrace{f_r(x_2)}_{\text{Plastic}} \cdot G_2 \cdot \dots$$
+
+## Criterias for Physical BRDF
+Helmholtz-Reciprocity:
+$$\rho_\lambda(x, \omega^{\text{in}}, \omega^{\text{out}}) = \rho_\lambda(x, \omega^{\text{out}}, \omega^{\text{in}})$$
+
+Energy preservation: This is the rule that classic empirical models (like standard Phong) horribly violate. It is the law of conservation of energy: A surface cannot reflect more light than it receives.
+$$\forall \omega^{\text{in}}: R_\lambda(\omega^{\text{in}}) \le 1$$
+
+# Empirical Shading Models
+## Lambertian Model (Diffuse Only)
+This simulates a completely rough, matte surface (like chalk or clay).
+$$\ddot{L}_{\text{diff}} = \ddot{r}_{\text{diff}} \otimes \ddot{L}_{\text{in}} \cdot \langle\hat{\omega}_{\text{in}}, \hat{n}\rangle_+$$
+
+* $\ddot{r}_{\text{diff}} \otimes \ddot{L}_{\text{in}}$: This is the surface color multiplied by the light color (e.g., a red ball under white light looks red).
+* $\langle\hat{\omega}_{\text{in}}, \hat{n}\rangle_+$: This is the dot product (cosine) between the light vector and the normal vector. It's the exact same geometric cosine term we saw in path tracing in earlier posts! It makes the surface darker as the light hits it at a sharper angle. The $+$ subscript means if the result is negative (light is behind the surface), we just clamp it to $0$.
+
+## Phong Model (Diffuse + Specular)
+$$\ddot{L}_{\text{spec,Phong}} = \langle\hat{\omega}_{\text{out}}, \hat{\omega}_{\text{refl}}\rangle_+^m \cdot \ddot{r}_{\text{spec}} \otimes \ddot{L}_{\text{in}}$$
+
+* $\langle\hat{\omega}_{\text{out}}, \hat{\omega}_{\text{refl}}\rangle_+$: This checks how closely the camera ($\hat{\omega}_{\text{out}}$) aligns with the perfect mirror reflection of the light ($\hat{\omega}_{\text{refl}}$).
+* $^m$ (Shininess): The dot product is raised to a power $m$. Make it glossier
+
+But in Path Tracing, we usually divide by cosine term so that in the end it get cancelled out to correct result: $$f_{s,\text{Phong}} = \frac{\langle\hat{\omega}_{\text{out}}, \hat{\omega}_{\text{refl}}\rangle_+^m}{\langle\hat{\omega}_{\text{in}}, \hat{n}\rangle_+}$$
+
+BUT ONCE AGAIN, for Physical BRDF: Look at the denominators of the old formulas: $\langle\hat{\omega}_{\text{in}}, \hat{n}\rangle_+$. If we swap 'in' and 'out', this denominator changes to $\langle\hat{\omega}_{\text{out}}, \hat{n}\rangle_+$. This completely breaks the Helmholz reciprocity!
+
+Therefore for Physical BRDF we move it back to normal Phong:
+$$f_{s,\text{Ph,mod}} = v \cdot \eta_{Ph} \cdot \langle\hat{\omega}_{\text{out}}, \hat{\omega}_{\text{refl}}\rangle_+^m$$
+
+where Normalization Constants ($\eta_*$) in order to fix **Energy Preservation**:
+$\eta_{Ph} = \frac{m+2}{2\pi}$
+
+## Blinn-Phong
+Calculating the exact reflection vector ($\hat{\omega}_{\text{refl}}$) for the Phong model requires some heavy math. Jim Blinn proposed a faster approximation:
+$$\ddot{L}_{\text{spec,Blinn-Phong}} = \langle\hat{\omega}_{\text{half}}, \hat{n}\rangle_+^m \cdot \ddot{r}_{\text{spec}} \otimes \ddot{L}_{\text{in}}$$
+
+But in Path Tracing, we usually divide by cosine term so that in the end it get cancelled out to correct result: $$f_{s,\text{Blinn-Phong}} = \frac{\langle\hat{\omega}_{\text{half}}, \hat{n}\rangle_+^m}{\langle\hat{\omega}_{\text{in}}, \hat{n}\rangle_+}$$
+
+BUT ONCE AGAIN, for Physical BRDF: Look at the denominators of the old formulas: $\langle\hat{\omega}_{\text{in}}, \hat{n}\rangle_+$. If we swap 'in' and 'out', this denominator changes to $\langle\hat{\omega}_{\text{out}}, \hat{n}\rangle_+$. This completely breaks the Helmholz reciprocity!
+
+Therefore for Physical BRDF we move it back to normal Blinn-Phong:
+$$f_{s,\text{Bl-Ph,mod}} = v \cdot \eta_{BP} \cdot \langle\hat{\omega}_{\text{half}}, \hat{n}\rangle_+^m$$
+
+where Normalization Constants ($\eta_*$) in order to fix **Energy Preservation**:
+$\eta_{BP} = \frac{(m+2)(m+4)}{8\pi(2^{-m/2} + m)}$
+
+
+
+
+# Microfacett Models
+This is the "Microfacet BRDF" used for shiny surfaces:
+$$f_r(\omega_i, \omega_o) = \frac{D(h) \cdot G(\omega_i, \omega_o) \cdot F(\omega_i, h)}{4 \cos\theta_i \cos\theta_o}$$
+
+* $D(h)$ (Distribution): distribution of microfacet normals that correspond to half vectors in Blinn-Phong model.
+* $F(\omega_i, h)$ (Fresnel): Determines how much light reflects based on the incident angle.
+* $G(\omega_i, \omega_o)$ (Geometry/Shadowing): Dimmer switch between 0 and 1 presenting facets shadow or mask each other at grazing angles.
+* Determinator: The D, G, and F terms calculate light bouncing off microscopic angled areas. But your renderer needs the result mapped to the flat macroscopic area of the 3D triangle on your screen. Dividing by these cosines mathematically "flattens" the microscopic result back down to the macroscopic surface level.
+
+## Distribution Term $D$
+many ways to set this term for an angle error $\alpha$ between $n$ and $h$.
+
+### Blinn (Exponential):
+$$D(\alpha) = c \cdot \exp\left(-\frac{\alpha^2}{m^2}\right)$$
+
+* Torrance Sparow theory
+* $c$ is a normalization constant to ensure energy preservation, and $m$ controls the roughness.
+
+### Blinn (Cosine Power)
+$$D(\alpha) = \frac{s+2}{2\pi} \cos^s \alpha$$
+
+* This one should look very familiar! It uses $\cos^s \alpha$, which is almost identical to the old empirical Blinn-Phong specular hack we saw earlier.
+* Here, $s$ is the "shininess". By adding the $\frac{s+2}{2\pi}$ in front, they actually normalized the old empirical hack so it finally obeys energy conservation!
+
+### Cook Torrance (Beckmann Theory)
+
+$$D(\alpha) = \frac{\exp\left(-\frac{\tan^2 \alpha}{m^2}\right)}{m^2 \cos^4 \alpha}$$
+
+* The Beckmann distribution doesn't just "look right"; it is mathematically derived from the physics of Gaussian random surfaces (like the bumpy 3D noise graph shown on the slide).
+* $m \in [0,1]$: This is the strict roughness parameter. If $m=0.1$, the surface is a smooth, highly polished mirror. If $m=0.9$, it is rough, dull, and scatters light everywhere.
+
+## Geometry Term $G$
+Remember how we said earlier that the jagged microscopic bumps on a surface can get in each other's way? We calculate three possible physical scenarios for every ray of light hitting these microscopic V-shaped canyons. It then takes the minimum value of the three.
+$$G = \min\{g_{\max}, g_{\text{mask}}, g_{\text{shadow}}\}$$
+
+Why the minimum? Because light can only survive the worst obstacle in its path. If a ray is completely blocked on its way in, it doesn't matter if the exit path was clear; the light is gone.
+
+Case 1: can in can out
+$$g_{\max} = 1$$ 
+
+Case 2: can in cannot out
+$$g_{\text{mask}} = \frac{2(\hat{n}^T\hat{h})(\hat{n}^T\hat{e})}{\hat{e}^T\hat{h}}$$
+
+Case 3: cannot in
+$$g_{\text{shadow}} = \frac{2(\hat{n}^T\hat{h})(\hat{n}^T\hat{l})}{\hat{e}^T\hat{h}}$$
+
+## Fresnel Term $F$
+The amount of light a surface reflects depends entirely on the angle you are looking at it from. Normal -> refract, Grazing angle -> reflect. But well we cannot calculate it easily, so we use Schlick's Approximation:
+$$F(\theta) = F_0 + (1 - F_0)(1 - \cos\theta)^5$$
+
+* $F_0$ (F-Zero): Base Reflectivity. $F_0$ is the amount of light the surface reflects when you look at it dead-on (0 degrees). This is the "Identity" of the material. 
+    * Dielectrics (Non-metals): Materials like plastic, wood, skin, and water have a very low $F_0$ (usually between $0.02$ and $0.05$).
+    * Conductors (Metals): Metals don't have diffuse colors; they block light completely and reflect almost everything. Their $F_0$ is very high (usually between $0.5$ and $1.0$)
+* ($\theta$) is the angle between eye ($\hat{\omega}_{\text{out}}$) and the microscopic Half-vector ($\hat{\omega}_h$)
+    * If you look straight at the facet, $\cos\theta = 1$.
+    * If you look at an extreme grazing angle, $\cos\theta = 0$.
+* $(1 - \cos\theta)^5$ is a magic:
+    * Looking straight on: If $\cos\theta = 1$, the math becomes $(1 - 1)^5 = 0$. The whole right side of the equation vanishes, and the formula just returns your base $F_0$ color.
+    * Looking at a grazing angle: If $\cos\theta = 0$, the math becomes $(1 - 0)^5 = 1$. The formula becomes $F_0 + (1 - F_0) \cdot 1$. If you do the algebra, the $F_0$ cancels out, and the result is exactly 1.0 (Pure White Mirror)!
+
+
+# Ohren-Nayar (Rough Diffuse)
+Unlike the standard Lambertian model which assumes a perfectly smooth surface Oren-Nayar is designed for rough diffuse surfaces like clay, sand, or cloth. It models the surface as a collection of tiny, diffuse V-shaped symmetric grooves.
+$$f_r(\omega_i, \omega_o) = \frac{\rho}{\pi} (A + B \cdot \max(0, \cos(\phi_i - \phi_o)) \cdot \sin\alpha \cdot \tan\beta)$$
+
+* A and B: Constants derived from roughness \sigma$: $A = 1 - 0.5 \frac{\sigma^2}{\sigma^2 + 0.33}$ and $B = 0.45 \frac{\sigma^2}{\sigma^2 + 0.09}$.
+* $\alpha$ and $\beta$: $\alpha = \max(\theta_i, \theta_o)$ and $\beta = \min(\theta_i, \theta_o)$.
+
+
+
+
+# Lafortune (Measurement-Based)
+The Lafortune model is a generalized version of the Phong model designed to fit measured data (BRDF data captured from real-world materials). Instead of one highlight, it uses multiple "lobes" (mathematical functions) that can be oriented in various directions to match the complex reflection patterns of real objects.
+$$f_r(\omega_i, \omega_o) = \sum_{k} [C_{x,k} \cdot \omega_{i,x}\omega_{o,x} + C_{y,k} \cdot \omega_{i,y}\omega_{o,y} + C_{z,k} \cdot \omega_{i,z}\omega_{o,z}]^{n_k}$$
+
+* $C_{x,y,z}$: Coefficients that allow the lobe to be scaled and flipped (e.g., to create back-scattering or off-specular peaks).
+* $n_k$: The exponent determining the "sharpness" of the reflection lobe.
+

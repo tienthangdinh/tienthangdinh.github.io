@@ -327,7 +327,7 @@ In reality, we actually dont know $F$, so we "guess" a $p(x)$ that looks similar
 
 # The stupid Ray Tracing family
 
-### Classic Ray Tracing
+### Classic Ray Tracing (everything is deterministic)
 For every pixel, you fire one ray. When it hits a surface, it does three things:
 
 * Check if a light is visible (Shadow Ray).
@@ -340,7 +340,7 @@ Weakness: It cannot simulate the "fuzziness" of the real world (like soft shadow
 
 
 
-### Distributed Ray Tracing 
+### Distributed Ray Tracing (probabilistic model with Monte Carlo)
 
 It does some things differently:
 
@@ -352,7 +352,7 @@ Achieved Goal: blurry effect
 Weakness: After each bounce, the number of rays grow exponentially.
 
 
-### Path Tracing (basically Distributed Ray Tracing with $N=1$)
+### Path Tracing (basically Distributed Ray Tracing with $N=1$) (also probabilistic model with Monte Carlo)
 
 At each bounce, one direct and one indirect ray is sampled. remember, **AT EACH BOUNCE !!!**
 $$L_\lambda^{\text{out}} = L_\lambda^{\text{emit}} + \mathbf{R}\mathbf{T} \cdot L_\lambda^{\text{emit}} + (\mathbf{R}\mathbf{T})^2 \cdot L_\lambda^{\text{emit}} + \dots$$
