@@ -137,7 +137,7 @@ window.Quarto = {
       <h1 class="title">Rendering</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">Computer Graphics</div>
-                <div class="quarto-category">Rendering</div>
+                <div class="quarto-category">Global Illumination</div>
               </div>
                   </div>
   </div>
@@ -207,8 +207,14 @@ window.Quarto = {
   <li><a href="#temporal-filtering" id="toc-temporal-filtering" class="nav-link" data-scroll-target="#temporal-filtering">Temporal Filtering</a></li>
   <li><a href="#russian-roulette" id="toc-russian-roulette" class="nav-link" data-scroll-target="#russian-roulette">Russian Roulette</a></li>
   </ul></li>
-  <li><a href="#monte-carlo-based-ray-tracing" id="toc-monte-carlo-based-ray-tracing" class="nav-link" data-scroll-target="#monte-carlo-based-ray-tracing">Monte Carlo-based Ray Tracing</a>
+  <li><a href="#monte-carlo-based-ray-tracing-all-about-scaling-up" id="toc-monte-carlo-based-ray-tracing-all-about-scaling-up" class="nav-link" data-scroll-target="#monte-carlo-based-ray-tracing-all-about-scaling-up">Monte Carlo-based Ray Tracing (All about Scaling Up!!!)</a>
   <ul class="collapse">
+  <li><a href="#example-1-only-one-strategy-no-mis" id="toc-example-1-only-one-strategy-no-mis" class="nav-link" data-scroll-target="#example-1-only-one-strategy-no-mis">Example 1 only One Strategy (no MIS)</a></li>
+  <li><a href="#example-2-with-more-strategies-with-mis" id="toc-example-2-with-more-strategies-with-mis" class="nav-link" data-scroll-target="#example-2-with-more-strategies-with-mis">Example 2 with more Strategies (with MIS)</a>
+  <ul class="collapse">
+  <li><a href="#ray-1-direct-light-sampling" id="toc-ray-1-direct-light-sampling" class="nav-link" data-scroll-target="#ray-1-direct-light-sampling">Ray 1: Direct Light Sampling</a></li>
+  <li><a href="#ray-2-brdf-sampling" id="toc-ray-2-brdf-sampling" class="nav-link" data-scroll-target="#ray-2-brdf-sampling">Ray 2: BRDF Sampling</a></li>
+  </ul></li>
   <li><a href="#indirect-light-sampling-keyword-cosin-brdf" id="toc-indirect-light-sampling-keyword-cosin-brdf" class="nav-link" data-scroll-target="#indirect-light-sampling-keyword-cosin-brdf">Indirect light sampling (keyword: cosin &amp; BRDF)</a>
   <ul class="collapse">
   <li><a href="#brdf-sampling" id="toc-brdf-sampling" class="nav-link" data-scroll-target="#brdf-sampling">1. BRDF sampling</a></li>
@@ -494,22 +500,6 @@ window.Quarto = {
 </ul>
 <p>Achieved Goal: blurry effect</p>
 <p>Weakness: After each bounce, the number of rays grow exponentially.</p>
-<section id="example-2" class="level4">
-<h4 class="anchored" data-anchor-id="example-2">Example:</h4>
-<p>Scene:</p>
-<ul>
-<li>Camera (<span class="math inline">\(f_0\)</span>): The pixel sensitivity is 1.0.</li>
-<li>Surface 1 (<span class="math inline">\(f_1\)</span>): A glossy floor. Its BRDF value in the direction of the light is 0.4.</li>
-<li>Light (<span class="math inline">\(f_n\)</span>): A small area light emitting 1000 units of radiance.</li>
-</ul>
-<p>Monte Carlo <strong>for a single pixel</strong>:</p>
-<ul>
-<li><span class="math inline">\(p_0\)</span>: We picked a random spot on the lens/aperture. The probability (PDF) was 0.5. (<strong>THIS IS HOW WE CHOOSE THE RAY DIRECTION</strong>)</li>
-<li><span class="math inline">\(p_1\)</span>: We sampled the glossy BRDF to find a reflection direction. The PDF for picking this specific direction was 0.2.</li>
-<li><span class="math inline">\(p_n\)</span>: We picked a random point on the area light. The PDF for picking that point was 0.1. <span class="math display">\[\hat{J} = \frac{f_0 \cdot f_1 \cdot f_n}{p_0 \cdot p_1 \cdot p_n}\]</span> <span class="math display">\[\hat{J} = \frac{1 \cdot 0.4 \cdot 1000}{0.5 \cdot 0.2 \cdot 0.1} = \mathbf{40000}\]</span></li>
-</ul>
-<p>Because the path we took was rare 1%, 99% of others will it 0. So the average is <span class="math inline">\(\frac{1}{100} \cdot 40000 + \frac{99}{100} \cdot 0 = \mathbf{400}\)</span>.</p>
-</section>
 </section>
 <section id="path-tracing-basically-distributed-ray-tracing-with-n1" class="level3">
 <h3 class="anchored" data-anchor-id="path-tracing-basically-distributed-ray-tracing-with-n1">Path Tracing (basically Distributed Ray Tracing with <span class="math inline">\(N=1\)</span>)</h3>
@@ -540,16 +530,52 @@ window.Quarto = {
 <p>At each bounce, a random decision is made to either continue tracing the path or terminate it.</p>
 </section>
 </section>
-<section id="monte-carlo-based-ray-tracing" class="level1">
-<h1>Monte Carlo-based Ray Tracing</h1>
-<p>General idea: <span class="math display">\[L_{\lambda}^{\text{reflect}}(\omega^{\text{out}}) = \iint_{\Omega^{\text{in}}} \rho(\omega^{\text{in}}, \omega^{\text{out}}) L_{\lambda}^{\text{in}}(\omega^{\text{in}})\cos\theta^{\text{in}} d\Omega^{\text{in}} \quad \text{}\]</span> is estimated by Monte Carlo: <span class="math display">\[L_{\lambda}^{\text{reflect}}(\omega^{\text{out}}) \approx \frac{1}{N} \sum_{i=1}^N \frac{\rho(\omega_i^{\text{in}}, \omega^{\text{out}})L_{\lambda}^{\text{in}}(\omega_i^{\text{in}})\cos\theta_i^{\text{in}}}{p(\omega_i^{\text{in}})} \quad \text{}\]</span></p>
-<p>Using Importance Sampling PDF from BRDF: <span class="math inline">\(f(\omega^{\text{in}}) = \rho(\omega_i^{\text{in}}, \omega^{\text{out}})L_{\lambda}^{\text{in}}(\omega_i^{\text{in}})\cos\theta_i^{\text{in}}\)</span>, is the function that the PDF <span class="math inline">\(p(\omega^{\text{in}})\)</span> should ideally be proportional to. We cannot sample all 3 components at once, so the PDF of each component must be split up.</p>
+<section id="monte-carlo-based-ray-tracing-all-about-scaling-up" class="level1">
+<h1>Monte Carlo-based Ray Tracing (All about Scaling Up!!!)</h1>
+<p>General idea: <span class="math display">\[L_{\lambda}^{\text{reflect}}(\omega^{\text{out}}) = \iint_{\Omega^{\text{in}}} \rho(\omega^{\text{in}}, \omega^{\text{out}}) L_{\lambda}^{\text{in}}(\omega^{\text{in}})\cos\theta^{\text{in}} d\Omega^{\text{in}} \quad \text{}\]</span> is estimated by Monte Carlo with importance sampling <strong>but without MIS</strong>: <span class="math display">\[L_{\lambda}^{\text{reflect}}(\omega^{\text{out}}) \approx \frac{1}{N} \sum_{i=1}^N \frac{\rho(\omega_i^{\text{in}}, \omega^{\text{out}})L_{\lambda}^{\text{in}}(\omega_i^{\text{in}})\cos\theta_i^{\text{in}}}{p(\omega_i^{\text{in}})} \quad \text{}\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(\frac{1}{p(\omega_i^{\text{in}})}\)</span> replaces the <span class="math inline">\(\iint d\Omega^{\text{in}}\)</span> integration.</li>
+<li><span class="math inline">\(f(\omega^{\text{in}}) = \rho(\omega_i^{\text{in}}, \omega^{\text{out}})L_{\lambda}^{\text{in}}(\omega_i^{\text{in}})\cos\theta_i^{\text{in}}\)</span>, is the function that the PDF <span class="math inline">\(p(\omega^{\text{in}})\)</span> should ideally be proportional to. We cannot sample all 3 components at once, so the PDF of each component must be split up.
 <ul>
 <li>Cosine-weighted sampling using Nusselt’s analogy</li>
 <li>BRDF sampling by splitting again <span class="math inline">\(\rho = \rho_{diff} + \rho_{spec} + \rho_{mirr}\)</span> (for e.g.&nbsp;use 80% diffuse, 20% specular)</li>
 <li>Direct light sampling I still dont know what to sample here when we already know the direction.</li>
+</ul></li>
 </ul>
 <p>To put all these strategies together, at each bounce, we calculate the contribution of direct light (Area light sampling) and indirect light (cosine+BRDF) separately and take average of their weighted sum by MIS: <span class="math display">\[L_{\lambda}^{\text{reflect}} = L_{\lambda}^{\text{direct}} (\mathbf{x}, \omega^{\text{out}}) + L_{\lambda}^{\text{indirect}} (\mathbf{x}, \omega^{\text{out}}) \quad \text{}\]</span></p>
+<section id="example-1-only-one-strategy-no-mis" class="level2">
+<h2 class="anchored" data-anchor-id="example-1-only-one-strategy-no-mis">Example 1 only One Strategy (no MIS)</h2>
+<p>Once again, Monte Carlo with importance sampling <strong>but without MIS</strong>: <span class="math display">\[L_{\lambda}^{\text{reflect}}(\omega^{\text{out}}) \approx \frac{1}{N} \sum_{i=1}^N \frac{\rho(\omega_i^{\text{in}}, \omega^{\text{out}})L_{\lambda}^{\text{in}}(\omega_i^{\text{in}})\cos\theta_i^{\text{in}}}{p(\omega_i^{\text{in}})} \quad \text{}\]</span></p>
+<p>We are going to shoot <span class="math inline">\(N = 2\)</span> random rays out from a diffuse floor. BRDF is <span class="math inline">\(\rho = \frac{0.5}{\pi}\)</span> (<strong>Albedo</strong> of diffuse material always divide by <span class="math inline">\(\pi\)</span> to conserve energy). <span class="math display">\[p(\omega_i^{\text{in}}) = \frac{\cos\theta_i^{\text{in}}}{\pi}\]</span> we sample the light based on Nusselt’s analogy.</p>
+<p>Ray 1 hits <span class="math inline">\(L^{\text{in}}_1\)</span> with 100 unit of light, and angle <span class="math inline">\(\cos\theta_1\)</span> of 60 degrees. <span class="math display">\[\text{Value}_1 = \frac{\rho \cdot L^{\text{in}}_1 \cdot \cos\theta_1}{p(\omega_1)} = \frac{\frac{0.5}{\pi} \cdot 100 \cdot \frac{1}{2}}{\frac{\cos\theta_1}{\pi}} = 50\]</span></p>
+<p>Ray 2 hits <span class="math inline">\(L^{\text{in}}_2\)</span> dark ceiling with 10 unit of light, and angle <span class="math inline">\(\cos\theta_2\)</span> of 0 degrees. <span class="math display">\[\text{Value}_2 = \frac{\rho \cdot L^{\text{in}}_2 \cdot \cos\theta_2}{p(\omega_2)} = \frac{\frac{0.5}{\pi} \cdot 10 \cdot 0}{\frac{\cos\theta_2}{\pi}} = 5\]</span></p>
+<p>Average: <span class="math display">\[\text{Average} = \frac{\text{Value}_1 + \text{Value}_2}{2} = \frac{50 + 5}{2} = 27.5\]</span></p>
+</section>
+<section id="example-2-with-more-strategies-with-mis" class="level2">
+<h2 class="anchored" data-anchor-id="example-2-with-more-strategies-with-mis">Example 2 with more Strategies (with MIS)</h2>
+<p>Now we use MIS to combine two strategies (2 rays) at the exact same time: Direct Light Sampling and BRDF Sampling. We add an extra weight before each light. <strong>THIS EXTRA WEIGHT IS ALL ABOUT THE TRUST TO THAT METHOD</strong> <span class="math display">\[\hat{f}^N_{\text{MIS}} = \sum_{i=1}^m \frac{1}{n_i} \sum_{j=1}^{n_i} \omega_i(x_{i,j}) \frac{f(x_{i,j})}{p_i(x_{i,j})} \quad \text{}\]</span> <span class="math display">\[\hat{f}^N_{\text{MIS}} = \underbrace{\frac{1}{n_1} \sum_{j=1}^{n_1} \omega_1(x_{1,j}) \frac{f(x_{1,j})}{p_1(x_{1,j})}}_{\text{Contribution from Strategy 1 (e.g., Light Sampling)}} + \underbrace{\frac{1}{n_2} \sum_{j=1}^{n_2} \omega_2(x_{2,j}) \frac{f(x_{2,j})}{p_2(x_{2,j})}}_{\text{Contribution from Strategy 2 (e.g., BRDF Sampling)}} + \dots\]</span></p>
+<p>For Path Tracing: <span class="math display">\[\text{Final Color} = \left[ w_{\text{light}} \cdot \frac{f(x_1)}{p_{\text{light}}(x_1)} \right] + \left[ w_{\text{brdf}} \cdot \frac{f(x_2)}{p_{\text{brdf}}(x_2)} \right]\]</span> where <span class="math inline">\(f = \rho \cdot L^{\text{in}} \cdot \cos\theta\)</span></p>
+<section id="ray-1-direct-light-sampling" class="level3">
+<h3 class="anchored" data-anchor-id="ray-1-direct-light-sampling">Ray 1: Direct Light Sampling</h3>
+<p>A random point on a light bulb is picked, the light intensity <span class="math inline">\(f = \mathbf{90}\)</span> and:</p>
+<ul>
+<li><span class="math inline">\(p_{\text{light}}\)</span>: The probability that the Light Sampler picked this spot is 0.4 (because aiming at the light is its only job).</li>
+<li><span class="math inline">\(p_{\text{brdf}}\)</span>: The probability that the BRDF Sampler would have randomly fired in this dull direction is very low, just 0.05.</li>
+</ul>
+<p><span class="math display">\[L_{\text{direct}} = \frac{p_{\text{light}}}{p_{\text{light}} + p_{\text{brdf}}} \cdot \frac{f(x_1)}{p_{\text{light}}(x_1)} = \frac{0.4}{0.4 + 0.05} \cdot \frac{90}{0.4} = \frac{0.4}{0.45} \cdot 225 = 0.888 * 225 = \mathbf{200}\]</span></p>
+</section>
+<section id="ray-2-brdf-sampling" class="level3">
+<h3 class="anchored" data-anchor-id="ray-2-brdf-sampling">Ray 2: BRDF Sampling</h3>
+<p>Second ray follows BRDF lobe and accidentally got <span class="math inline">\(f = \mathbf{400}\)</span>:</p>
+<ul>
+<li><span class="math inline">\(p_{\text{light}}\)</span>: The probability that the Light Sampler would have picked this exact sub-pixel coordinate on the lamp is lower, say 0.14.</li>
+<li><span class="math inline">\(p_{\text{brdf}}\)</span>: The probability that the BRDF Sampler fired here is 0.35 (because it heavily favors shiny angles).</li>
+</ul>
+<p><span class="math display">\[L_{\text{brdf}} = \frac{p_{\text{brdf}}}{p_{\text{light}} + p_{\text{brdf}}} \cdot \frac{f(x_2)}{p_{\text{brdf}}(x_2)} = \frac{0.35}{0.14 + 0.35} \cdot \frac{400}{0.35} = \frac{0.35}{0.49} \cdot \frac{400}{0.35} = \frac{400}{0.49} \approx \mathbf{816}\]</span></p>
+<p>To get the final color, we just add the weighted contributions from our two strategies together: <span class="math display">\[\text{Final Color} = L_{\text{direct}} + L_{\text{brdf}} = 200 + 816 = \mathbf{1016}\]</span></p>
+</section>
+</section>
 <section id="indirect-light-sampling-keyword-cosin-brdf" class="level2">
 <h2 class="anchored" data-anchor-id="indirect-light-sampling-keyword-cosin-brdf">Indirect light sampling (keyword: cosin &amp; BRDF)</h2>
 <p>To calculate indirect light: <span class="math display">\[L_\lambda^{\text{indirect}}(x, \omega^{\text{out}}) = \iint_{\Omega^{\text{in}}} \rho(x, \omega^{\text{in}}, \omega^{\text{out}}) L_\lambda^{\text{reflect}}(\text{trace}(x, \omega^{\text{in}}), -\omega^{\text{in}}) \cos\theta^{\text{in}} d\Omega^{\text{in}}\]</span></p>

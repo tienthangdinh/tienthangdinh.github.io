@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/cg3-sampling/index.html",
       "/posts/cg3-rendering/index.html",
       "/posts/cg3-physics-simulation/index.html",
       "/posts/pet-mse/index.html",
