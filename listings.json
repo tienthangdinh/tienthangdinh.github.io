@@ -2,6 +2,8 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/cg3-pathbased-cachebased/index.html",
+      "/posts/cg3-brdf/index.html",
       "/posts/cg3-sampling/index.html",
       "/posts/cg3-rendering/index.html",
       "/posts/cg3-physics-simulation/index.html",

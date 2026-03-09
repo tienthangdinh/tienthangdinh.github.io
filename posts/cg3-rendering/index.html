@@ -196,9 +196,9 @@ window.Quarto = {
   </ul></li>
   <li><a href="#the-stupid-ray-tracing-family" id="toc-the-stupid-ray-tracing-family" class="nav-link" data-scroll-target="#the-stupid-ray-tracing-family">The stupid Ray Tracing family</a>
   <ul class="collapse">
-  <li><a href="#classic-ray-tracing" id="toc-classic-ray-tracing" class="nav-link" data-scroll-target="#classic-ray-tracing">Classic Ray Tracing</a></li>
-  <li><a href="#distributed-ray-tracing" id="toc-distributed-ray-tracing" class="nav-link" data-scroll-target="#distributed-ray-tracing">Distributed Ray Tracing</a></li>
-  <li><a href="#path-tracing-basically-distributed-ray-tracing-with-n1" id="toc-path-tracing-basically-distributed-ray-tracing-with-n1" class="nav-link" data-scroll-target="#path-tracing-basically-distributed-ray-tracing-with-n1">Path Tracing (basically Distributed Ray Tracing with <span class="math inline">\(N=1\)</span>)</a></li>
+  <li><a href="#classic-ray-tracing-everything-is-deterministic" id="toc-classic-ray-tracing-everything-is-deterministic" class="nav-link" data-scroll-target="#classic-ray-tracing-everything-is-deterministic">Classic Ray Tracing (everything is deterministic)</a></li>
+  <li><a href="#distributed-ray-tracing-probabilistic-model-with-monte-carlo" id="toc-distributed-ray-tracing-probabilistic-model-with-monte-carlo" class="nav-link" data-scroll-target="#distributed-ray-tracing-probabilistic-model-with-monte-carlo">Distributed Ray Tracing (probabilistic model with Monte Carlo)</a></li>
+  <li><a href="#path-tracing-basically-distributed-ray-tracing-with-n1-also-probabilistic-model-with-monte-carlo" id="toc-path-tracing-basically-distributed-ray-tracing-with-n1-also-probabilistic-model-with-monte-carlo" class="nav-link" data-scroll-target="#path-tracing-basically-distributed-ray-tracing-with-n1-also-probabilistic-model-with-monte-carlo">Path Tracing (basically Distributed Ray Tracing with <span class="math inline">\(N=1\)</span>) (also probabilistic model with Monte Carlo)</a></li>
   </ul></li>
   <li><a href="#useless-effects" id="toc-useless-effects" class="nav-link" data-scroll-target="#useless-effects">Useless effects</a>
   <ul class="collapse">
@@ -480,8 +480,8 @@ window.Quarto = {
 </section>
 <section id="the-stupid-ray-tracing-family" class="level1">
 <h1>The stupid Ray Tracing family</h1>
-<section id="classic-ray-tracing" class="level3">
-<h3 class="anchored" data-anchor-id="classic-ray-tracing">Classic Ray Tracing</h3>
+<section id="classic-ray-tracing-everything-is-deterministic" class="level3">
+<h3 class="anchored" data-anchor-id="classic-ray-tracing-everything-is-deterministic">Classic Ray Tracing (everything is deterministic)</h3>
 <p>For every pixel, you fire one ray. When it hits a surface, it does three things:</p>
 <ul>
 <li>Check if a light is visible (Shadow Ray).</li>
@@ -491,8 +491,8 @@ window.Quarto = {
 <p>Result: Everything looks perfectly sharp. Shadows have hard edges, mirrors are perfect, and glass has no blur.</p>
 <p>Weakness: It cannot simulate the “fuzziness” of the real world (like soft shadows or glossy surfaces). Therefore the upcoming Distributed Ray Tracing was introduced</p>
 </section>
-<section id="distributed-ray-tracing" class="level3">
-<h3 class="anchored" data-anchor-id="distributed-ray-tracing">Distributed Ray Tracing</h3>
+<section id="distributed-ray-tracing-probabilistic-model-with-monte-carlo" class="level3">
+<h3 class="anchored" data-anchor-id="distributed-ray-tracing-probabilistic-model-with-monte-carlo">Distributed Ray Tracing (probabilistic model with Monte Carlo)</h3>
 <p>It does some things differently:</p>
 <ul>
 <li>Many rays per pixel</li>
@@ -501,8 +501,8 @@ window.Quarto = {
 <p>Achieved Goal: blurry effect</p>
 <p>Weakness: After each bounce, the number of rays grow exponentially.</p>
 </section>
-<section id="path-tracing-basically-distributed-ray-tracing-with-n1" class="level3">
-<h3 class="anchored" data-anchor-id="path-tracing-basically-distributed-ray-tracing-with-n1">Path Tracing (basically Distributed Ray Tracing with <span class="math inline">\(N=1\)</span>)</h3>
+<section id="path-tracing-basically-distributed-ray-tracing-with-n1-also-probabilistic-model-with-monte-carlo" class="level3">
+<h3 class="anchored" data-anchor-id="path-tracing-basically-distributed-ray-tracing-with-n1-also-probabilistic-model-with-monte-carlo">Path Tracing (basically Distributed Ray Tracing with <span class="math inline">\(N=1\)</span>) (also probabilistic model with Monte Carlo)</h3>
 <p>At each bounce, one direct and one indirect ray is sampled. remember, <strong>AT EACH BOUNCE !!!</strong> <span class="math display">\[L_\lambda^{\text{out}} = L_\lambda^{\text{emit}} + \mathbf{R}\mathbf{T} \cdot L_\lambda^{\text{emit}} + (\mathbf{R}\mathbf{T})^2 \cdot L_\lambda^{\text{emit}} + \dots\]</span></p>
 <p>Using Monte Carlo estimation: <span class="math display">\[L_\lambda^{\text{out}}(\underline{x}_0, \omega_0^1) = \frac{w_{\lambda,1}}{p_1} \cdot \left( \frac{w_{\lambda,2}}{p_2} \cdot \left( \dots \left( \frac{w_{\lambda,n}}{p_n} L_{\lambda,n+1}^e \right) \dots \right) \right)\]</span></p>
 <p>where <span class="math display">\[w_{\lambda,j} = \rho(\dots) \cos\theta\]</span> is the “weight” of the light of that direction</p>

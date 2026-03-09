@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-03-10">
+
+<title>Path Based Rendering – the brachistochrone traveller</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">the brachistochrone traveller</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Đinh Tiến Thắng</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Path Based Rendering</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">Computer Graphics</div>
+                <div class="quarto-category">Global Illumination</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">March 10, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#light-tracing-primitive-version" id="toc-light-tracing-primitive-version" class="nav-link active" data-scroll-target="#light-tracing-primitive-version">Light Tracing (primitive version)</a>
+  <ul class="collapse">
+  <li><a href="#procedure" id="toc-procedure" class="nav-link" data-scroll-target="#procedure">Procedure</a></li>
+  </ul></li>
+  <li><a href="#bidirectional-path-tracing" id="toc-bidirectional-path-tracing" class="nav-link" data-scroll-target="#bidirectional-path-tracing">Bidirectional Path Tracing</a>
+  <ul class="collapse">
+  <li><a href="#why-we-combine-things-like-this" id="toc-why-we-combine-things-like-this" class="nav-link" data-scroll-target="#why-we-combine-things-like-this">Why we combine things like this?</a></li>
+  <li><a href="#foundation-path-measure-for-fixed-length-k" id="toc-foundation-path-measure-for-fixed-length-k" class="nav-link" data-scroll-target="#foundation-path-measure-for-fixed-length-k">Foundation: Path Measure for fixed length <span class="math inline">\(k\)</span></a>
+  <ul class="collapse">
+  <li><a href="#surface-area-sampling" id="toc-surface-area-sampling" class="nav-link" data-scroll-target="#surface-area-sampling">Surface Area Sampling</a></li>
+  <li><a href="#product-measure-dmu_k" id="toc-product-measure-dmu_k" class="nav-link" data-scroll-target="#product-measure-dmu_k">Product Measure (<span class="math inline">\(d\mu_k\)</span>)</a></li>
+  </ul></li>
+  <li><a href="#formulate-bpt" id="toc-formulate-bpt" class="nav-link" data-scroll-target="#formulate-bpt">Formulate BPT</a>
+  <ul class="collapse">
+  <li><a href="#lets-break-down-the-f_jx" id="toc-lets-break-down-the-f_jx" class="nav-link" data-scroll-target="#lets-break-down-the-f_jx">Let’s break down the <span class="math inline">\(f_j(x)\)</span></a></li>
+  <li><a href="#procedure-1" id="toc-procedure-1" class="nav-link" data-scroll-target="#procedure-1">Procedure</a></li>
+  <li><a href="#converting-directional-pdfs-to-area-pdfs" id="toc-converting-directional-pdfs-to-area-pdfs" class="nav-link" data-scroll-target="#converting-directional-pdfs-to-area-pdfs">Converting Directional PDFs to Area PDFs</a></li>
+  </ul></li>
+  <li><a href="#numerical-example" id="toc-numerical-example" class="nav-link" data-scroll-target="#numerical-example">Numerical Example</a>
+  <ul class="collapse">
+  <li><a href="#generating-the-2-sub-paths" id="toc-generating-the-2-sub-paths" class="nav-link" data-scroll-target="#generating-the-2-sub-paths">1. Generating the 2 Sub-Paths</a></li>
+  <li><a href="#interconnection-1" id="toc-interconnection-1" class="nav-link" data-scroll-target="#interconnection-1">2. Interconnection</a></li>
+  <li><a href="#calculating-the-throughput-aka-accumulated-brdf" id="toc-calculating-the-throughput-aka-accumulated-brdf" class="nav-link" data-scroll-target="#calculating-the-throughput-aka-accumulated-brdf">3. Calculating the Throughput (aka accumulated BRDF)</a></li>
+  <li><a href="#monte-carlo-estimated" id="toc-monte-carlo-estimated" class="nav-link" data-scroll-target="#monte-carlo-estimated">4. Monte Carlo estimated</a></li>
+  </ul></li>
+  <li><a href="#mis-in-bpt" id="toc-mis-in-bpt" class="nav-link" data-scroll-target="#mis-in-bpt">MIS in BPT</a>
+  <ul class="collapse">
+  <li><a href="#the-scenario-one-path-many-strategies" id="toc-the-scenario-one-path-many-strategies" class="nav-link" data-scroll-target="#the-scenario-one-path-many-strategies">The Scenario: One Path, Many Strategies</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#metropolis-sampling" id="toc-metropolis-sampling" class="nav-link" data-scroll-target="#metropolis-sampling">Metropolis Sampling</a>
+  <ul class="collapse">
+  <li><a href="#markov-chain-monte-carlo" id="toc-markov-chain-monte-carlo" class="nav-link" data-scroll-target="#markov-chain-monte-carlo">Markov Chain Monte Carlo</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="light-tracing-primitive-version" class="level1">
+<h1>Light Tracing (primitive version)</h1>
+<p>Light tracing starts by sampling paths from light sources. Once a path is finished (often terminated by Russian Roulette), it must be connected to the camera</p>
+<p>Cons: Uneven Sampling: Because light bounces randomly, some pixels might receive many samples, while others might receive none at all =&gt; very efficient for specific effects (like caustics) but difficult for rendering a clean, full image.</p>
+<section id="procedure" class="level2">
+<h2 class="anchored" data-anchor-id="procedure">Procedure</h2>
+<ol type="1">
+<li>Sample Buffer: Construct a buffer with a per-pixel accumulator (<span class="math inline">\(A_{ij}\)</span>) and a sample count (<span class="math inline">\(c_{ij}\)</span>). This is necessary because, unlike path tracing, we don’t know which pixel a ray will hit until the path is complete.</li>
+<li>Path Generation: Loop over light paths to generate a path <span class="math inline">\(x\)</span> by sampling direction BRDF, cosine term and compute its probability <span class="math inline">\(p(x)\)</span> until terminated by RR</li>
+<li>Contribution: For each path, determine which pixel <span class="math inline">\((i, j)\)</span> it lands on, compute the pixel contribution <span class="math inline">\(f(x)\)</span>, and add the weighted value <span class="math inline">\(f(x)/p(x)\)</span> to the accumulator.</li>
+<li>Final Image: The final color for each pixel is the average of its accumulated values: <span class="math inline">\(I_{ij} = A_{ij} / c_{ij}\)</span>.</li>
+</ol>
+</section>
+</section>
+<section id="bidirectional-path-tracing" class="level1">
+<h1>Bidirectional Path Tracing</h1>
+<section id="why-we-combine-things-like-this" class="level2">
+<h2 class="anchored" data-anchor-id="why-we-combine-things-like-this">Why we combine things like this?</h2>
+<p>You’ve seen that Path Tracing is great at finding large light sources, but Light Tracing is better at finding small, focused light like caustics. Some light paths are nearly impossible for standard Path Tracing to find, and pixel are also nearly impossible for standard Light Tracing to find. So we make sure the both ends first.</p>
+</section>
+<section id="foundation-path-measure-for-fixed-length-k" class="level2">
+<h2 class="anchored" data-anchor-id="foundation-path-measure-for-fixed-length-k">Foundation: Path Measure for fixed length <span class="math inline">\(k\)</span></h2>
+<p>When we implement BPT, we aren’t just tracing individual rays; we are sampling from a high-dimensional space of potential paths. To do this mathematically, we need a way to measure the “size” of a set of paths.</p>
+<section id="surface-area-sampling" class="level3">
+<h3 class="anchored" data-anchor-id="surface-area-sampling">Surface Area Sampling</h3>
+<p>Every location <span class="math inline">\(x_i\)</span> along a path is sampled according to the surface area measure <span class="math inline">\(dA_i\)</span>.Think of this as picking a random point on the physical surface of an object in your scene.</p>
+</section>
+<section id="product-measure-dmu_k" class="level3">
+<h3 class="anchored" data-anchor-id="product-measure-dmu_k">Product Measure (<span class="math inline">\(d\mu_k\)</span>)</h3>
+<p>To measure a whole path of length <span class="math inline">\(k\)</span>, we combine the individual area measures of all its vertices (<span class="math inline">\(x_0\)</span> to <span class="math inline">\(x_k\)</span>).</p>
+<ul>
+<li>On the set <span class="math inline">\(\Omega_k\)</span> (the set of all possible paths with <span class="math inline">\(k\)</span> segments), we define a product measure:<span class="math display">\[d\mu_k = \prod_{i=0}^{k} dA_i \quad \text{}\]</span></li>
+<li>This treats the path as a single point in a very high-dimensional space (e.g., for <span class="math inline">\(k=2\)</span>, it is a 6D space because each of the 3 vertices has a 2D surface position).</li>
+</ul>
+<section id="numerical-example-average-path-length" class="level4">
+<h4 class="anchored" data-anchor-id="numerical-example-average-path-length">Numerical Example: Average Path Length</h4>
+<p>For <span class="math inline">\(k=2\)</span> (average length of all paths with length 2 aka 2 segments and 3 vertices x0, x1, x2), you integrate over the entire scene surface area (<span class="math inline">\(A_{scn}\)</span>) twice and the lens area (<span class="math inline">\(A_{lns}\)</span>) once: <span class="math display">\[\bar{l}_k = \frac{1}{A_{scn}^2 A_{lns}} \int_{A_{scn}} \int_{A_{scn}} \int_{A_{lns}} (\|x_1 - x_0\| + \|x_2 - x_1\|) dA_2 dA_1 dA_0 \quad \text{}\]</span></p>
+<p>In actual rendering, we don’t just want the “average length.” We want the average light. By defining this path measure, we can use Monte Carlo integration to estimate the total light through a pixel by randomly sampling points from this “Path Space”.</p>
+</section>
+</section>
+</section>
+<section id="formulate-bpt" class="level2">
+<h2 class="anchored" data-anchor-id="formulate-bpt">Formulate BPT</h2>
+<p>the final pixel value <span class="math inline">\(I_j\)</span> is an integral over all paths in path space <span class="math inline">\(\Omega\)</span>: <span class="math display">\[I_j = \int_{x \in \Omega} f_j(x) d\mu(x)\]</span></p>
+<p>where <span class="math inline">\(f_j(x)\)</span> is the contribution of path <span class="math inline">\(x\)</span> to pixel <span class="math inline">\(j\)</span>, and <span class="math inline">\(d\mu(x)\)</span> is the path measure.</p>
+<p>To estimate this, we can also Monte Carlo: <span class="math display">\[I_j = \int_{x \in \Omega} f_j(x) d\mu(x) \approx \hat{I}_{j,N} = \frac{1}{N} \sum_{i}^N \frac{f_j(x_i)}{p(x_i)}\]</span></p>
+<ul>
+<li><p><span class="math inline">\(I_j\)</span> (The Goal): The total light (irradiance/radiance) for pixel <span class="math inline">\(j\)</span>.</p></li>
+<li><p><span class="math inline">\(f_j(x)\)</span> (The Integrand): This is the “contribution” function. It calculates how much light actually reaches the camera along path <span class="math inline">\(x\)</span>, accounting for light emission, BRDFs, and visibility.</p></li>
+<li><p><span class="math inline">\(d\mu(x)\)</span>: product of the surface area measures (<span class="math inline">\(dA\)</span>) of every vertex that makes up the path. <span class="math inline">\(dA_i\)</span> is the standard 2D surface area element at vertex <span class="math inline">\(x_i\)</span> (like <span class="math inline">\(dx \cdot dy\)</span> on a flat surface).: <span class="math display">\[d\mu_k = dA_0 \times dA_1 \times \dots \times dA_k = \prod_{i=0}^{k} dA_i\]</span></p></li>
+<li><p><span class="math inline">\(p(x_i)\)</span> (The PDF): This is the probability density of choosing that specific unique path <span class="math inline">\(x_i\)</span> using your chosen sampling scheme. <strong>And where to find <span class="math inline">\(p(x_i)\)</span>? Exactly the same as we did in Path Tracing: BRDF, cosin term, and RR</strong> <span class="math display">\[p(x) = p(\text{pixel}) \times p(\text{bounce}_1) \times p(\text{RR}) \times p(\text{bounce}_2) \dots\]</span></p></li>
+</ul>
+<section id="lets-break-down-the-f_jx" class="level3">
+<h3 class="anchored" data-anchor-id="lets-break-down-the-f_jx">Let’s break down the <span class="math inline">\(f_j(x)\)</span></h3>
+<p>The contribution function <span class="math inline">\(f_j(x)\)</span> for a path <span class="math inline">\(x = x_0x_1 \dots x_k\)</span> is decomposed into three main parts:</p>
+<ul>
+<li><span class="math inline">\(L_e(x_0, \omega_0^1)\)</span>: The initial radiance emitted from the light source at <span class="math inline">\(x_0\)</span> in the direction of the first vertex <span class="math inline">\(x_1\)</span>.</li>
+<li><span class="math inline">\(T(x)\)</span>: The Path Throughput, <strong>basically accumulated BRDF along the whole path, just that formulated in Area integration</strong>.</li>
+<li><span class="math inline">\(W_e(x_k, \omega_k^{k-1})\)</span>: The sensor sensitivity (importance) of the camera at the final vertex <span class="math inline">\(x_k\)</span>.</li>
+</ul>
+<section id="path-throughput-tx-basically-like-accumualed-brdf" class="level4">
+<h4 class="anchored" data-anchor-id="path-throughput-tx-basically-like-accumualed-brdf">Path Throughput <span class="math inline">\(T(x)\)</span> (basically like accumualed BRDF)</h4>
+<p>Throughput <span class="math inline">\(T(x)\)</span> represents the “loss” or “transfer” of light at every bounce and along every segment, <strong>basically accumulated BRDF, just that formulated in Area integration</strong>: <span class="math display">\[T(x) = G(x_0, x_1) \prod_{i=1}^{k-1} \rho(x_i, \omega_i^{i-1}, \omega_i^{i+1}) G(x_i, x_{i+1})\]</span></p>
+</section>
+</section>
+<section id="procedure-1" class="level3">
+<h3 class="anchored" data-anchor-id="procedure-1">Procedure</h3>
+<section id="initialization" class="level4">
+<h4 class="anchored" data-anchor-id="initialization">Initialization</h4>
+<p>Given <span class="math inline">\(M\)</span> pixels, we try to create <span class="math inline">\(25*M\)</span> pairs of eye-light-paths.</p>
+<ul>
+<li>Eye Path (<span class="math inline">\(z\)</span>): Sample a pixel and lens location, then trace into the scene using Russian Roulette (RR). You must track the total probability <span class="math inline">\(p_e(z)\)</span> of this path.</li>
+<li>Light Path (<span class="math inline">\(y\)</span>): Sample a location on a light source and trace it into the scene with RR. Similarly, calculate the total probability <span class="math inline">\(p_l(y)\)</span>.</li>
+</ul>
+</section>
+<section id="interconnection" class="level4">
+<h4 class="anchored" data-anchor-id="interconnection">Interconnection</h4>
+<p>For <strong>every</strong> vertex on the eye path and <strong>every</strong> vertex on the light path, you try to draw a connecting edge. Basically from <strong>two</strong> independent “half-paths” into <strong>many complete light paths</strong>. In standard path tracing, you only get one complete path at the very end when you hit a light. In BPT, you treat every vertex as a potential connection point.</p>
+<p>If you have an eye path with vertices <span class="math inline">\(E_0, E_1\)</span> and a light path with vertices <span class="math inline">\(L_0, L_1, L_2\)</span>, you don’t just make one connection. You try to connect:</p>
+<ul>
+<li><span class="math inline">\(E_0\)</span> to <span class="math inline">\(L_0\)</span>, <span class="math inline">\(L_1\)</span>, <span class="math inline">\(L_2\)</span>.</li>
+<li><span class="math inline">\(E_1\)</span> to <span class="math inline">\(L_0\)</span>, <span class="math inline">\(L_1\)</span>, <span class="math inline">\(L_2\)</span>.</li>
+</ul>
+<p>End effect: The Path Length <span class="math inline">\(k \le s + t + 1\)</span> (<span class="math inline">\(k = 1, 2, 3,..., s + t + 1\)</span>)</p>
+<ul>
+<li>The probability of this combined path is the product of the two <strong>sub-path</strong> probabilities: <span class="math inline">\(p(x_\alpha) = p_l(y_\alpha) \cdot p_e(z_\alpha)\)</span>. Because the two sub-paths are sampled independently, calculating the probability density (PDF) for the combined path is straightforward multiplication.</li>
+</ul>
+</section>
+</section>
+<section id="converting-directional-pdfs-to-area-pdfs" class="level3">
+<h3 class="anchored" data-anchor-id="converting-directional-pdfs-to-area-pdfs">Converting Directional PDFs to Area PDFs</h3>
+<p>Light Tracing Path PDF (<span class="math inline">\(p_l\)</span>): <span class="math display">\[p_l(x_i) = p_l(x_0)p_l(x_1|x_0) \cdot \dots \cdot p_l(x_k|x_0x_1 \dots x_{k-1})\]</span> Path Tracing Path PDF (<span class="math inline">\(p_e\)</span>): <span class="math display">\[p_e(x_i) = p_e(x_k)p_e(x_{k-1}|x_k) \cdot \dots \cdot p_e(x_0|x_1 \dots x_k)\]</span></p>
+<p>In standard path tracing, we usually sample an outgoing direction <span class="math inline">\(\omega_i^{i+1}\)</span> from a surface point. However, the path integral framework we’ve been discussing relies on the surface area measure <span class="math inline">\(dA\)</span>. To bridge these two worlds, direction-based PDFs must be multiplied by a geometry factor (<span class="math inline">\(G\)</span>): <span class="math display">\[p(x_{i+1} | x_0x_1 \dots x_i) = p(\omega_i^{i+1} | x_0x_1 \dots x_i) \cdot \frac{\cos\theta_i^{i+1} \cos\theta_{i+1}^i}{\|x_i - x_{i+1}\|^2}\]</span></p>
+</section>
+</section>
+<section id="numerical-example" class="level2">
+<h2 class="anchored" data-anchor-id="numerical-example">Numerical Example</h2>
+<p>Imagine we want to calculate the contribution of a path with 4 vertices (<span class="math inline">\(x_0, x_1, x_2, x_3\)</span>). In BPT, we don’t just “find” this path once; we can build it in multiple ways. Let’s look at one specific way: 1 light bounce and 1 eye bounce.</p>
+<section id="generating-the-2-sub-paths" class="level3">
+<h3 class="anchored" data-anchor-id="generating-the-2-sub-paths">1. Generating the 2 Sub-Paths</h3>
+<p>The Light Sub-path (<span class="math inline">\(y\)</span>):</p>
+<ul>
+<li><span class="math inline">\(x_0\)</span> (Light): We pick a point on a <span class="math inline">\(2m^2\)</span> light bulb. Probability <span class="math inline">\(p_l(x_0) = 1/2 = 0.5\)</span>.</li>
+<li><span class="math inline">\(x_1\)</span> (Wall): We sample an outgoing direction <span class="math inline">\(\omega_0^1\)</span> from the light. Let’s say <span class="math inline">\(p(\omega) = 0.1\)</span>.</li>
+<li>We also have <span class="math inline">\(G_{01} = 0.2\)</span></li>
+</ul>
+<p>The Eye Sub-path (<span class="math inline">\(z\)</span>):</p>
+<ul>
+<li><span class="math inline">\(x_3\)</span> (Camera): We pick a point on the lens. Probability <span class="math inline">\(p_e(x_3) = 1.0\)</span>.</li>
+<li><span class="math inline">\(x_2\)</span> (Table): We sample a direction through a pixel. Let’s say <span class="math inline">\(p(\omega) = 0.8\)</span>.</li>
+<li>We also have <span class="math inline">\(G_{23} = 0.5\)</span></li>
+</ul>
+</section>
+<section id="interconnection-1" class="level3">
+<h3 class="anchored" data-anchor-id="interconnection-1">2. Interconnection</h3>
+<p>Now we try to connect the last light vertex (<span class="math inline">\(x_1\)</span>) to the last eye vertex (<span class="math inline">\(x_2\)</span>).</p>
+</section>
+<section id="calculating-the-throughput-aka-accumulated-brdf" class="level3">
+<h3 class="anchored" data-anchor-id="calculating-the-throughput-aka-accumulated-brdf">3. Calculating the Throughput (aka accumulated BRDF)</h3>
+<p>Emission: Light starts at <span class="math inline">\(x_0\)</span> with brightness <span class="math inline">\(100\)</span>.</p>
+<p>Throughput (<span class="math inline">\(T\)</span>): This path has two bounces (<span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span>).</p>
+<ul>
+<li>At <span class="math inline">\(x_1\)</span> (Wall), the BRDF <span class="math inline">\(\rho\)</span> is <span class="math inline">\(0.1\)</span> (it absorbs 90% of light).</li>
+<li>At <span class="math inline">\(x_2\)</span> (Table), the BRDF <span class="math inline">\(\rho\)</span> is <span class="math inline">\(0.5\)</span>.We also multiply by the “bridge” geometry term <span class="math inline">\(G_{12}\)</span> (let’s say <span class="math inline">\(G_{12} = 0.3\)</span>).</li>
+</ul>
+<p>This is f: <span class="math display">\[f_j = \text{Light} \cdot G_{01} \cdot \rho_1 \cdot G_{12} \cdot \rho_2 \cdot G_{23} \cdot \text{Camera}\]</span><span class="math display">\[f_j = 100 \cdot \mathbf{0.2} \cdot 0.1 \cdot 0.3 \cdot 0.5 \cdot \mathbf{0.5} \cdot 1.0 = \mathbf{0.15}\]</span></p>
+<p>this is p: <span class="math display">\[p_{\text{area}} = p(x_0) \cdot p_A(x_1|x_0) \cdot p(x_3) \cdot p_A(x_2|x_3)\]</span><span class="math display">\[p_{\text{area}} = 0.5 \cdot (\mathbf{0.02}) \cdot 1.0 \cdot (\mathbf{0.4}) = \mathbf{0.004}\]</span></p>
+</section>
+<section id="monte-carlo-estimated" class="level3">
+<h3 class="anchored" data-anchor-id="monte-carlo-estimated">4. Monte Carlo estimated</h3>
+<p><span class="math display">\[\text{Sample Value} = \frac{f_j}{p(x)} = \frac{1.5}{0.004} = \mathbf{375}\]</span></p>
+<p><strong>Wait, where do the “Direct” samplings fit in?</strong></p>
+<p>Dont worry, BPT considers every possible connection:</p>
+<ul>
+<li>Direct Eye Sampling: Connecting <span class="math inline">\(x_1\)</span> directly to the camera (<span class="math inline">\(x_3\)</span>). This is effectively a 3-vertex path (<span class="math inline">\(x_0, x_1, x_3\)</span>).</li>
+<li>Direct Light Sampling: Connecting <span class="math inline">\(x_2\)</span> directly to the light (<span class="math inline">\(x_0\)</span>). This is effectively a different 3-vertex path (<span class="math inline">\(x_3, x_2, x_0\)</span>).</li>
+</ul>
+<p>We will eventually later add them all together using MIS in the next chapter.</p>
+</section>
+</section>
+<section id="mis-in-bpt" class="level2">
+<h2 class="anchored" data-anchor-id="mis-in-bpt">MIS in BPT</h2>
+<section id="the-scenario-one-path-many-strategies" class="level3">
+<h3 class="anchored" data-anchor-id="the-scenario-one-path-many-strategies">The Scenario: One Path, Many Strategies</h3>
+<p>Recall our path <span class="math inline">\(x = \{x_0, x_1, x_2, x_3\}\)</span> (Light <span class="math inline">\(\to\)</span> Wall <span class="math inline">\(\to\)</span> Table <span class="math inline">\(\to\)</span> Camera). In BPT, there are 5 different ways to build this same 4-vertex path:</p>
+<ul>
+<li>Strategy <span class="math inline">\(s_0\)</span>: 0 light vertices, 4 eye vertices (Pure Path Tracing hitting a light by luck).</li>
+<li>Strategy <span class="math inline">\(s_1\)</span>: 1 light vertex, 3 eye vertices (Direct Light Sampling/Next Event Estimation).</li>
+<li>Strategy <span class="math inline">\(s_2\)</span>: 2 light vertices, 2 eye vertices (Connecting two “half-paths” in the middle).</li>
+<li>Strategy <span class="math inline">\(s_3\)</span>: 3 light vertices, 1 eye vertex (Direct Eye Sampling/Light Tracing).Strategy <span class="math inline">\(s_4\)</span>: 4 light vertices, 0 eye vertices (Light path hitting the camera lens by luck).</li>
+</ul>
+<p>For any specific strategy <span class="math inline">\(i\)</span>, the MIS weight <span class="math inline">\(w_i\)</span> is: <span class="math display">\[w_i(x) = \frac{p_i(x)}{\sum_{k=0}^{n} p_k(x)}\]</span></p>
+<ul>
+<li><span class="math inline">\(p_i(x)\)</span>: The probability of the path using the current strategy you just calculated.</li>
+<li>Denominator: The sum of probabilities for every other way you could have made that exact same path.</li>
+</ul>
+<p>And then eventually:</p>
+<p><span class="math display">\[\hat{f}^N_{\text{MIS}} = \sum_{i=1}^m \frac{1}{n_i} \sum_{j=1}^{n_i} \omega_i(x_{i,j}) \frac{f(x_{i,j})}{p_i(x_{i,j})} \quad \text{}\]</span></p>
+</section>
+</section>
+</section>
+<section id="metropolis-sampling" class="level1">
+<h1>Metropolis Sampling</h1>
+<p>Target Function (<span class="math inline">\(f\)</span>): A non-negative function <span class="math inline">\(f: \Omega \to R^+\)</span> representing the desired distribution (e.g., image brightness).</p>
+<p>Objective: Output a sample chain <span class="math inline">\(x_i\)</span> distributed according to the probability density function (PDF) <span class="math inline">\(f(x)\)</span>$</p>
+<section id="markov-chain-monte-carlo" class="level2">
+<h2 class="anchored" data-anchor-id="markov-chain-monte-carlo">Markov Chain Monte Carlo</h2>
+<ul>
+<li>Initial State: Start with an initial point <span class="math inline">\(x_0 \in \Omega\)</span>.</li>
+<li>each <span class="math inline">\(x\)</span> has a Gaußian kernel representing transition probability to its neighbors <span class="math inline">\(T(x-&gt;x')\)</span>.</li>
+<li>Now we generate chain of samples <span class="math inline">\(x_i\)</span>:
+<ul>
+<li>using the Gaußian kernel to sample next <span class="math inline">\(x'\)</span></li>
+<li>Accept <span class="math inline">\(x'\)</span> if <span class="math inline">\(f(x') &gt; f(x)\)</span></li>
+<li>Otherwise only accept <span class="math inline">\(x'\)</span> with probability of <span class="math inline">\(\frac{f(x')}{f(x)}\)</span></li>
+</ul></li>
+</ul>
+
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
