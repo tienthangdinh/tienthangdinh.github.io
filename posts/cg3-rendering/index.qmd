@@ -1,7 +1,7 @@
 ---
 title: "Rendering"
 date: "2026-03-04"
-categories: [Computer Graphics, Rendering]
+categories: [Computer Graphics, Global Illumination]
 format:
   html:
     toc: true
@@ -351,22 +351,6 @@ Achieved Goal: blurry effect
 
 Weakness: After each bounce, the number of rays grow exponentially.
 
-#### Example:
-Scene:
-
-* Camera ($f_0$): The pixel sensitivity is 1.0.
-* Surface 1 ($f_1$): A glossy floor. Its BRDF value in the direction of the light is 0.4.
-* Light ($f_n$): A small area light emitting 1000 units of radiance.
-
-Monte Carlo **for a single pixel**:
-
-* $p_0$: We picked a random spot on the lens/aperture. The probability (PDF) was 0.5. (**THIS IS HOW WE CHOOSE THE RAY DIRECTION**)
-* $p_1$: We sampled the glossy BRDF to find a reflection direction. The PDF for picking this specific direction was 0.2.
-* $p_n$: We picked a random point on the area light. The PDF for picking that point was 0.1.
-$$\hat{J} = \frac{f_0 \cdot f_1 \cdot f_n}{p_0 \cdot p_1 \cdot p_n}$$
-$$\hat{J} = \frac{1 \cdot 0.4 \cdot 1000}{0.5 \cdot 0.2 \cdot 0.1} = \mathbf{40000}$$
-
-Because the path we took was rare 1%, 99% of others will it 0. So the average is $\frac{1}{100} \cdot 40000 + \frac{99}{100} \cdot 0 = \mathbf{400}$.
 
 ### Path Tracing (basically Distributed Ray Tracing with $N=1$)
 
@@ -410,24 +394,70 @@ This is done in the same way as spatial filtering, but instead of integrating ov
 At each bounce, a random decision is made to either continue tracing the path or terminate it.
 
 
-# Monte Carlo-based Ray Tracing
+# Monte Carlo-based Ray Tracing (All about Scaling Up!!!)
 General idea:
 $$L_{\lambda}^{\text{reflect}}(\omega^{\text{out}}) = \iint_{\Omega^{\text{in}}} \rho(\omega^{\text{in}}, \omega^{\text{out}}) L_{\lambda}^{\text{in}}(\omega^{\text{in}})\cos\theta^{\text{in}} d\Omega^{\text{in}} \quad \text{}$$
-is estimated by Monte Carlo:
+is estimated by Monte Carlo with importance sampling **but without MIS**:
 $$L_{\lambda}^{\text{reflect}}(\omega^{\text{out}}) \approx \frac{1}{N} \sum_{i=1}^N \frac{\rho(\omega_i^{\text{in}}, \omega^{\text{out}})L_{\lambda}^{\text{in}}(\omega_i^{\text{in}})\cos\theta_i^{\text{in}}}{p(\omega_i^{\text{in}})} \quad \text{}$$
 
-Using Importance Sampling PDF from BRDF: $f(\omega^{\text{in}}) = \rho(\omega_i^{\text{in}}, \omega^{\text{out}})L_{\lambda}^{\text{in}}(\omega_i^{\text{in}})\cos\theta_i^{\text{in}}$, is the function that the PDF $p(\omega^{\text{in}})$ should ideally be proportional to. We cannot sample all 3 components at once, so the PDF of each component must be split up.
+where:
 
-* Cosine-weighted sampling using Nusselt's analogy
-* BRDF sampling by splitting again $\rho = \rho_{diff} + \rho_{spec} + \rho_{mirr}$ (for e.g. use 80% diffuse, 20% specular)
-* Direct light sampling I still dont know what to sample here when we already know the direction.
+* $\frac{1}{p(\omega_i^{\text{in}})}$ replaces the $\iint d\Omega^{\text{in}}$ integration.
+* $f(\omega^{\text{in}}) = \rho(\omega_i^{\text{in}}, \omega^{\text{out}})L_{\lambda}^{\text{in}}(\omega_i^{\text{in}})\cos\theta_i^{\text{in}}$, is the function that the PDF $p(\omega^{\text{in}})$ should ideally be proportional to. We cannot sample all 3 components at once, so the PDF of each component must be split up.
+    * Cosine-weighted sampling using Nusselt's analogy
+    * BRDF sampling by splitting again $\rho = \rho_{diff} + \rho_{spec} + \rho_{mirr}$ (for e.g. use 80% diffuse, 20% specular)
+    * Direct light sampling I still dont know what to sample here when we already know the direction.
 
 To put all these strategies together, at each bounce, we calculate the contribution of direct light (Area light sampling) and indirect light (cosine+BRDF) separately and take average of their weighted sum by MIS:
 $$L_{\lambda}^{\text{reflect}} = L_{\lambda}^{\text{direct}} (\mathbf{x}, \omega^{\text{out}}) + L_{\lambda}^{\text{indirect}} (\mathbf{x}, \omega^{\text{out}}) \quad \text{}$$
 
+## Example 1 only One Strategy (no MIS)
+Once again, Monte Carlo with importance sampling **but without MIS**:
+$$L_{\lambda}^{\text{reflect}}(\omega^{\text{out}}) \approx \frac{1}{N} \sum_{i=1}^N \frac{\rho(\omega_i^{\text{in}}, \omega^{\text{out}})L_{\lambda}^{\text{in}}(\omega_i^{\text{in}})\cos\theta_i^{\text{in}}}{p(\omega_i^{\text{in}})} \quad \text{}$$
+
+We are going to shoot $N = 2$ random rays out from a diffuse floor. BRDF is $\rho = \frac{0.5}{\pi}$ (**Albedo** of diffuse material always divide by $\pi$ to conserve energy). $$p(\omega_i^{\text{in}}) = \frac{\cos\theta_i^{\text{in}}}{\pi}$$ we sample the light based on Nusselt's analogy.
+
+Ray 1 hits $L^{\text{in}}_1$ with 100 unit of light, and angle $\cos\theta_1$ of 60 degrees.
+$$\text{Value}_1 = \frac{\rho \cdot L^{\text{in}}_1 \cdot \cos\theta_1}{p(\omega_1)} = \frac{\frac{0.5}{\pi} \cdot 100 \cdot \frac{1}{2}}{\frac{\cos\theta_1}{\pi}} = 50$$
+
+Ray 2 hits $L^{\text{in}}_2$ dark ceiling with 10 unit of light, and angle $\cos\theta_2$ of 0 degrees.
+$$\text{Value}_2 = \frac{\rho \cdot L^{\text{in}}_2 \cdot \cos\theta_2}{p(\omega_2)} = \frac{\frac{0.5}{\pi} \cdot 10 \cdot 0}{\frac{\cos\theta_2}{\pi}} = 5$$
+
+Average:
+$$\text{Average} = \frac{\text{Value}_1 + \text{Value}_2}{2} = \frac{50 + 5}{2} = 27.5$$
+
+## Example 2  with more Strategies (with MIS)
+Now we use MIS to combine two strategies (2 rays) at the exact same time: Direct Light Sampling and BRDF Sampling. We add an extra weight before each light. **THIS EXTRA WEIGHT IS ALL ABOUT THE TRUST TO THAT METHOD**
+$$\hat{f}^N_{\text{MIS}} = \sum_{i=1}^m \frac{1}{n_i} \sum_{j=1}^{n_i} \omega_i(x_{i,j}) \frac{f(x_{i,j})}{p_i(x_{i,j})} \quad \text{}$$
+$$\hat{f}^N_{\text{MIS}} = \underbrace{\frac{1}{n_1} \sum_{j=1}^{n_1} \omega_1(x_{1,j}) \frac{f(x_{1,j})}{p_1(x_{1,j})}}_{\text{Contribution from Strategy 1 (e.g., Light Sampling)}} + \underbrace{\frac{1}{n_2} \sum_{j=1}^{n_2} \omega_2(x_{2,j}) \frac{f(x_{2,j})}{p_2(x_{2,j})}}_{\text{Contribution from Strategy 2 (e.g., BRDF Sampling)}} + \dots$$
+
+For Path Tracing:
+$$\text{Final Color} = \left[ w_{\text{light}} \cdot \frac{f(x_1)}{p_{\text{light}}(x_1)} \right] + \left[ w_{\text{brdf}} \cdot \frac{f(x_2)}{p_{\text{brdf}}(x_2)} \right]$$
+where $f = \rho \cdot L^{\text{in}} \cdot \cos\theta$
+
+### Ray 1: Direct Light Sampling
+A random point on a light bulb is picked, the light intensity $f = \mathbf{90}$ and:
+
+* $p_{\text{light}}$: The probability that the Light Sampler picked this spot is 0.4 (because aiming at the light is its only job).
+* $p_{\text{brdf}}$: The probability that the BRDF Sampler would have randomly fired in this dull direction is very low, just 0.05.
+
+$$L_{\text{direct}} = \frac{p_{\text{light}}}{p_{\text{light}} + p_{\text{brdf}}} \cdot \frac{f(x_1)}{p_{\text{light}}(x_1)} = \frac{0.4}{0.4 + 0.05} \cdot \frac{90}{0.4} = \frac{0.4}{0.45} \cdot 225 = 0.888 * 225 = \mathbf{200}$$
+
+### Ray 2: BRDF Sampling
+Second ray follows BRDF lobe and accidentally got $f = \mathbf{400}$:
+
+* $p_{\text{light}}$: The probability that the Light Sampler would have picked this exact sub-pixel coordinate on the lamp is lower, say 0.14.
+* $p_{\text{brdf}}$: The probability that the BRDF Sampler fired here is 0.35 (because it heavily favors shiny angles).
+
+$$L_{\text{brdf}} = \frac{p_{\text{brdf}}}{p_{\text{light}} + p_{\text{brdf}}} \cdot \frac{f(x_2)}{p_{\text{brdf}}(x_2)} = \frac{0.35}{0.14 + 0.35} \cdot \frac{400}{0.35} = \frac{0.35}{0.49} \cdot \frac{400}{0.35} = \frac{400}{0.49} \approx \mathbf{816}$$
+
+To get the final color, we just add the weighted contributions from our two strategies together:
+$$\text{Final Color} = L_{\text{direct}} + L_{\text{brdf}} = 200 + 816 = \mathbf{1016}$$
+
 ## Indirect light sampling (keyword: cosin & BRDF)
 To calculate indirect light:
 $$L_\lambda^{\text{indirect}}(x, \omega^{\text{out}}) = \iint_{\Omega^{\text{in}}} \rho(x, \omega^{\text{in}}, \omega^{\text{out}}) L_\lambda^{\text{reflect}}(\text{trace}(x, \omega^{\text{in}}), -\omega^{\text{in}}) \cos\theta^{\text{in}} d\Omega^{\text{in}}$$
+
 
 ### 1. BRDF sampling
 I think we all know what that is, quite intuitive that we want to sample according to BRDF lobe. But let's discuss about this in another post.

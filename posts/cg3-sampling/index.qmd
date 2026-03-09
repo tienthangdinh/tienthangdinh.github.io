@@ -1,0 +1,296 @@
+---
+title: "Sampling Techniques"
+date: "2026-03-09"
+categories: [Computer Graphics, Global Illumination, Statistics]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+# Basic Sampling Techniques
+## Generating Random Sampling
+* Simple Grid-Based Sampling: Good, but aliasing is a big problem.
+    * Regular Grid: each sample is at the center of a grid cell. simple implementation, but aliasing is a big problem.
+    * Rotated Grid: The entire regular grid is rotated. This helps to break up some horizontal/vertical aliasing patterns.
+* Uniform Random: Samples are generated independently and uniformly at random across the entire domain. But sometimes can create some clustering
+* Stratified Grid: The domain is divided into a regular grid, and one sample is placed randomly within each cell. this is pretty good
+* N-Rook Stratified:
+    - stratified grid sampling in 1D per dimension.
+    - then combines coordinate samples after a random shuffle.
+    - Effect: exactly one sample in every row and every column of the high-dimensional space (analogous to placing rooks on a chessboard).
+
+## Rejection Sampling
+Goal: generate samples of **any distribution** $p_f(x)$ from just a **uniform distribution**. Often used when $f(x)$ is complex to sample.
+
+To generate samples $\mathbf{x}$ from a target distribution $p_f(x)$.
+$$p_f(x) = |f(x)| / \int_{\Omega} |f(x)| dx$$
+
+
+### Procedure
+**Core idea**: The core idea is to sample uniformly from the entire bounding volume (the box defined by $\Omega$ and $f_{\max}$) and reject any sample that lands above the function $|f(x)|$.
+
+1. Define the Bounding Volume ($V$): Domain $\Omega$ multiplied by the upper bound $f_{\max}$.$$V = \Omega \times [0, f_{\max}]$$
+2. Generate a Sample ($\mathbf{z}_i$): Uniformly sample a 2D point $\mathbf{z}_i = (x_i, y_i)$ from this volume $V$.
+    * $x$ is chosen **uniformly** from the domain $\Omega$.
+    * $y$ is chosen **uniformly** between $0$ and $f_{\max}$.
+3. The Rejection Test: Compare the height of the sampled point ($y_i$) with the value of the function ($|f(x_i)|$).
+    * If $y_i \le |f(x_i)|$: Accept the sample $x_i$ (the sample falls under the curve).
+    * If $y_i > |f(x_i)|$: Reject the sample $x_i$ (the sample falls over the curve).
+
+### Discussion
+* Efficiency: The method is only efficient if the bounding volume $V$ is not significantly larger than the actual area under the curve ($\int_{\Omega} |f(x)| dx$).
+* Waste: If $f_{\max}$ is much larger than the average value of $|f(x)|$, most samples will fall into the empty space between the curve and $f_{\max}$ and be rejected, wasting too much computation.
+
+
+## Inverse Transform Sampling
+Idea: You can transform samples from a **uniform distribution** into samples from a **complex target distribution** by using the inverse of the target's Cumulative Probability Function (CPF).
+
+### Procedure
+1. Generate a Sample ($\mathbf{u}_i$): Sample a value $u_i$ from a **uniform distribution** $U(0, 1)$.
+2. Transform the Sample: Use the inverse of the target's CPF to transform $u_i$ into a sample $x_i$ from the target distribution $p_f(x)$.
+    * Mathematically: $x_i = F^{-1}(u_i)$, where $F^{-1}$ is the inverse of the CPF.
+    * But what was F originally: it is the Cumulative Distribution Function (CDF) of the target distribution $p_f(x)$: $F(x) = \int_{-\infty}^{x} p_f(t) dt$
+
+### Example
+Given pdf $p_f(x) = \frac{3x^2}{2}$ on internval $[0, 1]$.
+$$F(x) = \int_{0}^{x} \frac{3t^2}{2} dt = \frac{x^3+1}{2}$$
+
+Now as we sample $u_i$ from $U(0, 1)$, we can transform it to $x_i$ using the inverse of $F$.
+
+$$u = F(x) = \frac{x^3+1}{2}$$
+$$x = F^{-1}(u) = \sqrt[3]{2u-1}$$
+
+Just that simple!
+
+## What if we want to do in 2 or higher dimension? Marginalization
+**Goal**: Sample a 2D vector $\mathbf{x}_i = (x_i, y_i)$ according to a given 2D distribution $p_x(\mathbf{x}) = p_x(x, y)$ over a rectangular domain $[x_{\min}, x_{\max}] \times [y_{\min}, y_{\max}]$. 
+
+**Idea**: Sample a 2D uniform vector $\mathbf{\xi}_i = (\xi_i, \eta_i)$ over $[0, 1]^2$ and compute $\mathbf{x}_i = \mathbf{g}(\mathbf{\xi}_i)$ using a vector function $\mathbf{g}$. 
+
+**Method**: The function $\mathbf{g}(\mathbf{\xi})$ is constructed in two sequential steps using marginal and conditional probabilities.
+
+### Procedure
+#### Step 1: Sampling the First Coordinate ($x$)
+The first coordinate, $x$, is sampled independently using the 1D method on the marginal distribution of $x$. Let's get marginal pdf of $x$ by integrating all $y$:
+$$p_x(x) = \int_{y_{\min}}^{y_{\max}} p_x(x, y) dy \quad \text{}$$
+Then, the marginal CDF of $x$ dimension is:
+$$P_x(x) = \int_{x_{\min}}^{x} p_x(\tilde{x}) d\tilde{x} \quad \text{}$$
+For any uniform sample $u = P(x)$. We inverse
+$$x = P^{-1}(u)$$
+
+#### Step 2: Sampling the First Coordinate ($y$)
+Once $x$ is known (calculated from Step 1), the second coordinate, $y$, is sampled using the conditional distribution $p_{y|x}(x, y)$.
+$$p_{y|x}(x, y) = \frac{p_x(x, y)}{p_x(x)} \quad \text{}$$
+Now we calculate conditional CDF of $y|x$:
+$$P_{y|x}(x, y) = \int_{y_{\min}}^{y} p_{y|x}(x, \tilde{y}) d\tilde{y} \quad \text{}$$
+And then for each uniformly distributed sample of $\eta = P_{y|x}(x, y)$:
+$$y  = P_{y|x}^{-1}(x, \eta) \quad \text{}$$
+
+##### TÚM CÁI VÁY LẠI
+1. Generate two independent uniform random numbers: $\xi = \text{rand}(0, 1)$ and $\eta = \text{rand}(0, 1)$.
+2. Inverse to find $x_i$ using the inverse **marginal** CPF $P_x^{-1}(\xi)$.
+3. Inverse to find $y_i$ using the inverse **conditional** CPF $P_{y|x}^{-1}(x_i, \eta)$.
+
+
+### Example
+$$p_x(x, y) = 2(x + y) \quad \text{for } 0 \le x, y \le 1$$
+
+#### Step 1: Sample the Marginal Coordinate ($x$)
+The goal is $x = P_x^{-1}(\xi)$.
+
+Firstly, we calcualte marginal CDF:
+$$p_x(x) = \int_{0}^{1} p_x(x, y) dy = \int_{0}^{1} 2(x + y) dy = 2x + 1$$
+$$P_x(x) = \int_{0}^{x} p_x(\tilde{x}) d\tilde{x} = \int_{0}^{x} (2\tilde{x} + 1) d\tilde{x} = x^2 + x$$
+
+Now we find inverse $x$:
+$$\xi = P(x) = x^2 + x$$
+$$x = P^{-1}(\xi) = \frac{-1 + \sqrt{1 + 4\xi}}{2}$$
+
+#### Step 2: Sample the Conditional Coordinate ($y$)
+The goal is $y = P_{y|x}^{-1}(x, \eta)$.
+
+Firstly we find Conditional CPF ($P_{y|x}(x, y)$):
+$$p_{y|x}(x, y) = \frac{p_x(x, y)}{p_x(x)} = \frac{2(x + y)}{2x + 1} \quad \text{}$$
+$$P_{y|x}(x, y) = \int_{0}^{y} p_{y|x}(x, \tilde{y}) d\tilde{y} = \int_{0}^{y} \frac{2(x + \tilde{y})}{2x + 1} d\tilde{y} = \frac{2xy + y^2}{2x + 1}$$
+
+Now we want to inverse to find $y$:
+$$\eta = P_{y|x}(x, y) = \frac{2xy + y^2}{2x + 1}$$
+$$y = P^{-1}_{y|x}(x, y) = -x + \sqrt{x^2 + \eta(2x + 1)}$$
+
+So yeah, finally the sampling strategy is: To generate a single sample $(x_i, y_i)$ that follows the PDF $p_x(x, y) = 2(x+y)$:
+
+1. Generate uniform numbers: $\xi_i = \text{rand}(0, 1)$ and $\eta_i = \text{rand}(0, 1)$.
+2. Calculate $x_i$ (Marginal):$$x_i = \frac{-1 + \sqrt{1 + 4\xi_i}}{2}$$
+3. Calculate $y_i$ (Conditional):$$y_i = -x_i + \sqrt{x_i^2 + \eta_i(2x_i + 1)}$$
+
+
+### Practical Example Transformation Sampling a Diffuse
+**On Diffuse, we cannot sample uniformly $(\theta, \phi)$, because uniform $(\theta, \phi)$ does not mean uniform $(\theta, \phi)$**
+If you just pick a uniformly random $\theta$ and uniformly random $\phi$, you are picking a random grid coordinate. Because the grid is physically crushed together at the top, your random rays will massively clump together pointing straight up at the North Pole, and you will barely shoot any rays out toward the horizon.
+
+To fix this, we have to multiply our probability by $\sin\theta$. (At the North Pole, $\theta=0$, so $\sin(0)=0$, which tells the computer to stop putting so many points there).
+
+Basically, we want to sample this:
+$$\int \rho \cdot L \cdot \cos\theta$$
+
+* $\cos\theta$: Please shoot more rays straight up to satisfy cosin term
+* $\sin\theta$: Please stretch the rays out so they don't incorrectly clump at the North Pole due to spherical geometry.
+$$p(\phi, \theta) = \frac{\cos\theta \sin\theta}{\pi} \quad \text{}$$
+
+The angles are defined over $\phi \in [-\pi, \pi]$ and $\theta \in [0, \pi/2]$ (the hemisphere). The combined function $2\cos\theta\sin\theta$ actually peaks at $\mathbf{\theta = 45^\circ}$ ($\pi/4$) (where the derivative is zero). This means you get the highest concentration of samples at a 45-degree angle,
+
+#### Procedure
+Marginal PDF ($p_{\theta}(\theta)$): Integrate the joint PDF over the azimuthal angle $\phi$ (from $-\pi$ to $\pi$):$$p_{\theta}(\theta) = \int_{-\pi}^{\pi} \frac{\cos\theta \sin\theta}{\pi} d\phi = \frac{\cos\theta \sin\theta}{\pi} [\phi]_{-\pi}^{\pi} = \frac{\cos\theta \sin\theta}{\pi} (2\pi) = 2\cos\theta \sin\theta$$
+
+Marginal CPF ($P_{\theta}(\theta)$): Integrate $p_{\theta}(\theta)$ over $\theta$:$$P_{\theta}(\theta) = \int_{0}^{\theta} 2 \cos\tilde{\theta} \sin\tilde{\theta} d\tilde{\theta} = \sin^2\theta$$
+
+Inverse Transform: Equate $P_{\theta}(\theta)$ to the uniform random number $\xi$ and solve for $\theta$:$$\xi = \sin^2\theta \implies \theta = \arcsin(\sqrt{\xi}) \quad \text{}$$
+
+Conditional PDF ($p_{\phi|\theta}(\phi, \theta)$): Divide the joint PDF $p(\phi, \theta)$ by the marginal PDF $p_{\theta}(\theta)$:$$p_{\phi|\theta}(\phi, \theta) = \frac{p(\phi, \theta)}{p_{\theta}(\theta)} = \frac{(\cos\theta \sin\theta)/\pi}{2 \cos\theta \sin\theta} = \frac{1}{2\pi} \quad \text{}$$
+
+Conditional CPF ($P_{\phi|\theta}(\phi)$): Integrate the conditional PDF over $\phi$ (from $-\pi$ to $\phi$):$$P_{\phi|\theta}(\phi) = \int_{-\pi}^{\phi} \frac{1}{2\pi} d\tilde{\phi} = \frac{1}{2\pi} [\phi]_{-\pi}^{\phi} = \frac{\phi + \pi}{2\pi}$$
+
+Inverse Transform: Equate $P_{\phi|\theta}(\phi)$ to the uniform random number $\eta$ and solve for $\phi$:$$\eta = \frac{\phi + \pi}{2\pi} \implies \phi = \pi(2\eta - 1)$$
+
+The final transformation to generate a pair of Importance Samples $(\theta, \phi)$ for a diffuse surface is:$$\theta = \arcsin(\sqrt{\xi})$$$$\phi = \pi(2\eta - 1)$$
+
+### Practical Example Sampling Phong Lobe
+
+The modified Phong specular function is:
+$$f^{\text{spec, mod}} \propto \langle \hat{\omega}_{\text{out}}, \hat{r}_{\text{in}} \rangle_+^m \cdot \langle \hat{\omega}_{\text{in}}, \hat{n} \rangle_+ \quad \text{}$$
+
+* $m$: The Phong exponent controlling the lobe sharpness.
+* $\hat{r}_{\text{in}}$: The perfect reflection direction of $\hat{\omega}_{\text{in}}$.
+
+The function $f^{\text{spec, mod}}$ is too complex to invert for transformation sampling. The solution is to change the coordinate system to simplify the dominant part of the BRDF:
+
+* New Coordinates: Instead of referencing the surface normal ($\hat{n}$), the sampling is done relative to the outgoing direction ($\hat{\omega}_{\text{out}}$) as the North Pole and ignoring the cosin term.
+    * $\alpha$ (alpha): Angle between the Incoming Light $\hat{\omega}_{\text{in}}$ and the Normal $\hat{n}$. ($\langle \hat{\omega}_{\text{in}}, \hat{n} \rangle_+$)
+    * $\gamma$ (gamma): Angle between the Outgoing View Ray $\hat{\omega}_{\text{out}}$ and the Reflected Incoming Ray $\hat{r}_{\text{in}}$. ($\langle \hat{\omega}_{\text{out}}, \hat{r}_{\text{in}} \rangle_+^m$)
+    * $\phi$ (phi): The azimuthal angle (rotation) around the reflection vector $\hat{r}_{\text{in}}$.
+
+The primary term dictating the lobe shape is $\langle \hat{\omega}_{\text{out}}, \hat{r}_{\text{in}} \rangle_+^m$. The angle $\gamma$ is what matters most for the lobe.The approximate probability density for sampling the incoming direction is chosen to be proportional to the specular part and the solid angle Jacobian:
+$$p(\phi, \gamma) \propto \cos^m\gamma \sin\gamma \quad \text{}$$
+
+* $\cos^m\gamma$: The specular intensity.
+* $\sin\gamma$: The geometric factor (Jacobian) for spherical coordinates, using $\gamma$ as the polar angle. Like above we are also trying to not make energy clump at the top.
+
+This approximation ignores the $\langle \hat{\omega}_{\text{in}}, \hat{n} \rangle_+$ factor for sampling purposes, making the transformation invertible and solvable (similar to the diffuse case). The sampled light must then be weighted by the full BRDF when calculating the Monte Carlo estimate.
+
+### But how to sample numerically?
+First normalize the PDF to a proper PDF:
+$$p(\phi, \gamma) = \frac{m + 1}{2\pi} \cos^m\gamma \sin\gamma \quad \text{}$$
+
+#### A. Sampling the Marginal Coordinate ($\gamma$)
+Inverse Transform ($\xi = P_{\gamma}(\gamma)$): The integration of the marginal PDF (over $\phi$) yields the marginal CPF, $P_{\gamma}(\gamma)$:$$\xi = P_{\gamma}(\gamma) = \int_{0}^{\gamma} \frac{m + 1}{2\pi} \cos^m\tilde{\gamma} \sin\tilde{\gamma} (2\pi) d\tilde{\gamma} = 1 - \cos^{m+1}\gamma \quad \text{}$$
+$$1 - \xi = \cos^{m+1}\gamma \implies \gamma = \arccos(\sqrt[m+1]{1 - \xi}) \quad \text{}$$
+
+#### B. Sampling the Conditional Coordinate ($\phi$)
+
+Firstly, conditional PDF of $p_{\phi|\gamma}(\phi) = 1/2\pi$, naturally, because we are sampling uniformly over a circle.
+
+Inverse Transform ($\eta = P_{\phi|\gamma}(\phi)$): The integration and inversion steps are identical to the diffuse case:$$\eta = P_{\phi|\gamma}(\phi) = \frac{\phi + \pi}{2\pi} \implies \phi = \pi(2\eta - 1) \quad \text{}$$
+
+Final Angles:$$\gamma = \arccos(\sqrt[m+1]{1 - \xi}) \quad \text{}$$$$\phi = \pi(2\eta - 1) \quad \text{}$$
+
+# Multiple Importance Sampling
+Monte Carlo weighted average of estimates obtained from $m$ different strategies.
+$$\hat{f}^N_{\text{MIS}} = \sum_{i=1}^m \frac{1}{n_i} \sum_{j=1}^{n_i} \omega_i(x_{i,j}) \frac{f(x_{i,j})}{p_i(x_{i,j})} \quad \text{}$$
+
+* $m$: The total number of sampling strategies being combined (e.g., $p_1$ for diffuse, $p_2$ for a light source, $p_3$ for a specular lobe).
+* $n_i$: The number of samples taken specifically from strategy $i$. The total number of samples is $N = \sum_{i=1}^m n_i$
+* $x_{i,j}$: The $j$-th sample generated by the $i$-th strategy.
+* $\frac{f(x_{i,j})}{p_i(x_{i,j})}$: This is the standard Monte Carlo estimate for that sample using strategy $i$.
+* $\omega_i(x)$ (The Weighting Function): This is the core of MIS. It is a heuristic weight that determines how much influence the sample from strategy $i$ contributes to the final result. The weights $\omega_i$ can depend on the sample itself ($x_{i,j}$).
+
+## Why do we do this?
+Because $f(x) = \prod_{i=1}^m f_i(x)$ or:
+$$f(x) = \text{BRDF} \cdot \text{Incoming Radiance} \cdot \text{Cosine Term} \cdot \text{Geometric Terms}$$
+So we divide the Monte Carlo into different strategies. Once again, the MIS:
+$$\hat{f}^N_{\text{MIS}} = \sum_{i=1}^m \frac{1}{n_i} \sum_{j=1}^{n_i} \omega_i(x_{i,j}) \frac{f(x_{i,j})}{p_i(x_{i,j})} \quad \text{}$$
+
+The outer sum $\sum_{i=1}^m$ means: "Calculate the final estimate by summing up the weighted contributions from every strategy $i$".
+
+For each strategy $i$:
+
+* We generate $n_i$ samples: $\frac{1}{n_i} \sum_{j=1}^{n_i}$
+* We calculate the Monte Carlo estimate for each sample: $\frac{f(x_{i,j})}{p_i(x_{i,j})}$.
+* We apply the critical MIS weight, $\omega_i(x_{i,j})$, to assign reliability to that sample.
+$$\hat{f}^N_{\text{MIS}} = \underbrace{\frac{1}{n_1} \sum_{j=1}^{n_1} \omega_1(x_{1,j}) \frac{f(x_{1,j})}{p_1(x_{1,j})}}_{\text{Contribution from Strategy 1 (e.g., Light Sampling)}} + \underbrace{\frac{1}{n_2} \sum_{j=1}^{n_2} \omega_2(x_{2,j}) \frac{f(x_{2,j})}{p_2(x_{2,j})}}_{\text{Contribution from Strategy 2 (e.g., BRDF Sampling)}} + \dots$$
+
+## What would the weight be?
+The Balance Heuristic chooses weights that are proportional to the probability density function (PDF) of the strategy $p_i(x)$ and the number of samples $n_i$ taken from that strategy:
+$$\omega_i(x) = \frac{n_i p_i(x)}{\sum_{k=1}^m n_k p_k(x)} \quad \text{}$$
+
+* $p_i(x)$: The probability density of the $i$-th strategy at sample point $x$.
+* $n_i$: The number of samples taken by strategy $i$.
+* Denominator $\sum_{k=1}^m n_k p_k(x)$: This is the sum of the weighted densities of all $m$ strategies at point $x$. It acts as the normalization factor.
+
+## Example of MIS in Ray Tracing
+### Scenario Setup
+We are rendering a pixel on a glossy plastic floor. We will combine $m = 2$ strategies. $f(x)$ represents the full physics evaluation: $\text{BRDF} \cdot \text{Light} \cdot \cos\theta$.:
+
+* Strategy 1 ($i=1$): Light Sampling. We will take $n_1 = 2$ samples.
+* Strategy 2 ($i=2$): BRDF Sampling. We will take $n_2 = 1$ sample.
+
+### Strategy 1 with $n_1 = 2$ samples
+#### Sample 1 ($x_{1,1}$)
+* Physics Result ($f$): 120
+* $p_1(x_{1,1})$: The Light Sampler probability is 0.45.
+* $p_2(x_{1,1})$: The BRDF Sampler probability of hitting this exact spot is 0.02 (it's outside the main shiny glossy lobe).
+$$\omega_i(x) = \frac{n_i p_i(x)}{\sum n_k p_k(x)} = \frac{2 \cdot 0.45}{(2 \cdot 0.45) + (1 \cdot 0.02)} = \frac{0.9}{0.9 + 0.02} \approx \mathbf{0.978}$$
+$$\text{Estimate}_{1,1} = 0.978 \cdot \frac{120}{0.45} = \mathbf{260.8}$$
+
+#### Sample 2 ($x_{1,2}$)
+* Physics Result ($f$): 30
+* $p_1(x_{1,2})$: The Light Sampler probability is still 0.3.
+* $p_2(x_{1,2})$: The BRDF Sampler probability here is tiny, just 0.05.
+$$\omega_i(x) = \frac{n_i p_i(x)}{\sum n_k p_k(x)} = \frac{2 \cdot 0.3}{(2 \cdot 0.3) + (1 \cdot 0.05)} = \frac{0.6}{0.6 + 0.05} \approx \mathbf{0.923}$$
+$$\text{Estimate}_{1,2} = 0.923 \cdot \frac{30}{0.3} = \mathbf{92.3}$$
+
+#### Total Contribution from Strategy 1
+Now we apply the outer part of the formula for Strategy 1 ($\frac{1}{n_1} \sum$):$$\text{Total}_1 = \frac{1}{2} (260.8 + 92.3) = \frac{1}{2} (353.1) = \mathbf{176.55}$$
+
+### Strategy 2 with $n_2 = 1$ sample
+#### Sample 1 ($x_{2,1}$)
+* Physics Result ($f$): 150
+* $p_1(x_{2,1})$: The Light Sampler probability is 0.01 (it missed the light source).
+* $p_2(x_{2,1})$: The BRDF Sampler probability is 0.35 (it hit the shiny glossy lobe).
+$$\omega_i(x) = \frac{n_i p_i(x)}{\sum n_k p_k(x)} = \frac{1 \cdot 0.35}{(2 \cdot 0.01) + (1 \cdot 0.35)} = \frac{0.35}{0.02 + 0.35} = \frac{0.35}{0.37} \approx \mathbf{0.946}$$
+$$\text{Estimate}_{2,1} = 0.946 \cdot \frac{150}{0.35} \approx 0.946 \cdot 428.57 \approx \mathbf{405.7}$$
+
+#### Total Contribution from Strategy 2
+$$\text{Total}_2 = \frac{1}{1} (405.7) = \mathbf{405.7}$$
+
+### Final MIS Estimate
+$$\hat{f}^N_{\text{MIS}} = \text{Total}_1 + \text{Total}_2 = 176.55 + 405.7 = \mathbf{582.25}$$
+
+## Another confusing Example of Path Tracing
+Now we use MIS to combine two strategies (2 rays) at the exact same time: Direct Light Sampling and BRDF Sampling. We add an extra weight before each light. **THIS EXTRA WEIGHT IS ALL ABOUT THE TRUST TO THAT METHOD**
+$$\hat{f}^N_{\text{MIS}} = \sum_{i=1}^m \frac{1}{n_i} \sum_{j=1}^{n_i} \omega_i(x_{i,j}) \frac{f(x_{i,j})}{p_i(x_{i,j})} \quad \text{}$$
+$$\hat{f}^N_{\text{MIS}} = \underbrace{\frac{1}{n_1} \sum_{j=1}^{n_1} \omega_1(x_{1,j}) \frac{f(x_{1,j})}{p_1(x_{1,j})}}_{\text{Contribution from Strategy 1 (e.g., Light Sampling)}} + \underbrace{\frac{1}{n_2} \sum_{j=1}^{n_2} \omega_2(x_{2,j}) \frac{f(x_{2,j})}{p_2(x_{2,j})}}_{\text{Contribution from Strategy 2 (e.g., BRDF Sampling)}} + \dots$$
+
+For Path Tracing:
+$$\text{Final Color} = \left[ w_{\text{light}} \cdot \frac{f(x_1)}{p_{\text{light}}(x_1)} \right] + \left[ w_{\text{brdf}} \cdot \frac{f(x_2)}{p_{\text{brdf}}(x_2)} \right]$$
+where $f = \rho \cdot L^{\text{in}} \cdot \cos\theta$
+
+### Ray 1: Direct Light Sampling
+A random point on a light bulb is picked, the light intensity $f = \mathbf{90}$ and:
+
+* $p_{\text{light}}$: The probability that the Light Sampler picked this spot is 0.4 (because aiming at the light is its only job).
+* $p_{\text{brdf}}$: The probability that the BRDF Sampler would have randomly fired in this dull direction is very low, just 0.05.
+
+$$L_{\text{direct}} = \frac{p_{\text{light}}}{p_{\text{light}} + p_{\text{brdf}}} \cdot \frac{f(x_1)}{p_{\text{light}}(x_1)} = \frac{0.4}{0.4 + 0.05} \cdot \frac{90}{0.4} = \frac{0.4}{0.45} \cdot 225 = 0.888 * 225 = \mathbf{200}$$
+
+### Ray 2: BRDF Sampling
+Second ray follows BRDF lobe and accidentally got $f = \mathbf{400}$:
+
+* $p_{\text{light}}$: The probability that the Light Sampler would have picked this exact sub-pixel coordinate on the lamp is lower, say 0.14.
+* $p_{\text{brdf}}$: The probability that the BRDF Sampler fired here is 0.35 (because it heavily favors shiny angles).
+
+$$L_{\text{brdf}} = \frac{p_{\text{brdf}}}{p_{\text{light}} + p_{\text{brdf}}} \cdot \frac{f(x_2)}{p_{\text{brdf}}(x_2)} = \frac{0.35}{0.14 + 0.35} \cdot \frac{400}{0.35} = \frac{0.35}{0.49} \cdot \frac{400}{0.35} = \frac{400}{0.49} \approx \mathbf{816}$$
+
+To get the final color, we just add the weighted contributions from our two strategies together:
+$$\text{Final Color} = L_{\text{direct}} + L_{\text{brdf}} = 200 + 816 = \mathbf{1016}$$
+
