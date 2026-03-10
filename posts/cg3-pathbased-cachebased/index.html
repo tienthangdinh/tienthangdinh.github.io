@@ -199,6 +199,18 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#markov-chain-monte-carlo" id="toc-markov-chain-monte-carlo" class="nav-link" data-scroll-target="#markov-chain-monte-carlo">Markov Chain Monte Carlo</a></li>
   </ul></li>
+  <li><a href="#cache-based" id="toc-cache-based" class="nav-link" data-scroll-target="#cache-based">Cache-based</a>
+  <ul class="collapse">
+  <li><a href="#photon-mapping" id="toc-photon-mapping" class="nav-link" data-scroll-target="#photon-mapping">Photon Mapping</a>
+  <ul class="collapse">
+  <li><a href="#first-pass" id="toc-first-pass" class="nav-link" data-scroll-target="#first-pass">First Pass</a></li>
+  <li><a href="#second-pass" id="toc-second-pass" class="nav-link" data-scroll-target="#second-pass">Second Pass</a></li>
+  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion">Discussion</a></li>
+  </ul></li>
+  <li><a href="#reverse-photon-mapping" id="toc-reverse-photon-mapping" class="nav-link" data-scroll-target="#reverse-photon-mapping">Reverse Photon Mapping</a></li>
+  <li><a href="#progressive-photon-mapping" id="toc-progressive-photon-mapping" class="nav-link" data-scroll-target="#progressive-photon-mapping">Progressive Photon Mapping</a></li>
+  <li><a href="#vertex-connection-mapping-vcm" id="toc-vertex-connection-mapping-vcm" class="nav-link" data-scroll-target="#vertex-connection-mapping-vcm">Vertex Connection &amp; Mapping (VCM)</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -386,6 +398,80 @@ window.Quarto = {
 <li>Otherwise only accept <span class="math inline">\(x'\)</span> with probability of <span class="math inline">\(\frac{f(x')}{f(x)}\)</span></li>
 </ul></li>
 </ul>
+</section>
+</section>
+<section id="cache-based" class="level1">
+<h1>Cache-based</h1>
+<p>Motivation: When BPT tries to connect two sub-path vertices, it forces a specific incoming and outgoing direction. Normally it works, but if we have mirror or something, fails because it requires light and eye sub-paths to align at an exact, singular reflection angle to satisfy a mirror-like BRDF, therefore it will usually return 0.</p>
+<p>Cache-based methods like Photon Mapping or Vertex Connection and Merging (VCM) solve this by replacing the “point-to-point” connection with a density estimation. Instead of needing two points to align perfectly, the algorithm “blurs” the points into small areas (the cache), making it much more likely that light and eye paths will successfully “overlap”.</p>
+<section id="photon-mapping" class="level2">
+<h2 class="anchored" data-anchor-id="photon-mapping">Photon Mapping</h2>
+<p>This solves LSDSE paths by saving all Specular Paths in a cache on diffused surfaces, and we <strong>connect eye subpath and light subpath at these diffuse surfaces</strong>. We make sure <strong>diffuse surface is the meeting point</strong>.</p>
+<section id="first-pass" class="level3">
+<h3 class="anchored" data-anchor-id="first-pass">First Pass</h3>
+<ul>
+<li>Photon Tracing: Photons are fired from light sources and “bounce” naturally off specular surfaces (mirrors or water) according to the exact laws of reflection and refraction.</li>
+<li>Storage (The Cache): When a photon eventually hits a diffuse surface (with Russian Roulette decision), its location, energy, and incident direction are stored in a data structure called a photon map kd-tree (for easier search later).</li>
+</ul>
+<p><strong>Specular solved!!!</strong> Because the photon itself traveled the correct specular path before hitting the floor, the difficult “specular connection” is already physically resolved and recorded.</p>
+<section id="every-components-here-are-monte-carlo-estimated" class="level4">
+<h4 class="anchored" data-anchor-id="every-components-here-are-monte-carlo-estimated">Every components here are Monte Carlo estimated</h4>
+<p>Power of an photo could also be Monte Carlo estimated: <span class="math display">\[\Delta\Phi_p = \frac{L_{emit}(y_p, \omega_p)}{p_y(y_p)p_{\omega|y}(\omega_p)}\]</span></p>
+<p>At everybounce, we also update the power of the photon, idk what is s, maybe the russian roulette factor: <span class="math display">\[\Phi'_p = \frac{\rho(y_p, -\omega_p, \omega'_p)}{s \cdot p_{\omega'}(\omega'_p)} \tilde{\Phi}_p\]</span></p>
+</section>
+</section>
+<section id="second-pass" class="level3">
+<h3 class="anchored" data-anchor-id="second-pass">Second Pass</h3>
+<p>During rendering, when an eye ray hits a diffuse surface, it no longer needs to find the light source. * Radius Search: we search in the photon map for the N nearest photons within a small radius around the hit point. Any photon found within this “disk” or “sphere” is considered to contribute to the illumination. * For each photon, we calculate the contribution to the final image using the BRDF and the photon’s energy. This doesnt change the physics anyway because light in reality is also blurred and continuos. it is called <strong>Density Estimation</strong>: <span class="math display">\[L_\lambda^{reflect}(x, \omega^{out}) = \sum_{p} \lambda(\|y_p - x\|) \rho(x, \omega_p^{in}, \omega^{out}) \frac{\Delta \tilde{\Phi}_p}{\Delta A}\]</span></p>
+<ul>
+<li><span class="math inline">\(\lambda(r)\)</span> (Radial Filter): A weighting function. In the simplest approach shown here, <span class="math inline">\(\lambda(r) \equiv 1\)</span>, meaning all photons in the circle are weighted equally.</li>
+<li><span class="math inline">\(\rho\)</span> (BRDF): The material’s property that determines how much light from direction <span class="math inline">\(\omega_p^{in}\)</span> is reflected toward the camera direction <span class="math inline">\(\omega^{out}\)</span>.</li>
+<li><span class="math inline">\(\frac{\Delta \tilde{\Phi}_p}{\Delta A}\)</span>: This is the “Density” part of Density Estimation—the total weighted light power divided by the area of the search disk.</li>
+</ul>
+<p>In reality, for each pixel,we not only use Photon Mapping, but a sum of all strategies: BPT + PM</p>
+</section>
+<section id="discussion" class="level3">
+<h3 class="anchored" data-anchor-id="discussion">Discussion</h3>
+<p>Pros: we all know,</p>
+<ul>
+<li>LSDSE paths<br>
+</li>
+<li>fast calculation with KD-Tree and reuse.</li>
+</ul>
+<p>Cons: bias via density estimation. For example, when a red book on a white desk, the color is blended.</p>
+</section>
+</section>
+<section id="reverse-photon-mapping" class="level2">
+<h2 class="anchored" data-anchor-id="reverse-photon-mapping">Reverse Photon Mapping</h2>
+<p>Problem: the number of eye-side queries (Final Gathering rays) <span class="math inline">\(\#_{FGR}\)</span> is often much higher than the number of photons emitted from the light sources <span class="math inline">\(\#_{PH}\)</span>. Therefore a lot of same photons are kept being queried multiple times, which is a waste of computation. <span class="math inline">\(T_{PM} = O(\#_{FGR} \log \#_{PH})\)</span></p>
+<p>Solution: we reverse the role of light and eye. We shoot rays from eye and store them in a kd-tree. Then we shoot rays from light and query the kd-tree. So that each photon is conduct only one query. <span class="math display">\[T_{PM} = O(\#_{PH} \log \#_{FGR})\]</span></p>
+</section>
+<section id="progressive-photon-mapping" class="level2">
+<h2 class="anchored" data-anchor-id="progressive-photon-mapping">Progressive Photon Mapping</h2>
+<p>Problem: Standard Photon Mapping (PM) is inherently biased because it uses Kernel Density Estimation. Even with infinitely many photons, if your search radius stays the same size, you will always have some error (blurriness) in the result. But we cannot keep reducing radius with more photons, because the computation is growing.</p>
+<p>Instead of trying to store billions of photons in memory at once (which would crash most computers), Progressive Photon Mapping iterates the process: * Multi-Pass Iteration: It runs many photon mapping passes one after another. * Decreasing Radius: After each pass, it slightly decreases the density estimation radius. * Accuracy Accumulation: Because the radius gets smaller and the total number of photons accumulated over all passes grows, the error eventually converges to zero in the limit.</p>
+<p>Radius update rule: <span class="math display">\[\frac{r_{i+1}^2}{r_i^2} = \frac{A_{reduced}}{A} = \frac{N + \alpha M}{N + M} = \frac{i + \alpha}{i + 1}\]</span></p>
+<ul>
+<li><span class="math inline">\(N\)</span>: The total number of photons generated in all previous iterations combined.</li>
+<li><span class="math inline">\(M\)</span>: The number of photons generated in the current iteration.</li>
+<li><span class="math inline">\(\alpha\)</span>: A tuning parameter (usually between 0 and 1) that controls how quickly the radius shrinks.</li>
+</ul>
+<p>Or: <span class="math display">\[r_q \leftarrow r_q \sqrt{\frac{(i-1) + \alpha}{i}}\]</span></p>
+</section>
+<section id="vertex-connection-mapping-vcm" class="level2">
+<h2 class="anchored" data-anchor-id="vertex-connection-mapping-vcm">Vertex Connection &amp; Mapping (VCM)</h2>
+<p>Firstly, generate vertices:</p>
+<ul>
+<li>Light Vertices: Points generated by tracing from the light source.</li>
+<li>Eye Vertices: Points generated by tracing from the camera.</li>
+</ul>
+<p>Secondly, connect vertices:</p>
+<ul>
+<li>Normal Vertex Connection: Connect light vertices to eye vertices to form paths just as in BPT.</li>
+<li>Vertex Merging: You check if any light vertices are “close enough” to an eye vertex within a small radius <span class="math inline">\(r\)</span>. If they are, you “merge” them. After that, we can connect this vertex to both sides to form a full path</li>
+<li>Eventually, both ways are summed using MIS.</li>
+</ul>
+<p>Basically works on BPT framework, but partly with PM calculation.</p>
 
 
 
