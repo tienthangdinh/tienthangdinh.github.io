@@ -9,8 +9,8 @@ format:
     math: mathjax
 ---
 # The Rendering Equation
-
 ## Basics
+
 $$L_{\lambda}^{\text{out}}(\mathbf{x}, \omega^{\text{out}}) = L_{\lambda}^{\text{emit}}(\mathbf{x}, \omega^{\text{out}}) + \iint_{\Omega^{\text{in}}} \rho(\mathbf{x}, \omega^{\text{in}}, \omega^{\text{out}}) L_{\lambda}^{\text{in}}(\mathbf{x}, \omega^{\text{in}}) \cos\theta^{\text{in}} d\Omega^{\text{in}}$$
 whereby:
 

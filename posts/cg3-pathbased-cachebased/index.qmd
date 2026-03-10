@@ -179,3 +179,88 @@ Objective: Output a sample chain $x_i$ distributed according to the probability 
     * using the Gaußian kernel to sample next $x'$
     * Accept $x'$ if $f(x') > f(x)$
     * Otherwise only accept $x'$ with probability of $\frac{f(x')}{f(x)}$
+
+# Cache-based
+Motivation: When BPT tries to connect two sub-path vertices, it forces a specific incoming and outgoing direction. Normally it works, but if we have mirror or something, fails because it requires light and eye sub-paths to align at an exact, singular reflection angle to satisfy a mirror-like BRDF, therefore it will usually return 0.
+
+Cache-based methods like Photon Mapping or Vertex Connection and Merging (VCM) solve this by replacing the "point-to-point" connection with a density estimation. Instead of needing two points to align perfectly, the algorithm "blurs" the points into small areas (the cache), making it much more likely that light and eye paths will successfully "overlap".
+
+## Photon Mapping
+This solves LSDSE paths by saving all Specular Paths in a cache on diffused surfaces, and we **connect eye subpath and light subpath at these diffuse surfaces**. We make sure **diffuse surface is the meeting point**.
+
+### First Pass
+* Photon Tracing: Photons are fired from light sources and "bounce" naturally off specular surfaces (mirrors or water) according to the exact laws of reflection and refraction.
+* Storage (The Cache): When a photon eventually hits a diffuse surface (with Russian Roulette decision), its location, energy, and incident direction are stored in a data structure called a photon map kd-tree (for easier search later).
+
+**Specular solved!!!** Because the photon itself traveled the correct specular path before hitting the floor, the difficult "specular connection" is already physically resolved and recorded.
+
+#### Every components here are Monte Carlo estimated
+Power of an photo could also be Monte Carlo estimated:
+$$\Delta\Phi_p = \frac{L_{emit}(y_p, \omega_p)}{p_y(y_p)p_{\omega|y}(\omega_p)}$$
+
+At everybounce, we also update the power of the photon, idk what is s, maybe the russian roulette factor:
+$$\Phi'_p = \frac{\rho(y_p, -\omega_p, \omega'_p)}{s \cdot p_{\omega'}(\omega'_p)} \tilde{\Phi}_p$$
+
+### Second Pass
+During rendering, when an eye ray hits a diffuse surface, it no longer needs to find the light source.
+* Radius Search: we search in the photon map for the N nearest photons within a small radius around the hit point. Any photon found within this "disk" or "sphere" is considered to contribute to the illumination.
+* For each photon, we calculate the contribution to the final image using the BRDF and the photon's energy. This doesnt change the physics anyway because light in reality is also blurred and continuos. it is called **Density Estimation**:
+$$L_\lambda^{reflect}(x, \omega^{out}) = \sum_{p} \lambda(\|y_p - x\|) \rho(x, \omega_p^{in}, \omega^{out}) \frac{\Delta \tilde{\Phi}_p}{\Delta A}$$
+
+* $\lambda(r)$ (Radial Filter): A weighting function. In the simplest approach shown here, $\lambda(r) \equiv 1$, meaning all photons in the circle are weighted equally.
+* $\rho$ (BRDF): The material's property that determines how much light from direction $\omega_p^{in}$ is reflected toward the camera direction $\omega^{out}$.
+* $\frac{\Delta \tilde{\Phi}_p}{\Delta A}$: This is the "Density" part of Density Estimation—the total weighted light power divided by the area of the search disk.
+
+In reality, for each pixel,we not only use Photon Mapping, but a sum of all strategies: BPT + PM
+
+### Discussion
+Pros: we all know, 
+
+* LSDSE paths  
+* fast calculation with KD-Tree and reuse.
+
+Cons: bias via density estimation. For example, when a red book on a white desk, the color is blended.
+
+
+## Reverse Photon Mapping
+Problem: the number of eye-side queries (Final Gathering rays) $\#_{FGR}$ is often much higher than the number of photons emitted from the light sources $\#_{PH}$. Therefore a lot of same photons are kept being queried multiple times, which is a waste of computation.
+$T_{PM} = O(\#_{FGR} \log \#_{PH})$
+
+Solution: we reverse the role of light and eye. We shoot rays from eye and store them in a kd-tree. Then we shoot rays from light and query the kd-tree. So that each photon is conduct only one query.
+$$T_{PM} = O(\#_{PH} \log \#_{FGR})$$
+
+## Progressive Photon Mapping
+Problem: Standard Photon Mapping (PM) is inherently biased because it uses Kernel Density Estimation. Even with infinitely many photons, if your search radius stays the same size, you will always have some error (blurriness) in the result. But we cannot keep reducing radius with more photons, because the computation is growing.
+
+Instead of trying to store billions of photons in memory at once (which would crash most computers), Progressive Photon Mapping iterates the process:
+* Multi-Pass Iteration: It runs many photon mapping passes one after another.
+* Decreasing Radius: After each pass, it slightly decreases the density estimation radius.
+* Accuracy Accumulation: Because the radius gets smaller and the total number of photons accumulated over all passes grows, the error eventually converges to zero in the limit.
+
+Radius update rule:
+$$\frac{r_{i+1}^2}{r_i^2} = \frac{A_{reduced}}{A} = \frac{N + \alpha M}{N + M} = \frac{i + \alpha}{i + 1}$$
+
+* $N$: The total number of photons generated in all previous iterations combined.
+* $M$: The number of photons generated in the current iteration.
+* $\alpha$: A tuning parameter (usually between 0 and 1) that controls how quickly the radius shrinks.
+
+Or:
+$$r_q \leftarrow r_q \sqrt{\frac{(i-1) + \alpha}{i}}$$
+
+
+## Vertex Connection & Mapping (VCM)
+
+Firstly, generate vertices:
+
+* Light Vertices: Points generated by tracing from the light source.
+* Eye Vertices: Points generated by tracing from the camera.
+
+Secondly, connect vertices:
+
+* Normal Vertex Connection: Connect light vertices to eye vertices to form paths just as in BPT.
+* Vertex Merging: You check if any light vertices are "close enough" to an eye vertex within a small radius $r$. If they are, you "merge" them. After that, we can connect this vertex to both sides to form a full path
+* Eventually, both ways are summed using MIS.
+
+Basically works on BPT framework, but partly with PM calculation.
+
+
