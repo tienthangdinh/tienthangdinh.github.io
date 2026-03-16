@@ -2,6 +2,10 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/exam-cg3/index.html",
+      "/posts/exam_surgery/index.html",
+      "/posts/surgical-camera/index.html",
+      "/posts/surgical-ct/index.html",
       "/posts/cg3-brdf/index.html",
       "/posts/cg3-pathbased-cachebased/index.html",
       "/posts/cg3-sampling/index.html",

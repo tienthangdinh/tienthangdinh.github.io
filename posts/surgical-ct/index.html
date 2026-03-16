@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-03-14">
+
+<title>X, Us, CT, MRI – the brachistochrone traveller</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">the brachistochrone traveller</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Đinh Tiến Thắng</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">X, Us, CT, MRI</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">Medical Imaging</div>
+                <div class="quarto-category">Signal Processing</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">March 14, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#x-rays" id="toc-x-rays" class="nav-link active" data-scroll-target="#x-rays">X-Rays</a>
+  <ul class="collapse">
+  <li><a href="#absorption" id="toc-absorption" class="nav-link" data-scroll-target="#absorption">Absorption</a>
+  <ul class="collapse">
+  <li><a href="#x-ray-interaction-based-on-energy" id="toc-x-ray-interaction-based-on-energy" class="nav-link" data-scroll-target="#x-ray-interaction-based-on-energy">X-Ray interaction based on energy</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#ultrasound" id="toc-ultrasound" class="nav-link" data-scroll-target="#ultrasound">Ultrasound</a></li>
+  <li><a href="#ct" id="toc-ct" class="nav-link" data-scroll-target="#ct">CT</a></li>
+  <li><a href="#iterative-reconstruction" id="toc-iterative-reconstruction" class="nav-link" data-scroll-target="#iterative-reconstruction">Iterative Reconstruction</a>
+  <ul class="collapse">
+  <li><a href="#procedure" id="toc-procedure" class="nav-link" data-scroll-target="#procedure">Procedure</a></li>
+  </ul></li>
+  <li><a href="#fourier-reconstruction-radon-transform" id="toc-fourier-reconstruction-radon-transform" class="nav-link" data-scroll-target="#fourier-reconstruction-radon-transform">Fourier Reconstruction (Radon Transform)</a>
+  <ul class="collapse">
+  <li><a href="#example-proof" id="toc-example-proof" class="nav-link" data-scroll-target="#example-proof">Example Proof</a></li>
+  <li><a href="#problem" id="toc-problem" class="nav-link" data-scroll-target="#problem">Problem</a></li>
+  </ul></li>
+  <li><a href="#filtered-backprojection" id="toc-filtered-backprojection" class="nav-link" data-scroll-target="#filtered-backprojection">Filtered Backprojection</a></li>
+  <li><a href="#mri" id="toc-mri" class="nav-link" data-scroll-target="#mri">MRI</a>
+  <ul class="collapse">
+  <li><a href="#main-goal" id="toc-main-goal" class="nav-link" data-scroll-target="#main-goal">Main Goal</a></li>
+  <li><a href="#relaxation" id="toc-relaxation" class="nav-link" data-scroll-target="#relaxation">Relaxation</a></li>
+  <li><a href="#spin-echo-to-erase-static-error" id="toc-spin-echo-to-erase-static-error" class="nav-link" data-scroll-target="#spin-echo-to-erase-static-error">Spin Echo to erase Static Error</a></li>
+  <li><a href="#from-signal-to-image" id="toc-from-signal-to-image" class="nav-link" data-scroll-target="#from-signal-to-image">From Signal to Image</a>
+  <ul class="collapse">
+  <li><a href="#spatial-encoding" id="toc-spatial-encoding" class="nav-link" data-scroll-target="#spatial-encoding">Spatial Encoding</a></li>
+  <li><a href="#procedure-for-y-and-x-basically-twisting-in-both-directions-to-get-k-space" id="toc-procedure-for-y-and-x-basically-twisting-in-both-directions-to-get-k-space" class="nav-link" data-scroll-target="#procedure-for-y-and-x-basically-twisting-in-both-directions-to-get-k-space">Procedure for y and x BASICALLY TWISTING IN BOTH DIRECTIONS to get K-SPACE</a></li>
+  <li><a href="#converting-k-space-to-image-space" id="toc-converting-k-space-to-image-space" class="nav-link" data-scroll-target="#converting-k-space-to-image-space">Converting k-space to Image Space</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="x-rays" class="level1">
+<h1>X-Rays</h1>
+<section id="absorption" class="level2">
+<h2 class="anchored" data-anchor-id="absorption">Absorption</h2>
+<p>Attenuation increased with atomic number and density. <span class="math display">\[N = N_0 \cdot e^{-\mu \cdot d}\]</span> different body parts have different attenuation coefficients (<span class="math inline">\(\mu\)</span>). For example, bone (Calcium, <span class="math inline">\(Z=20\)</span>) has a very high <span class="math inline">\(\mu\)</span> because it is dense, while lung tissue has a very low <span class="math inline">\(\mu\)</span> because it is mostly air.</p>
+<section id="x-ray-interaction-based-on-energy" class="level3">
+<h3 class="anchored" data-anchor-id="x-ray-interaction-based-on-energy">X-Ray interaction based on energy</h3>
+<section id="case-1-e_x-p" class="level4">
+<h4 class="anchored" data-anchor-id="case-1-e_x-p">Case 1: <span class="math inline">\(E_x &lt; P\)</span></h4>
+<ul>
+<li>No Absorption/No Ionization</li>
+<li>The X-ray photon passes through the material without interacting and no ionization.</li>
+</ul>
+</section>
+<section id="case-2-e_x-approx-p" class="level4">
+<h4 class="anchored" data-anchor-id="case-2-e_x-approx-p">Case 2: <span class="math inline">\(E_x \approx P\)</span></h4>
+<ul>
+<li>Maximum Photoelectric Absorption</li>
+<li>The photon’s energy is just right to be completely absorbed by the inner-shell electron (e.g., K-shell). The electron is ejected as a high-speed photoelectron (<span class="math inline">\(\text{KE} \approx 0\)</span> since <span class="math inline">\(E_x \approx P\)</span>), leaving a positive ion with an unstable core hole.</li>
+<li>The X-ray beam is highly attenuated (absorbed).</li>
+</ul>
+</section>
+<section id="case-3-e_x-p" class="level4">
+<h4 class="anchored" data-anchor-id="case-3-e_x-p">Case 3: <span class="math inline">\(E_x &gt; P\)</span></h4>
+<section id="subcase-1-e_x-approx-p-photon-energy-is-slightly-higher-than-binding-energy" class="level5">
+<h5 class="anchored" data-anchor-id="subcase-1-e_x-approx-p-photon-energy-is-slightly-higher-than-binding-energy">Subcase 1: <span class="math inline">\(E_x \approx P\)</span> (Photon Energy is Slightly Higher than Binding Energy)</h5>
+<ul>
+<li>Photoelectric Absorption + Compton Scattering</li>
+<li>The photon has enough energy to eject an inner-shell electron, but the remaining energy is re-emitted as a characteristic X-ray (fluorescence) or causes an Auger electron to be ejected.</li>
+<li>attenuation but a bit of scattering</li>
+</ul>
+</section>
+<section id="subcase-2-e_x-gg-p-photon-energy-is-much-higher-than-binding-energy" class="level5">
+<h5 class="anchored" data-anchor-id="subcase-2-e_x-gg-p-photon-energy-is-much-higher-than-binding-energy">Subcase 2: <span class="math inline">\(E_x \gg P\)</span> (Photon Energy is Much Higher than Binding Energy)</h5>
+<ul>
+<li>Compton Scattering Dominates</li>
+<li>The photon loses only small part of its energy for absorption (it does not disappear) and is scattered in a new direction with reduced energy and longer wavelength.</li>
+<li>image blur</li>
+</ul>
+<blockquote class="blockquote">
+<p>Just Right!!! <span class="math inline">\(E_x \approx P\)</span> is the best for stopping the photon.</p>
+</blockquote>
+<p>Pros:</p>
+<ul>
+<li>cheap</li>
+<li>Fast</li>
+<li>High contrast</li>
+<li>Good for bone</li>
+</ul>
+<p>Cons:</p>
+<ul>
+<li>Ionizing radiation: The high-speed ejected electron (the photoelectron) then collides with surrounding atoms and molecules like DNA strands, breaking its chemical bonds</li>
+</ul>
+</section>
+</section>
+</section>
+</section>
+</section>
+<section id="ultrasound" class="level1">
+<h1>Ultrasound</h1>
+<ul>
+<li>Production ultrasound wave: Using piezoelectric components (Deformation of a crystal through electric impulses)</li>
+<li>Receiving the reflected ultrasound wave: using the same piezoelectric components (Crystal is deformed through sound waves and generates a measureable electric impulse)</li>
+</ul>
+<p>Acoustic Impedance (<span class="math inline">\(Z\)</span>): Acoustic impedance is a physical property of a medium (tissue) that defines its resistance to the passage of sound waves. It is calculated as:<span class="math display">\[Z = \rho \cdot c\]</span></p>
+<ul>
+<li><span class="math inline">\(\rho\)</span> is the density of the material (like tissue).</li>
+<li><span class="math inline">\(c\)</span> is the speed of sound in the material.</li>
+</ul>
+<p>Reflection:</p>
+<ul>
+<li><p>Ultrasound waves are reflected at the boundaries between areas of differing acoustic impedance (contour echo) <span class="math display">\[R = \left( \frac{Z_2 - Z_1}{Z_2 + Z_1} \right)^2\]</span></p></li>
+<li><p>Use Gel? Because Air has a vastly different impedance than human skin (<span class="math inline">\(Z_2 \gg Z_1\)</span>). The gel is used to match the impedance between the ultrasound probe and the skin (<span class="math inline">\(Z_2 \approx Z_1\)</span>).</p></li>
+</ul>
+<p>2D Image Formation:</p>
+<ul>
+<li>Height: based on time of flight with assumption <span class="math inline">\(Pulse Repetition Period &gt; TOF_{max depth}\)</span></li>
+<li>Width: The direction the sound beam was pointed when the echo returned onto the array.</li>
+<li>Intensity: intensity of the returned echo</li>
+</ul>
+<p>With what frequencies are waves emitted? typically 1 - 40 MHz.</p>
+<ul>
+<li>High frequency -&gt; high spatial resolution and low penetration</li>
+<li>Low frequency -&gt; low spatial resolution und high penetration</li>
+</ul>
+<p>Different Modes:</p>
+<ul>
+<li>A-Mode: Amplitude Mode (not used anymore)</li>
+<li>B-Mode: Brightness Mode (normal 2D ultrasound)
+<ul>
+<li>The ultrasound ray is evenly passed over a plane</li>
+<li>Image consists of a fan of approximately 100 lines</li>
+</ul></li>
+<li>M-Mode: Motion Mode
+<ul>
+<li>just 1 line of B-Mode (vertical axis is intensity, horizontal axis is time)</li>
+<li>basically like multiple A-Mode side by side</li>
+</ul></li>
+<li>3D Ultrasound: basically a stack of B-Mode images simultaneously</li>
+<li>Doppler Mode: <span class="math display">\[\Delta f = \frac{2 \cdot f_0 \cdot v \cdot \cos(\theta)}{c}\]</span></li>
+</ul>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(\Delta f\)</span>: frequency shift</li>
+<li><span class="math inline">\(f_0\)</span>: frequency of the emitted wave</li>
+<li><span class="math inline">\(v\)</span>: velocity of the blood</li>
+<li><span class="math inline">\(\theta\)</span>: angle between the ultrasound beam and the direction of blood flow</li>
+<li><span class="math inline">\(c\)</span>: speed of sound in the blood</li>
+</ul>
+<p>Pros:</p>
+<ul>
+<li>No ionizing radiation, not invasive</li>
+<li>Cheap (in comparison to CT / MRT)</li>
+<li>Real-time information</li>
+</ul>
+<p>Cons:</p>
+<ul>
+<li>Low penetration, no examination of air filled spaces</li>
+<li>Difficult to interprete</li>
+</ul>
+</section>
+<section id="ct" class="level1">
+<h1>CT</h1>
+<p>Kinda spiral X-rays. Since human body is not uniform, a single X-ray beam passes into depth through skin, muscle, bone, and air. the final measured intensity (<span class="math inline">\(N\)</span>) is the initial intensity (<span class="math inline">\(N_0\)</span>) reduced by the integral of all the changing attenuation coefficients (<span class="math inline">\(\mu\)</span>) along the entire path of the ray (<span class="math inline">\(l\)</span>): <span class="math display">\[N = N_0 e^{-\int \mu \, dl}\]</span> <span class="math display">\[\ln \frac{N_0}{N} = \int \mu \, dl\]</span></p>
+<p><strong>Goal</strong> calculating the specific attenuation coefficient <span class="math inline">\(\mu(x,y)\)</span> for every individual voxel with width <span class="math inline">\(l\)</span> inside that slice. We know the total sum along the ray, but we must figure out the unknown <span class="math inline">\(\mu\)</span> at the exact coordinate <span class="math inline">\((x,y)\)</span>.</p>
+<p>Pros:</p>
+<ul>
+<li>Solved a lot of problems from X-Rays and Ultrasound</li>
+</ul>
+<p>Cons:</p>
+<ul>
+<li>Ambiguous intepretation of the image, since it is just about attenuation</li>
+<li>Human breathing</li>
+</ul>
+</section>
+<section id="iterative-reconstruction" class="level1">
+<h1>Iterative Reconstruction</h1>
+<p>formulate again: <span class="math display">\[P_j = \sum_{i=0}^{N-1} l_{ij} \cdot \mu_i\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(P_j\)</span>: Total attenuation measured by the detector for the <span class="math inline">\(j\)</span>-th projection beam. We know this value from the scanner.</li>
+<li><span class="math inline">\(\mu_i\)</span>: Unknown attenuation coefficient for the <span class="math inline">\(i\)</span>-th image element (voxel). Finding these values is the entire goal of CT reconstruction.</li>
+<li><span class="math inline">\(l_{ij}\)</span>: Exact length of the <span class="math inline">\(j\)</span>-th projection beam as it passes inside the <span class="math inline">\(i\)</span>-th voxel. Because we know the geometry of the scanner, we can calculate this.</li>
+<li><span class="math inline">\(N\)</span>: The total number of voxels in the image grid.</li>
+</ul>
+<section id="procedure" class="level2">
+<h2 class="anchored" data-anchor-id="procedure">Procedure</h2>
+<p>Estimation at each projection (angle) <span class="math inline">\(j\)</span>: <span class="math display">\[\hat{P}_j = \sum_{i=0}^{N-1} l_{ij} \cdot \mu_i\]</span> therefore: <span class="math display">\[\mu_i = \frac{P_j}{\sum_{i=0}^{N-1} l_{ij}}\]</span></p>
+<p>For each projection (angle) <span class="math inline">\(j\)</span>, we calculate the difference between the measured projection <span class="math inline">\(P_j\)</span> and the estimated projection <span class="math inline">\(\hat{P}_j\)</span>: <span class="math display">\[\Delta_j = P_j - \hat{P}_j\]</span></p>
+<p>Then we update the estimated attenuation coefficients <span class="math inline">\(\mu_i\)</span> by adding a fraction of the difference: <span class="math display">\[\mu_i = \mu_i + \frac{1}{N} \Delta_j\]</span></p>
+<p>Repeat this process until the difference between the measured and estimated projections is minimized.</p>
+</section>
+</section>
+<section id="fourier-reconstruction-radon-transform" class="level1">
+<h1>Fourier Reconstruction (Radon Transform)</h1>
+<p>We also rotate from <span class="math inline">\(\Theta\)</span>: <span class="math inline">\(0..180^\circ\)</span>. For a specific angle <span class="math inline">\(\Theta\)</span>, the scanner calculates all line integrals through the object. If the 2D cross-section of the object is defined by the attenuation function <span class="math inline">\(f(x,y)\)</span>, the resulting 1D projection is represented as <span class="math inline">\(p_\Theta(s)\)</span>, which is a function of the detector position <span class="math inline">\(s\)</span>: <span class="math display">\[p_\Theta(s) = \int_{-\infty}^{\infty} f(x,y) \, dl\]</span></p>
+<p>The goal of CT is to go backward: starting with the measured projections <span class="math inline">\(p_\Theta(s)\)</span> (the Sinogram) and recovering the original 2D image <span class="math inline">\(f(x,y)\)</span>.</p>
+<p>Firstly, measure as many projections as possible (<span class="math inline">\(\Theta\)</span>) to get the sinogram (<span class="math inline">\(p_\Theta(s)\)</span>). Let <span class="math inline">\(p_\Theta(s)\)</span> be the 1D projection from <span class="math inline">\(f(x,y)\)</span> at a specific angle <span class="math inline">\(\Theta\)</span>, and <span class="math inline">\(P_\Theta(w)\)</span> be its 1D Fourier transformation. <span class="math display">\[p_\Theta(s) \circ \xrightarrow{\text{1D-FT}} \bullet P_\Theta(w) = \int_{-\infty}^{\infty} p_\Theta(s) e^{-j2\pi ws} \, ds\]</span></p>
+<p>Let’s also define an image we want to recover. Let <span class="math inline">\(f(x,y)\)</span> be the original 2D image and <span class="math inline">\(F(u,v)\)</span> be its 2D Fourier transformation. <span class="math display">\[f(x,y) \circ \xrightarrow{\text{2D-FT}} \bullet F(u,v) = \iint_{-\infty}^{\infty} f(x,y) e^{-j2\pi(ux+vy)} \, dxdy\]</span></p>
+<ul>
+<li><span class="math inline">\(u\)</span> is the spatial frequency in the horizontal (<span class="math inline">\(x\)</span>) direction.</li>
+<li><span class="math inline">\(v\)</span> is the spatial frequency in the vertical (<span class="math inline">\(y\)</span>) direction.</li>
+<li>Together, the <span class="math inline">\((u, v)\)</span> coordinate system makes up the 2D Fourier space aka “k-space” in medical imaging.</li>
+</ul>
+<p>The theorem states that the 1D Fourier transform of a projection at angle <span class="math inline">\(\Theta\)</span> (<span class="math inline">\(P_\Theta(w)\)</span>) is exactly equal to a slice of the 2D Fourier transform of the original image (<span class="math inline">\(F(u,v)\)</span>) taken along a line at the same angle <span class="math inline">\(\Theta\)</span> through the origin. <span class="math display">\[F(w, \Theta) = P_\Theta(w)\]</span></p>
+<p>In plain English: If you take your 1D detector measurements (<span class="math inline">\(s\)</span>), convert them to 1D frequencies (<span class="math inline">\(w\)</span>), you can literally just “paste” that 1D frequency line straight through the center of the 2D frequency space (<span class="math inline">\(u,v\)</span>) at the exact angle (<span class="math inline">\(\Theta\)</span>) the scanner was positioned.</p>
+<p>And then from all <span class="math display">\[F(w, \Theta) = P_\Theta(w)\]</span> calculated, we invert the 2D Fourier transform to get back to the original image <span class="math inline">\(f(x,y)\)</span>.</p>
+<section id="example-proof" class="level3">
+<h3 class="anchored" data-anchor-id="example-proof">Example Proof</h3>
+<p>measurement at <span class="math inline">\(\Theta = 0^\circ\)</span> (<span class="math inline">\(y\)</span>-axis). Detector position <span class="math inline">\(s\)</span> is simply the <span class="math inline">\(x\)</span>-coordinate: <span class="math inline">\(s = x\)</span>. <span class="math display">\[p_{\Theta=0}(s) = p_0(x) = \int_{-\infty}^{+\infty} f(x, y) \, dy\]</span></p>
+<p>1D Fourier Transform: <span class="math display">\[P_0(w) = P_0(u) = \int_{-\infty}^{+\infty} p_0(x) e^{-j2\pi ux} \, dx\]</span> <span class="math display">\[P_0(u) = \int_{-\infty}^{+\infty} \left[ \int_{-\infty}^{+\infty} f(x, y) \, dy \right] e^{-j2\pi ux} \, dx\]</span> <span class="math display">\[P_0(u) = \int_{-\infty}^{+\infty} \int_{-\infty}^{+\infty} f(x, y) e^{-j2\pi(ux)} \, dx \, dy\]</span> <span class="math display">\[P_0(u) = \int_{-\infty}^{+\infty} \int_{-\infty}^{+\infty} f(x, y) e^{-j2\pi(ux + 0y)} \, dx \, dy\]</span></p>
+<p>Conclusion: <span class="math display">\[P_0(u) = F(u, 0)\]</span></p>
+</section>
+<section id="problem" class="level3">
+<h3 class="anchored" data-anchor-id="problem">Problem</h3>
+<p>When we stack different angles together, the data points <span class="math inline">\(P_\Theta(w)\)</span> are packed very tightly together near the middle, but spread far apart at the margins. Therefore low frequencies are sampled much more densely than high frequencies, therefore blurring the image. =&gt; Filtered Backprojection</p>
+</section>
+</section>
+<section id="filtered-backprojection" class="level1">
+<h1>Filtered Backprojection</h1>
+<p>Basic reconstruction of a 2D image <span class="math inline">\(f(x,y)\)</span> from its 2D Fourier transform <span class="math inline">\(F(u,v)\)</span>. <span class="math display">\[f(x, y) = \iint_{-\infty}^{+\infty} F(u, v) e^{j2\pi(ux+vy)} \, du \, dv\]</span></p>
+<p>In any angle <span class="math inline">\(\Theta\)</span>: <span class="math display">\[f(x, y) = \int_0^{2\pi} \int_0^{+\infty} F(w, \Theta) e^{j2\pi w(x \cos \Theta + y \sin \Theta)} w \, dw \, d\Theta\]</span></p>
+<ul>
+<li><span class="math inline">\(u = w \cos \Theta\)</span></li>
+<li><span class="math inline">\(v = w \sin \Theta\)</span></li>
+<li><span class="math inline">\(du \, dv = w \, dw \, d\Theta\)</span> (The Jacobian determinant for area conversion)</li>
+</ul>
+<p>redefine the boundaries of the integration: <span class="math display">\[f(x, y) = \int_0^{\pi} \int_{-\infty}^{+\infty} F(w, \Theta) e^{j2\pi w(x \cos \Theta + y \sin \Theta)} |w| \, dw \, d\Theta\]</span></p>
+<p>Now as the term <span class="math inline">\((x \cos \Theta + y \sin \Theta)\)</span> is exactly the definition of the projected detector position <span class="math inline">\(s\)</span> for a given angle <span class="math inline">\(\Theta\)</span>. We replace it with <span class="math inline">\(s\)</span>. And <span class="math inline">\(F(w, \Theta) = P_\Theta(w)\)</span>, we substitute: <span class="math display">\[f(x, y) = \int_0^{\pi} \left[ \int_{-\infty}^{+\infty} P_\Theta(w) |w| e^{j2\pi ws} \, dw \right] d\Theta\]</span></p>
+<p>So now we slowly came up with the new filtered projection function, <span class="math inline">\(|w|\)</span> is the high pass filter: <span class="math display">\[\tilde{p}_\Theta(s) = \int_{-\infty}^{\infty} P_\Theta(w) |w| e^{j2\pi ws} \, dw\]</span></p>
+</section>
+<section id="mri" class="level1">
+<h1>MRI</h1>
+<p>Hydrogen, which has just 1 proton, is the most common element used in medical MRI because the human body is mostly water.</p>
+<p>At Ground State (<span class="math inline">\(B_0 = 0\)</span>): each magnetic fields cancel each other out perfectly =&gt; no net magnetization</p>
+<p>At Excited State (<span class="math inline">\(B_0 &gt; 0\)</span>): the random nuclear magnetic moments are forced to align with the scanner’s <span class="math inline">\(B_0\)</span> field, either spin-up (parallel) or spin-down (anti-parallel). But mostly spin-up because less energy needed =&gt; Net Magnetization Vector (NMV) in spin-up direction。</p>
+<p>proton to “wobble” around the magnetic field lines, tracing out a cone shape. This wobble is called precession, and its frequency is called the Larmor frequency. <span class="math inline">\(\omega_0 = \gamma B_0\)</span></p>
+<ul>
+<li><span class="math inline">\(B_0\)</span>: The strength of the MRI’s main magnetic field.</li>
+<li><span class="math inline">\(\gamma\)</span>: The gyromagnetic ratio. (fixed constant for hydrogen protons).</li>
+</ul>
+<section id="main-goal" class="level2">
+<h2 class="anchored" data-anchor-id="main-goal">Main Goal</h2>
+<p>Deconstructing the Magnetic Moment (Longitudinal <span class="math inline">\(M_z\)</span> vs.&nbsp;Transverse <span class="math inline">\(M_{xy}\)</span>) and what we eventually measure is <span class="math inline">\(M_{xy}\)</span>. But the problem is that each hydrogen proton (though same frequency) has different phase, so the net <span class="math inline">\(M_{xy}\)</span> is 0.</p>
+<p>Therefore now we need to make the phase of all hydrogen protons in the same direction. We do this by applying a Radio Frequency (RF) pulse perpendicular to <span class="math inline">\(B_0\)</span> of the same Larmor frequency (<span class="math inline">\(\omega_0\)</span>). 2 Effects:</p>
+<ul>
+<li>It forces all the randomly dispersed wobbling protons together to have the same phase position and perfectly lying flat into the <span class="math inline">\(x,y\)</span> plane. =&gt; Therefore individual transverse magnetization vectors add up to create a measurable net transverse magnetization (<span class="math inline">\(M_{XY}\)</span>).</li>
+<li>This extra energy forces some of the “Spin Up” (low energy) protons to flip into the “Spin Down” (high energy) state. =&gt; Longitudinal magnetisation is now zero.</li>
+</ul>
+<p>Before RF Pulse (Slide: Longitudinal Magnetisation):</p>
+<ul>
+<li>The vector points straight up.</li>
+<li>Longitudinal magnetisation is at its maximum.</li>
+<li>Transverse magnetisation is zero.</li>
+</ul>
+<p>During a 90° RF Pulse (Slide: Transverse Magnetisation, <span class="math inline">\(\alpha=90^\circ\)</span>):</p>
+<ul>
+<li>enough energy to flip the vector perfectly flat into the <span class="math inline">\(x,y\)</span> plane.</li>
+<li>The longitudinal magnetisation is now zero</li>
+<li>The transverse magnetisation is now equal to the original longitudinal magnetisation (maximum transverse magnetisation)</li>
+</ul>
+<p>This rotating <span class="math inline">\(M_{XY}\)</span> vector is a moving magnetic field. According to Faraday’s law of induction, this moving magnetic field induces an electrical current in the scanner’s receiver coils. This electrical current is the MRI signal.</p>
+</section>
+<section id="relaxation" class="level2">
+<h2 class="anchored" data-anchor-id="relaxation">Relaxation</h2>
+<p>The first slide establishes the basic idea: once the 90° RF pulse is gone, the protons don’t stay flipped down in the transverse plane. They want to return to their lowest energy state—their normal equilibrium aligned with the main <span class="math inline">\(B_0\)</span> field. 2 things happening:</p>
+<ul>
+<li>T1 Relaxation (Spin-Lattice Relaxation): The protons release their extra energy to the surrounding “lattice” (the molecules in the tissue). This causes the longitudinal magnetization (<span class="math inline">\(M_z\)</span>) to gradually recover.</li>
+<li>T2 Relaxation (Spin-Spin Relaxation): The protons lose their synchronized phase coherence due to interactions with each other. This causes the transverse magnetization (<span class="math inline">\(M_{xy}\)</span>) to decay.</li>
+</ul>
+<p>Let’s focus on T1 Relaxation (Spin-Lattice Relaxation) first. During the RF pulse, many protons were forced into the high-energy “Spin Down” state. To get back to the low-energy “Spin Up” state, they have to get rid of that extra energy. they transfer this energy as heat to their neighboring atoms and molecules. In physics, this surrounding environment is historically called the “lattice”. As individual spins “fold” back up into the parallel state, the vertical magnetisation vector (<span class="math inline">\(M_z\)</span>) starts to grow back from zero (<span class="math inline">\(M_z &gt; 0\)</span>). <span class="math display">\[M_z = M_0 \left[ 1 - \exp\left(-\frac{t}{T1}\right) \right]\]</span></p>
+<ul>
+<li><span class="math inline">\(M_0\)</span> is the maximum possible magnetisation.</li>
+<li><span class="math inline">\(T1\)</span> is defined as the exact amount of time it takes for the longitudinal magnetization to recover to 63% of its final maximum value (<span class="math inline">\(M_0\)</span>). Different tissues in the body (like fat, muscle, and water) have completely different molecular “lattices.” Because of this, they transfer heat at different speeds, meaning they have different T1 time constants.</li>
+</ul>
+<p>Now let’s focus on T2 Relaxation (Spin-Spin Relaxation). While T1 is about the spins returning to the main magnetic field (up/down), T2 is about the spins losing their synchronized dance (wobbling together). So while RF pulse all the proton spins are pointing in the exact same direction in the transverse (<span class="math inline">\(x,y\)</span>) plane. They have “Max Phase coherence,”. The moment the RF pulse stops forcing them together, the protons begin to interact with the tiny magnetic fields of their immediate neighbors (spin-spin interactions). Because of these microscopic, “local inhomogeneities” in the magnetic field, some protons start to spin slightly faster and others slightly slower. =&gt; the perfectly aligned bundle of arrows begins to fan out. This “Loss of phase coherence” causes the measurable transverse magnetisation (<span class="math inline">\(M_{xy}\)</span>) to drop to zero. <span class="math display">\[M_{xy} = M_0 \exp\left(-\frac{t}{T2}\right)\]</span></p>
+<ul>
+<li><span class="math inline">\(M_0\)</span> is the maximum possible transverse magnetisation (which occurs right after the RF pulse).</li>
+<li><span class="math inline">\(T2\)</span> is defined as the time it takes for the transverse magnetisation to decay to about 37% of its initial value. Different tissues have different T2 times because the local magnetic field variations differ depending on the tissue’s molecular structure.</li>
+</ul>
+<p>But it has a problem! <strong>Static Error.</strong>: the signal actually decays much, much faster than the natural T2 tissue limit predicts. The giant <span class="math inline">\(B_0\)</span> magnet of the MRI machine is never perfectly uniform. These physical imperfections in the machine’s magnetic field force the protons out of phase almost instantly. Well remember Larmor frequency: <span class="math inline">\(\omega_0 = \gamma B_0\)</span>? yeah some get stronger or weaker, so some spin faster or slower. Now we raise a new question: “How can the signal be restored at this point?”</p>
+</section>
+<section id="spin-echo-to-erase-static-error" class="level2">
+<h2 class="anchored" data-anchor-id="spin-echo-to-erase-static-error">Spin Echo to erase Static Error</h2>
+<p>The goal is to rewind the fast decayed transverse magnetisation <span class="math inline">\(M_{xy}\)</span> to 0. We do this by applying a 180° RF pulse at time <span class="math inline">\(\tau\)</span> after the initial 90° pulse. This pulse - since is longer enough to flip the spins 180 degrees - effectively flips the spins, you only reverse the direction, so it will take <strong>EXACTLY</strong> the same time to <strong>COME BACK ALL TOGETHER FOR EVERY PROTON NO MATTER WHAT SPPED IT IS; BECAUSE IT IS SAME TIME TO GO BACK</strong>. At <span class="math inline">\(2\tau\)</span>, the spins rephase, and the transverse magnetization <span class="math inline">\(M_{xy}\)</span> recovers to the second peak that is smaller.</p>
+<p>Basically we will capture the signal at <span class="math inline">\(TE = 2\tau\)</span>, which touches the theoretical <span class="math inline">\(T_2\)</span> decay curve (represents ONLY the natural decay caused by spin-spin interactions).</p>
+<p><strong>Basically all what we do is just to erase the static error (things that supposed to be equal will be back to equal). But the spin-spin error still exists (things not supposed to be equal will not anyway not equal anymore), so that is why the signal at <span class="math inline">\(TE = 2\tau\)</span> is smaller than the signal at <span class="math inline">\(TE = 0\)</span>.</strong></p>
+<p>Understanding Mz under the 180 degree pulse (not so important just FYI):</p>
+<ul>
+<li>At Time 0: The 90° pulse wipes out <span class="math inline">\(M_z\)</span>. It drops to exactly 0.</li>
+<li>From 0 to <span class="math inline">\(TE/2\)</span>: The protons start giving off heat to their lattice (<span class="math inline">\(T_1\)</span> relaxation). <span class="math inline">\(M_z\)</span> starts slowly growing back up the positive Z-axis.</li>
+<li>The 180° Flip (The Twist!): At <span class="math inline">\(TE/2\)</span>, the scanner fires the 180° pulse. This pulse flips everything. The <span class="math inline">\(M_z\)</span> vector that just spent time growing upward is suddenly flipped upside down, pointing down the negative Z-axis!</li>
+<li>From <span class="math inline">\(TE/2\)</span> to <span class="math inline">\(TE\)</span>: <span class="math inline">\(M_z\)</span> has to start recovering all over again, growing from the negative Z-axis, crossing through zero, and heading back up toward the positive Z-axis.</li>
+</ul>
+</section>
+<section id="from-signal-to-image" class="level2">
+<h2 class="anchored" data-anchor-id="from-signal-to-image">From Signal to Image</h2>
+<p>If a tumor gives off a bright signal, the machine hears it, but it has no idea if that tumor is in the brain, the shoulder, or the knee.</p>
+<section id="spatial-encoding" class="level3">
+<h3 class="anchored" data-anchor-id="spatial-encoding">Spatial Encoding</h3>
+<p>Let’s utilize Larmor equation again: <span class="math inline">\(\omega = \gamma * B_0\)</span>. so we can make a gradient magnetic field along the Z-axis (the main magnetic field direction).</p>
+<section id="slice-selection-gradient-z-direction" class="level4">
+<h4 class="anchored" data-anchor-id="slice-selection-gradient-z-direction">Slice Selection Gradient (z-direction)</h4>
+<p>First, we apply a gradient from head-to-toe. We then fire an RF pulse that only matches the exact frequency of one single “slice” of the body. Protons outside this slice ignore the pulse, so we only get a signal from that one specific slice. The RF pulse physically washes over the entire body, but we set its frequency so that only one specific slice can “hear” it and react.</p>
+<p>But in general we still do them one by one (sequentially). If the doctor wants 30 slices through your abdomen:</p>
+<ul>
+<li>The machine turns on the Z-gradient.</li>
+<li>It fires a 64.0 MHz pulse. (Slice 1 flips).</li>
+<li>The machine turns off the pulse and listens for the echo from Slice 1.</li>
+<li>It fires a 64.1 MHz pulse. (Slice 2 flips).</li>
+<li>It listens for the echo from Slice 2.</li>
+<li>It fires a 64.2 MHz pulse… and so on.</li>
+</ul>
+</section>
+</section>
+<section id="procedure-for-y-and-x-basically-twisting-in-both-directions-to-get-k-space" class="level3">
+<h3 class="anchored" data-anchor-id="procedure-for-y-and-x-basically-twisting-in-both-directions-to-get-k-space">Procedure for y and x BASICALLY TWISTING IN BOTH DIRECTIONS to get K-SPACE</h3>
+<section id="the-timeline-of-one-repetition-tr" class="level4">
+<h4 class="anchored" data-anchor-id="the-timeline-of-one-repetition-tr">1. The Timeline of ONE Repetition (<span class="math inline">\(TR\)</span>)</h4>
+<p>Think of this as one single “tick” of the MRI clock. To get just one line of data for our raw data grid (k-space), the scanner executes these steps in this exact chronological order:</p>
+<ul>
+<li>Step 1: Isolate the Slice (Z-Axis). The machine turns on the head-to-toe Z-gradient (<span class="math inline">\(G_z\)</span>) and fires the 90° RF pulse. Result: Only the protons in one 2D slice of the brain are flipped.</li>
+<li>Step 2: Twist the Phase (Y-Axis). The machine briefly turns on the top-to-bottom Y-gradient (<span class="math inline">\(G_y\)</span>) and then turns it off. Result: The rows of protons are temporarily sped up and slowed down, giving them a permanent “phase twist.”</li>
+<li>Step 3: Wait for the Echo (<span class="math inline">\(TE\)</span>). The machine waits for the Spin Echo to physically rebuild itself.</li>
+<li>Step 4: Read the Frequency (X-Axis). Exactly as the Spin Echo peaks, the machine turns on the left-to-right X-gradient (<span class="math inline">\(G_x\)</span>) and turns on the microphone. Result: While the microphone is recording, the left side of the head is singing a low pitch, and the right side is singing a high pitch.Once Step 4 is done, the machine takes that one recording (which contains the X-frequencies and the Y-phase twist) and saves it as Row 1 of k-space.</li>
+</ul>
+</section>
+<section id="step-loop" class="level4">
+<h4 class="anchored" data-anchor-id="step-loop">2. 256-Step Loop</h4>
+<p>One repetition only gives us a 1D shadow. To get a 2D image, the architecture of an MRI scan is essentially a massive “For Loop” in a computer program.The scanner must repeat the 4-step timeline above 256 separate times. The only thing that changes in the entire timeline is the strength of Step 2 (The Phase Twist).</p>
+<ul>
+<li>Loop 1: Run Steps 1-4 using a maximum positive phase twist. Save the echo to k-space Row 1. Wait for the protons to recover (<span class="math inline">\(TR\)</span>).</li>
+<li>Loop 2: Run Steps 1-4 using a slightly weaker phase twist. Save the echo to k-space Row 2. Wait for <span class="math inline">\(TR\)</span>.</li>
+<li>Loop 3: Run Steps 1-4 using an even weaker phase twist. Save to Row 3. Wait for <span class="math inline">\(TR\)</span>….</li>
+<li>Loop 128: Run Steps 1-4 with zero phase twist. Save to Row 128 (the exact center of k-space). Wait for <span class="math inline">\(TR\)</span>….</li>
+<li>Loop 256: Run Steps 1-4 with a maximum negative phase twist. Save to Row 256.</li>
+</ul>
+</section>
+</section>
+<section id="converting-k-space-to-image-space" class="level3">
+<h3 class="anchored" data-anchor-id="converting-k-space-to-image-space">Converting k-space to Image Space</h3>
+<section id="k-space" class="level4">
+<h4 class="anchored" data-anchor-id="k-space">k-Space</h4>
+<p><span class="math display">\[S(k_x, k_y) = A \cdot e^{i\phi}\]</span></p>
+<ul>
+<li><span class="math inline">\(A\)</span>: Amplitude (Signal Strength)</li>
+<li><span class="math inline">\(\phi\)</span>: Phase (Position Information)</li>
+</ul>
+<p>where: <span class="math display">\[S(k_x, k_y) = \iint \rho(x,y) \cdot e^{-i 2\pi (k_x x + k_y y)} \,dx \,dy\]</span></p>
+</section>
+<section id="convert-back-to-image-space" class="level4">
+<h4 class="anchored" data-anchor-id="convert-back-to-image-space">Convert back to Image Space</h4>
+<p><span class="math display">\[I(x, y) = \iint S(k_x, k_y) e^{i 2\pi (k_x x + k_y y)} \,dk_x \,dk_y\]</span></p>
+<ul>
+<li><span class="math inline">\(I(x, y)\)</span>: This is your final answer. It is the calculated Image Intensity (pixel brightness) at a specific physical physical coordinate (<span class="math inline">\(x, y\)</span>) on the doctor’s screen.</li>
+<li><span class="math inline">\(S(k_x, k_y)\)</span>: This is the raw, complex radio signal stored at a specific coordinate (<span class="math inline">\(k_x, k_y\)</span>) inside the k-space grid.</li>
+</ul>
+<p>that means: <span class="math display">\[(A \cdot e^{i\phi}) \times e^{i 2\pi (k_x x + k_y y)} = A \cdot e^{i(\phi + 2\pi (k_x x + k_y y))}\]</span></p>
+
+
+
+</section>
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
