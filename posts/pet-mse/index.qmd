@@ -1,5 +1,5 @@
 ---
-title: "Mean Square Estimation"
+title: "How to differentiate MLE and MSE"
 date: "2026-02-21"
 categories: [Statistics, Estimation]
 format:
@@ -38,6 +38,7 @@ $$c = \hat{\theta}_{MSE}(x) = E[\theta|x]$$
 $$\hat{\theta}_{MSE} = E[\theta | x] = \int \theta f_{\theta|x}(\theta|x) \, d\theta$$
 
 Imagine the A-Posteriori distribution (the "Direction B" updated belief) is skewed:
+
 * MLE will point to the very highest peak (the most "likely" single value).
 * MSE will point to the center of mass (the "average" value).
 If the distribution is a perfect, symmetrical Gaussian Bell Curve, the peak (Mode) and the center (Mean) are the same. In that special case:

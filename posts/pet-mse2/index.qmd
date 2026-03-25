@@ -1,0 +1,273 @@
+---
+title: "Mean Square Estimation 2"
+date: "2026-03-25"
+categories: [Statistics, Estimation]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+
+# Measurement Errors
+
+## Goal
+We want to estimate the true $\eta$ using the $n$ measurements. We use $n$ similar instruments, each producing a reading $X_i$. Each observation is modeled as $X_i = \eta + \nu_i$, where $\nu_i$ represents the random measurement error.
+
+Formulate the Estimator: 
+$$\hat{\eta} = \alpha_1 X_1 + \dots + \alpha_n X_n$$
+
+* $\alpha_i$ are constants we need to determine.
+* Unbiased Constraint: $E\{\hat{\eta}\} = \eta$ and therefore $\alpha_1 + \dots + \alpha_n = 1$.
+
+**The actual goal:** Minimize the total variance $V$ of this linear combination is the sum of the individual weighted variances: 
+$$V = \alpha_1^2 \sigma_1^2 + \dots + \alpha_n^2 \sigma_n^2$$
+
+## Solution using Lagrange Multiplier
+
+We set up a function using a multiplier $\lambda$ to incorporate the constraint:
+$$V = \alpha_1^2 \sigma_1^2 + \dots + \alpha_n^2 \sigma_n^2 - \lambda(\alpha_1 + \dots + \alpha_n - 1)$$
+
+We set the derivative with respect to each $\alpha_i$ to zero:
+$$\frac{\partial V}{\partial \alpha_i} = 2\alpha_i \sigma_i^2 - \lambda = 0 \implies \alpha_i = \frac{\lambda}{2\sigma_i^2}$$
+
+Plugging this back into the unbiased constraint $\sum \alpha_i = 1$:
+$$\sum_{i=1}^{n} \frac{\lambda}{2\sigma_i^2} = 1 \implies \lambda = \frac{2}{\sum_{j=1}^{n} \frac{1}{\sigma_j^2}}$$
+
+Finally, the optimal weights are:
+$$\alpha_i = \frac{1/\sigma_i^2}{\sum_{j=1}^{n} 1/\sigma_j^2}$$
+
+This means we should weight each measurement inversely proportional to its variance. The less noisy instrument gets a larger weight.
+
+## Formulate MSE Solution again
+The Optimal Estimator: Solving for $\lambda$ leads to the final result for the best linear estimate $\hat{\eta}$:$$\hat{\eta} = \frac{x_1/\sigma_1^2 + \dots + x_n/\sigma_n^2}{1/\sigma_1^2 + \dots + 1/\sigma_n^2}$$
+
+The "best" linear estimate is a weighted average where each measurement is weighted by the inverse of its variance ($1/\sigma_i^2$). This makes intuitive sense: measurements from more precise instruments (smaller $\sigma^2$) are given more importance in the final calculation.
+
+
+# Covariance
+Covariance matrices are the "engine" behind Mean Square Estimation. When we try to minimize the error of an estimate, we use the Covariance Matrix to account for the "noise" and dependencies between different pieces of data.
+
+Covariance ($C_{ij}$): The covariance between two random variables $X_i$ and $X_j$
+$$C_{ij} = E\{(X_i - \eta_i)(X_j^* - \eta_j^*)\}$$
+
+Variance as Self-Covariance: The variance of a single variable $X_i$ is simply its covariance with itself ($C_{ii}$)
+$$C_{ii} = \sigma_i^2 = E\{|X_i^2|\} - |E\{X_i\}|^2$$
+
+
+## The Correlation Matrix ($R_n$)
+The correlation matrix $R_n$ is formed by taking the expected value of the outer product of the random vector $X$ with its conjugate transpose (Hermitian) $X^*$:
+$$R_n = E{XX^*} = \begin{bmatrix}R_{11} & R_{12} & \cdots & R_{1n} \\R_{21} & R_{22} & \cdots & R_{2n} \\vdots & \vdots & \ddots & \vdots \\R_{n1} & R_{n2} & \cdots & R_{nn}\end{bmatrix}$$
+
+* Each individual element is $R_{ij} = E\{X_i X_j^*\}$.
+* The matrix is Hermitian, meaning $R_{ij} = R_{ji}^*$.
+
+## The Covariance Matrix ($C_n$)
+The covariance matrix $C_n$ represents the correlation of the variables after subtracting their respective means $\eta = E\{X\} = [\eta_1, \eta_2, \dots, \eta_n]^T$:
+$$C_n = E{(X - \eta)(X - \eta)^*} = \begin{bmatrix}C_{11} & C_{12} & \cdots & C_{1n} \\C_{21} & C_{22} & \cdots & C_{2n} \\vdots & \vdots & \ddots & \vdots \\C_{n1} & C_{n2} & \cdots & C_{nn}\end{bmatrix}$$
+
+* Diagonal elements ($C_{ii}$): These are the variances $\sigma_i^2$ of the individual variables.
+* Off-diagonal elements ($C_{ij}$): These are the covariances between different variables.
+* If the variables are mutually uncorrelated, $C_n$ becomes a diagonal matrix where all off-diagonal entries are zero.
+
+The element-wise relationship has another way to calculate $C_{ij} = R_{ij} - \eta_i \eta_j^*$ 
+
+
+# Formulation of MSE
+primary objective is to estimate an unknown random variable $Y(\xi)$ based on another observation or constant, such that the average squared difference between the estimate and the true value is as small as possible. If we choose to estimate the unknown $Y(\xi)$ using a simple constant $c$, the error produced at any particular trial is $Y(\xi) - c$. To find the "best" constant, we define the mean square error (MSE), denoted as $e$, as:
+$$e = E\{(Y - c)^2\} = \int_{-\infty}^{\infty} (y - c)^2 f(y) dy$$
+
+Goal: find the constant $c$ that minimizes $e$.
+
+Differentiate with respect to $c$:
+$$\frac{de}{dc} = 2 \int_{-\infty}^{\infty} (y - c) f(y) dy = 0$$
+
+Solve for $c$, we have:
+$$\int y f(y) dy - c \int f(y) dy = 0$$
+
+Since the total area under a probability density function (p.d.f.) is 1 ($\int f(y) dy = 1$), the equation simplifies to:
+$$c = \int_{-\infty}^{\infty} y f(y) dy = E\{Y\}$$
+
+# Non-linear Mean Square Estimator
+we estimate a random variable $Y$ using a function of another observed random variable $X$. Instead of a simple constant, we now aim to find a function $c(X)$ that minimizes the mean square error $e$.
+$$e = E\{[Y - c(X)]^2\} = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} [Y - c(X)]^2 f(x, y) dx dy$$
+By using the relationship $f(x, y) = f(y|x) f(x)$, the error expression can be rewritten as:
+$$e = \int_{-\infty}^{\infty} f(x) \left[ \int_{-\infty}^{\infty} [Y - c(X)]^2 f(y|x) dy \right] dx$$
+
+## Find Optimal Solution exactly as above
+$$c(x) = \int_{-\infty}^{\infty} y f(y|x) dy = E\{Y|x\}$$
+
+So this is the best solution, but normally we don't know the exact distribution $f(y|x)$ for every $x$. Like we dont have the full staistics table, you know. Often times we only have mean and covariance matrix.
+
+## Example
+Imagine you are trying to estimate the number of customers ($Y$) in a shop, but now you have an observation $X$, which represents the weather (0 for Rain, 1 for Sun). Basically you are given $P(X, Y)$ for $X \in \{0, 1\}$ and $Y \in \{1, 2, 3\}$.
+
+| P(X, Y) | Y=1 | Y=2 | Y=3 | P(X) |
+|---------|-----|-----|-----|------|
+| X=0     | 0.3 | 0.1 | 0.0 | 0.4  |
+| X=1     | 0.1 | 0.3 | 0.2 | 0.6  |
+| P(Y)    | 0.4 | 0.4 | 0.2 | 1.0  |
+
+### Solving using MLE  ($c = E\{Y\}$)
+If we don't look at the weather, we use the constant mean of $Y$:
+$$\hat{Y}_{MLE} = E[Y] = 1\cdot0.4 + 2\cdot0.4 + 3\cdot0.2 = 0.4 + 0.8 + 0.6 = 1.8$$
+
+So regardless of the weather, we estimate the number of customers to be 1.8.
+
+### Solving using MSE  ($c(X) = E\{Y|X\}$)
+If it is raining ($X=0$):
+$$\hat{Y}_{MSE}(0) = E[Y|X=0] = 1\cdot\frac{P(X=0, Y=1)}{P(X=0)} + 2\cdot\frac{P(X=0, Y=2)}{P(X=0)} + 3\cdot\frac{P(X=0, Y=3)}{P(X=0)}$$
+$$\hat{Y}_{MSE}(0) = 1\cdot\frac{0.3}{0.4} + 2\cdot\frac{0.1}{0.4} + 3\cdot\frac{0}{0.4} = 0.75 + 0.5 + 0 = \mathbf{1.25}$$
+
+If it is sunny ($X=1$):
+$$\hat{Y}_{MSE}(1) = E[Y|X=1] = 1\cdot\frac{P(X=1, Y=1)}{P(X=1)} + 2\cdot\frac{P(X=1, Y=2)}{P(X=1)} + 3\cdot\frac{P(X=1, Y=3)}{P(X=1)}$$
+$$\hat{Y}_{MSE}(1) = 1\cdot\frac{0.1}{0.6} + 2\cdot\frac{0.3}{0.6} + 3\cdot\frac{0.2}{0.6} = \frac{1}{6} + \frac{6}{6} + \frac{6}{6} = \frac{13}{6} \approx \mathbf{2.17}$$
+
+
+# Linear Mean Square Estimator
+
+Because the non-linear estimator discussed previously is often mathematically difficult to compute, we typically use the Linear Mean Square (MS) Estimation method. This approach restricts the estimator to a simple linear function, making it far more practical for engineering applications.
+
+Instead of seeking any arbitrary function, we define our estimate of the random variable $Y$ in terms of an observation $X$ using a linear equation:$$\hat{Y} = AX + B$$
+
+Our goal is to find the specific constants $A$ and $B$ that minimize the mean square error, defined as:$$e = E\{[Y - (AX + B)]^2\}$$
+
+## Solve for A and B
+
+Finding $B$: For a given value of $A$, the error is minimized when $B$ is the mean of the difference between $Y$ and $AX$:$$B = E\{Y - AX\} = E\{Y\} - AE\{X\} = \eta_y - A\eta_x$$
+
+Finding $A$: By substituting $B$ back into the error equation and minimizing with respect to $A$:
+$$e = E\{[Y - (AX + \eta_y - A\eta_x)]^2\}$$
+$$e = E\{[(Y - \eta_y) - A(X - \eta_x)]^2\}$$
+
+Let $\tilde{Y} = (Y - \eta_y)$ and $\tilde{X} = (X - \eta_x)$. 
+$$e = E\{[\tilde{Y} - A\tilde{X}]^2\} = E\{\tilde{Y}^2 - 2A\tilde{X}\tilde{Y} + A^2\tilde{X}^2\}$$
+$$e = E\{\tilde{Y}^2\} - 2A E\{\tilde{X}\tilde{Y}\} + A^2 E\{\tilde{X}^2\}$$
+
+$$e = \sigma_y^2 - 2A(r\sigma_x\sigma_y) + A^2\sigma_x^2$$
+where:
+
+* Variance of $Y$: $\sigma_y^2 = E\{\tilde{Y}^2\}$.
+* Variance of $X$: $\sigma_x^2 = E\{\tilde{X}^2\}$.
+* Covariance: $C_{xy} = E\{\tilde{X}\tilde{Y}\}$.
+* Correlation Coefficient ($r$): This is defined as the covariance normalized by the standard deviations: $r = \frac{C_{xy}}{\sigma_x \sigma_y}$.
+
+To find the "best" $A$, we take the derivative of the error $e$ with respect to $A$ and set it to zero:$$\frac{de}{dA} = -2(r\sigma_x\sigma_y) + 2A\sigma_x^2 = 0$$
+$$A = \frac{r\sigma_y}{\sigma_x}$$
+
+Now replace back to error equation:
+$$e_m = \sigma_y^2 - 2\left(\frac{r\sigma_y}{\sigma_x}\right)(r\sigma_x\sigma_y) + \left(\frac{r\sigma_y}{\sigma_x}\right)^2\sigma_x^2$$
+$$e_m = \sigma_y^2 - 2r^2\sigma_y^2 + r^2\sigma_y^2$$
+$$e_m = \sigma_y^2 - r^2\sigma_y^2$$
+$$e_m = \sigma_y^2(1 - r^2)$$
+
+where:
+
+* $\sigma_x, \sigma_y$: Tell us how much the data "spreads".
+* $r$: Tells us how "strong" the linear connection is between $X$ and $Y$ (ranging from -1 to 1).
+
+Observation:
+
+* The Initial Uncertainty: $\sigma_y^2$ is the error we would have if we had no observation at all (just guessing the mean).
+* Baseline: If you don't look at $X$ at all, your error is simply the variance of $Y$ ($\sigma_y^2$).
+* Improvement: The term $r^2$ represents the proportion of variance in $Y$ that is explained by $X$.
+* Decision: If $r^2$ is very small (near 0), the error reduction is negligible, and you know that $X$ is a poor predictor of $Y$.
+* Perfect Correlation ($r = \pm 1$): If $X$ and $Y$ are perfectly related, $1 - 1^2 = 0$, meaning the error is zero.
+* Zero Correlation ($r = 0$): If $X$ and $Y$ are independent, $1 - 0 = 1$, and our error remains the full $\sigma_y^2$.
+
+
+## How to find Optimal Estimator?
+* You find the means ($\eta_x, \eta_y$), the variances ($\sigma_x^2, \sigma_y^2$), and the covariance ($C_{xy}$) of your data.
+* Calculate the Model: Plug those into the formulas for $A$ and $B$:
+$$A = \frac{C_{xy}}{\sigma_x^2}$$ (The optimal sensitivity to $X$).
+$$B = \eta_y - A\eta_x$$ (The optimal offset).
+* Predict: For any new input $x$, your best guess is $\hat{y} = Ax + B$.
+
+BUT, what if we have more than 1 observation? Like $X_1, X_2, \dots, X_n$? let's go to the next chapter about Orthogonal Projection.
+
+# Orthogonal Principles for multiple observations
+We want to estimate a random variable $Y$ using a linear combination of several observations:$$\hat{Y} = a_1 X_1 + a_2 X_2 + \dots + a_n X_n$$
+
+Our goal is to find the constants $a_i$ that minimize the Mean Square Error:$$e = E\{[Y - \hat{Y}]^2\} = E\{[Y - (AX + B)]^2\} = E\{[Y - (a_1 X_1 + \dots + a_n X_n)]^2\}$$
+
+For $e$ to be at its minimum, the partial derivatives with respect to both constants must equal zero:$$\frac{\partial e}{\partial A} = 0 \quad \text{and} \quad \frac{\partial e}{\partial B} = 0 \text{}$$
+
+Focusing on the first equation ($\frac{\partial e}{\partial A} = 0$), we differentiate the error term $E\{[Y - (AX + B)]^2\}$:
+
+$$\frac{\partial e}{\partial A} = E\{2[Y - (AX + B)](-X)\}\ = 0$$
+$$E\{[Y - (AX + B)](X)\} = 0$$
+
+
+Conclusion: Orthogonal Projection: The error vector $Y - \hat{Y}$ must be orthogonal to the observation space spanned by $X_1, X_2, \dots, X_n$. Mathematically, this means the covariance between the error and each observation must be zero, Also, for each $i = 1, \dots, n$:$$E\{(Y - \hat{Y}) X_i^*\} = 0$$
+
+> It turns a difficult minimization problem (calculus) into a set of linear equations (algebra). If the error were correlated with an observation, it would mean there is still "information" left in that $X_i$ that you haven't used yet to improve your guess.
+
+## Solution with Covariance Matrix
+In many problems, we simplify the model to a "homogeneous" form, meaning we assume $B=0$ and estimate $Y$ purely as a scaled version of $X$ ($Y = aX$). That means:
+$$e = E\{(Y - aX)^2\}$$
+$$\frac{de}{da} = \frac{d}{da} E\{(Y - aX)(Y - aX)\} = 0 \text{}$$
+$$\frac{d}{da} E\{(Y^2 + (-2aYX) + a^2(X^2))\} = 0 \text{}$$
+$$-2E\{YX\} + 2aE\{X^2\} = 0$$
+$$E\{(Y - aX)X\} = 0 \text{}$$
+
+By expanding the orthogonality equation $E\{(Y - \sum a_j X_j) X_i^*\} = 0$, we get a system of equations:$$E\{Y X_i^*\} = \sum_{j=1}^n a_j E\{X_j X_i^*\}$$
+
+This can be written in matrix form as:
+$$\mathbf{C_{YX}} = \mathbf{a} \mathbf{C_X}$$
+
+* $\mathbf{C_{YX}}$: The cross-covariance vector (how $Y$ relates to each $X_i$).
+* $\mathbf{C_X}$: The covariance matrix of the observations (how the $X_i$ relate to each other).
+* $\mathbf{a}$: The vector of optimal weights we are looking for.
+
+Final solution: $$\mathbf{a} = \mathbf{C_{YX}} \mathbf{C_X}^{-1}$$
+
+## Go back to get the error right
+$$e_m = E\{(Y - \hat{Y})^2\}$$
+$$e_m = E\{(Y - \hat{Y})(Y - \hat{Y})\}$$
+$$e_m = E\{(Y - \hat{Y})Y - (Y - \hat{Y})\hat{Y}\}$$
+$$e_m = E\{(Y - \hat{Y})Y\} - E\{(Y - \hat{Y})\hat{Y}\}$$
+Because of orthogonal projection, we have $E\{(Y - \hat{Y})X_i\} = 0$, so $E\{(Y - \hat{Y})\hat{Y}\} = 0$.
+$$e_m = E\{(Y - \hat{Y})Y\}$$
+$$e_m = E\{Y^2 - \hat{Y}Y\}$$
+$$e_m = E\{Y^2\} - E\{\hat{Y}Y\}$$
+In this case:
+$$e = E\{Y^2\} - E\{(aX)^2\} \text{}$$
+
+## Example
+Suppose we are estimating a target value $Y$ (e.g., the actual temperature) using two different sensors, $X_1$ and $X_2$. We take 3 measurements for each.
+
+* Target $Y$: $\{3, 5, 7\}$
+* Sensor $X_1$: $\{2, 4, 6\}$
+* Sensor $X_2$: $\{1, 5, 9\}$
+
+For Mean Square Estimation (Homogeneous), we treat these as vectors. Let:
+$$\mathbf{y} = \begin{bmatrix} 3 \\ 5 \\ 7 \end{bmatrix}, \quad \mathbf{x_1} = \begin{bmatrix} 2 \\ 4 \\ 6 \end{bmatrix}, \quad \mathbf{x_2} = \begin{bmatrix} 1 \\ 5 \\ 9 \end{bmatrix}$$
+
+Auto-correlations (for the Covariance Matrix $C_X$):
+$$E\{X_1^2\} = \frac{2^2 + 4^2 + 6^2}{3} = \frac{4+16+36}{3} = \frac{56}{3} \approx \mathbf{18.67}$$
+$$E\{X_2^2\} = \frac{1^2 + 5^2 + 9^2}{3} = \frac{1+25+81}{3} = \frac{107}{3} \approx \mathbf{35.67}$$
+$$E\{X_1 X_2\} = \frac{(2\cdot1) + (4\cdot5) + (6\cdot9)}{3} = \frac{2+20+54}{3} = \frac{76}{3} \approx \mathbf{25.33}$$
+
+Cross-correlations (for the Vector $C_{YX}$):
+$$E\{Y X_1\} = \frac{(3\cdot2) + (5\cdot4) + (7\cdot6)}{3} = \frac{6+20+42}{3} = \frac{68}{3} \approx \mathbf{22.67}$$
+$$E\{Y X_2\} = \frac{(3\cdot1) + (5\cdot5) + (7\cdot9)}{3} = \frac{3+25+63}{3} = \frac{91}{3} \approx \mathbf{30.33}$$
+
+We want to find weights $a_1$ and $a_2$ such that $\hat{Y} = a_1 X_1 + a_2 X_2$. Based on the Orthogonality Principle ($C_X \mathbf{a} = C_{YX}$):
+$$\begin{bmatrix} 18.67 & 25.33 \\ 25.33 & 35.67 \end{bmatrix} \begin{bmatrix} a_1 \\ a_2 \end{bmatrix} = \begin{bmatrix} 22.67 \\ 30.33 \end{bmatrix}$$
+
+Solve this we get $a_1 = 1.655$ and $a_2 = -0.325$.
+
+So the optimal estimator is:
+$$\hat{Y} = 1.655 X_1 - 0.325 X_2$$
+
+Let's check the error:
+$$e_m = E\{Y^2\} - E\{\hat{Y}Y\}$$
+$$E\{Y^2\} = \frac{3^2 + 5^2 + 7^2}{3} = \frac{9+25+49}{3} = \frac{83}{3} \approx \mathbf{27.67}$$
+$$E\{\hat{Y}Y\} = E\{(1.655 X_1 - 0.325 X_2)Y\} = 1.655 E\{X_1 Y\} - 0.325 E\{X_2 Y\}$$
+$$E\{\hat{Y}Y\} = 1.655 (22.67) - 0.325 (30.33) = 37.54 - 9.86 = \mathbf{27.68}$$
+$$e_m = 27.67 - 27.68 = -0.01 \approx 0$$
+
+## Example 2: Wiener Filter for Signal Denoising
+* Prior Knowledge: We know from the manufacturer that the voltage is usually around $10\text{V}$, modeled as $\theta \sim N(10, 1)$.
+* The Measurement: We take one single, noisy measurement $X$ with noise distribution $N(0, 4)$
+* Your Goal: You see a specific value $X = 14$. You need to output an estimate $\hat{\theta}$.
