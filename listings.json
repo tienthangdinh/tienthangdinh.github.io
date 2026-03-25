@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/pet-mse/index.html",
       "/posts/pet-mse2/index.html",
       "/posts/surgical-camera/index.html",
       "/posts/surgical-ct/index.html",
@@ -10,7 +11,6 @@
       "/posts/cg3-sampling/index.html",
       "/posts/cg3-rendering/index.html",
       "/posts/cg3-physics-simulation/index.html",
-      "/posts/pet-mse/index.html",
       "/posts/pet-mle/index.html",
       "/posts/pet-function1rv/index.html",
       "/posts/pet-randomvariables/index.html",
