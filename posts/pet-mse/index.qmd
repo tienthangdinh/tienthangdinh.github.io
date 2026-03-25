@@ -1,6 +1,6 @@
 ---
-title: "How to differentiate MLE and MSE"
-date: "2026-02-21"
+title: "Non-Linear Mean Square Estimation"
+date: "2026-03-26"
 categories: [Statistics, Estimation]
 format:
   html:

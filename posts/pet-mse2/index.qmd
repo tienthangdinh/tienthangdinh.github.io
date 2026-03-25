@@ -1,5 +1,5 @@
 ---
-title: "Mean Square Estimation 2"
+title: "Linear Mean Square Estimation"
 date: "2026-03-25"
 categories: [Statistics, Estimation]
 format:
