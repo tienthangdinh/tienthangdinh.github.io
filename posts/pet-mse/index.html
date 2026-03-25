@@ -8,7 +8,7 @@
 
 <meta name="dcterms.date" content="2026-02-21">
 
-<title>Mean Square Estimation – the brachistochrone traveller</title>
+<title>How to differentiate MLE and MSE – the brachistochrone traveller</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -134,7 +134,7 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Mean Square Estimation</h1>
+      <h1 class="title">How to differentiate MLE and MSE</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">Statistics</div>
                 <div class="quarto-category">Estimation</div>
@@ -210,7 +210,11 @@ window.Quarto = {
 <li>The Philosophy: <span class="math inline">\(\theta\)</span> is a Random Variable. We have a “Prior” belief about it (<span class="math inline">\(f_{\theta}(\theta)\)</span>) and we update that belief with data (<span class="math inline">\(f_{\theta|x}(\theta|x)\)</span>).</li>
 <li>Goal: Minimize the Mean Square Error (MSE): <span class="math display">\[\min E[ (\hat{\theta}(x) - \theta)^2 ] = \min \iint (\hat{\theta}(x) - \theta)^2 f_{x,\theta}(x, \theta) \, dx \, d\theta\]</span> Because <span class="math inline">\(f_{x,\theta}(x, \theta) = f_{\theta|x}(\theta|x) f_x(x)\)</span>: <span class="math display">\[\min E[ (\hat{\theta}(x) - \theta)^2 ] = \min\int_{-\infty}^{\infty} \left[ \int_{-\infty}^{\infty} (\hat{\theta}(x) - \theta)^2 f_{\theta|x}(\theta|x) \, d\theta \right] f_x(x) \, dx\]</span> The outer integral is over <span class="math inline">\(x\)</span>, and the density <span class="math inline">\(f_x(x)\)</span> is always non-negative. To minimize the total integral, we simply need to minimize the inner term (the term in the brackets) for every single specific value of <span class="math inline">\(x\)</span>. So, for a fixed <span class="math inline">\(x\)</span>, we want to find the value <span class="math inline">\(c\)</span> (which represents our estimate <span class="math inline">\(\hat{\theta}(x)\)</span>) that minimizes: <span class="math display">\[J(c) = \int_{-\infty}^{\infty} (c - \theta)^2 f_{\theta|x}(\theta|x) \, d\theta\]</span> <span class="math display">\[\frac{dJ}{dc} = \frac{d}{dc} \int_{-\infty}^{\infty} (c^2 - 2c\theta + \theta^2) f_{\theta|x}(\theta|x) \, d\theta = 0\]</span> <span class="math display">\[\int_{-\infty}^{\infty} (2c - 2\theta) f_{\theta|x}(\theta|x) \, d\theta = 0\]</span> <span class="math display">\[2c \int_{-\infty}^{\infty} f_{\theta|x}(\theta|x) \, d\theta - 2 \int_{-\infty}^{\infty} \theta f_{\theta|x}(\theta|x) \, d\theta = 0\]</span> <span class="math display">\[2c(1) - 2E[\theta|x] = 0\]</span> <span class="math display">\[c = \hat{\theta}_{MSE}(x) = E[\theta|x]\]</span> <span class="math display">\[\hat{\theta}_{MSE} = E[\theta | x] = \int \theta f_{\theta|x}(\theta|x) \, d\theta\]</span></li>
 </ul>
-<p>Imagine the A-Posteriori distribution (the “Direction B” updated belief) is skewed: * MLE will point to the very highest peak (the most “likely” single value). * MSE will point to the center of mass (the “average” value). If the distribution is a perfect, symmetrical Gaussian Bell Curve, the peak (Mode) and the center (Mean) are the same. In that special case: <span class="math display">\[\hat{\theta}_{MLE} = \hat{\theta}_{MSE}\]</span> But for almost any other distribution, they will give you different answers.</p>
+<p>Imagine the A-Posteriori distribution (the “Direction B” updated belief) is skewed:</p>
+<ul>
+<li>MLE will point to the very highest peak (the most “likely” single value).</li>
+<li>MSE will point to the center of mass (the “average” value). If the distribution is a perfect, symmetrical Gaussian Bell Curve, the peak (Mode) and the center (Mean) are the same. In that special case: <span class="math display">\[\hat{\theta}_{MLE} = \hat{\theta}_{MSE}\]</span> But for almost any other distribution, they will give you different answers.</li>
+</ul>
 </section>
 <section id="example-1-wiener-filter-for-signal-denoising" class="level2">
 <h2 class="anchored" data-anchor-id="example-1-wiener-filter-for-signal-denoising">Example 1: Wiener Filter for Signal Denoising</h2>
