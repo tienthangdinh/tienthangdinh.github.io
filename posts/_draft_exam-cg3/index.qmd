@@ -1,0 +1,247 @@
+---
+title: "Exam CG3"
+date: "2026-03-16"
+categories: [Computer Graphics]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+draft: true
+---
+# Algorithms
+- path, light and bidirectional path tracing
+    - Path Tracing (PT) shoots rays from the camera to find lights. Reflection mostly BRDF. It is great for specular reflections but highly inefficient for finding small light sources.
+    - Light Tracing shoots rays from lights to find the camera. Good for small light sources but not good for general light gathering
+    - Bidirectional Path Tracing (BPT) does both simultaneously, generating a camera sub-path and a light sub-path, and then explicitly connects their vertices together to find complex light bounces.
+- idea of multiple importance sampling according to brdf and incoming light
+    - MIS combines strategies like BRDF and direct light and for each direction, we put weights on each of strategies to get the same direction, the weight is Balance Heuristic powered.
+- idea of multiple importance sampling in BPT
+    - especially in BPT, a path of length $k$ can be generated in $k+2$ different ways. MIS calculate all of them and weight them together with Balance Heuristic and add them up.
+- direct and indirect light sampling
+    - direct sampling is sampling directly the direction to the light source aka shadow ray
+    - indirect is based on BRDF, or Lambertian term to take the light from the environment
+- final gathering
+    - instead of directly using the KDE at the first bounce, we trace one last time over the whole hemisphere to gather more precise light
+- photon mapping
+    - shoot photons from light sources to find diffuse surface and save it there
+    - shoot rays from camera to find photons on diffuse surfaces and map them together using kernel density estimation KDE
+    - end goal is to make sure that the path LSDSE always be met (like caustics)
+- reverse photon mapping
+    - because the number of eye-side queries often much more than numbers of photons emitted, therefore the same photon was queried multiple times. instead of that we reverse, firstly shoot rays from eyes and save it on surfaces, then shoot photons from light and then each photon could query multiple eye-side instances at the same time
+- progressive photon mapping
+    - normal photon mapping is blurred, example a red book on a white desk. but we also cannot increase the number of photons emitted at the same time (RAM), therefore simply do multiple photon mapping, each time with different set of photons and smaller radius
+- vertex merging
+    - generate vertices from light
+    - generate vertices from camera
+    - merging close vertices 
+    - basically like BPT with the connection of photon mapping
+- given slide 50 of “Cache Based GI” on the runtime split of image space photon mapping (ISPM) explain
+why ISPM is so much faster
+    - did not study ISPM, but maybe photon mapping, but jsut search on projected 2D?
+- explain the different textures used in image based lighting and give an overview of how they are used
+to support environmental lighting for an arbitrary environment map!
+    - i dont think i know
+- general idea of gammaton tracing
+    - emitting gamma particles from environment to simulate aging, weathering,... (rust, moss)
+    - when these particles hit a surface, the surface will save this information => change to the surface color
+- idea behind boids
+    - flocks of birds/NPCs behaving following 3 rules, each NPC has their own FOV:
+        - never collide
+        - move roughly same direction
+        - move roughly to the center of mass of the flock
+- how to simulate a piece of cloth with a particle system?
+    - provot model with structural spring, shear spring, and bending spring
+    - Kelvin-Voigt model of spring-damper system $$F = m \ddot{x} + d \dot{x} + k x$$
+- Why do stiff springs cause problems?
+    - in general we want high stiffness, because we dont want the cloth to stretch too much
+    - but with high stiffness, the restoration force is very large $F = k \cdot \Delta x$ (in the case of Hooke's law), so we need to use very small time steps to simulate the cloth, otherwise it will become unstable
+- How to model hysteresis in cloth simulation?
+    - hysteresis is when the cloth keeps the state history for sometimes
+    - the damper in Kelvin-Voigt is used to record the history of the cloth, so yeah
+- How can one avoid collisions in a rigid body simulator?
+    - 2 phases process:
+        - broad phase: use Bounding boxes to eliminate pairs of objects that cannot collide
+        - narrow phase: use exactly SAT to find exact collisions
+- What is a contact point and what kind of non-degenerate contacts exist for polygonal meshes?
+    - non-degenrative contact point means when the force normal is deterministic. vertex-face (normal of the face) and edge-edge (cross product of the two edges)
+
+# Math
+- integration over solid angle
+    - solid angle is the 2D angle in 3D space, steradian is the unit
+    - integration means integrating over the whole area of unit hemisphere
+    - The differential solid angle is the area rectangle $d\omega = \sin\theta d\theta d\phi$ (the nearer the pole, the smaller the area)
+    - $\Omega = \int_0^{2\pi} \int_0^{\pi/2} \sin\theta d\theta d\phi = 2\pi$
+- Monte Carlo (MC) estimation of integral
+    - since we cannot solve an integral analytically or take inifitive amount of samples, we take just take the sum of some random samples and scale them up by their own sampled probability $\frac{1}{N} \sum \frac{f(x)}{p(x)}$
+- variance, bias
+    - $$Var[X] = E[(X - \mu)^2] = E[X^2] - \mu^2$$
+    - bias is when estimated value is not equal to the true value, just that simple
+- when is MC better than Riemann Integration?
+    - Riemann always has the triangle error, and the volume of this error increases exponentially to the dimension $d$ when the dimension increases. Basically the error decreases with $O(1/\sqrt[d]{N})$
+    - MC error was proved to be decreases with the square root of the number of samples, no matter how many dimensions (MC error drops at a rate of $O(1/\sqrt{N})$ )
+- MC estimation of reflection integral
+    - randomly cast N rays based on BRDF and the cosine term. and then scale them up by their own sampled probability $\frac{1}{N} \sum \frac{f(x)}{p(x)}$ where $f(x) = \rho(x) \cdot L_i(x) \cdot \cos(\theta_i)$ and $p(x) = \frac{\rho(x) \cdot L_i(x) \cdot \cos(\theta_i)}{\int \rho(x) \cdot L_i(x) \cdot \cos(\theta_i) d\omega}$.
+    - But the funny thing is that we cannot calculate $f(x)$ directly, so we split into 3 strategies:
+        - cosine term: $\cos(\theta_i)$
+        - BRDF term: $\rho(x)$
+        - direct light
+    - for each of these light we do apply MIS!!!
+- idea of importance sampling
+    - taking the example above, when we sample a direction based on any strategy, after calculating the estimated value based on that strategy, we also have to calculate how much we trust this calculation by balance heuristic weighting. for example $w_{light} = \frac{p_{light}}{p_{light} + p_{BRDF} + p_{cosine}}$
+    $$\hat{f}^N_{\text{MIS}} = \sum_{i=1}^m \frac{1}{n_i} \sum_{j=1}^{n_i} \omega_i(x_{i,j}) \frac{f(x_{i,j})}{p_i(x_{i,j})} \quad \text{}$$
+    - basically we add a weight, and we add another sum over all strategies
+- Russian Roulette
+    - at each bounce, a probability decides if the ray continues or not
+- Nusselt’s analogon
+    - we use this to calculate the cosine term, basically the sampling probability of the solid angle is equal the area of the unit circle projected on the tangental plane. so to sample the solid angle we sample the unit circle and project it to the tangental plane. $p(x,y) = \frac{1}{\pi}$ therefore $p(w_{in}) = \frac{\cos\theta_{in}}{\pi}$
+    $$L_{\lambda,\text{Nusselt}}^{\text{reflect}}(\omega^{out}) \approx\frac{1}{N} \sum \frac{\rho(\omega_i^{in}, \omega^{out}) \cdot L_\lambda^{in}(\omega_i^{in}) \cdot \cos\theta^{in}}{\left(\frac{\cos\theta^{in}}{\pi}\right)}$$
+    $$L_{\lambda,\text{Nusselt}}^{\text{reflect}}(\omega^{out}) \approx \frac{\pi}{N} \sum_i \rho(\omega_i^{in}, \omega^{out}) L_\lambda^{in}(\omega_i^{in})$$
+- uniform, rejection, N-rooks, transformation sampling
+    - uniform: every sample has the same probability, but in some case it can create clustering
+    - N-rooks: grid each dimension x and y, and then randomly pair them => effect: every column and row are covered
+    - rejection: apply a uniform sampling on $x$, each of them has an also uniform random $h$, and sample is rejected when $h > f(x)$
+    - transformation: firstly sample uniformly to get a set of $u$, and then for each of these uniformly sample $u$, we apply inverse CDF of the actualy distribution to get $x$, also $x_i = F^{-1}(u_i)$, eg $x = F^{-1}(u) = \sqrt[3]{2u-1}$
+- What parts of the reflection integral in directional form can be importance sampled?
+    - any term, BRDF, cosine term, direct light
+- ordinary and partial differential equations
+    - ODE: differentiation with respect to only 1 variable, PDE: differentiation wrt multiple variables
+- reduction to system of order 1 ODEs
+    - we create a vector called state vector, in which each element is first order, second order,...
+- explicit, implicit, symplectic Euler
+    - explicit: $x_{n+1} = x_n + h f(x_n, t_n)$ (next position based on current position state (both location + vector))
+    - implicit: $x_{n+1} = x_n + h f(x_{n+1}, t_{n+1})$ (need to solve linear equation of 2 variables, can be solved analytically)
+    - symplectic: firstly we calculate $v_{n+1} = v_n + h f(x_n, t_n)$ next velocity based on current velocity, after that we use this to calculate $x_{n+1} = x_n + h v_{n+1}$ next position updated based on next velocity
+- A-stabel
+    - we use a test ODE function $\dot{y} = -\lambda y$ to test the stability of the integrator
+    - the ideal result would be the exponential function $y(t) = e^{-\lambda t}$
+    - if the result is really $y(t) = e^{-\lambda t}$ no matter what $h$ or $\lambda$ is, then the integrator is A-stable
+- general idea behind step width adaptation
+    - when the difference between one full step vs 2 halfsteps is large, we reduce stepsize
+- how to find the best integrator for a given problem?
+    - Runge-Kutta is always the most accurate: basically average of many slopes
+        - k1: slope at current point and timestep
+        - k2: slope at the point of using k1 slop to go half of timestep
+        - k3: slope at the point of using k2 slop to go half of timestep
+        - k4: slope at the point of using k3 slop to go to the end of the timestep
+        - eventually we average all
+        $$\vec{y}_{i+1} = \vec{y}_i + h \cdot \frac{1}{6}(\vec{k}_1 + 2\vec{k}_2 + 2\vec{k}_3 + \vec{k}_4) + O(h^5)$$
+    - for stability like clothes, we use implicit Euler
+    - if we want to preserve ernegy yet still accurate: symplectic Euler
+    - Verlet maybe also seems to be simple?
+        - i dont remember the formula but it is taken from the result of substraction of forward and backward euler
+        $$\underline{x}_{i+1} = 2\underline{x}_i - \underline{x}_{i-1} + h^2 \ddot{x}_i$$
+        $$\underline{v}_{i+1} = \frac{\underline{x}_{i+1} - \underline{x}_{i-1}}{2h}$$  
+
+# Physics
+- unit, idea of non-dimensionalization
+    - non-dimenstionalization means substituting variables so that all unit cancel out and the resulting equations are governed by all pure numbers
+- Noether theorem
+    - all physical laws are independent from time, position, and orientation
+- radiometry: energy, power, radiosity and irradiance, radiance (incoming vs outgoing), brdf, albedo,
+    - energy $Q$: joule (J)
+    - power $\Phi = \frac{dQ}{dt}$: watt (W)
+    - radiosity: total power leaving a surface per unit area (W/m²) coming out of the surface
+    - irradiance $H_{\lambda}(\mathbf{x}) = \frac{d\Phi_{\lambda}^{\text{in}}}{dA} \quad (W/m^2)$: total power incident on a surface per unit area (W/m²) like radiosity but coming into the surface
+    - radiance $L_{\lambda}(\mathbf{x}, \omega) = \frac{d^2\Phi_{\lambda}}{dA_{\perp} d\Omega} \quad (\text{W} \cdot \text{m}^{-2} \cdot \text{sr}^{-1})$: power per **ONE SINGLE unit solid angle** and its projected area (W/m²/sr)
+    - brdf: ratio of outgoing radiance to incoming irradiance (dimensionless)
+        $$\rho(\omega^{in}, \omega^{out}) = \frac{dL_{\lambda}^{out}(\omega^{out})}{dH_{\lambda}^{in}(\omega^{in})}$$ 
+    - albedo: sum of all brdf over all directions, it represent how much incoming irradiance is radiated out [0-1] (dimensionless)
+        $$R = \int_{\Omega} \rho(\omega^{in}, \omega^{out}) \cos\theta^{in} d\Omega^{in}$$
+
+- rendering equation in directional, area formulation and operator form, regular expression notation for
+light paths
+    - directional form:
+        $$L_{\lambda}^{\text{out}}(\mathbf{x}, \omega^{\text{out}}) = L_{\lambda}^{\text{emit}}(\mathbf{x}, \omega^{\text{out}}) + \iint_{\Omega^{\text{in}}} \rho(\mathbf{x}, \omega^{\text{in}}, \omega^{\text{out}}) L_{\lambda}^{\text{in}}(\mathbf{x}, \omega^{\text{in}}) \cos\theta^{\text{in}} d\Omega^{\text{in}}$$
+    - area form (the same but change the integral over direction into integral over surfaces and add geometry term):
+        $$L_{\lambda}^{\text{out}}(\mathbf{x}, \omega^{\text{out}}) = L_{\lambda}^{\text{emit}}(\mathbf{x}, \omega^{\text{out}}) + \iint_{\mathbf{y} \in A} \rho(\mathbf{x}, \omega^{\mathbf{y} \to \mathbf{x}}, \omega^{\text{out}}) L_{\lambda}^{\text{out}}(\mathbf{y}, \omega^{\mathbf{y} \to \mathbf{x}}) \mathbf{V(\mathbf{x}, \mathbf{y})} \frac{\cos\theta^{\mathbf{x} \to \mathbf{y}} \cos\theta^{\mathbf{y} \to \mathbf{x}}}{|\mathbf{x} - \mathbf{y}||^2} d A_y$$
+    - operator form:
+        $$L_{\lambda}^{\text{out}} = L_{\lambda}^{\text{emit}} + \mathbf{R} \cdot \mathbf{T} \cdot L_{\lambda}^{\text{out}}$$
+    - regular expression notation for light paths:
+        $$L = L_e + L_r + L_s + L_g$$
+        
+- geometry factor and visibility
+    - geometry factor:
+        $$G(\mathbf{x}, \mathbf{y}) = \mathbf{V(\mathbf{x}, \mathbf{y})}\frac{\cos\theta^{\mathbf{x} \to \mathbf{y}} \cos\theta^{\mathbf{y} \to \mathbf{x}}}{|\mathbf{x} - \mathbf{y}||^2}$$
+    - visibility:
+        $$\mathbf{V(\mathbf{x}, \mathbf{y})} = \begin{cases} 1 & \text{if } \mathbf{x} \text{ and } \mathbf{y} \text{ are visible to each other} \\ 0 & \text{otherwise} \end{cases}$$
+- measurement equation
+    - calculate the brightness of a pixel by integrating over all radiances incoming the whole lens area and all directions
+    $$\Phi_{\lambda,j} = \iint_{x \in A} \iint_{\Omega_j^{in}(x)} W_\lambda^e(x, \omega^{in}) L_\lambda^{in}(x, \omega^{in}) \cos \theta^{in} d\Omega_j^{in} dA$$
+
+- importance function:
+    - basically just tracing the sensor efficiency $W_\lambda^e(x, \omega^{in})$ backwards and all incoming light to it
+    $$W_\lambda^{in}(x, \omega^{in}) = W_\lambda^e(x, \omega^{in}) + \iint_{\Omega^{out}} \rho(x, \omega^{out}, \omega^{in}) W_\lambda^{in}(trace(x, \omega^{out}), -\omega^{out}) \cos \theta^{out} d\Omega^{out}$$
+- brdf properties: Helmholtz reciprocity, energy conservation
+    - Helmholtz reciprocity BRDF is symmetric:
+        $$\rho(x, \omega^{in}, \omega^{out}) = \rho(x, \omega^{out}, \omega^{in})$$
+    - energy conservation, Albedo $\le 1$
+        $$\int_{\Omega^{out}} \rho(x, \omega^{in}, \omega^{out}) \cos \theta^{out} d\Omega^{out} \le 1$$
+- how to make Phong and Blinn-Phong brdfs physically plausible?
+    - multiply with a normalization factor to make the integral of the brdf over all directions equal to 1, this would be the approach:
+    $$\rho_{plausible}(x, \omega^{in}, \omega^{out}) = \frac{\rho_{phong}(x, \omega^{in}, \omega^{out})}{\int_{\Omega^{out}} \rho_{phong}(x, \omega^{in}, \omega^{out}) \cos \theta^{out} d\Omega^{out}}$$
+- explain microfacette models on a coarse level, what are the individual parts?
+    - Fresnel: reflect or refract
+    - Geometry: attenuation based on the incoming and outgoing directions (can in but cannot out, or cannot even in)
+    - Distribution: basically like BRDF, here we can use any like Cook-Torrance or normal Blinn (but I dont remember the exact formula)
+- what do the Fresnel coefficients describe?
+    - we start with the material, some material like metals have base reflection almost 1, that means always reflect, and then plus the second term deciding if refract or reflect: the more gazing the surface, the more it reflects.
+
+- what is an anisotropic brdf, what an isotropic?
+    - isotropic: look the same from all directions
+    - anisotropic: look different from different directions
+- how to measure a brdf?
+    - i dont know
+- how to represent a measured brdf efficiently?
+    - i dont know
+- What is a bssrdf?
+    - i dont know
+- quantities: mass, acceleration, momentum, (conservative) force. energy (kinetic, potential)
+    - it is always important to start with the most basic thing, mass and inertia, after that everything is just a dislocation of this mass and inertia in space and time.
+    - base: $M$ for linear, $\mathbf{I} = m (\vec{r}^2 \mathbf{1} - \vec{r} \vec{r}^T)$ for angular, where $\vec{r}$ is the position vector of the particle relative to the center of mass
+    - momentum: $\vec{P} = M\vec{V}$ for linear, $\vec{L} = \mathbf{I}\vec{\omega}$ for angular
+    - force/torque: $\vec{F} =\dot{\vec{P}} =  M\dot{\vec{V}}$ for linear, $\vec{T} = \vec{r} \times \vec{F} = \dot{L} = \mathbf{I}\dot{\vec{\omega}}$ for angular
+    - energy: $E = K + U = \frac{1}{2}M\vec{V}^2 + U(\vec{x})$ for linear, $E = K + U = \frac{1}{2}\vec{L} \cdot \vec{\omega} + U(\vec{x})$ for angular
+    - remember inertia tensor we can directly know how it looks like:
+    $$\vec{r}_i^2 \mathbf{1} - \vec{r}_i \vec{r}_i^T = \begin{pmatrix} y^2+z^2 & -xy & -xz \\ -xy & x^2+z^2 & -yz \\ -xz & -yz & x^2+y^2 \end{pmatrix}$$
+- what different forces do you know?
+    - spring: $F = -kx$
+    - gravity: $F = mg$
+
+- inertia moment, inertia tensor, vector representation of angular velocity, angular acceleration, torque,
+rotational kinetic energy
+    - just start from $I$ and $\omega$ and $\dot{\omega}$, you will have everything
+    - $\vec{L} = \mathbf{I}\vec{\omega}$
+    - $\vec{T} = \dot{L} = \mathbf{I}\dot{\omega}$
+    - $E = K + U = \frac{1}{2}\vec{L} \cdot \vec{\omega} + U(\vec{x})$
+- how can pose of rigid body be described   
+    - rotation matrix $R$
+- how does pose evolve over time without friction?
+    - something with skew-symmetric matrix
+    $$\mathbf{\dot{R}} = \vec{\omega}^* \mathbf{R}_{current}$$
+    where the skew symmetric matrix is:
+    $$\vec{\omega}^* = \begin{pmatrix} 0 & -\omega_z & \omega_y \\ \omega_z & 0 & -\omega_x \\ -\omega_y & \omega_x & 0 \end{pmatrix}$$
+    - the end effect is that this skew-symmetric matrix makes the multiplication $\vec{\omega}^* \mathbf{R}$
+    equivalent to the cross product $\vec{\omega} \times \mathbf{R}$
+- how does orientation chance in dependence of angular velocity?
+    - as I said $\dot{\mathbf{R}} = \vec{\omega}^* \mathbf{R}$
+- how do forces applied to a point on a rigid body act on its linear and angular velocities?
+    - we have both force and torque, force makes the body move forward, torque makes the body rotate
+- what is an impulse and how does it help to compute the change in linear and angular momenti in a
+rigid body collision?
+    - Impulse is the change in momentum, $\Delta \vec{P} = \vec{F} \Delta t$
+
+1. Welche Möglichkeiten gibt es die Rendergleichung darzustellen?
+2. Was ist unbekannt bei den Gleichungen?
+3. Was ist das Problem von Riemann Summen bei der Auswertung von der Rendergleichung was? (Zu hoher Fehler und nicht für höhere Dimensionen geeignet)
+4. Wie kann man alternativ die Integrale der Rendergleichung auswerten? (Monte Carlo)
+5. Wie funktioniert Monte Carlo Sampling von den Richtungen und wie kann man die Terme der Richtungsbasierten Formulierung auswerten? (Brdf split, cosinus term mit nusselts analogon, direkt und indirekt light split)
+6. Wie kann man Monte Carlo verbessern? (Importance Sampling)
+7. Bei welchen Stellen in einer Szene treten die meisten Fehler auf? (Glas, kleine Lichtquellen) 
+8. Wie kann man das Sampling verbessern? (multiple importance sampling)
+9. Welche Arten ein Bild mit Raytracing zu rendern existieren neben path tracing? (Light tracing, bidirectional (+photon mapping))
+10. Warum sind bei photon mapping die transparenten Objekte nicht korrekt ausgeleuchtet?
+11. Wie wird die Reibung bei Rigid Bodies dargestellt (welche Koeffizienten werden hierfür benötigt) und über welche Terme wird eine Kollision bestimmt?
+12. Wie wird Kleidung simuliert?
+13. Wie groß sind die einzelnen Federkonstanten im Vergleich zueinander?
+14. Was ist das Problem von zu großen Federkonstanten und wie kann man diese beheben?

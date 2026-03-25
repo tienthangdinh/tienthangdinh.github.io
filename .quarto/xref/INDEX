@@ -97,5 +97,17 @@
   },
   "posts/cg3-brdf/index.qmd": {
     "index.html": "70363a2d"
+  },
+  "posts/surgical-ct/index.qmd": {
+    "index.html": "87611eae"
+  },
+  "posts/surgical-camera/index.qmd": {
+    "index.html": "a5a29547"
+  },
+  "posts/exam_surgery/index.qmd": {
+    "index.html": "5bd48e24"
+  },
+  "posts/exam-cg3/index.qmd": {
+    "index.html": "84921883"
   }
 }

@@ -1,0 +1,33 @@
+---
+title: "Exam Surgery"
+date: "2026-03-16"
+categories: [Medical Imaging, Signal Processing]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+draft: true
+---
+- Erläutern sie die Schritte der in der Vorlesung besprochenen Pipeline für die Computer und roboter-gestützte Chirurgie.
+	- 1. Image Aquisition
+	- 2. Pre-processing
+	- 3. Segmentation
+	- 4. Modeling
+	- 5. Registration
+	- 6. Visualization
+- Erklären sie wahlweise CT oder MRT. [hab CT gewählt]
+	- Gehen sie auf eines der behandelten Rekonstruktionsverfahren ein. [Filtered Backprojection]
+	- Welches Problem gibt es bei der Backprojection wenn nicht gefiltert wird? [bild wird blurry da: hohe frequenzen verantwortlich für schärfe im bild, niedrige für smoothness, niedrige freqs überrepresentiert durch finite sampling des aufnahmewinkels]
+	- Wie hängt das Fourier Slice Theorem mit der Rekonstruktion eines CT Bildes zusammen? [1D Fourier Transform einer Attenuation Curve ist eine Linie durch Fourier Transform der 2D Object Function für den gleichen Winkel]
+- Explain MRI?
+- Wofür eignet sich CT bzw. MRT besonders gut als Bildgebendes Verfahren? [CT - bones, MRT - Soft Tissue]
+- Gibt es gesundheitliche Bedenken beim Einsatz von CT oder MRT? [CT - ionised radiation, MRT - menschen mit metall im körper (aka Schrittmacher, etc)]
+- [Es wird ein Bild einer minimal invasiven operation an der Niere vorgelegt] Wie können sie die entsprechenden Bildteile (Niere/nicht Niere) segmentieren? [CNN]
+- Erklären sie den allgemeinen Aufbau und Lernprozess eines Convolutional Neural Networks.
+- Wie können sie unter der Verwendung des Stereokameramodels Tiefeninformationen aus den intra-operativen Aufnahmen errechnen? [Stereokamera Modell, Epipolargeometrie, Projektionsmatrix, Interne/Externe Kameraparameter]
+- Welche Parameter sind nicht in der Projektionsmatrix enthalten? [Lens Distortion Parameter]
+- Welches Registrierungsverfahren eignet sich, um die errechnete Point Cloud mit einem prä-operativen Model zu registrieren? (Unter der Annahme, dass es sich um Festkörper handelt (Rigid Body))[Rigid Body Surface Registration]
+- Wie funktioniert der Iterative Closest Point Algorithmus?
+- Welche Materialeigenschaften hat ein sogenannter Soft Body? [viscoelasticity]
+- If you have these two data sets (i.e. 3D of camera and MRT/CT), how are they registered? Answer was point based registration, nor explain how ICP (iterative Closest Point) works.

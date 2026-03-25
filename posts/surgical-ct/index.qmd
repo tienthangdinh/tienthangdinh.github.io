@@ -1,0 +1,346 @@
+---
+title: "X, Us, CT, MRI"
+date: "2026-03-14"
+categories: [Medical Imaging, Signal Processing]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+
+# X-Rays
+## Absorption
+Attenuation increased with atomic number and density.
+$$N = N_0 \cdot e^{-\mu \cdot d}$$
+different body parts have different attenuation coefficients ($\mu$). For example, bone (Calcium, $Z=20$) has a very high $\mu$ because it is dense, while lung tissue has a very low $\mu$ because it is mostly air.
+
+
+### X-Ray interaction based on energy
+#### Case 1: $E_x < P$ 
+* No Absorption/No Ionization
+* The X-ray photon passes through the material without interacting and no ionization.
+
+#### Case 2: $E_x \approx P$ 
+* Maximum Photoelectric Absorption
+* The photon's energy is just right to be completely absorbed by the inner-shell electron (e.g., K-shell). The electron is ejected as a high-speed photoelectron ($\text{KE} \approx 0$ since $E_x \approx P$), leaving a positive ion with an unstable core hole.
+* The X-ray beam is highly attenuated (absorbed).
+
+#### Case 3: $E_x > P$ 
+##### Subcase 1: $E_x \approx P$ (Photon Energy is Slightly Higher than Binding Energy)
+* Photoelectric Absorption + Compton Scattering
+* The photon has enough energy to eject an inner-shell electron, but the remaining energy is re-emitted as a characteristic X-ray (fluorescence) or causes an Auger electron to be ejected.
+* attenuation but a bit of scattering
+
+##### Subcase 2: $E_x \gg P$ (Photon Energy is Much Higher than Binding Energy)
+* Compton Scattering Dominates
+* The photon loses only small part of its energy for absorption (it does not disappear) and is scattered in a new direction with reduced energy and longer wavelength.
+* image blur
+
+> Just Right!!! $E_x \approx P$ is the best for stopping the photon.
+
+
+Pros:
+
+* cheap
+* Fast
+* High contrast
+* Good for bone
+
+Cons:
+
+* Ionizing radiation: The high-speed ejected electron (the photoelectron) then collides with surrounding atoms and molecules like DNA strands, breaking its chemical bonds
+
+
+# Ultrasound
+
+* Production ultrasound wave: Using piezoelectric components (Deformation of a crystal through electric impulses)
+* Receiving the reflected ultrasound wave: using the same piezoelectric components (Crystal is deformed through sound waves and generates a measureable electric impulse)
+
+Acoustic Impedance ($Z$): Acoustic impedance is a physical property of a medium (tissue) that defines its resistance to the passage of sound waves. It is calculated as:$$Z = \rho \cdot c$$
+
+* $\rho$ is the density of the material (like tissue).
+* $c$ is the speed of sound in the material.
+
+Reflection:
+
+* Ultrasound waves are reflected at the boundaries between areas of differing acoustic impedance (contour echo)
+$$R = \left( \frac{Z_2 - Z_1}{Z_2 + Z_1} \right)^2$$
+
+* Use Gel? Because Air has a vastly different impedance than human skin ($Z_2 \gg Z_1$). The gel is used to match the impedance between the ultrasound probe and the skin ($Z_2 \approx Z_1$).
+
+2D Image Formation:
+
+* Height: based on time of flight with assumption $Pulse Repetition Period > TOF_{max depth}$
+* Width: The direction the sound beam was pointed when the echo returned onto the array.
+* Intensity: intensity of the returned echo
+
+With what frequencies are waves emitted? typically 1 - 40 MHz.
+
+* High frequency -> high spatial resolution and low penetration
+* Low frequency -> low spatial resolution und high penetration
+
+Different Modes:
+
+* A-Mode: Amplitude Mode (not used anymore)
+* B-Mode: Brightness Mode (normal 2D ultrasound)
+    * The ultrasound ray is evenly passed over a plane
+    * Image consists of a fan of approximately 100 lines
+* M-Mode: Motion Mode
+    * just 1 line of B-Mode (vertical axis is intensity, horizontal axis is time)
+    * basically like multiple A-Mode side by side
+* 3D Ultrasound: basically a stack of B-Mode images simultaneously
+* Doppler Mode: 
+$$\Delta f = \frac{2 \cdot f_0 \cdot v \cdot \cos(\theta)}{c}$$
+
+where:
+
+* $\Delta f$: frequency shift
+* $f_0$: frequency of the emitted wave
+* $v$: velocity of the blood
+* $\theta$: angle between the ultrasound beam and the direction of blood flow
+* $c$: speed of sound in the blood
+
+Pros:
+
+* No ionizing radiation, not invasive
+* Cheap (in comparison to CT / MRT)
+* Real-time information
+
+Cons:
+
+* Low penetration, no examination of air filled spaces
+* Difficult to interprete
+
+
+# CT
+Kinda spiral X-rays. Since human body is not uniform, a single X-ray beam passes into depth through skin, muscle, bone, and air. the final measured intensity ($N$) is the initial intensity ($N_0$) reduced by the integral of all the changing attenuation coefficients ($\mu$) along the entire path of the ray ($l$):
+$$N = N_0 e^{-\int \mu \, dl}$$
+$$\ln \frac{N_0}{N} = \int \mu \, dl$$
+
+**Goal** calculating the specific attenuation coefficient $\mu(x,y)$ for every individual voxel with width $l$ inside that slice. We know the total sum along the ray, but we must figure out the unknown $\mu$ at the exact coordinate $(x,y)$.
+
+Pros:
+
+* Solved a lot of problems from X-Rays and Ultrasound
+
+Cons:
+
+* Ambiguous intepretation of the image, since it is just about attenuation
+* Human breathing
+
+# Iterative Reconstruction
+formulate again:
+$$P_j = \sum_{i=0}^{N-1} l_{ij} \cdot \mu_i$$
+
+where:
+
+* $P_j$: Total attenuation measured by the detector for the $j$-th projection beam. We know this value from the scanner.
+* $\mu_i$: Unknown attenuation coefficient for the $i$-th image element (voxel). Finding these values is the entire goal of CT reconstruction.
+* $l_{ij}$: Exact length of the $j$-th projection beam as it passes inside the $i$-th voxel. Because we know the geometry of the scanner, we can calculate this.
+* $N$: The total number of voxels in the image grid.
+
+## Procedure
+Estimation at each projection (angle) $j$:
+$$\hat{P}_j = \sum_{i=0}^{N-1} l_{ij} \cdot \mu_i$$
+therefore:
+$$\mu_i = \frac{P_j}{\sum_{i=0}^{N-1} l_{ij}}$$
+
+For each projection (angle) $j$, we calculate the difference between the measured projection $P_j$ and the estimated projection $\hat{P}_j$:
+$$\Delta_j = P_j - \hat{P}_j$$
+
+Then we update the estimated attenuation coefficients $\mu_i$ by adding a fraction of the difference:
+$$\mu_i = \mu_i + \frac{1}{N} \Delta_j$$
+
+Repeat this process until the difference between the measured and estimated projections is minimized.
+
+# Fourier Reconstruction (Radon Transform)
+We also rotate from $\Theta$: $0..180^\circ$. For a specific angle $\Theta$, the scanner calculates all line integrals through the object. If the 2D cross-section of the object is defined by the attenuation function $f(x,y)$, the resulting 1D projection is represented as $p_\Theta(s)$, which is a function of the detector position $s$:
+$$p_\Theta(s) = \int_{-\infty}^{\infty} f(x,y) \, dl$$
+
+The goal of CT is to go backward: starting with the measured projections $p_\Theta(s)$ (the Sinogram) and recovering the original 2D image $f(x,y)$. 
+
+Firstly, measure as many projections as possible ($\Theta$) to get the sinogram ($p_\Theta(s)$). Let $p_\Theta(s)$ be the 1D projection from $f(x,y)$ at a specific angle $\Theta$, and $P_\Theta(w)$ be its 1D Fourier transformation.
+$$p_\Theta(s) \circ \xrightarrow{\text{1D-FT}} \bullet P_\Theta(w) = \int_{-\infty}^{\infty} p_\Theta(s) e^{-j2\pi ws} \, ds$$
+
+Let's also define an image we want to recover. Let $f(x,y)$ be the original 2D image and $F(u,v)$ be its 2D Fourier transformation.
+$$f(x,y) \circ \xrightarrow{\text{2D-FT}} \bullet F(u,v) = \iint_{-\infty}^{\infty} f(x,y) e^{-j2\pi(ux+vy)} \, dxdy$$
+
+* $u$ is the spatial frequency in the horizontal ($x$) direction.
+* $v$ is the spatial frequency in the vertical ($y$) direction.
+* Together, the $(u, v)$ coordinate system makes up the 2D Fourier space aka "k-space" in medical imaging.
+
+
+The theorem states that the 1D Fourier transform of a projection at angle $\Theta$ ($P_\Theta(w)$) is exactly equal to a slice of the 2D Fourier transform of the original image ($F(u,v)$) taken along a line at the same angle $\Theta$ through the origin.
+$$F(w, \Theta) = P_\Theta(w)$$
+
+In plain English: If you take your 1D detector measurements ($s$), convert them to 1D frequencies ($w$), you can literally just "paste" that 1D frequency line straight through the center of the 2D frequency space ($u,v$) at the exact angle ($\Theta$) the scanner was positioned.
+
+And then from all $$F(w, \Theta) = P_\Theta(w)$$ calculated, we invert the 2D Fourier transform to get back to the original image $f(x,y)$.
+
+### Example Proof
+measurement at $\Theta = 0^\circ$ ($y$-axis). Detector position $s$ is simply the $x$-coordinate: $s = x$.
+$$p_{\Theta=0}(s) = p_0(x) = \int_{-\infty}^{+\infty} f(x, y) \, dy$$
+
+1D Fourier Transform:
+$$P_0(w) = P_0(u) = \int_{-\infty}^{+\infty} p_0(x) e^{-j2\pi ux} \, dx$$
+$$P_0(u) = \int_{-\infty}^{+\infty} \left[ \int_{-\infty}^{+\infty} f(x, y) \, dy \right] e^{-j2\pi ux} \, dx$$
+$$P_0(u) = \int_{-\infty}^{+\infty} \int_{-\infty}^{+\infty} f(x, y) e^{-j2\pi(ux)} \, dx \, dy$$
+$$P_0(u) = \int_{-\infty}^{+\infty} \int_{-\infty}^{+\infty} f(x, y) e^{-j2\pi(ux + 0y)} \, dx \, dy$$
+
+Conclusion:
+$$P_0(u) = F(u, 0)$$
+
+### Problem
+When we stack different angles together, the data points $P_\Theta(w)$ are packed very tightly together near the middle, but spread far apart at the margins. Therefore low frequencies are sampled much more densely than high frequencies, therefore blurring the image.
+=> Filtered Backprojection
+
+# Filtered Backprojection
+Basic reconstruction of a 2D image $f(x,y)$ from its 2D Fourier transform $F(u,v)$.
+$$f(x, y) = \iint_{-\infty}^{+\infty} F(u, v) e^{j2\pi(ux+vy)} \, du \, dv$$
+
+In any angle $\Theta$:
+$$f(x, y) = \int_0^{2\pi} \int_0^{+\infty} F(w, \Theta) e^{j2\pi w(x \cos \Theta + y \sin \Theta)} w \, dw \, d\Theta$$
+
+* $u = w \cos \Theta$
+* $v = w \sin \Theta$
+* $du \, dv = w \, dw \, d\Theta$ (The Jacobian determinant for area conversion)
+
+redefine the boundaries of the integration:
+$$f(x, y) = \int_0^{\pi} \int_{-\infty}^{+\infty} F(w, \Theta) e^{j2\pi w(x \cos \Theta + y \sin \Theta)} |w| \, dw \, d\Theta$$
+
+Now as the  term $(x \cos \Theta + y \sin \Theta)$ is exactly the definition of the projected detector position $s$ for a given angle $\Theta$. We replace it with $s$. And $F(w, \Theta) = P_\Theta(w)$, we substitute:
+$$f(x, y) = \int_0^{\pi} \left[ \int_{-\infty}^{+\infty} P_\Theta(w) |w| e^{j2\pi ws} \, dw \right] d\Theta$$
+
+So now we slowly came up with the new filtered projection function, $|w|$ is the high pass filter:
+$$\tilde{p}_\Theta(s) = \int_{-\infty}^{\infty} P_\Theta(w) |w| e^{j2\pi ws} \, dw$$
+
+# MRI
+
+Hydrogen, which has just 1 proton, is the most common element used in medical MRI because the human body is mostly water. 
+
+At Ground State ($B_0 = 0$): each magnetic fields cancel each other out perfectly => no net magnetization
+
+At Excited State ($B_0 > 0$): the random nuclear magnetic moments are forced to align with the scanner's $B_0$ field, either spin-up (parallel) or spin-down (anti-parallel). But mostly spin-up because less energy needed => Net Magnetization Vector (NMV) in spin-up direction。
+
+proton to "wobble" around the magnetic field lines, tracing out a cone shape. This wobble is called precession, and its frequency is called the Larmor frequency.
+$\omega_0 = \gamma B_0$
+
+* $B_0$: The strength of the MRI's main magnetic field.
+* $\gamma$: The gyromagnetic ratio. (fixed constant for hydrogen protons).
+
+## Main Goal
+Deconstructing the Magnetic Moment (Longitudinal $M_z$ vs. Transverse $M_{xy}$) and what we eventually measure is $M_{xy}$. But the problem is that each hydrogen proton (though same frequency) has different phase, so the net $M_{xy}$ is 0.
+
+Therefore now we need to make the phase of all hydrogen protons in the same direction. We do this by applying a Radio Frequency (RF) pulse perpendicular to $B_0$ of the same Larmor frequency ($\omega_0$). 2 Effects:
+
+* It forces all the randomly dispersed wobbling protons together to have the same phase position and perfectly lying flat into the $x,y$ plane. => Therefore individual transverse magnetization vectors add up to create a measurable net transverse magnetization ($M_{XY}$).
+* This extra energy forces some of the "Spin Up" (low energy) protons to flip into the "Spin Down" (high energy) state. => Longitudinal magnetisation is now zero.
+
+Before RF Pulse (Slide: Longitudinal Magnetisation): 
+
+* The vector points straight up.
+* Longitudinal magnetisation is at its maximum.
+* Transverse magnetisation is zero.
+
+During a 90° RF Pulse (Slide: Transverse Magnetisation, $\alpha=90^\circ$): 
+
+* enough energy to flip the vector perfectly flat into the $x,y$ plane.
+* The longitudinal magnetisation is now zero
+* The transverse magnetisation is now equal to the original longitudinal magnetisation (maximum transverse magnetisation)
+
+This rotating $M_{XY}$ vector is a moving magnetic field. According to Faraday's law of induction, this moving magnetic field induces an electrical current in the scanner's receiver coils. This electrical current is the MRI signal.
+
+
+## Relaxation
+
+The first slide establishes the basic idea: once the 90° RF pulse is gone, the protons don't stay flipped down in the transverse plane. They want to return to their lowest energy state—their normal equilibrium aligned with the main $B_0$ field. 2 things happening:
+
+* T1 Relaxation (Spin-Lattice Relaxation): The protons release their extra energy to the surrounding "lattice" (the molecules in the tissue). This causes the longitudinal magnetization ($M_z$) to gradually recover.
+* T2 Relaxation (Spin-Spin Relaxation): The protons lose their synchronized phase coherence due to interactions with each other. This causes the transverse magnetization ($M_{xy}$) to decay.
+
+Let's focus on T1 Relaxation (Spin-Lattice Relaxation) first. During the RF pulse, many protons were forced into the high-energy "Spin Down" state. To get back to the low-energy "Spin Up" state, they have to get rid of that extra energy. they transfer this energy as heat to their neighboring atoms and molecules. In physics, this surrounding environment is historically called the "lattice". As individual spins "fold" back up into the parallel state, the vertical magnetisation vector ($M_z$) starts to grow back from zero ($M_z > 0$).
+$$M_z = M_0 \left[ 1 - \exp\left(-\frac{t}{T1}\right) \right]$$
+
+* $M_0$ is the maximum possible magnetisation.
+* $T1$ is defined as the exact amount of time it takes for the longitudinal magnetization to recover to 63% of its final maximum value ($M_0$). Different tissues in the body (like fat, muscle, and water) have completely different molecular "lattices." Because of this, they transfer heat at different speeds, meaning they have different T1 time constants.
+
+Now let's focus on T2 Relaxation (Spin-Spin Relaxation). While T1 is about the spins returning to the main magnetic field (up/down), T2 is about the spins losing their synchronized dance (wobbling together). So while RF pulse all the proton spins are pointing in the exact same direction in the transverse ($x,y$) plane. They have "Max Phase coherence,". The moment the RF pulse stops forcing them together, the protons begin to interact with the tiny magnetic fields of their immediate neighbors (spin-spin interactions). Because of these microscopic, "local inhomogeneities" in the magnetic field, some protons start to spin slightly faster and others slightly slower. => the perfectly aligned bundle of arrows begins to fan out. This "Loss of phase coherence" causes the measurable transverse magnetisation ($M_{xy}$) to drop to zero.
+$$M_{xy} = M_0 \exp\left(-\frac{t}{T2}\right)$$
+
+* $M_0$ is the maximum possible transverse magnetisation (which occurs right after the RF pulse).
+* $T2$ is defined as the time it takes for the transverse magnetisation to decay to about 37% of its initial value. Different tissues have different T2 times because the local magnetic field variations differ depending on the tissue's molecular structure.
+
+But it has a problem! **Static Error.**: the signal actually decays much, much faster than the natural T2 tissue limit predicts. The giant $B_0$ magnet of the MRI machine is never perfectly uniform. These physical imperfections in the machine's magnetic field force the protons out of phase almost instantly. Well remember Larmor frequency: $\omega_0 = \gamma B_0$? yeah some get stronger or weaker, so some spin faster or slower. Now we raise a new question: "How can the signal be restored at this point?"
+
+## Spin Echo to erase Static Error
+
+The goal is to rewind the fast decayed transverse magnetisation $M_{xy}$ to 0. We do this by applying a 180° RF pulse at time $\tau$ after the initial 90° pulse. This pulse - since is longer enough to flip the spins 180 degrees - effectively flips the spins,  you only reverse the direction, so it will take **EXACTLY** the same time to **COME BACK ALL TOGETHER FOR EVERY PROTON NO MATTER WHAT SPPED IT IS; BECAUSE IT IS SAME TIME TO GO BACK**. At $2\tau$, the spins rephase, and the transverse magnetization $M_{xy}$ recovers to the second peak that is smaller. 
+
+Basically we will capture the signal at $TE = 2\tau$, which touches the theoretical $T_2$ decay curve (represents ONLY the natural decay caused by spin-spin interactions).
+
+**Basically all what we do is just to erase the static error (things that supposed to be equal will be back to equal). But the spin-spin error still exists (things not supposed to be equal will not anyway not equal anymore), so that is why the signal at $TE = 2\tau$ is smaller than the signal at $TE = 0$.**
+
+Understanding Mz under the 180 degree pulse (not so important just FYI):
+
+* At Time 0: The 90° pulse wipes out $M_z$. It drops to exactly 0.
+* From 0 to $TE/2$: The protons start giving off heat to their lattice ($T_1$ relaxation). $M_z$ starts slowly growing back up the positive Z-axis.
+* The 180° Flip (The Twist!): At $TE/2$, the scanner fires the 180° pulse. This pulse flips everything. The $M_z$ vector that just spent time growing upward is suddenly flipped upside down, pointing down the negative Z-axis!
+* From $TE/2$ to $TE$: $M_z$ has to start recovering all over again, growing from the negative Z-axis, crossing through zero, and heading back up toward the positive Z-axis.
+
+## From Signal to Image
+If a tumor gives off a bright signal, the machine hears it, but it has no idea if that tumor is in the brain, the shoulder, or the knee.
+
+### Spatial Encoding
+Let's utilize Larmor equation again: $\omega = \gamma * B_0$. so we can make a gradient magnetic field along the Z-axis (the main magnetic field direction). 
+
+#### Slice Selection Gradient (z-direction)
+First, we apply a gradient from head-to-toe. We then fire an RF pulse that only matches the exact frequency of one single "slice" of the body. Protons outside this slice ignore the pulse, so we only get a signal from that one specific slice. The RF pulse physically washes over the entire body, but we set its frequency so that only one specific slice can "hear" it and react.
+
+But in general we still do them one by one (sequentially). If the doctor wants 30 slices through your abdomen:
+
+* The machine turns on the Z-gradient.
+* It fires a 64.0 MHz pulse. (Slice 1 flips).
+* The machine turns off the pulse and listens for the echo from Slice 1.
+* It fires a 64.1 MHz pulse. (Slice 2 flips).
+* It listens for the echo from Slice 2.
+* It fires a 64.2 MHz pulse... and so on.
+
+### Procedure for y and x BASICALLY TWISTING IN BOTH DIRECTIONS to get K-SPACE
+#### 1. The Timeline of ONE Repetition ($TR$)
+
+Think of this as one single "tick" of the MRI clock. To get just one line of data for our raw data grid (k-space), the scanner executes these steps in this exact chronological order:
+
+* Step 1: Isolate the Slice (Z-Axis). The machine turns on the head-to-toe Z-gradient ($G_z$) and fires the 90° RF pulse. Result: Only the protons in one 2D slice of the brain are flipped.
+* Step 2: Twist the Phase (Y-Axis). The machine briefly turns on the top-to-bottom Y-gradient ($G_y$) and then turns it off. Result: The rows of protons are temporarily sped up and slowed down, giving them a permanent "phase twist."
+* Step 3: Wait for the Echo ($TE$). The machine waits for the Spin Echo to physically rebuild itself.
+* Step 4: Read the Frequency (X-Axis). Exactly as the Spin Echo peaks, the machine turns on the left-to-right X-gradient ($G_x$) and turns on the microphone. Result: While the microphone is recording, the left side of the head is singing a low pitch, and the right side is singing a high pitch.Once Step 4 is done, the machine takes that one recording (which contains the X-frequencies and the Y-phase twist) and saves it as Row 1 of k-space.
+
+#### 2. 256-Step Loop
+One repetition only gives us a 1D shadow. To get a 2D image, the architecture of an MRI scan is essentially a massive "For Loop" in a computer program.The scanner must repeat the 4-step timeline above 256 separate times. The only thing that changes in the entire timeline is the strength of Step 2 (The Phase Twist).
+
+* Loop 1: Run Steps 1-4 using a maximum positive phase twist. Save the echo to k-space Row 1. Wait for the protons to recover ($TR$).
+* Loop 2: Run Steps 1-4 using a slightly weaker phase twist. Save the echo to k-space Row 2. Wait for $TR$.
+* Loop 3: Run Steps 1-4 using an even weaker phase twist. Save to Row 3. Wait for $TR$....
+* Loop 128: Run Steps 1-4 with zero phase twist. Save to Row 128 (the exact center of k-space). Wait for $TR$....
+* Loop 256: Run Steps 1-4 with a maximum negative phase twist. Save to Row 256.
+
+### Converting k-space to Image Space
+
+#### k-Space
+$$S(k_x, k_y) = A \cdot e^{i\phi}$$
+
+* $A$: Amplitude (Signal Strength)
+* $\phi$: Phase (Position Information)
+
+where:
+$$S(k_x, k_y) = \iint \rho(x,y) \cdot e^{-i 2\pi (k_x x + k_y y)} \,dx \,dy$$
+
+#### Convert back to Image Space
+$$I(x, y) = \iint S(k_x, k_y) e^{i 2\pi (k_x x + k_y y)} \,dk_x \,dk_y$$
+
+* $I(x, y)$: This is your final answer. It is the calculated Image Intensity (pixel brightness) at a specific physical physical coordinate ($x, y$) on the doctor's screen.
+* $S(k_x, k_y)$: This is the raw, complex radio signal stored at a specific coordinate ($k_x, k_y$) inside the k-space grid.
+
+that means:
+$$(A \cdot e^{i\phi}) \times e^{i 2\pi (k_x x + k_y y)} = A \cdot e^{i(\phi + 2\pi (k_x x + k_y y))}$$
