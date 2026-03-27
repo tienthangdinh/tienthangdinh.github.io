@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-03-25">
+<meta name="dcterms.date" content="2026-03-26">
 
 <title>Linear Mean Square Estimation – the brachistochrone traveller</title>
 <style>
@@ -149,7 +149,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">March 25, 2026</p>
+        <p class="date">March 26, 2026</p>
       </div>
     </div>
     
@@ -196,6 +196,8 @@ window.Quarto = {
   <li><a href="#solution-with-covariance-matrix" id="toc-solution-with-covariance-matrix" class="nav-link" data-scroll-target="#solution-with-covariance-matrix">Solution with Covariance Matrix</a></li>
   <li><a href="#go-back-to-get-the-error-right" id="toc-go-back-to-get-the-error-right" class="nav-link" data-scroll-target="#go-back-to-get-the-error-right">Go back to get the error right</a></li>
   <li><a href="#example-1" id="toc-example-1" class="nav-link" data-scroll-target="#example-1">Example</a></li>
+  <li><a href="#example-1.2" id="toc-example-1.2" class="nav-link" data-scroll-target="#example-1.2">Example 1.2</a></li>
+  <li><a href="#solving-example-1.2-with-kalman-filter" id="toc-solving-example-1.2-with-kalman-filter" class="nav-link" data-scroll-target="#solving-example-1.2-with-kalman-filter">Solving Example 1.2 with Kalman Filter</a></li>
   <li><a href="#example-2-wiener-filter-for-signal-denoising" id="toc-example-2-wiener-filter-for-signal-denoising" class="nav-link" data-scroll-target="#example-2-wiener-filter-for-signal-denoising">Example 2: Wiener Filter for Signal Denoising</a></li>
   </ul></li>
   </ul>
@@ -409,6 +411,41 @@ window.Quarto = {
 <p>Solve this we get <span class="math inline">\(a_1 = 1.655\)</span> and <span class="math inline">\(a_2 = -0.325\)</span>.</p>
 <p>So the optimal estimator is: <span class="math display">\[\hat{Y} = 1.655 X_1 - 0.325 X_2\]</span></p>
 <p>Let’s check the error: <span class="math display">\[e_m = E\{Y^2\} - E\{\hat{Y}Y\}\]</span> <span class="math display">\[E\{Y^2\} = \frac{3^2 + 5^2 + 7^2}{3} = \frac{9+25+49}{3} = \frac{83}{3} \approx \mathbf{27.67}\]</span> <span class="math display">\[E\{\hat{Y}Y\} = E\{(1.655 X_1 - 0.325 X_2)Y\} = 1.655 E\{X_1 Y\} - 0.325 E\{X_2 Y\}\]</span> <span class="math display">\[E\{\hat{Y}Y\} = 1.655 (22.67) - 0.325 (30.33) = 37.54 - 9.86 = \mathbf{27.68}\]</span> <span class="math display">\[e_m = 27.67 - 27.68 = -0.01 \approx 0\]</span></p>
+</section>
+<section id="example-1.2" class="level2">
+<h2 class="anchored" data-anchor-id="example-1.2">Example 1.2</h2>
+<p>In this version, we look at all three measurements of <span class="math inline">\(X_1\)</span> and <span class="math inline">\(Y\)</span> to find the single best constant <span class="math inline">\(a\)</span> for the model <span class="math inline">\(\hat{Y} = a X_1\)</span>.</p>
+<ol type="1">
+<li><p>Data Vectors:<span class="math display">\[\mathbf{y} = \begin{bmatrix} 3 \\ 5 \\ 7 \end{bmatrix}, \quad \mathbf{x_1} = \begin{bmatrix} 2 \\ 4 \\ 6 \end{bmatrix}\]</span></p></li>
+<li><p>Statistical Moments: <span class="math display">\[E\{X_1^2\} = \frac{2^2 + 4^2 + 6^2}{3} = \frac{56}{3} \approx 18.67\]</span> <span class="math display">\[E\{Y X_1\} = \frac{(3\cdot2) + (5\cdot4) + (7\cdot6)}{3} = \frac{68}{3} \approx 22.67\]</span></p></li>
+<li><p>Solving for <span class="math inline">\(a\)</span>:Using the formula <span class="math inline">\(a = \frac{E\{YX_1\}}{E\{X_1^2\}}\)</span>:<span class="math display">\[a = \frac{22.67}{18.67} \approx \mathbf{1.214}\]</span></p></li>
+</ol>
+<p>The MSE Solution: <span class="math inline">\(\hat{Y} = 1.214 X_1\)</span>.</p>
+</section>
+<section id="solving-example-1.2-with-kalman-filter" class="level2">
+<h2 class="anchored" data-anchor-id="solving-example-1.2-with-kalman-filter">Solving Example 1.2 with Kalman Filter</h2>
+<p>Part 2: The Recursive Kalman Filter (The Live Feed)Now, let’s assume we don’t have all the data at once. We get the pairs <span class="math inline">\((x, y)\)</span> one by one. We start with a guess of <span class="math inline">\(a_0 = 1\)</span> and an initial uncertainty <span class="math inline">\(P_0 = 1\)</span>. (We’ll assume sensor noise <span class="math inline">\(\sigma_v^2 = 1\)</span>).</p>
+<p>Trial 1: <span class="math inline">\(X_1=2, Y_1=3\)</span>:</p>
+<ul>
+<li>Predict: <span class="math inline">\(\hat{a}_{0} = 1\)</span>, <span class="math inline">\(P_{0} = 1\)</span>.</li>
+<li>Kalman Gain (how much is our trust in new measurement): <span class="math inline">\(K_1 = \frac{P X_1}{X_1^2 P + \sigma_v^2} = \frac{1 \cdot 2}{2^2 \cdot 1 + 1} = \frac{2}{5} = \mathbf{0.4}\)</span></li>
+<li>Update (go to new measurement direction): <span class="math inline">\(\hat{a}_1 = \hat{a}_{0} + K_1 (Y_1 - X_1 \hat{a}_{0}) = 1 + 0.4 (3 - 2 \cdot 1) = 1 + 0.4 = \mathbf{1.4}\)</span></li>
+<li>Update: <span class="math inline">\(P_1 = P_0 - K_1 X_1 P_0 = 1 - 0.4 \cdot 2 \cdot 1 = 1 - 0.8 = \mathbf{0.2}\)</span></li>
+</ul>
+<p>Trial 2: <span class="math inline">\(X_2=4, Y_2=5\)</span></p>
+<ul>
+<li>Predict: <span class="math inline">\(\hat{a}_{1} = 1.4\)</span>, <span class="math inline">\(P_{1} = 0.2\)</span>.</li>
+<li>Kalman Gain: <span class="math inline">\(K_2 = \frac{P X_2}{X_2^2 P + \sigma_v^2} = \frac{0.2 \cdot 4}{4^2 \cdot 0.2 + 1} = \frac{0.8}{3.2 + 1} = \frac{0.8}{4.2} = \mathbf{0.19}\)</span></li>
+<li>Update: <span class="math inline">\(\hat{a}_2 = \hat{a}_{1} + K_2 (Y_2 - X_2 \hat{a}_{1}) = 1.4 + 0.19 (5 - 4 \cdot 1.4) = 1.4 + 0.19 (5 - 5.6) = 1.4 - 0.114 = \mathbf{1.286}\)</span></li>
+<li>Update: <span class="math inline">\(P_2 = P_1 - K_2 X_2 P_1 = 0.2 - 0.19 \cdot 4 \cdot 0.2 = 0.2 - 0.152 = \mathbf{0.048}\)</span></li>
+</ul>
+<p>Trial 3: <span class="math inline">\(X_3=6, Y_3=7\)</span></p>
+<ul>
+<li>Predict: <span class="math inline">\(\hat{a}_{2} = 1.286\)</span>, <span class="math inline">\(P_{2} = 0.048\)</span>.</li>
+<li>Kalman Gain: <span class="math inline">\(K_3 = \frac{P X_3}{X_3^2 P + \sigma_v^2} = \frac{0.048 \cdot 6}{6^2 \cdot 0.048 + 1} = \frac{0.288}{1.728 + 1} = \frac{0.288}{2.728} = \mathbf{0.106}\)</span></li>
+<li>Update: <span class="math inline">\(\hat{a}_3 = \hat{a}_{2} + K_3 (Y_3 - X_3 \hat{a}_{2}) = 1.286 + 0.106 (7 - 6 \cdot 1.286) = 1.286 + 0.106 (7 - 7.716) = 1.286 - 0.076 = \mathbf{1.21}\)</span></li>
+<li>Update: <span class="math inline">\(P_3 = P_2 - K_3 X_3 P_2 = 0.048 - 0.106 \cdot 6 \cdot 0.048 = 0.048 - 0.0305 = \mathbf{0.0175}\)</span></li>
+</ul>
 </section>
 <section id="example-2-wiener-filter-for-signal-denoising" class="level2">
 <h2 class="anchored" data-anchor-id="example-2-wiener-filter-for-signal-denoising">Example 2: Wiener Filter for Signal Denoising</h2>
