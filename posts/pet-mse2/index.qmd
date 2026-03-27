@@ -1,6 +1,6 @@
 ---
 title: "Linear Mean Square Estimation"
-date: "2026-03-25"
+date: "2026-03-26"
 categories: [Statistics, Estimation]
 format:
   html:
@@ -266,6 +266,45 @@ $$E\{Y^2\} = \frac{3^2 + 5^2 + 7^2}{3} = \frac{9+25+49}{3} = \frac{83}{3} \appro
 $$E\{\hat{Y}Y\} = E\{(1.655 X_1 - 0.325 X_2)Y\} = 1.655 E\{X_1 Y\} - 0.325 E\{X_2 Y\}$$
 $$E\{\hat{Y}Y\} = 1.655 (22.67) - 0.325 (30.33) = 37.54 - 9.86 = \mathbf{27.68}$$
 $$e_m = 27.67 - 27.68 = -0.01 \approx 0$$
+
+## Example 1.2
+In this version, we look at all three measurements of $X_1$ and $Y$ to find the single best constant $a$ for the model $\hat{Y} = a X_1$.
+
+1. Data Vectors:$$\mathbf{y} = \begin{bmatrix} 3 \\ 5 \\ 7 \end{bmatrix}, \quad \mathbf{x_1} = \begin{bmatrix} 2 \\ 4 \\ 6 \end{bmatrix}$$
+
+2. Statistical Moments:
+$$E\{X_1^2\} = \frac{2^2 + 4^2 + 6^2}{3} = \frac{56}{3} \approx 18.67$$
+$$E\{Y X_1\} = \frac{(3\cdot2) + (5\cdot4) + (7\cdot6)}{3} = \frac{68}{3} \approx 22.67$$
+
+3. Solving for $a$:Using the formula $a = \frac{E\{YX_1\}}{E\{X_1^2\}}$:$$a = \frac{22.67}{18.67} \approx \mathbf{1.214}$$
+
+The MSE Solution: $\hat{Y} = 1.214 X_1$.
+
+## Solving Example 1.2 with Kalman Filter
+Part 2: The Recursive Kalman Filter (The Live Feed)Now, let's assume we don't have all the data at once. We get the pairs $(x, y)$ one by one. We start with a guess of $a_0 = 1$ and an initial uncertainty $P_0 = 1$. (We'll assume sensor noise $\sigma_v^2 = 1$).
+
+Trial 1: $X_1=2, Y_1=3$:
+
+* Predict: $\hat{a}_{0} = 1$, $P_{0} = 1$.
+* Kalman Gain (how much is our trust in new measurement): $K_1 = \frac{P X_1}{X_1^2 P + \sigma_v^2} = \frac{1 \cdot 2}{2^2 \cdot 1 + 1} = \frac{2}{5} = \mathbf{0.4}$
+* Update (go to new measurement direction): $\hat{a}_1 = \hat{a}_{0} + K_1 (Y_1 - X_1 \hat{a}_{0}) = 1 + 0.4 (3 - 2 \cdot 1) = 1 + 0.4 = \mathbf{1.4}$
+* Update: $P_1 = P_0 - K_1 X_1 P_0 = 1 - 0.4 \cdot 2 \cdot 1 = 1 - 0.8 = \mathbf{0.2}$
+
+
+Trial 2: $X_2=4, Y_2=5$
+
+* Predict: $\hat{a}_{1} = 1.4$, $P_{1} = 0.2$.
+* Kalman Gain: $K_2 = \frac{P X_2}{X_2^2 P + \sigma_v^2} = \frac{0.2 \cdot 4}{4^2 \cdot 0.2 + 1} = \frac{0.8}{3.2 + 1} = \frac{0.8}{4.2} = \mathbf{0.19}$
+* Update: $\hat{a}_2 = \hat{a}_{1} + K_2 (Y_2 - X_2 \hat{a}_{1}) = 1.4 + 0.19 (5 - 4 \cdot 1.4) = 1.4 + 0.19 (5 - 5.6) = 1.4 - 0.114 = \mathbf{1.286}$
+* Update: $P_2 = P_1 - K_2 X_2 P_1 = 0.2 - 0.19 \cdot 4 \cdot 0.2 = 0.2 - 0.152 = \mathbf{0.048}$
+
+Trial 3: $X_3=6, Y_3=7$
+
+* Predict: $\hat{a}_{2} = 1.286$, $P_{2} = 0.048$.
+* Kalman Gain: $K_3 = \frac{P X_3}{X_3^2 P + \sigma_v^2} = \frac{0.048 \cdot 6}{6^2 \cdot 0.048 + 1} = \frac{0.288}{1.728 + 1} = \frac{0.288}{2.728} = \mathbf{0.106}$
+* Update: $\hat{a}_3 = \hat{a}_{2} + K_3 (Y_3 - X_3 \hat{a}_{2}) = 1.286 + 0.106 (7 - 6 \cdot 1.286) = 1.286 + 0.106 (7 - 7.716) = 1.286 - 0.076 = \mathbf{1.21}$
+* Update: $P_3 = P_2 - K_3 X_3 P_2 = 0.048 - 0.106 \cdot 6 \cdot 0.048 = 0.048 - 0.0305 = \mathbf{0.0175}$
+
 
 ## Example 2: Wiener Filter for Signal Denoising
 * Prior Knowledge: We know from the manufacturer that the voltage is usually around $10\text{V}$, modeled as $\theta \sim N(10, 1)$.

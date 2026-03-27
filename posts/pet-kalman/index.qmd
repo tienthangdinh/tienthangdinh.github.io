@@ -1,0 +1,155 @@
+---
+title: "Kalman Filter"
+date: "2026-03-27"
+categories: [Statistics, Estimation]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+# Kalman Filter
+
+## Start with Assumption about System Model
+Before we calculate anything, we define how the world works using 2 things:
+
+* State Transition Equation: $x_k = \Phi x_{k-1} + w_k$
+
+    * $x_k$: The true state (e.g., position and velocity) at time $k$.
+    * $\Phi$ (or $F$): The matrix that moves the state forward in time (the "physics").
+    * $w_k$: Process Noise (variance $Q$) (like the wind?)
+* Observation Equation: $z_k = H x_k + v_k$
+
+    * $z_k$: The actual measurement from the sensor. (what sensor sees)
+    * $H$: The matrix that maps the state to what the sensor "sees."
+    * $v_k$: Measurement Noise (variance $R$).
+
+
+## Step 1: Predict
+Project the State:$$\hat{x}_{k|k-1} = \Phi \hat{x}_{k-1}$$
+
+Project the Error Covariance:$$P_{k|k-1} = \Phi P_{k-1} \Phi^T + Q$$
+
+## Step 2: Update using Measurement
+Calculate Kalman Gain ($K$): (how much we trust the sensor measurement = **how much we untrust the prediction**)
+$$K_k = P_{k|k-1} H^T (H P_{k|k-1} H^T + R)^{-1}$$
+
+Update State with the trust of sensor measurement:
+$$\hat{x}_k = \hat{x}_{k|k-1} + K_k (z_k - H \hat{x}_{k|k-1})$$
+
+Decrease the Uncertainty:
+$$P_k = (I - K_k H) P_{k|k-1}$$
+
+# FAQ
+### Why $\Phi P_{k-1} \Phi^T$ for Project the Error Covariance?
+Well it is called covariance propagation from current state $x_{old}$ to next state $x_{new}$. If $x_{new} = \phi x_{old}$, then the variance $P_{new} = \phi^2 P_{old}$.
+
+### Why $H P H^T$ in the Kalman Gain?
+Actually for exactly the same reason. Covariance propagation from the state space $x$ to the measurement space $z = Hx$. So there covariance has quadratic relationship $P_z = H P H^T$
+
+### Why $$P H^T$ in the Kalman Gain?
+Actually we are just applying the $z = Hx$, we are just mapping the same $P$ of $x$ to $z$ space. **IT IS A MAPPING OF COVARIANCE; NOT A PROPAGATION OF COVARIANCE**
+
+### Why $K_k H$ in Uncertainty Update?
+* $H$ takes your internal state (Position) and maps it to the sensor (Volts) ($z_k = H x_k + v_k$).
+* $K$ takes that sensor information (Volts) and maps it back to your state (Position) ($x_k = x_{k|k-1} + K_k (z_k - H x_{k|k-1})$).
+* $KH$ eventually bring back to a scaling scalar in sensor measurement space, it is the percentage of your current uncertainty that has been "explained" or "resolved" by the new measurement.
+
+# Example 1
+## System Setup (Model Assumption)
+Imagine a car moving along a straight line. We check its status every $\Delta t = 1$ second.
+
+State Vector: $\mathbf{x}_k = \begin{bmatrix} s_k \\ v_k \end{bmatrix}$ (Position, Velocity)
+
+State Transition Matrix ($\Phi$) in $x_k = \Phi x_{k-1} + w_k$: ($s_{new} = s_{old} + v \cdot \Delta t$ and $v_{new} = v_{old}$):
+$$\Phi = \begin{bmatrix} 1 & 1 \\ 0 & 1 \end{bmatrix}$$
+
+Observation Matrix ($H$) in $z_k = H x_k + v_k$: Our GPS measures directly only position, so 1 for that:
+$$H = \begin{bmatrix} 1 & 0 \end{bmatrix}$$
+
+Noise: Let's assume Measurement Noise $R = 4$ and Process Noise $Q = 0$ (perfect physics).
+
+## Initial Guess
+$\mathbf{\hat{x}}_0 = \begin{bmatrix} 0 \\ 10 \end{bmatrix}$ and $P_0 = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}$
+
+## Prediction Step (Time = 1s)
+Before looking at the GPS, we predict:
+$$\mathbf{\hat{x}}_{1|0} = \Phi \mathbf{\hat{x}}_0 = \begin{bmatrix} 1 & 1 \\ 0 & 1 \end{bmatrix} \begin{bmatrix} 0 \\ 10 \end{bmatrix} = \mathbf{\begin{bmatrix} 10 \\ 10 \end{bmatrix}}$$
+$$P_{1|0} = \Phi P_0 \Phi^T = \begin{bmatrix} 2 & 1 \\ 1 & 1 \end{bmatrix}$$
+
+## Update Step (Time = 1s)
+Now we get the GPS measurement $z_1 = 13$ (eventhough we predicted 10 :)))
+
+Calculate Kalman Gain (trust of sensor measurement = **how much we untrust the prediction**):
+$$K_1 = P_{1|0} H^T (H P_{1|0} H^T + R)^{-1} = \begin{bmatrix} 2 & 1 \\ 1 & 1 \end{bmatrix} \begin{bmatrix} 1 \\ 0 \end{bmatrix} (\begin{bmatrix} 1 & 0 \end{bmatrix} \begin{bmatrix} 2 & 1 \\ 1 & 1 \end{bmatrix} \begin{bmatrix} 1 \\ 0 \end{bmatrix} + 4)^{-1} = \begin{bmatrix} 2 \\ 1 \end{bmatrix} (2 + 4)^{-1} = \begin{bmatrix} 2/6 \\ 1/6 \end{bmatrix} = \begin{bmatrix} 0.333 \\ 0.167 \end{bmatrix}$$
+
+Update State with the trust of sensor measurement:
+$$\mathbf{\hat{x}}_1 = \mathbf{\hat{x}}_{1|0} + K_1 (z_1 - H \mathbf{\hat{x}}_{1|0}) = \begin{bmatrix} 10 \\ 10 \end{bmatrix} + \begin{bmatrix} 0.333 \\ 0.167 \end{bmatrix} (13 - 10) = \begin{bmatrix} 10 \\ 10 \end{bmatrix} + \begin{bmatrix} 1 \\ 0.5 \end{bmatrix} = \mathbf{\begin{bmatrix} 11 \\ 10.5 \end{bmatrix}}$$
+
+Decrease the Uncertainty:
+$$P_1 = (I - K_1 H) P_{1|0} = (\begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} - \begin{bmatrix} 0.333 & 0 \\ 0.167 & 0 \end{bmatrix}) \begin{bmatrix} 2 & 1 \\ 1 & 1 \end{bmatrix} = \begin{bmatrix} 0.667 & 1 \\ -0.167 & 1 \end{bmatrix} \begin{bmatrix} 2 & 1 \\ 1 & 1 \end{bmatrix} = \begin{bmatrix} 1.333 & 0.667 \\ 0.833 & 0.833 \end{bmatrix}$$
+
+
+# Scalar Examples
+## Simplest Static Example
+Firstly the difference:
+
+- MSE says: "I used $Y$ once in the lab to find $a=1.214$. I will use $1.214$ forever."
+- Kalman says: "I used the statistics of $Y$ (its variance) to set my initial trust. But as I see more $X$ values, I will look at the 'surprises' (innovations) to refine my guess in real-time."
+
+### The Static MSE Approach
+> You use the Ground Truth $Y$ in the lab to find a fixed weight $a$. You never change that weight and use it to estimate $Y$ from $X$ in real world.
+
+What we know from the World Model: true temperature is constant $x = 20$ (or manufacturer etc...)
+
+Measurements: $z_1 = 18$, $z_2 = 22$, $z_3 = 19$. We usually solve using $C_{YX} = a C_X$. Now let's calculate the Covariances ($C_X$ and $C_{YX}$):
+
+$$E\{X_1^2\} = \frac{18^2 + 22^2 + 19^2}{3} = \frac{1161}{3} = 387$$
+$$E\{Y X_1\} = \frac{(20\cdot18) + (20\cdot22) + (20\cdot19)}{3} = \frac{1180}{3}$$
+
+Solution $a = \frac{E\{YX_1\}}{E\{X_1^2\}} = \frac{1180/3}{387}$
+$$\hat{Y} = \frac{1}{3}(a X_1 + a X_2 + a X_3) = \frac{1}{3} \cdot \frac{1180}{387 \cdot 3} \cdot (18 + 22 + 19) \approx 19.9885$$
+
+### Static Kalman Filter
+> "I don't know the truth $Y$, but I will keep collecting data until trust in data $P$ is more than trust in sensor noise $\sigma_v^2$. Because it's when we say 'I trust my filter more than the next measurement'. And $P_0$ is the initial trust. and $\hat{x}_0$ is the initial guess."
+
+What we know from the World Model: this time **not the value $x=20$ but the statistics**. Sensor with noise variance $\sigma_v^2 = 4$.We start with a "Prior Belief" (initial guess) of $\hat{x}_0 = 25$ with an initial uncertainty (error variance) of $P_0 = 10$.
+
+Step 1: $z_1 = 18$:
+$$K_1 = \frac{P_0}{P_0 + \sigma_v^2} = \frac{10}{10 + 4} = \mathbf{0.714}$$
+$$\hat{x}_1 = \hat{x}_0 + K_1(z_1 - \hat{x}_0) = 25 + 0.714(18 - 25) = \mathbf{20}$$
+$$P_1 = (1 - K_1)P_0 = (1 - 0.714) \times 10 = \mathbf{2.86}$$
+
+Step 2: $z_2 = 22$:
+$$K_2 = \frac{P_1}{P_1 + \sigma_v^2} = \frac{2.86}{2.86 + 4} = \mathbf{0.417}$$
+$$\hat{x}_2 = \hat{x}_1 + K_2(z_2 - \hat{x}_1) = 20 + 0.417(22 - 20) = \mathbf{20.83}$$
+$$P_2 = (1 - K_2)P_1 = (1 - 0.417) \times 2.86 = \mathbf{1.67}$$
+
+**We keep measuring until $P_n$ is smaller than sensor noise $\sigma_v^2$. Because it's when we say "I trust my filter more than the next measurement".**
+
+## Dynamic Example
+
+Increasing temperature
+
+* True State ($x_t$): Starts at 20°C and increases: $x_t = x_{t-1} + 1$.
+* Process Noise ($Q$): We are 100% sure about this "+1" rule, so $Q = 0$.
+* Sensor Noise ($\sigma_v^2$): Still 4.
+* Initial Guess: $\hat{x}_0 = 20$ with uncertainty $P_0 = 2$.
+
+Step 1: (Sensor measured $z_1 = 22.5$):
+
+* Predicted State: $\hat{x}_{1|0} = 20 + 1 = \mathbf{21}$
+* Predicted Uncertainty: $P_{1|0} = P_0 + Q = 2 + 0 = \mathbf{2}$
+* Kalman Gain (how much we trust the sensor): $K_1 = \frac{P_{1|0}}{P_{1|0} + \sigma_v^2} = \frac{2}{2 + 4} = \mathbf{0.333}$
+* Updated State: $\hat{x}_1 = \hat{x}_{1|0} + K_1(z_1 - \hat{x}_{1|0}) = 21 + 0.333(22.5 - 21) = \mathbf{21.5}$
+* Updated Uncertainty: $P_1 = (1 - K_1)P_{1|0} = (1 - 0.333) \times 2 = \mathbf{1.334}$
+
+Step 2: (Sensor measured $z_2 = 21$)
+
+* Predicted State: $\hat{x}_{2|1} = \hat{x}_1 + 1 = 21.5 + 1 = \mathbf{22.5}$
+* Predicted Uncertainty: $P_{2|1} = P_1 + Q = 1.334 + 0 = \mathbf{1.334}$
+* Kalman Gain: $K_2 = \frac{P_{2|1}}{P_{2|1} + \sigma_v^2} = \frac{1.334}{1.334 + 4} = \mathbf{0.249}$
+* Updated State: $\hat{x}_2 = \hat{x}_{2|1} + K_2(z_2 - \hat{x}_{2|1}) = 22.5 + 0.249(21 - 22.5) = \mathbf{22.126}$
+* Updated Uncertainty: $P_2 = (1 - K_2)P_{2|1} = (1 - 0.249) \times 1.334 = \mathbf{1.002}$
+
+

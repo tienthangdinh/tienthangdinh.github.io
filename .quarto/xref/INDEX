@@ -112,5 +112,8 @@
   },
   "posts/pet-mse2/index.qmd": {
     "index.html": "3892f5b6"
+  },
+  "posts/pet-kalman/index.qmd": {
+    "index.html": "d9a603da"
   }
 }
