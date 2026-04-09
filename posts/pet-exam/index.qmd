@@ -1,0 +1,141 @@
+---
+title: "Exam Prediction & Estimation Techniques"
+date: "2026-04-01"
+categories: [Statistics, Estimation]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+# Random Variables
+
+### We know a random variable is normal with mean $\eta$ and standard deviation $\sigma$. If $f(\eta) = 0.6$, what is its variance?
+**Answer:**
+Normal distribution pdf:
+$$f(x) = \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{1}{2}\left(\frac{x-\eta}{\sigma}\right)^2}$$
+we have:
+$$f(\eta) = \frac{1}{\sigma \sqrt{2\pi}} = 0.6$$
+$$\sigma = \frac{1}{0.6 \sqrt{2\pi}}$$
+
+### Estimate $\mathbf{x}$ using two random variables $\mathbf{x_1}$ and $\mathbf{x_2}$. How does a simple linear model look?
+**Answer:**
+The general affine (linear with an offset) model looks like this:
+$$\hat{x} = a_1 x_1 + a_2 x_2 + b$$
+
+### The random variable $\mathbf{x}$ is exponential with $f(x) = \lambda e^{-\lambda x} U(x)$. Determine its conditional density $f(x|M)$ for $M = (\mathbf{x} \ge x_0)$.
+**Answer:**
+Let's start with this:
+$$f(x|M) = \frac{f(x, M)}{P(M)}$$
+But what is $f(x, M)$? Actually $f(x, M)$ is still simply the original curve $f(x)$, but chopped off at $x_0$ (so that everything before $x_0$ is completely erased (set to zero)). But now we have to scale it back! So we divide by $P(M)$ to make the total area under the curve equal to 1. To find $P(M)$ we integrate $f(x)$ from $x_0$ to infinity:
+$$P(M) = P(\mathbf{x} \ge x_0) = \int_{x_0}^{\infty} \lambda e^{-\lambda x} dx = e^{-\lambda x_0}$$
+Therefore:
+$$f(x|M) = \frac{\lambda e^{-\lambda x}}{e^{-\lambda x_0}} = \lambda e^{-\lambda (x - x_0)}$$ 
+Basically it looks exactly like original curve but shifted to the left by $x_0$.
+
+# Function of ONE Random Variable
+### Find the density of $\mathbf{y}$ given $\mathbf{y} = 3\mathbf{x}^2$, using direct substitution and the Jacobian approach. Assume the input has a density $f_x(x)$.
+**Answer:** For a given y, we can have multiple x values, so we need to sum over all possible x values:
+$$f_y(y) = \sum f_x(x_i) |J_i|$$
+where Jacobian $J$ is simply the derivative of the inverse transformation: $J = \frac{dx}{dy}$. It is quite intuitive right?
+$$f_y(y) = f_x(x_1)|J_1| + f_x(x_2)|J_2|$$
+$$f_y(y) = f_x(\sqrt{y/3}) \left( \frac{1}{2\sqrt{3y}} \right) + f_x(-\sqrt{y/3}) \left( \frac{1}{2\sqrt{3y}} \right)$$
+
+### A zero-mean normal distribution goes through a ReLU function. What is the output distribution?
+**Answer:**
+ReLU (Rectified Linear Unit) function is defined as: $y = \max(0, x)$.
+$$f_y(y) = \sum f_x(x_i) |J_i|$$
+with $J = \frac{dx}{dy}$. For $y > 0$, we have $x = y$, so $J = 1$. For $y < 0$, we have $x = 0$, so $J = 0$. Therefore:
+$$f_y(y) = \sum_{y>0} f_x(y) + \sum_{y<0} f_x(0) \cdot 0$$
+$$f_y(y) = \begin{cases} f_x(y) & y > 0 \\ 0 & y < 0 \end{cases}$$
+
+
+
+
+### A hidden layer uses $y = \tanh(x)$. If the input has density $f(x)$, what is the density of $y$?
+$$f_y(y) = \sum f_x(x_i) |J_i|$$
+with $J = \frac{dx}{dy}$. Since $y = \tanh(x)$, we have $x = \text{arctanh}(y)$.
+$$f_y(y) = f_x(\text{arctanh}(y)) \left| \frac{d}{dy} \text{arctanh}(y) \right| = f_x(\text{arctanh}(y)) \frac{1}{1-y^2}$$
+
+### $\mathbf{x} = \frac{1}{n}\sum_{i=1}^n \mathbf{x}_i + b$. Inputs are independent and identically distributed (i.i.d.) with mean $\eta$. What is the mean and variance of $\mathbf{x}$?
+
+Let's assume the variance of the individual inputs $\mathbf{x}_i$ is $\sigma^2$ (since they are identically distributed).
+
+**Finding the Mean (Expected Value):**
+Expectation is a linear operator, meaning we can distribute it across sums.
+$$E[\mathbf{x}] = E\left[ \frac{1}{n}\sum \mathbf{x}_i + b \right]$$
+$$E[\mathbf{x}] = \frac{1}{n} \sum E[\mathbf{x}_i] + E[b]$$
+$$E[\mathbf{x}] = \frac{1}{n} (n \cdot \eta) + b$$
+Mean of $\mathbf{x}$ = $\eta + b$
+
+**Finding the Variance:**
+Variance has two important rules:
+
+* Adding a constant ($b$) shifts the data but does not change the spread, so $\text{Var}(X + b) = \text{Var}(X)$.
+* Multiplying by a constant ($1/n$) scales the variance by the square of that constant: $\text{Var}(cX) = c^2 \text{Var}(X)$.
+
+In this case:
+$$\text{Var}(\mathbf{x}) = \text{Var}\left( \frac{1}{n}\sum \mathbf{x}_i + b \right)$$
+$$\text{Var}(\mathbf{x}) = \text{Var}\left( \frac{1}{n}\sum \mathbf{x}_i \right)$$
+$$\text{Var}(\mathbf{x}) = \frac{1}{n^2} \text{Var}\left( \sum \mathbf{x}_i \right)$$
+because these are totally different random variables $\mathbf{x}_i$, so it is not like we are scaling (multiply) the same variable $n$ times. Instead, we are summing up $n$ different variables, so the variance adds up:
+$$\text{Var}(\mathbf{x}) = \frac{1}{n^2} (n \cdot \sigma^2) = \frac{\sigma^2}{n}$$
+
+Variance of $\mathbf{x}$ = $\frac{\sigma^2}{n}$
+
+
+### Suppose $\mathbf{x}$ and $\mathbf{y}$ have a one-to-one relationship. If we know $F(x) = P\{\mathbf{x} \le x\}$, what will be $F(y) = P\{\mathbf{y} \le y\}$? Explain. Is it possible to establish the relationship between the two random variables if we know their distribution functions?
+
+Let the one-to-one relationship be $y = g(x)$.
+If $g(x)$ is strictly increasing:$$F_y(y) = P(\mathbf{y} \le y) = P(g(\mathbf{x}) \le y) = P(\mathbf{x} \le g^{-1}(y)) = F_x(g^{-1}(y))$$
+If $g(x)$ is strictly decreasing:$$F_y(y) = P(\mathbf{y} \le y) = P(g(\mathbf{x}) \le y) = P(\mathbf{x} \ge g^{-1}(y)) = 1 - F_x(g^{-1}(y))$$
+
+#### Can we establish the relationship if we only know $F_x(x)$ and $F_y(y)$?
+
+Pretty nicely yes. If we assume they have a strictly increasing relationship, then the cumulative probabilities must match. The 50th percentile of $\mathbf{x}$ will map to the 50th percentile of $\mathbf{y}$.$$F_y(y) = F_x(x)$$
+To find the relationship $y = g(x)$, we just apply the inverse CDF of $y$:$$y = F_y^{-1}(F_x(x))$$
+
+
+# MSE
+
+### The Principle of Minimum Mean Square Estimation (MMSE)
+The Cost Function: $J = E[e^2] = E[(y - \hat{y})^2]$. We want to find the formula for $\hat{y}$ that minimizes $J$.
+
+'need correction'
+
+### We have two sensors, $\mathbf{s}_1$ and $\mathbf{s}_2$, and an unknown target $\mathbf{y}$. How do we linearly combine them, and how do we find the optimal coefficients?
+We assume a linear estimator (a weighted sum of the sensors). Let's call the weights $a_1$ and $a_2$:$$\hat{y} = a_1 \mathbf{s}_1 + a_2 \mathbf{s}_2$$
+
+Our error is $e = \mathbf{y} - (a_1 \mathbf{s}_1 + a_2 \mathbf{s}_2)$. We want to minimize $E[e^2]$.
+To find the minimum, we take the partial derivative of $E[e^2]$ with respect to each weight and set them to $0$.
+
+**Step 1: Derivative with respect to $a_1$**
+$$\frac{\partial}{\partial a_1} E[(\mathbf{y} - a_1 \mathbf{s}_1 - a_2 \mathbf{s}_2)^2] = 0$$
+$$E[2(\mathbf{y} - a_1 \mathbf{s}_1 - a_2 \mathbf{s}_2)(-\mathbf{s}_1)] = 0$$
+$$E[\mathbf{y}\mathbf{s}_1 - a_1 \mathbf{s}_1^2 - a_2 \mathbf{s}_1 \mathbf{s}_2] = 0$$
+$$E[\mathbf{y}\mathbf{s}_1] = a_1 E[\mathbf{s}_1^2] + a_2 E[\mathbf{s}_1 \mathbf{s}_2]$$
+
+**Step 2: Derivative with respect to $a_2$**
+Following the exact same steps, but taking the derivative with respect to $a_2$, yields:$$E[\mathbf{y}\mathbf{s}_2] = a_1 E[\mathbf{s}_1 \mathbf{s}_2] + a_2 E[\mathbf{s}_2^2]$$
+
+**Step 3: Determine the Coefficients**
+You now have a system of two linear equations. We can write this elegantly in matrix form:$$\begin{bmatrix} E[\mathbf{s}_1^2] & E[\mathbf{s}_1 \mathbf{s}_2] \\ E[\mathbf{s}_1 \mathbf{s}_2] & E[\mathbf{s}_2^2] \end{bmatrix} \begin{bmatrix} a_1 \\ a_2 \end{bmatrix} = \begin{bmatrix} E[\mathbf{y}\mathbf{s}_1] \\ E[\mathbf{y}\mathbf{s}_2] \end{bmatrix}$$To find the optimal coefficients ($a_1, a_2$), you simply invert that 2x2 matrix on the left and multiply it by the vector on the right.
+$$a = C_{SS}^{-1} C_{Sy}$$
+
+### in MSE, the error is orthogonal to the input. Show that the error $\mathbf{e}$ is orthogonal to the data $\mathbf{x}$, meaning $E(\mathbf{e}\mathbf{x}) = 0$
+
+This is arguably the most beautiful proof in signal processing. Let's represent our data as a vector $\mathbf{x}$ and our weights as a vector $\mathbf{a}$.
+* Our estimate is $\hat{y} = \mathbf{a}^T \mathbf{x}$.
+* Our error is $\mathbf{e} = \mathbf{y} - \mathbf{a}^T \mathbf{x}$.
+
+We want to find the optimal $\mathbf{a}$ that minimizes $J = E[\mathbf{e}^2]$. To do this, we take the gradient of $J$ with respect to the weight vector $\mathbf{a}$ and set it to a vector of zeros:
+$$\nabla_\mathbf{a} E[\mathbf{e}^2] = 0$$
+Move the gradient inside the expectation:
+$$E[\nabla_\mathbf{a} (\mathbf{y} - \mathbf{a}^T \mathbf{x})^2] = 0$$
+$$E[2(\mathbf{y} - \mathbf{a}^T \mathbf{x})(-\mathbf{x})] = 0$$
+$$E[(\mathbf{y} - \mathbf{a}^T \mathbf{x})\mathbf{x}] = 0$$
+But wait! What is $(\mathbf{y} - \mathbf{a}^T \mathbf{x})$? That is exactly our definition of the error $\mathbf{e}$! Substitute $\mathbf{e}$ back in:
+$$E[\mathbf{e}\mathbf{x}] = 0$$
+
+#### But what does this even mean?
+Linear regression, the error $y - \hat{y}$ is always orthogonal to the input $x$. Remember? 

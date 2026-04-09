@@ -1,0 +1,291 @@
+---
+title: "Nonlinear Optimization"
+date: "2026-04-08"
+categories: [Robotics, Optimization, SLAM]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+# Batch State Estimation
+## Formulating State Estimation in SLAM process
+SLAM process and observation model can be formulated as:
+$$\begin{cases}
+\mathbf{x}_k = \mathbf{f}(\mathbf{x}_{k-1}, \mathbf{u}_k) + \mathbf{w}_k \\
+\mathbf{z}_{k,j} = \mathbf{h}(\mathbf{y}_j, \mathbf{x}_k) + \mathbf{v}_{k,j}
+\end{cases}$$
+
+* $\mathbf{x}_k$ is the state of the robot at time $k$, 
+* $\mathbf{u}_k$ is the control input at time $k$, 
+* $\mathbf{z}_{k,j}$ is the measurement of the $j$-th landmark at time $k$, 
+* $\mathbf{y}_j$ is the position of the $j$-th landmark, 
+* $\mathbf{w}_k$ is the process noise, and 
+* $\mathbf{v}_{k,j}$ is the measurement noise.
+
+This specific form of the observation equation relates a 3D landmark $\mathbf{y}_j$ to its pixel coordinates 
+$\mathbf{z}_{k,j}$ using the camera's pose $(\mathbf{R}_k, \mathbf{t}_k)$ and intrinsic matrix $\mathbf{K}$:$$\mathbf{z}_{k,j} = \frac{1}{s}\mathbf{K}(\mathbf{R}_k \mathbf{y}_j + \mathbf{t}_k)$$
+
+* $s$: $Z$ distance of the landmark in camera coords. (remember?)
+* $\mathbf{K}$: Camera intrinsic matrix.
+* $\mathbf{R}_k, \mathbf{t}_k$: Camera poserelative to world coords (extrinsic) at time $k$.
+
+In state estimation, we assume the noise terms for both motion and observation follow a zero-mean Gaussian distribution:
+$$\mathbf{w}_k \sim \mathcal{N}(\mathbf{0}, \mathbf{R}_k)$$
+$$\mathbf{v}_{k,j} \sim \mathcal{N}(\mathbf{0}, \mathbf{Q}_{k,j})$$
+
+* $\mathbf{w}_k$: Process noise (motion uncertainty).
+* $\mathbf{v}_{k,j}$: Measurement noise (sensor/observation uncertainty).
+* $\mathbf{R}_k, \mathbf{Q}_{k,j}$: Covariance matrices representing the uncertainty of the noise.
+
+## Bring Batch Estimation to MAP/MLE
+In batch optimization, we look at all time steps ($1$ to $N$) and all map points ($1$ to $M$) simultaneously:
+
+* States to estimate: $\mathbf{x} = \{\mathbf{x}_1, \dots, \mathbf{x}_N\}, \quad \mathbf{y} = \{\mathbf{y}_1, \dots, \mathbf{y}_M\}$
+* Given data: $\mathbf{u}$ (all control inputs), $\quad \mathbf{z}$ (all observations)
+
+We want to find the probability of the states $(\mathbf{x}, \mathbf{y})$ given the data $(\mathbf{z}, \mathbf{u})$. Using Bayes' Rule:
+$$P(\mathbf{x}, \mathbf{y} | \mathbf{z}, \mathbf{u}) = \frac{P(\mathbf{z}, \mathbf{u} | \mathbf{x}, \mathbf{y}) P(\mathbf{x}, \mathbf{y})}{P(\mathbf{z}, \mathbf{u})} \propto \underbrace{P(\mathbf{z}, \mathbf{u} | \mathbf{x}, \mathbf{y})}_{\text{likelihood}} \underbrace{P(\mathbf{x}, \mathbf{y})}_{\text{prior}}$$
+
+The "optimal" estimate $(\mathbf{x}, \mathbf{y})^*$ is the one that maximizes the posterior probability:
+$$(\mathbf{x}, \mathbf{y})^*_{\text{MAP}} = \text{arg max} P(\mathbf{x}, \mathbf{y} | \mathbf{z}, \mathbf{u}) = \text{arg max} P(\mathbf{z}, \mathbf{u} | \mathbf{x}, \mathbf{y}) P(\mathbf{x}, \mathbf{y})$$
+
+If we have no "prior" knowledge (i.e., we don't know where the robot starts or where the points are initially), the prior term $P(\mathbf{x}, \mathbf{y})$ becomes a constant and can be dropped
+$$(\mathbf{x}, \mathbf{y})^*_{\text{MLE}} = \text{arg max} P(\mathbf{z}, \mathbf{u} | \mathbf{x}, \mathbf{y})$$
+
+> Since we know the observation data, the maximum likelihood estimation can be understood as: “under what state, it is most likely to produce the data currently observed”.
+
+## Solving MAP/MLE using Least Square
+
+Now we have formulated the state estimation problem into a MAP/MLE problem, and the next question is how to solve it. Under the assumption of Gaussian distribution, we can have a simpler form of the maximum likelihood problem.
+
+Given the observation model $\mathbf{z}_{k,j} = h(\mathbf{y}_j, \mathbf{x}_k) + \mathbf{v}_{k,j}$ and Gaussian noise $\mathbf{v} \sim \mathcal{N}(\mathbf{0}, \mathbf{Q}_{k,j})$, the probability of seeing a specific measurement is:
+$$P(\mathbf{z}_{k,j} | \mathbf{x}_k, \mathbf{y}_j) = \mathcal{N}(h(\mathbf{y}_j, \mathbf{x}_k), \mathbf{Q}_{k,j})$$
+
+Before tackling the above, just start from here. The expansion of a Gaussian distribution for a state $\mathbf{x}$ with mean $\mu$ and covariance $\mathbf{\Sigma}$ is:
+$$P(\mathbf{x}) = \frac{1}{\sqrt{(2\pi)^N \det(\mathbf{\Sigma})}} \exp \left( -\frac{1}{2}(\mathbf{x} - \mu)^T \mathbf{\Sigma}^{-1} (\mathbf{x} - \mu) \right)$$
+
+Taking the negative natural logarithm ($-\ln$) of the Gaussian PDF allows us to turn a maximization problem into a minimization problem:
+$$-\ln(P(\mathbf{x})) = \underbrace{\frac{1}{2} \ln \left( (2\pi)^N \det(\mathbf{\Sigma}) \right)}_{\text{not x-dependent (discarded)}} + \frac{1}{2}(\mathbf{x} - \mu)^T \mathbf{\Sigma}^{-1} (\mathbf{x} - \mu)$$
+
+**TURNING POINT!!!:** Applying this knowledge back to the MAP/MLE derivation of SLAM process we have:
+$$\begin{aligned}
+(\mathbf{x}_k, \mathbf{y}_j)^* &= \arg \max \mathcal{N}(h(\mathbf{y}_j, \mathbf{x}_k), \mathbf{Q}_{k,j}) \\
+&= \arg \min \left( (\mathbf{z}_{k,j} - h(\mathbf{x}_k, \mathbf{y}_j))^T \mathbf{Q}_{k,j}^{-1} (\mathbf{z}_{k,j} - h(\mathbf{x}_k, \mathbf{y}_j)) \right)
+\end{aligned}$$
+
+> $(\mathbf{z}_{k,j} - h(\mathbf{x}_k, \mathbf{y}_j))$ is the difference between what the sensor actually saw and what the model predicted it would see. So you can slowly see MLE is starting to be exposed here right?
+
+Extending this with the whole SLAM process, we have:
+$$P(\mathbf{z}, \mathbf{u} | \mathbf{x}, \mathbf{y}) = \prod_{k} P(\mathbf{u}_k | \mathbf{x}_{k-1}, \mathbf{x}_k) \prod_{k,j} P(\mathbf{z}_{k,j} | \mathbf{x}_k, \mathbf{y}_j)$$
+$$P(\mathbf{z}, \mathbf{u} | \mathbf{x}, \mathbf{y}) = \prod_{k} \mathcal{N}(\mathbf{u}_k | \mathbf{f}(\mathbf{x}_{k-1}, \mathbf{u}_k), \mathbf{R}_k) \prod_{k,j} \mathcal{N}(\mathbf{z}_{k,j} | h(\mathbf{y}_j, \mathbf{x}_k), \mathbf{Q}_{k,j})$$
+$$\min J(\mathbf{x}, \mathbf{y}) = \sum_{k} \mathbf{x}_k - f(\mathbf{x}_{k-1}, \mathbf{u}_k)^T \mathbf{R}_k^{-1} (\mathbf{x}_k - f(\mathbf{x}_{k-1}, \mathbf{u}_k)) + \sum_{k} \sum_{j} \mathbf{z}_{k,j} - h(\mathbf{y}_j, \mathbf{x}_k)^T \mathbf{Q}_{k,j}^{-1} (\mathbf{z}_{k,j} - h(\mathbf{y}_j, \mathbf{x}_k))$$
+$$\min J(\mathbf{x}, \mathbf{y}) = \sum_{k} \mathbf{e}_{u,k}^T \mathbf{R}_k^{-1} \mathbf{e}_{u,k} + \sum_{k} \sum_{j} \mathbf{e}_{z,k,j}^T \mathbf{Q}_{k,j}^{-1} \mathbf{e}_{z,k,j}$$
+
+* Motion Error: $\mathbf{e}_{u,k} = \mathbf{x}_k - f(\mathbf{x}_{k-1}, \mathbf{u}_k)$
+* Observation Error: $\mathbf{e}_{z,j,k} = \mathbf{z}_{k,j} - h(\mathbf{x}_k, \mathbf{y}_j)$
+
+## Example of Linear 1D Batch Estimation
+For a car moving along the $x$-axis at time steps $k=1,2,3$:$$\begin{cases}
+    x_k = x_{k-1} + u_k + w_k \\
+    z_k = x_k + v_k
+\end{cases}$$
+
+* $x_k$: Position at time $k$.
+* $u_k$: Control input (distance commanded).
+* $z_k$: Measured position (GPS or laser).
+
+We group all positions into $\mathbf{x} = [x_0, x_1, x_2, x_3]^T$ and all data into $\mathbf{u}$ and $\mathbf{z}$:$$\mathbf{x}^*_{\text{map}} = \arg \max \prod_{k=1}^{3} P(u_k | x_{k-1}, x_k) \prod_{k=1}^{3} P(z_k | x_k)$$
+
+Where the individual densities are:
+$$P(u_k | x_{k-1}, x_k) = \mathcal{N}(x_k - x_{k-1}, Q_k)$$
+$$P(z_k | x_k) = \mathcal{N}(x_k, R_k)$$
+
+Define the residuals (errors):
+$$e_{u,k} = x_k - x_{k-1} - u_k, \quad e_{z,k} = z_k - x_k$$
+The total cost function to minimize is:
+$$\min J(x) = \sum_{k=1}^{3} e_{u,k}^T Q_k^{-1} e_{u,k} + \sum_{k=1}^{3} e_{z,k}^T R_k^{-1} e_{z,k}$$
+
+with $\mathbf{x} = \begin{bmatrix} x_0 \\ x_1 \\ x_2 \\ x_3 \end{bmatrix}$ and $\mathbf{y} = \begin{bmatrix} u_1 \\ u_2 \\ u_3 \\ z_1 \\ z_2 \\ z_3 \end{bmatrix}$. 
+
+We define $\mathbf{y} - \mathbf{H}\mathbf{x} = \mathbf{e}$ is just a shorthand for a bunch of individual subtractions. To get the error $\mathbf{e}$, we take the "measured value" from $\mathbf{y}$ and subtract the "predicted value" (which is $\mathbf{H}$ times $\mathbf{x}$).
+$$\mathbf{y} - \mathbf{H}\mathbf{x} = \mathbf{e} \sim \mathcal{N}(\mathbf{0}, \mathbf{\Sigma})$$
+$$\mathbf{H} = \begin{bmatrix} 
+1 & -1 & 0 & 0 \\ 
+0 & 1 & -1 & 0 \\ 
+0 & 0 & 1 & -1 \\ \hline
+0 & 1 & 0 & 0 \\ 
+0 & 0 & 1 & 0 \\ 
+0 & 0 & 0 & 1 
+\end{bmatrix}$$
+
+in this case, Q and R are just scalars. (or 1x1 matrix). So to match the original equation, we set:
+$$\mathbf{\Sigma} = \text{diag}(Q_1, Q_2, Q_3, R_1, R_2, R_3) = \begin{bmatrix} 
+Q_1 & 0 & 0 & 0 & 0 & 0 \\ 
+0 & Q_2 & 0 & 0 & 0 & 0 \\ 
+0 & 0 & Q_3 & 0 & 0 & 0 \\ 
+0 & 0 & 0 & R_1 & 0 & 0 \\ 
+0 & 0 & 0 & 0 & R_2 & 0 \\ 
+0 & 0 & 0 & 0 & 0 & R_3 
+\end{bmatrix}$$
+
+
+So that we could formulate our linear estimation problem into matrix form:
+$$\mathbf{x}^*_{\text{map}} = \arg \min \mathbf{e}^T \mathbf{\Sigma}^{-1} \mathbf{e} = \arg \min (\mathbf{y} - \mathbf{H}\mathbf{x})^T \mathbf{\Sigma}^{-1} (\mathbf{y} - \mathbf{H}\mathbf{x})$$
+
+Since this specific example is linear, it has a closed-form analytical solution (this is essentially what a Kalman Filter calculates, but for all time steps at once):
+$$\mathbf{x}^*_{\text{map}} = (\mathbf{H}^T \mathbf{\Sigma}^{-1} \mathbf{H})^{-1} \mathbf{H}^T \mathbf{\Sigma}^{-1} \mathbf{y}$$
+
+Similar to Kalman Filter, just that the H here means sth different. And also similar to MSE ($a = C_{xx}^{-1} C_{xy}$)
+
+## Non-linear Least Square
+Last example was linear, which is why we could find the "perfect" answer in one single step. But cameras and rotations are nonlinear, so we can't solve them that easily. Generally:
+$$\min_{\mathbf{x}} F(\mathbf{x}) = \frac{1}{2} \|f(\mathbf{x})\|^2_2$$
+In a perfect world, we would just take the derivative and set it to zero:
+$$\frac{dF}{d\mathbf{x}} = \mathbf{0}$$
+But since $f(x)$ is nonlinear, the derivative is also nonlinear, so we can't solve it directly. Instead, we use an iterative approach. We start with an initial guess $\mathbf{x}_0$ and iteratively update it until it converges to the optimal solution. At each iteration $k$, find an increment $\Delta\mathbf{x}_k$ that makes the error smaller: $\|f(\mathbf{x}_k + \Delta\mathbf{x}_k)\|^2_2 < \|f(\mathbf{x}_k)\|^2_2$.
+
+But how to do it? Taylor Expansion.
+
+We approximate the value of our function $F$ at a nearby point $\mathbf{x} + \Delta\mathbf{x}$ using its derivatives at the current point $\mathbf{x}$:
+$$F(\mathbf{x} + \Delta\mathbf{x}) \approx F(\mathbf{x}) + \mathbf{J}(\mathbf{x})^T \Delta\mathbf{x} + \frac{1}{2} \Delta\mathbf{x}^T \mathbf{H}(\mathbf{x}) \Delta\mathbf{x}$$
+
+* $\mathbf{J}(\mathbf{x})$ (Jacobian/Gradient): The first derivative. (slope direction).
+* $\mathbf{H}(\mathbf{x})$ (Hessian): The second derivative. (curvature).
+
+### Method 1: First Order (Gradient Descent)
+If we ignore the Hessian ($\mathbf{H}$) and only keep the first-order term, we just follow the slope. The "best" direction to go is the opposite of the gradient:
+$$
+\begin{aligned}
+\Delta\mathbf{x}^* &= -\mathbf{J}(\mathbf{x}) \\
+\mathbf{x}_{k+1} &= \mathbf{x}_k + \Delta\mathbf{x}^* = \mathbf{x}_k - \mathbf{J}(\mathbf{x}_k)
+\end{aligned}
+$$
+
+* Pros: Very simple to calculate.
+* Cons: It's "greedy." It often zig-zags back and forth across a valley floor instead of following the valley to the bottom.
+
+### Method 2: Second Order (Newton's Method)
+If we keep the second-order term (the Hessian), we treat the local area like a quadratic bowl. To find the minimum of that bowl, we take the derivative of the expansion with respect to $\Delta\mathbf{x}$ and set it to zero:
+Because:
+$$F(\mathbf{x} + \Delta\mathbf{x}) \approx F(\mathbf{x}) + \mathbf{J}(\mathbf{x})^T \Delta\mathbf{x} + \frac{1}{2} \Delta\mathbf{x}^T \mathbf{H}(\mathbf{x}) \Delta\mathbf{x}$$
+So to find the optimal $\Delta\mathbf{x}^*$:
+$$\Delta\mathbf{x}^* = \arg \min F(\mathbf{x} + \Delta\mathbf{x})$$
+$$\Delta\mathbf{x}^* = \arg \min \left( F(\mathbf{x}) + \mathbf{J}(\mathbf{x})^T \Delta\mathbf{x} + \frac{1}{2} \Delta\mathbf{x}^T \mathbf{H}(\mathbf{x}) \Delta\mathbf{x} \right)$$
+$$\frac{dF(\mathbf{x} + \Delta\mathbf{x})}{d\Delta\mathbf{x}} = \mathbf{J}(\mathbf{x}) + \mathbf{H}(\mathbf{x}) \Delta\mathbf{x} = 0$$
+$$\Delta\mathbf{x}^* = -\mathbf{H}(\mathbf{x})^{-1} \mathbf{J}(\mathbf{x})$$
+
+* Pros: Much faster convergence. It "sees" the curvature and points more directly to the bottom.
+* Cons: Calculating the Hessian $\mathbf{H}$ (the matrix of second derivatives) is computationally expensive and difficult for complex SLAM problems. So basically we want to avoid this.
+
+### Method 3: Gauss-Newton Method (the standard in SLAM)
+The "trick" here is that instead of doing a Taylor expansion on the giant, complex objective function $F(\mathbf{x})$, we do a simple linear expansion on the error function $f(\mathbf{x})$ itself.
+We approximate the error function $f$ near the current point $\mathbf{x}$ as a straight line:
+$$f(\mathbf{x} + \Delta\mathbf{x}) \approx f(\mathbf{x}) + \mathbf{J}(\mathbf{x})^T \Delta\mathbf{x}$$
+Now, we plug this "straight-line" version into our minimization goal:
+
+$$\mathbf{x}^* = \arg\min_{\mathbf{x}} F(\mathbf{x})$$
+$$\Delta\mathbf{x}^* = \arg\min_{\Delta\mathbf{x}} F(\mathbf{x} + \Delta\mathbf{x})$$
+$$\Delta\mathbf{x}^* = \arg \min_{\Delta\mathbf{x}} \frac{1}{2} \|f(\mathbf{x}) + \mathbf{J}(\mathbf{x})^T \Delta\mathbf{x}\|^2$$
+$$\Delta\mathbf{x}^* = \arg \min_{\Delta\mathbf{x}} \frac{1}{2}(f(\mathbf{x}) + \mathbf{J}(\mathbf{x})^T \Delta\mathbf{x})^T (f(\mathbf{x}) + \mathbf{J}(\mathbf{x})^T \Delta\mathbf{x})$$
+$$\Delta\mathbf{x}^* = \arg \min_{\Delta\mathbf{x}} \frac{1}{2}(\|f(\mathbf{x})\|^2 + 2f(\mathbf{x})^T \mathbf{J}(\mathbf{x})^T \Delta\mathbf{x} + \|\mathbf{J}(\mathbf{x})^T \Delta\mathbf{x}\|^2)$$
+We first take the derivative with respect to $\Delta\mathbf{x}$ and set it to zero:
+$$\frac{d}{d\Delta\mathbf{x}} \frac{1}{2}(\|f(\mathbf{x})\|^2 + 2f(\mathbf{x})^T \mathbf{J}(\mathbf{x})^T \Delta\mathbf{x} + \|\mathbf{J}(\mathbf{x})^T \Delta\mathbf{x}\|^2) = 0$$
+$$\frac{d}{d\Delta\mathbf{x}} \frac{1}{2}(\|f(\mathbf{x})\|^2 + 2f(\mathbf{x})^T \mathbf{J}(\mathbf{x})^T \Delta\mathbf{x} + \Delta\mathbf{x}^T \mathbf{J}(\mathbf{x}) \mathbf{J}(\mathbf{x})^T \Delta\mathbf{x}) = 0$$
+$$\mathbf{J}(\mathbf{x}) f(\mathbf{x}) + \mathbf{J}(\mathbf{x}) \mathbf{J}(\mathbf{x})^T \Delta\mathbf{x} = 0$$
+$$\underbrace{\mathbf{J}(\mathbf{x})\mathbf{J}^T(\mathbf{x})}_{\mathbf{H}(\mathbf{x})} \Delta\mathbf{x} = \underbrace{-\mathbf{J}(\mathbf{x})f(\mathbf{x})}_{\mathbf{g}(\mathbf{x})}$$
+$$\mathbf{H}\Delta\mathbf{x} = \mathbf{g}$$
+$$\Delta\mathbf{x} = \mathbf{H}^{-1}\mathbf{g}$$
+
+* The "Fake" Hessian ($\mathbf{H}$): In Newton’s method, $\mathbf{H}$ was the second derivative (hard to compute). In Gauss-Newton, we approximate it using $\mathbf{J}\mathbf{J}^T$. This is a huge win—we get the benefits of second-order information using only first-order derivatives!
+* The Gradient ($\mathbf{g}$): This is the direction and magnitude of the current error.
+
+**The Gauss-Newton Algorithm Steps**
+
+1. Start with an initial guess $\mathbf{x}_0$.
+2. Calculate the Jacobian $\mathbf{J}(\mathbf{x}_k)$ and the current residual (error) $f(\mathbf{x}_k)$.
+3. Construct and Solve $\mathbf{H}\Delta\mathbf{x}_k = \mathbf{g}$ to find the best step.
+4. Update: $\mathbf{x}_{k+1} = \mathbf{x}_k + \Delta\mathbf{x}_k$.
+5. Repeat until $\Delta\mathbf{x}_k$ is small enough.
+
+**Some pitfalls:**
+
+* For the math to work, $\mathbf{H}$ must be invertible. If your data is poor, $\mathbf{H}$ might become singular (impossible to invert), and the algorithm crashes.
+* If the local area isn't actually a nice quadratic bowl, Gauss-Newton might suggest a massive $\Delta\mathbf{x}$ that actually makes the error worse (overshooting the minimum).
+* Because it's a local approximation, it can easily get lost if the initial guess $\mathbf{x}_0$ is too far from the truth.
+
+**Conclusion:** Gauss-Newton is great because it approximates the Hessian using only the Jacobian ($\mathbf{J}\mathbf{J}^T$). It’s fast and efficient, but it’s "unstable" if your initial guess is bad or your sensors are contradictory.
+
+To fix these "Giant Error Leap" and "Invertibility" problems, we use the Levenberg-Marquardt (LM) method. It adds a "damping" factor to the equation, which essentially forces the steps to stay small and ensures the matrix $\mathbf{H}$ is always invertible.
+
+
+### So what the heck is the difference between Newton and Gauss-Newton?
+The big difference is what you are applying the Taylor Expansion to.
+
+**Newton's Method:** You expand the Total Cost Function $F(\mathbf{x})$ (Top Down).
+$$F(\mathbf{x} + \Delta\mathbf{x}) \approx F(\mathbf{x}) + \mathbf{J}_F^T \Delta\mathbf{x} + \frac{1}{2} \Delta\mathbf{x}^T \mathbf{H}_F \Delta\mathbf{x}$$
+To do this, you must calculate the real Hessian $\mathbf{H}_F$ (second derivatives).
+
+**Gauss-Newton Method:** You expand the Internal Error Function $f(\mathbf{x})$ (Bottom Up). Instead of approximating the big $F$, it only approximates the little $f$ with a first-order expansion. Because well,I know my total cost $F$ is actually made of a simpler internal function $f$ (the error) being squared:
+$$f(\mathbf{x} + \Delta\mathbf{x}) \approx f(\mathbf{x}) + \mathbf{J}^T \Delta\mathbf{x}$$
+Then you square that linear approximation:
+$$\frac{1}{2} \| f(\mathbf{x}) + \mathbf{J}^T \Delta\mathbf{x} \|^2$$
+When you plug this "straight line" approximation into the squared norm $\frac{1}{2}\| \dots \|^2$ and do the math, something magical happens: The second derivative $(\mathbf{H})$ appears naturally as $\mathbf{J}\mathbf{J}^T$.
+
+If you actually calculated the "Real Hessian" ($\mathbf{H}_{Newton}$) for the function $F(\mathbf{x}) = \frac{1}{2}f(\mathbf{x})^2$, the calculus looks like this:
+$$\mathbf{H}_{\text{Newton}} = \underbrace{\mathbf{J}\mathbf{J}^T}_{\text{First order part}} + \underbrace{\sum f(\mathbf{x}) \frac{\partial^2 f}{\partial \mathbf{x}^2}}_{\text{Second order part}}$$
+Gauss-Newton simply deletes that second part. It assumes that if your error $f(\mathbf{x})$ is small (which it should be if your SLAM is working), that whole second term is basically zero, small error, but **10x faster**. Newton keeps it, which makes the math much more accurate but much harder to compute.
+
+### Method 4: Levenberg-Marquardt
+The approximate second-order Taylor expansion used in the Gauss-Newton method can only have a good approximation effect near the expansion point. So, we naturally thought a range should be added to $\Delta\mathbf{x}$, called trust-region. This range defines under what circumstances the second-order approximation is valid. The approximation is valid only in the trusted region; otherwise, it may go wrong if the approximation goes outside.
+
+So how to determine the scope of this trust-region? A good method is to determine it based on the difference between our approximate model and the real object function: if the difference is small, it means that the approximation is good, and we may expand the trust-region; conversely, if the difference is large, we will reduce the range of approximation. We define a ratio $\rho$:
+$$\rho = \frac{f(\mathbf{x} + \Delta\mathbf{x}) - f(\mathbf{x})}{\mathbf{J}(\mathbf{x})^T \Delta\mathbf{x}}$$
+
+* Numerator: The actual decrease in the error.
+* Denominator: The predicted decrease based on our linear model.
+* Meaning: If $\rho \approx 1$, our model is perfect, we can expand the trust-region. If $\rho$ is small or negative, our model is not good, and we are moving in the wrong direction => We should reduce the trust-region.
+
+Algorithm:
+1. Give the initial value $\mathbf{x}_0$ and initial trust-region radius $\mu$.
+2. For k-th iteration, we solve a linear problem based on Gauss-Newton’s method added with a trust-region. where $\mu$ is the radius and $\mathbf{D}$ is a coeﬀicient matrix, which will be discussed in below.
+$$\min_{\Delta\mathbf{x}_k} \frac{1}{2} \| f(\mathbf{x}_k) + \mathbf{J}(\mathbf{x}_k)^T \Delta\mathbf{x}_k \|^2, \quad \text{s.t. } \|\mathbf{D}\Delta\mathbf{x}_k\|^2 \le \mu$$
+the range expansion’s multiply factor and thresholds are empirical values and can be replaced with other values. we limit the increment to a sphere with a radius of $\mu$ and think that it is valid only in this sphere. After
+bringing into the $\mathbf{D}$, this sphere can be seen as an ellipsoid.
+
+* Levenberg originally proposed, taking $\mathbf{D}$ into the unit matrix $\mathbf{I}$ is equivalent to directly constraining $\Delta\mathbf{x}_k$ in a sphere.
+* Marquardt proposed, taking $\mathbf{D}$ into a diagonal matrix is equivalent to constraining $\Delta\mathbf{x}_k$ in an ellipsoid.
+* In practice, the square root of the diagonal elements of $\mathbf{J}^T\mathbf{J}$ is usually used as $\mathbf{D}$ so that the constraint range is larger on the dimensions with small gradient.
+
+But how to turn "Minimize the error, but you are not allowed to move further than distance $\mu$" into a math problem? In calculus, when you have a minimization problem with a constraint ($s.t. \text{ something} \le \mu$), you use a Lagrange Multiplier ($\lambda$). The $\lambda$ acts as a "penalty." If the step $\Delta\mathbf{x}$ tries to get too big (exceeding $\mu$), the $\lambda$ term pushes the cost up, forcing the optimizer to stay inside the trusted zone.
+$$\mathcal{L}(\Delta\mathbf{x}, \lambda) = \frac{1}{2} \| f + \mathbf{J}^T \Delta\mathbf{x} \|^2 + \frac{\lambda}{2} (\|\mathbf{D}\Delta\mathbf{x}\|^2 - \mu)$$
+
+When we take the derivative $\frac{\partial \mathcal{L}}{\partial \Delta\mathbf{x}} = 0$:
+
+* The first part (the squared error) gives us: $\mathbf{J}f + \mathbf{J}\mathbf{J}^T\Delta\mathbf{x}$ (just like in Gauss-Newton).
+* The second part (the constraint) gives us: $\lambda \mathbf{D}^T \mathbf{D} \Delta\mathbf{x}$.
+
+In the end, we solve this:
+$$(\underbrace{\mathbf{J}\mathbf{J}^T}_{\mathbf{H}} + \lambda \mathbf{D}^T \mathbf{D}) \Delta\mathbf{x} = \underbrace{-\mathbf{J}f}_{\mathbf{g}}$$
+
+3. Calculate the ratio $\rho$:
+$$\rho = \frac{f(\mathbf{x}_k + \Delta\mathbf{x}_k) - f(\mathbf{x}_k)}{\mathbf{J}(\mathbf{x}_k)^T \Delta\mathbf{x}_k}$$
+4. Update the trust-region radius:
+$$\mu = \begin{cases} 2\mu & \text{if } \rho > 0.75 \\ \mu/2 & \text{if } \rho < 0.25 \end{cases}$$
+5. Update the solution:
+$$\mathbf{x}_{k+1} = \begin{cases} \mathbf{x}_k + \Delta\mathbf{x}_k & \text{if } \rho > 0 \\ \mathbf{x}_k & \text{if } \rho \le 0 \end{cases}$$
+6. Repeat until convergence.
+
+
+### Discussion
+* To sum up, these all optimization methods need to be well initialized first! For example as in ICP, PnP.
+* Computation of $\Delta\mathbf{x}^* = \mathbf{H}^{-1}\mathbf{g}$.
+    * The Reality: Inverting a matrix is an $O(n^3)$ operation. If you have 100,000 landmarks, trying to calculate $\mathbf{H}^{-1}$ would take years of computing time and more RAM than a standard PC possesses.
+    * The Solution: We never actually "invert" the matrix. Instead, we use Matrix Decomposition (like QR or Cholesky). These methods break the big matrix into smaller, "triangular" pieces that are much faster to solve.
+* Sparsity is the most important concept in modern SLAM.
+    * Dense Matrix: Every variable is connected to every other variable. (This would be impossible to solve).
+    * Sparse Matrix: Most of the entries in the matrix are zero.
+    * Why is it sparse? camera at "Time A" sees landmarks in its immediate view. It has zero relationship with a landmark far away that it hasn't seen yet. In the big $\mathbf{H}$ matrix, the "connection" between that camera and that distant landmark is a $0$.
+* Real-Time SLAM is only possible on your phone or a drone because we "cheat" using this sparsity:
+    * Instead of doing billions of calculations, the computer only calculates the non-zero parts.
+    * This turns a problem that should take hours into one that takes milliseconds.

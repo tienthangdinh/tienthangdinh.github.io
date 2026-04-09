@@ -115,5 +115,11 @@
   },
   "posts/pet-kalman/index.qmd": {
     "index.html": "d9a603da"
+  },
+  "posts/pet-exam/index.qmd": {
+    "index.html": "2ccd94a1"
+  },
+  "posts/slam-nonlinearoptimization/index.qmd": {
+    "index.html": "0a745924"
   }
 }
