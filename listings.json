@@ -2,7 +2,8 @@
   {
     "listing": "/index.html",
     "items": [
-      "/posts/pet-kalman/index.html",
+      "/posts/slam-nonlinearoptimization/index.html",
+      "/posts/pet-exam/index.html",
       "/posts/pet-mse2/index.html",
       "/posts/pet-mse/index.html",
       "/posts/surgical-camera/index.html",
