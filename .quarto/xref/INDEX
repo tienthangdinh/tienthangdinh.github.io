@@ -121,5 +121,8 @@
   },
   "posts/slam-nonlinearoptimization/index.qmd": {
     "index.html": "0a745924"
+  },
+  "posts/slam-visualodometry1/index.qmd": {
+    "index.html": "14b90896"
   }
 }

@@ -1,0 +1,239 @@
+---
+title: "Visual Odometry 1: Feature-Based Method"
+date: "2026-04-11"
+categories: [Computer Graphics, Computer Vision, SLAM]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+
+# Feature Method
+Goal: estimate camera motion based on adjacent images. Based on landmarks/image features. It could be corners (Harris, FAST), blobs (SIFT, SURF, ORB), or edges. Extracting about 1000 feature points in the same image takes about 15.3ms for ORB, 217.3ms for SURF, and 5228.7ms for SIFT. It can be seen that ORB made a significant boost in speed while maintaining the features of rotation and scale invariance
+
+## ORB
+the extraction of ORB features is divided into the following two steps:
+
+1. original FAST corner detector has a major weakness: it is rotation-invariant. If you rotate the camera, the corner looks different to the computer, and it can't match it anymore. Therefore, ORB finds the "orientation" of each corner from a small circle around the corner
+    $$m_{pq} = \sum_{x,y \in B} x^p y^q I(x,y) \quad p,q \in \{0,1\}$$
+
+    * $I(x,y)$: The brightness (gray value) of the pixel at coordinates $(x,y)$.
+    * $m_{00}$: The total "mass" (sum of all pixel values). Not multiply by any coordinate
+    * $m_{10}$ and $m_{01}$: The weighted sums in the $x$ and $y$ directions. Basically multiply by its x or y coordinate.
+
+    The Centroid is the "center of brightness" of the patch.
+    $$C = \left( \frac{m_{10}}{m_{00}}, \frac{m_{01}}{m_{00}} \right)$$
+
+    Now we have two points:
+
+    * $O$: The geometric center of the patch (where the corner was detected).
+    * $C$: The intensity centroid (the "center of mass").
+
+    So we get a vector $\vec{OC}$. The angle of this vector tells us which way the "brightness" is leaning:
+    $$\theta = \arctan(m_{01} / m_{10})$$
+
+2. BRIEF descriptor:
+
+    * We pre-define a set of $n$ pairs of coordinates $(p, q)$ relative to a center point. Usually, $n = 128, 256, \text{ or } 512$.
+    * We used the angle $\theta$ calculated in the previous step to rotate these pairs.
+    * For each pair, we perform a simple test $\tau$:
+        $$\tau(p, q) =
+        \begin{cases}
+        1 & \text{if } I(p) > I(q) \
+        0 & \text{otherwise}
+        \end{cases}$$
+    * We string all these 1s and 0s together to form a descriptor vector $\mathbf{d}$
+    * Compare (e.g. 1011 XOR 1010 = 0001 - very small distance, so maybe same feature)
+
+
+## Feature Matching
+- If monocular => 2 sets of 2D points => solved by epipolar geometry
+- If stereo => 2 sets of 3D points => solved by ICP
+- If one set is 3D and one set is projected 2D => PnP
+
+# Epipolar Geometry (Monocular)
+## Epipolar Constraint (Essential Matrix)
+Firstly, defining the 3D point $P$ in world coordinates:
+$$\mathbf{P} = [X, Y, Z]^T$$
+
+Assume the first camera lies on origin world (0,0,0) (no external). Relationship between a 3D point $\mathbf{P}$ and its pixel locations $\mathbf{p}_1, \mathbf{p}_2$:
+$$\mathbf{p}_1 \simeq \mathbf{K P}, \quad \mathbf{p}_2 \simeq \mathbf{K}(\mathbf{R P} + \mathbf{t})$$
+
+Now normalized camera coordinates of point $P$ in each camera $\mathbf{x}_1, \mathbf{x}_2$:
+$$\mathbf{x}_1 = \mathbf{K}^{-1}\mathbf{p}_1 = \mathbf{P}, \quad \mathbf{x}_2 = \mathbf{K}^{-1}\mathbf{p}_2 = \mathbf{R P} + \mathbf{t}$$
+
+Substituting these into the relationship, we get:
+$$\mathbf{x}_2 \simeq \mathbf{R} \mathbf{x}_1 + \mathbf{t}$$
+
+Let's apply a cross product of a vector that is perpendicular to the plane containing $\mathbf{t}$ and $\mathbf{x}_2$ (which is written as skew-symmetric matrix $\mathbf{t}^\wedge$):
+$$\mathbf{t}^\wedge \mathbf{x}_2 \simeq \mathbf{t}^\wedge (\mathbf{R} \mathbf{x}_1 + \mathbf{t})$$
+$$\mathbf{t}^\wedge \mathbf{x}_2 \simeq \mathbf{t}^\wedge \mathbf{R} \mathbf{x}_1 + \underbrace{\mathbf{t}^\wedge \mathbf{t}}_{\mathbf{0}}$$
+$$\mathbf{t}^\wedge \mathbf{x}_2 \simeq \mathbf{t}^\wedge \mathbf{R} \mathbf{x}_1$$
+
+Left multiply by $\mathbf{x}_2^T$ to reveal the magic:
+$$\mathbf{x}_2^T \mathbf{t}^\wedge \mathbf{x}_2 \simeq \mathbf{x}_2^T \mathbf{t}^\wedge \mathbf{R} \mathbf{x}_1$$
+
+Because $\mathbf{t}^\wedge \mathbf{x}_2$ is a vector perpendicular to both $\mathbf{t}$ and $\mathbf{x}_2$, the dot product $\mathbf{x}_2^T (\mathbf{t}^\wedge \mathbf{x}_2)$ is strictly zero. This gives us the concise Epipolar Constraint:
+$$\mathbf{x}_2^T \mathbf{t}^\wedge \mathbf{R} \mathbf{x}_1 = 0$$
+$$\mathbf{x}_2^T \mathbf{E} \mathbf{x}_1 = 0$$
+
+where $\mathbf{E} = [\mathbf{t}]_\times \mathbf{R}$ is the essential matrix.
+
+Or if you want to work directly with $\mathbf{p}_1, \mathbf{p}_2$:
+$$\mathbf{p}_2^T \mathbf{K}^{-T} \mathbf{E} \mathbf{K}^{-1} \mathbf{p}_1 = 0$$
+$$\mathbf{p}_2^T \mathbf{F} \mathbf{p}_1 = 0$$
+
+where $\mathbf{F} = \mathbf{K}^{-T} \mathbf{E} \mathbf{K}^{-1}$ is the fundamental matrix.
+
+
+OK, now that means, we need to find $\mathbf{t}$ and $\mathbf{R}$ from the essential matrix $\mathbf{E}$.
+
+## Find R and t from Essential Matrix
+Now that we have the theory ($\mathbf{x}_2^T \mathbf{E} \mathbf{x}_1 = 0$), we need to solve for the 9 numbers inside $\mathbf{E}$. It has the following properties:
+
+* Scale Equivalence: Because the equation equals zero, multiplying $\mathbf{E}$ by any number (like 2 or 10) doesn't change anything. This means we can only determine $\mathbf{E}$ up to a scale.
+* Singular Values: Singular values must be $[\sigma, \sigma, 0]^T$. The first two are equal, and the last is zero. This is a consequence of $\mathbf{E}$ being built from a rotation and a cross-product matrix.
+* 5 Degrees of Freedom (DoF): Even though it has 9 slots, it only has 5 independent "moving parts" (3 for rotation, 3 for translation, minus 1 for the scale we can't know)
+
+### Solving with 8-Point Algorithm
+Since $\mathbf{E}$ has 5 DoF, you might think we only need 5 pairs of points. However, the math for a 5-point solution is incredibly complex (nonlinear).Instead, we use the Eight-Point Algorithm. It treats the 9 elements of $\mathbf{E}$ as independent linear variables and assuming the linear algebra estimation is good enough. But actually in SLAM, we have more than 8 points, so we can use the least square method to solve for $\mathbf{E}$.
+
+Take a pair of matched points in normalized coordinates and put them into the epipolar constraint equation:
+$\mathbf{x}_1 = [u_1, v_1, 1]^T$ and $\mathbf{x}_2 = [u_2, v_2, 1]^T$.
+
+$$(u_2, v_2, 1) \begin{pmatrix} e_1 & e_2 & e_3 \\ e_4 & e_5 & e_6 \\ e_7 & e_8 & e_9 \end{pmatrix} \begin{pmatrix} u_1 \\ v_1 \\ 1 \end{pmatrix} = 0$$
+
+Expanding this out, we get a linear equation with 9 unknowns (the elements of $\mathbf{E}$):
+$$u_1 u_2 e_1 + v_1 u_2 e_2 + u_2 e_3 + u_1 v_2 e_4 + v_1 v_2 e_5 + v_2 e_6 + u_1 e_7 + v_1 e_8 + e_9 = 0$$
+Or in matrix form:
+$$[u_2u_1, u_2v_1, u_2, v_2u_1, v_2v_1, v_2, u_1, v_1, 1] \cdot \mathbf{e} = 0$$
+where $\mathbf{e} = [e_1, e_2, \dots, e_9]^T$ is a vector containing all 9 elements of the matrix $\mathbf{E}$.
+
+By taking 8 pairs of matched points, we create a giant $8 \times 9$ matrix. Each row represents one matched pair $(u_1, v_1) \leftrightarrow (u_2, v_2)$.
+$$\begin{pmatrix} u_2^1 u_1^1 & u_2^1 v_1^1 & u_2^1 & v_2^1 u_1^1 & v_2^1 v_1^1 & v_2^1 & u_1^1 & v_1^1 & 1 \\ u_2^2 u_1^2 & u_2^2 v_1^2 & u_2^2 & v_2^2 u_1^2 & v_2^2 v_1^2 & v_2^2 & u_1^2 & v_1^2 & 1 \\ \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots \\ u_2^8 u_1^8 & u_2^8 v_1^8 & u_2^8 & v_2^8 u_1^8 & v_2^8 v_1^8 & v_2^8 & u_1^8 & v_1^8 & 1 \end{pmatrix} \begin{pmatrix} e_1 \\ e_2 \\ e_3 \\ e_4 \\ e_5 \\ e_6 \\ e_7 \\ e_8 \\ e_9 \end{pmatrix} = \mathbf{0}$$
+
+* Logic: $\mathbf{e}$ is lying in the null space of this coefficient matrix (definition $\mathbf{A}\mathbf{e} = \mathbf{0}$)
+* Scale Equivalence: Since the right side is $\mathbf{0}$, $\mathbf{e}$ can only be solved "up to a scale." If the matrix has a rank of 8, the null space has a dimension of 1 (a line), which perfectly matches this scale ambiguity. Because if $\mathbf{e}$ is a solution, then any multiple of it ($2\mathbf{e}$, $-5\mathbf{e}$, $0.3\mathbf{e}$) is also a solution.
+* Example: It is like Moving 1 meter and seeing a house 10 meters away is the same as Moving 10 meters and seeing a giant house 100 meters away.
+
+### Singular Value Decomposition (SVD)
+Any linear transformation (represented by a matrix $\mathbf{A}$) can be broken down into three simple, sequential geometric steps: Rotate, Stretch, and Rotate again.
+
+* $\mathbf{V}^T$ (First Rotation): You rotate the circle so its axes align with the "stretching" directions of the matrix.
+* $\mathbf{\Sigma}$ (Stretching): You pull or squish the circle into an ellipse. The singular values ($\sigma_1, \sigma_2$) (example in 2D) tell you exactly how long the axes of that ellipse are.
+* $\mathbf{U}$ (Second Rotation): You rotate the resulting ellipse into its final orientation in the output space.
+
+When we say $\mathbf{e}$ is in the "null space," we are looking for a direction that the matrix $\mathbf{A}$ "squishes" down to zero. If the last singular value $\sigma_9$ is zero, it means the transformation represented by $\mathbf{A}$ completely collapses any vector pointing in the direction of the last column of $\mathbf{V}$.
+
+To find the best approximate solution that satisfies the geometric constraints, we use Singular Value Decomposition (SVD). Any matrix $\mathbf{A}$ can be decomposed as:
+$$\mathbf{A} = \mathbf{U} \mathbf{\Sigma} \mathbf{V}^T$$
+
+So our problem is now:
+$$\min_{\|\mathbf{e}\|=1} \|\mathbf{Ae}\|^2$$
+$$\|\mathbf{Ae}\|^2 = \|\mathbf{U\Sigma V}^T \mathbf{e}\|^2 = \|\mathbf{\Sigma V}^T \mathbf{e}\|^2$$
+
+* $\mathbf{U}$ (Left Singular Vectors): An $m \times m$ orthogonal matrix. The columns of $\mathbf{U}$ are the **orthoginal** eigenvectors of **symmetric** $\mathbf{A}\mathbf{A}^T$. Bringing eigenvector back to the original space.
+* $\mathbf{\Sigma}$ (Singular Values): An $m \times n$ diagonal matrix. The entries $\sigma_i$ are the square roots of the eigenvalues of $\mathbf{A}^T\mathbf{A}$. Scaling factors along the principal axes. This also contain **dimension adder/reducer**, $\mathbf{\Sigma}$ has actually same shape with $\mathbf{A}$. In Essential Matrix calculation, a zero singular value means one dimension has no strength—it’s the direction where everything maps to zero.
+* $\mathbf{V}^T$ (Right Singular Vectors): An $n \times n$ orthogonal matrix. The columns of $\mathbf{V}$ are the **orthoginal** eigenvectors of **symmetric** $\mathbf{A}^T\mathbf{A}$. Bringing original base vector to the eigenvectors. The very last column of $\mathbf{V}$ (associated with the smallest $\sigma$) is the direction that is "least changed" (or most collapsed) by $\mathbf{A}$.
+
+For the essential matrix, the theoretical singular values are $[\sigma, \sigma, 0]^T$. In practice, due to noise, we get something like $[\sigma_1, \sigma_2, \sigma_3]^T$ where $\sigma_1 \approx \sigma_2$ and $\sigma_3$ is very small but not exactly zero.
+
+The solution $\mathbf{e}$ that minimizes the error $|\mathbf{A} \mathbf{e}|$ is the eigenvector corresponding to the smallest singular value. In the SVD decomposition, this corresponds to the last column of $\mathbf{V}$ (or the last row of $\mathbf{V}^T$).
+
+**Explain THE LOGIC:** The last column of $\mathbf{V}$ is the "least powerful" direction of the matrix $\mathbf{A}$. Since we want $\mathbf{Ae} \approx 0$, we pick the direction that $\mathbf{A}$ has the least power over! With the weighting of 1. So, we extract $\mathbf{e}$ from the last column of $\mathbf{V}$ and reshape it back into a $3 \times 3$ matrix to get our estimated essential matrix $\mathbf{E}_{est}$.
+
+### Recovering Rotation and Translation
+Once we have $\mathbf{E}_{est}$, we can decompose it to find the rotation $\mathbf{R}$ and translation $\mathbf{t}$. The decomposition is:
+$$\mathbf{E} = [\mathbf{t}]_\times \mathbf{R}$$
+
+Using SVD on $\mathbf{E}_{est}$:
+$$\mathbf{E}_{est} = \mathbf{U} \mathbf{\Sigma} \mathbf{V}^T$$
+
+We can derive the possible solutions for $\mathbf{R}$ and $\mathbf{t}$:
+
+1. **Rotation Matrix $\mathbf{R}$**:
+We know $\mathbf{E} = \mathbf{t}^\wedge \mathbf{R}$. There is a mathematical identity (**believe me its out of scope of this blog**) that says a skew-symmetric matrix $\mathbf{t}^\wedge$ (with unit length) can be written as:$$\mathbf{t}^\wedge = \mathbf{U} \mathbf{W} \mathbf{\Sigma} \mathbf{U}^T \quad \text{or} \quad \mathbf{t}^\wedge = \mathbf{U} \mathbf{W}^T \mathbf{\Sigma} \mathbf{U}^T$$
+
+Therefore:
+$$\mathbf{U} \mathbf{\Sigma} \mathbf{V}^T = \mathbf{E} = \mathbf{t}^\wedge \mathbf{R} = \mathbf{U} \mathbf{W} \mathbf{\Sigma} \mathbf{U}^T \mathbf{R}$$
+
+So:
+
+$$\mathbf{R} = \mathbf{U} \mathbf{W} \mathbf{V}^T \quad \text{or} \quad \mathbf{R} = \mathbf{U} \mathbf{W}^T \mathbf{V}^T$$
+
+where $\mathbf{W} = \begin{pmatrix} 0 & -1 & 0 \\ 1 & 0 & 0 \\ 0 & 0 & 1 \end{pmatrix}$ (a rotation by 90 degrees around the z-axis).
+
+2. **Translation Vector $\mathbf{t}$**:
+
+By definition of the SVD, the columns of $\mathbf{U}$ represent the principal directions of the output space (the range of the transformation). Because the Essential Matrix has a rank of 2 (due to the singular values $[\sigma, \sigma, 0]$), it "squashes" one dimension to zero.In $\mathbf{V}^T$, the last column is the direction that gets squashed (the null space of $\mathbf{E}$).In $\mathbf{U}$, the last column ($\mathbf{u}_3$) is the direction that cannot be reached by the transformation.
+
+In the specific case of $\mathbf{E} = \mathbf{t}^\wedge \mathbf{R}$, the "direction" that defines the transformation's structure is the translation $\mathbf{t}$. Because $\mathbf{t}^\wedge$ is a cross product with $\mathbf{t}$, the output of $\mathbf{t}^\wedge$ is always perpendicular to $\mathbf{t}$. Therefore, $\mathbf{t}$ is the "missing" direction in the output, which corresponds exactly to the third column of $\mathbf{U}$.
+
+   $$\mathbf{t} = \mathbf{U} \begin{pmatrix} 0 \\ 0 \\ 1 \end{pmatrix} \quad \text{or} \quad \mathbf{t} = -\mathbf{U} \begin{pmatrix} 0 \\ 0 \\ 1 \end{pmatrix}$$
+
+This gives us **four possible pairs** of $(\mathbf{R}, \mathbf{t})$. After that we test all 4 pairs with the condition that the 3D points should be in front of the camera (positive $Z$ coordinate in camera frame) using Triangulation.
+
+# Homography (Monocular but for Planar)
+## Formulation H
+The above Essential matrix can be used in any case. But for features that we are sure they are on a planar surface (e.g. floor, wall, table, etc.), we can use Homography to estimate the relative pose of the camera.
+
+We have 3D points $\mathbf{P}$ lie on a plane. In 3D space, a plane is defined by its normal vector $\mathbf{n}$ and its distance to the origin $d$:
+$$\mathbf{n}^T \mathbf{P} + d = 0$$
+$$-\frac{\mathbf{n}^T \mathbf{P}}{d} = 1$$
+
+**Let's derive!!!** Now, we look at how the point $\mathbf{P}$ projects into our two cameras. Recall the general projection formula for the second camera:
+$$\mathbf{p}_2 \simeq \mathbf{K}(\mathbf{R}\mathbf{P} + \mathbf{t})$$
+
+Now as we know all points are on the same plane, we are allowed to do this:
+$$\mathbf{p}_2 \simeq \mathbf{K}\left(\mathbf{R}\mathbf{P} + \mathbf{t} \cdot \left(-\frac{\mathbf{n}^T \mathbf{P}}{d}\right)\right)$$
+$$\mathbf{p}_2 \simeq \mathbf{K}\left(\mathbf{R} - \frac{\mathbf{t}\mathbf{n}^T}{d}\right) \mathbf{P}$$
+Finally, we want the relationship between pixels in Image 1 ($\mathbf{p}_1$) and pixels in Image 2 ($\mathbf{p}_2$). Since $\mathbf{p}_1 \simeq \mathbf{K}\mathbf{P}$, we can say $\mathbf{P} \simeq \mathbf{K}^{-1}\mathbf{p}_1$, we can substitue:
+$$\mathbf{p}_2 \simeq \underbrace{\mathbf{K}\left(\mathbf{R} - \frac{\mathbf{t}\mathbf{n}^T}{d}\right) \mathbf{K}^{-1}}_{\mathbf{H}} \mathbf{p}_1$$
+
+## Let's solve H
+So now we have:
+$$\mathbf{p}_2 \simeq \mathbf{H}\mathbf{p}_1$$
+$$\begin{pmatrix} u_2 \\ v_2 \\ 1 \end{pmatrix} \simeq \begin{pmatrix} h_1 & h_2 & h_3 \\ h_4 & h_5 & h_6 \\ h_7 & h_8 & h_9 \end{pmatrix} \begin{pmatrix} u_1 \\ v_1 \\ 1 \end{pmatrix}$$
+
+Because the relationship is "up to a scale," we are allowed to divide the first two rows by the third row.
+$$u_2 = \frac{h_1 u_1 + h_2 v_1 + h_3}{h_7 u_1 + h_8 v_1 + h_9}$$
+$$v_2 = \frac{h_4 u_1 + h_5 v_1 + h_6}{h_7 u_1 + h_8 v_1 + h_9}$$
+By setting $h_9 = 1$ (normalizing the matrix), we have:
+$$h_1 u_1 + h_2 v_1 + h_3 - h_7 u_1 u_2 - h_8 v_1 u_2 = u_2$$
+$$h_4 u_1 + h_5 v_1 + h_6 - h_7 u_1 v_2 - h_8 v_1 v_2 = v_2$$
+
+Since one pair of points provides 2 constraints, and the homography matrix has 8 degrees of freedom (9 elements minus 1 for scale), we need at least 4 pairs of matched points to solve for $\mathbf{H}$.
+$$\begin{pmatrix} u_1^1 & v_1^1 & 1 & 0 & 0 & 0 & -u_1^1 u_2^1 & -v_1^1 u_2^1 \\ 0 & 0 & 0 & u_1^1 & v_1^1 & 1 & -u_1^1 v_2^1 & -v_1^1 v_2^1 \\ u_1^2 & v_1^2 & 1 & 0 & 0 & 0 & -u_1^2 u_2^2 & -v_1^2 u_2^2 \\ 0 & 0 & 0 & u_1^2 & v_1^2 & 1 & -u_1^2 v_2^2 & -v_1^2 v_2^2 \\ u_1^3 & v_1^3 & 1 & 0 & 0 & 0 & -u_1^3 u_2^3 & -v_1^3 u_2^3 \\ 0 & 0 & 0 & u_1^3 & v_1^3 & 1 & -u_1^3 v_2^3 & -v_1^3 v_2^3 \\ u_1^4 & v_1^4 & 1 & 0 & 0 & 0 & -u_1^4 u_2^4 & -v_1^4 u_2^4 \\ 0 & 0 & 0 & u_1^4 & v_1^4 & 1 & -u_1^4 v_2^4 & -v_1^4 v_2^4 \end{pmatrix} \begin{pmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \\ h_5 \\ h_6 \\ h_7 \\ h_8 \end{pmatrix} = \begin{pmatrix} u_2^1 \\ v_2^1 \\ u_2^2 \\ v_2^2 \\ u_2^3 \\ v_2^3 \\ u_2^4 \\ v_2^4 \end{pmatrix}$$
+
+We find $\mathbf{H}$ by solving this linear equation.
+
+After that, we get $\mathbf{R}$ and $\mathbf{t}$ also from SVD.
+
+And eventually also choose 1 of 4 possible solutions using cheirality check.
+
+Well, in real SLAM, I think people do both F and H estimation and choose the best one (smaller error).
+
+# Last step, Triangulation
+
+Now we have the relative pose of the camera, we can finally figure out where the points actually are in 3D space. This is Triangulation.
+
+We start with the relationship between the two normalized coordinates $\mathbf{x}_1$ and $\mathbf{x}_2$. If $s_1$ is the depth in the first camera and $s_2$ is the depth in the second, then:
+$$s_2\mathbf{x}_2 = s_1\mathbf{Rx}_1 + \mathbf{t}$$
+
+* Left side ($s_2\mathbf{x}_2$): The 3D position of point $P$ relative to the second camera.
+* Right side ($s_1\mathbf{Rx}_1 + \mathbf{t}$): The 3D position of point $P$ relative to the first camera, transformed into the second camera's coordinate system using the rotation $\mathbf{R}$ and translation $\mathbf{t}$.
+
+The goal is to find the values of $s_1$ and $s_2$. To isolate $s_1$, we use the same "trick" we used before: the skew-symmetric matrix (cross product). Let's take the cross product of both sides with $\mathbf{x}_2^\wedge$:
+
+$$s_2 \mathbf{x}_2^\wedge \mathbf{x}_2 = 0 = s_1 \mathbf{x}_2^\wedge \mathbf{Rx}_1 + \mathbf{x}_2^\wedge \mathbf{t}$$
+
+Rearranging the terms to solve for $s_1$:
+$$s_1 \mathbf{x}_2^\wedge \mathbf{Rx}_1 = -\mathbf{x}_2^\wedge \mathbf{t}$$
+$$s_1 = -\frac{\mathbf{x}_2^\wedge \mathbf{t}}{\mathbf{x}_2^\wedge \mathbf{Rx}_1}$$
+
+But in real life, we have noise. So basically we find the nearest point to $P = s_1\mathbf{x}_1$ and $P' = s_2\mathbf{x}_2$.
+
+
+
+
