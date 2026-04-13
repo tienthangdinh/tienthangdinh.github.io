@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/slam-visualodometry1/index.html",
       "/posts/slam-nonlinearoptimization/index.html",
       "/posts/pet-exam/index.html",
       "/posts/pet-mse2/index.html",

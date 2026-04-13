@@ -21,52 +21,56 @@
     <lastmod>2026-02-17T21:27:29.805Z</lastmod>
   </url>
   <url>
-    <loc>https://tienthangdinh.github.io/posts/ml4r-bayesian-optimization/index.html</loc>
-    <lastmod>2025-07-21T20:16:47.211Z</lastmod>
+    <loc>https://tienthangdinh.github.io/posts/slam-visualodometry1/index.html</loc>
+    <lastmod>2026-04-13T10:45:29.770Z</lastmod>
   </url>
   <url>
-    <loc>https://tienthangdinh.github.io/posts/ml4r-reinforcement-learning/index.html</loc>
-    <lastmod>2025-07-15T19:07:39.880Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/ml4r-control/index.html</loc>
-    <lastmod>2025-07-12T10:18:27.877Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/cg3-brdf/index.html</loc>
-    <lastmod>2026-03-10T09:39:52.073Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/cg3-pathbased-cachebased/index.html</loc>
-    <lastmod>2026-03-10T11:51:34.318Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/cg1-polygonalmesh/index.html</loc>
+    <loc>https://tienthangdinh.github.io/posts/cg1-meshprocessing/index.html</loc>
     <lastmod>2025-08-07T22:21:39.815Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/cg3-rendering/index.html</loc>
-    <lastmod>2026-03-10T09:41:05.636Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/cg3-physics-simulation/index.html</loc>
-    <lastmod>2026-03-03T17:53:15.277Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/slam-nonlinearoptimization/index.html</loc>
-    <lastmod>2026-04-09T15:27:05.519Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tienthangdinh.github.io/posts/cg3-sampling/index.html</loc>
-    <lastmod>2026-03-09T12:04:28.066Z</lastmod>
   </url>
   <url>
     <loc>https://tienthangdinh.github.io/posts/surgical-camera/index.html</loc>
     <lastmod>2026-03-16T10:17:32.078Z</lastmod>
   </url>
   <url>
-    <loc>https://tienthangdinh.github.io/posts/cg1-meshprocessing/index.html</loc>
+    <loc>https://tienthangdinh.github.io/posts/cg3-sampling/index.html</loc>
+    <lastmod>2026-03-09T12:04:28.066Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/slam-nonlinearoptimization/index.html</loc>
+    <lastmod>2026-04-09T15:27:05.519Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/cg3-physics-simulation/index.html</loc>
+    <lastmod>2026-03-03T17:53:15.277Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/cg3-rendering/index.html</loc>
+    <lastmod>2026-03-10T09:41:05.636Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/cg1-polygonalmesh/index.html</loc>
     <lastmod>2025-08-07T22:21:39.815Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/cg3-pathbased-cachebased/index.html</loc>
+    <lastmod>2026-03-10T11:51:34.318Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/cg3-brdf/index.html</loc>
+    <lastmod>2026-03-10T09:39:52.073Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/ml4r-control/index.html</loc>
+    <lastmod>2025-07-12T10:18:27.877Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/ml4r-reinforcement-learning/index.html</loc>
+    <lastmod>2025-07-15T19:07:39.880Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tienthangdinh.github.io/posts/ml4r-bayesian-optimization/index.html</loc>
+    <lastmod>2025-07-21T20:16:47.211Z</lastmod>
   </url>
   <url>
     <loc>https://tienthangdinh.github.io/posts/pet-mle/index.html</loc>

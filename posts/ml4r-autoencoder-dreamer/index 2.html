@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-07-12">
+
+<title>From Autoencoder to Dreamer – the brachistochrone traveller</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">the brachistochrone traveller</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Đinh Tiến Thắng</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">From Autoencoder to Dreamer</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">Machine Learning</div>
+                <div class="quarto-category">Image Processing</div>
+                <div class="quarto-category">Model-based Learning</div>
+                <div class="quarto-category">Reinforcement Learning</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">July 12, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#variational-autoencoders-vaes" id="toc-variational-autoencoders-vaes" class="nav-link active" data-scroll-target="#variational-autoencoders-vaes">Variational Autoencoders (VAEs)</a>
+  <ul class="collapse">
+  <li><a href="#mathematical-formulation-of-vae" id="toc-mathematical-formulation-of-vae" class="nav-link" data-scroll-target="#mathematical-formulation-of-vae">Mathematical Formulation of VAE</a>
+  <ul class="collapse">
+  <li><a href="#derivation-of-elbo" id="toc-derivation-of-elbo" class="nav-link" data-scroll-target="#derivation-of-elbo">Derivation of ELBO:</a></li>
+  <li><a href="#first-component-reconstruction-loss-negative-expected-log-likelihood-mathbbe_q_phimathbfzmathbfx-log-p_thetamathbfxmathbfz" id="toc-first-component-reconstruction-loss-negative-expected-log-likelihood-mathbbe_q_phimathbfzmathbfx-log-p_thetamathbfxmathbfz" class="nav-link" data-scroll-target="#first-component-reconstruction-loss-negative-expected-log-likelihood-mathbbe_q_phimathbfzmathbfx-log-p_thetamathbfxmathbfz">First Component: Reconstruction Loss (Negative Expected Log-Likelihood): <span class="math inline">\(\mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} [\log p_\theta(\mathbf{x}|\mathbf{z})]\)</span></a></li>
+  <li><a href="#second-term-kl-divergence-regularization-term-d_klq_phimathbfzmathbfx-pmathbfz" id="toc-second-term-kl-divergence-regularization-term-d_klq_phimathbfzmathbfx-pmathbfz" class="nav-link" data-scroll-target="#second-term-kl-divergence-regularization-term-d_klq_phimathbfzmathbfx-pmathbfz">Second Term: KL Divergence (Regularization Term): <span class="math inline">\(D_{KL}(q_\phi(\mathbf{z}|\mathbf{x}) || p(\mathbf{z}))\)</span></a></li>
+  </ul></li>
+  <li><a href="#how-two-terms-work-with-each-other-to-ensure-a-smooth-generative-model-for-unseen-data" id="toc-how-two-terms-work-with-each-other-to-ensure-a-smooth-generative-model-for-unseen-data" class="nav-link" data-scroll-target="#how-two-terms-work-with-each-other-to-ensure-a-smooth-generative-model-for-unseen-data">How two terms work with each other to ensure a smooth generative model for unseen data</a>
+  <ul class="collapse">
+  <li><a href="#the-reparameterization-trick" id="toc-the-reparameterization-trick" class="nav-link" data-scroll-target="#the-reparameterization-trick">The Reparameterization Trick:</a></li>
+  </ul></li>
+  <li><a href="#key-points-of-vae" id="toc-key-points-of-vae" class="nav-link" data-scroll-target="#key-points-of-vae">Key Points of VAE</a></li>
+  </ul></li>
+  <li><a href="#dreamer" id="toc-dreamer" class="nav-link" data-scroll-target="#dreamer">Dreamer</a>
+  <ul class="collapse">
+  <li><a href="#modules-involved" id="toc-modules-involved" class="nav-link" data-scroll-target="#modules-involved">Modules Involved:</a></li>
+  <li><a href="#training-steps-one-iteration" id="toc-training-steps-one-iteration" class="nav-link" data-scroll-target="#training-steps-one-iteration">Training Steps (One Iteration):</a>
+  <ul class="collapse">
+  <li><a href="#phase-1-data-collection-real-world-interaction" id="toc-phase-1-data-collection-real-world-interaction" class="nav-link" data-scroll-target="#phase-1-data-collection-real-world-interaction">Phase 1: Data Collection (Real-World Interaction)</a></li>
+  <li><a href="#phase-2-model-training-world-model-update" id="toc-phase-2-model-training-world-model-update" class="nav-link" data-scroll-target="#phase-2-model-training-world-model-update">Phase 2: Model Training (World Model Update)</a></li>
+  <li><a href="#phase-3-behavior-learning-policy-value-update-by-imagination" id="toc-phase-3-behavior-learning-policy-value-update-by-imagination" class="nav-link" data-scroll-target="#phase-3-behavior-learning-policy-value-update-by-imagination">Phase 3: Behavior Learning (Policy &amp; Value Update by Imagination)</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="variational-autoencoders-vaes" class="level1">
+<h1>Variational Autoencoders (VAEs)</h1>
+<p><strong>Key Idea:</strong> Instead of mapping an input to a single point in the latent space, VAE maps it to parameters of a probability distribution (typically a Gaussian distribution) in the latent space:</p>
+<ul>
+<li>An encoder that maps data to a distribution in latent space.</li>
+<li>A decoder that maps samples from this latent distribution back to data space.</li>
+</ul>
+<section id="mathematical-formulation-of-vae" class="level2">
+<h2 class="anchored" data-anchor-id="mathematical-formulation-of-vae">Mathematical Formulation of VAE</h2>
+<p>Let’s denote:</p>
+<ul>
+<li><span class="math inline">\(\mathbf{x}\)</span>: An input data point (e.g., an image)</li>
+<li><span class="math inline">\(\mathbf{z}\)</span>: A latent variable (vector) in the lower-dimensional latent space</li>
+<li><span class="math inline">\(p(\mathbf{x})\)</span>: The true, unknown data distribution we want to model</li>
+<li><span class="math inline">\(p(\mathbf{z})\)</span>: The prior distribution over the latent variables (typically a simple distribution like <span class="math inline">\(\mathcal{N}(0,I)\)</span>)</li>
+<li><span class="math inline">\(p_\theta(\mathbf{x}|\mathbf{z})\)</span>: The decoder (also called generative model or likelihood). This is a neural network parameterized by <span class="math inline">\(\theta\)</span> that outputs the parameters of the distribution over <span class="math inline">\(\mathbf{x}\)</span> given <span class="math inline">\(\mathbf{z}\)</span>.</li>
+<li><span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x})\)</span>: The encoder (also called inference model or approximate posterior). This is a neural network parameterized by <span class="math inline">\(\phi\)</span> that outputs the parameters of the distribution over <span class="math inline">\(\mathbf{z}\)</span> given <span class="math inline">\(\mathbf{x}\)</span>.</li>
+</ul>
+<p><strong>Goal:</strong> is to maximize the marginal likelihood: <span class="math display">\[p(\mathbf{x}) = \frac{p_\theta(\mathbf{x}|\mathbf{z}) p(\mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})}\]</span> which we do not know the other element to compute, or <span class="math display">\[\log p_\theta(\mathbf{x}) = \log \int p_\theta(\mathbf{x}|\mathbf{z}) p(\mathbf{z}) d\mathbf{z}\]</span> which is intractable</p>
+<p>Therefore, VAEs optimize the Evidence Lower Bound (ELBO), which is a lower bound on the log-likelihood of the data, we will derive it now</p>
+<section id="derivation-of-elbo" class="level3">
+<h3 class="anchored" data-anchor-id="derivation-of-elbo">Derivation of ELBO:</h3>
+<p>The log-likelihood of a data point <span class="math inline">\(\mathbf{x}\)</span> can be written as:</p>
+<p><span class="math display">\[\log p_\theta(\mathbf{x}) = \log p_\theta(\mathbf{x})\]</span> <span class="math display">\[= \log p_\theta(\mathbf{x}) \int q_\phi(\mathbf{z}|\mathbf{x}) d\mathbf{z} \quad \text{Multiply by 1}\]</span> <span class="math display">\[= \int q_\phi(\mathbf{z}|\mathbf{x}) \log p_\theta(\mathbf{x}) d\mathbf{z} \quad \text{Bring inside the integral}\]</span> <span class="math display">\[= \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} [\log p_\theta(\mathbf{x})] \quad \text{Definition of expectation}\]</span> <span class="math display">\[= \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}, \mathbf{z})}{p_\theta(\mathbf{z}|\mathbf{x})} \right] \quad \text{Apply the equation } p_\theta(\mathbf{x}) = \frac{p_\theta(\mathbf{x}, \mathbf{z})}{p_\theta(\mathbf{z}|\mathbf{x})}\]</span> <span class="math display">\[= \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}, \mathbf{z}) q_\phi(\mathbf{z}|\mathbf{x})}{p_\theta(\mathbf{z}|\mathbf{x}) q_\phi(\mathbf{z}|\mathbf{x})} \right] \quad \text{Multiply by 1}\]</span> <span class="math display">\[= \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}, \mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})} + \log \frac{q_\phi(\mathbf{z}|\mathbf{x})}{p_\theta(\mathbf{z}|\mathbf{x})} \right] \quad \text{Split the expectation}\]</span> <span class="math display">\[= \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}, \mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})} \right] + D_{KL}(q_\phi(\mathbf{z}|\mathbf{x}) || p_\theta(\mathbf{z}|\mathbf{x})) \quad \text{KL divergence}\]</span></p>
+<p>The second term is the Kullback-Leibler (KL) divergence, it is non-negative, now we only focus on maximizing the first term ELBO:</p>
+<p><span class="math display">\[\log p_\theta(\mathbf{x}) \ge \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}, \mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})} \right] = \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}|\mathbf{z}) p(\mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})} \right] \quad \text{Chain rule of probability}\]</span> <span class="math display">\[= \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} [\log p_\theta(\mathbf{x}|\mathbf{z})] + \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p(\mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})} \right] \quad \text{Split the expectation}\]</span> <span class="math display">\[= \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} [\log p_\theta(\mathbf{x}|\mathbf{z})] - D_{KL}(q_\phi(\mathbf{z}|\mathbf{x}) || p(\mathbf{z})) \quad \text{KL divergence}\]</span></p>
+<p><strong>This is the objective function for the VAE (Loss Function), also the ELBO</strong> to maximize, or minimizing the negative ELBO.</p>
+<p><span class="math display">\[\mathcal{L}(\theta, \phi, \mathbf{x}) = \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} \left[ \log \frac{p_\theta(\mathbf{x}, \mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})} \right] = \mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} [\log p_\theta(\mathbf{x}|\mathbf{z})] - D_{KL}(q_\phi(\mathbf{z}|\mathbf{x}) || p(\mathbf{z}))\]</span></p>
+</section>
+<section id="first-component-reconstruction-loss-negative-expected-log-likelihood-mathbbe_q_phimathbfzmathbfx-log-p_thetamathbfxmathbfz" class="level3">
+<h3 class="anchored" data-anchor-id="first-component-reconstruction-loss-negative-expected-log-likelihood-mathbbe_q_phimathbfzmathbfx-log-p_thetamathbfxmathbfz">First Component: Reconstruction Loss (Negative Expected Log-Likelihood): <span class="math inline">\(\mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})} [\log p_\theta(\mathbf{x}|\mathbf{z})]\)</span></h3>
+<p>This term encourages the decoder to reconstruct the input <span class="math inline">\(\mathbf{x}\)</span> accurately from a latent sample <span class="math inline">\(\mathbf{z}\)</span> drawn from the encoder’s output distribution.</p>
+<p>We will derive it now</p>
+<section id="assumption-data-is-gaussian-distributed" class="level4">
+<h4 class="anchored" data-anchor-id="assumption-data-is-gaussian-distributed">Assumption: Data is Gaussian Distributed</h4>
+<p>We assume that each data point <span class="math inline">\(\mathbf{x}\)</span> (e.g., an image, where each pixel is a dimension) is drawn from a Gaussian distribution, given the latent variable <span class="math inline">\(\mathbf{z}\)</span> that the decoder outputs. For simplicity, let’s assume the dimensions of <span class="math inline">\(\mathbf{x}\)</span> are independent given <span class="math inline">\(\mathbf{z}\)</span>, and they share a fixed variance <span class="math inline">\(\sigma^2\)</span>.</p>
+<p>So, for each dimension <span class="math inline">\(j\)</span> of <span class="math inline">\(\mathbf{x}\)</span>, <span class="math inline">\(x_j\)</span> is distributed as: <span class="math inline">\(p_\theta(x_j|\mathbf{z}) = \mathcal{N}(x_j; \mu_j(\mathbf{z}), \sigma^2)\)</span></p>
+<p>Here:</p>
+<ul>
+<li><span class="math inline">\(\mu_j(\mathbf{z})\)</span> is the mean for the <span class="math inline">\(j\)</span>-th dimension, which is the output of your decoder network for that dimension when given <span class="math inline">\(\mathbf{z}\)</span>.</li>
+<li><span class="math inline">\(\sigma^2\)</span> is the variance. For simplicity, we often assume a fixed <span class="math inline">\(\sigma^2\)</span> (e.g., <span class="math inline">\(\sigma^2=1\)</span>, or a small constant, or even absorbed into the weights). More advanced VAEs can learn this variance as well (the decoder outputs both mean and variance).</li>
+</ul>
+</section>
+<section id="probability-density-function-pdf-of-a-gaussian" class="level4">
+<h4 class="anchored" data-anchor-id="probability-density-function-pdf-of-a-gaussian">Probability Density Function (PDF) of a Gaussian</h4>
+<p>The PDF for a single-dimensional Gaussian variable <span class="math inline">\(x_j\)</span> is:</p>
+<p><span class="math inline">\(f(x_j) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x_j - \mu_j(\mathbf{z}))^2}{2\sigma^2}\right)\)</span></p>
+</section>
+<section id="log-likelihood-for-a-multi-dimensional-data-point-mathbfx" class="level4">
+<h4 class="anchored" data-anchor-id="log-likelihood-for-a-multi-dimensional-data-point-mathbfx">Log-Likelihood for a Multi-dimensional Data Point <span class="math inline">\(\mathbf{x}\)</span></h4>
+<p>Since we assume the dimensions of <span class="math inline">\(\mathbf{x}\)</span> are independent given <span class="math inline">\(\mathbf{z}\)</span>, the joint probability <span class="math inline">\(p_\theta(\mathbf{x}|\mathbf{z})\)</span> is the product of the individual probabilities:</p>
+<p><span class="math inline">\(p_\theta(\mathbf{x}|\mathbf{z}) = \prod_{j=1}^{D_x} p_\theta(x_j|\mathbf{z})\)</span></p>
+<p>where <span class="math inline">\(D_x\)</span> is the dimensionality of <span class="math inline">\(\mathbf{x}\)</span> (e.g., number of pixels in an image). Now, let’s take the logarithm of this product:</p>
+<p><span class="math display">\[\log p_\theta(\mathbf{x}|\mathbf{z}) = \log \left( \prod_{j=1}^{D_x} \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x_j - \mu_j(\mathbf{z}))^2}{2\sigma^2}\right) \right)\]</span> <span class="math display">\[= \sum_{j=1}^{D_x} \log \left( \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x_j - \mu_j(\mathbf{z}))^2}{2\sigma^2}\right) \right)\]</span> <span class="math display">\[= \sum_{j=1}^{D_x} \left( \log\left(\frac{1}{\sqrt{2\pi\sigma^2}}\right) + \log\left(\exp\left(-\frac{(x_j - \mu_j(\mathbf{z}))^2}{2\sigma^2}\right)\right) \right)\]</span> <span class="math display">\[= \sum_{j=1}^{D_x} \left( -\frac{1}{2}\log(2\pi\sigma^2) - \frac{(x_j - \mu_j(\mathbf{z}))^2}{2\sigma^2} \right)\]</span> <span class="math display">\[= \sum_{j=1}^{D_x} \left( -\frac{1}{2}\log(2\pi\sigma^2) \right) - \sum_{j=1}^{D_x} \left( \frac{(x_j - \mu_j(\mathbf{z}))^2}{2\sigma^2} \right)\]</span>The first term is a constant multiplied by <span class="math inline">\(D_x\)</span>: <span class="math display">\[= -\frac{D_x}{2}\log(2\pi\sigma^2) - \frac{1}{2\sigma^2} \sum_{j=1}^{D_x} (x_j - \mu_j(\mathbf{z}))^2\]</span> <span class="math display">\[\text{MSE} = \frac{1}{D_x} \sum_{j=1}^{D_x} (x_j - \mu_j(\mathbf{z}))^2\]</span></p>
+</section>
+</section>
+<section id="second-term-kl-divergence-regularization-term-d_klq_phimathbfzmathbfx-pmathbfz" class="level3">
+<h3 class="anchored" data-anchor-id="second-term-kl-divergence-regularization-term-d_klq_phimathbfzmathbfx-pmathbfz">Second Term: KL Divergence (Regularization Term): <span class="math inline">\(D_{KL}(q_\phi(\mathbf{z}|\mathbf{x}) || p(\mathbf{z}))\)</span></h3>
+<p>This term acts as a regularizer. It pushes the approximate posterior <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x})\)</span> (the distribution output by the encoder for a given <span class="math inline">\(\mathbf{x}\)</span>) to be close to the prior distribution <span class="math inline">\(p(\mathbf{z})\)</span> (e.g., <span class="math inline">\(\mathcal{N}(0,I)\)</span>).</p>
+<p>If <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x})\)</span> is assumed to be a diagonal Gaussian <span class="math inline">\(\mathcal{N}(\mu, \Sigma)\)</span> (where <span class="math inline">\(\Sigma\)</span> is diagonal) and <span class="math inline">\(p(\mathbf{z})\)</span> is <span class="math inline">\(\mathcal{N}(0,I)\)</span>, the KL divergence has a closed-form solution:</p>
+<p><span class="math display">\[D_{KL}(\mathcal{N}(\mu,\Sigma)||\mathcal{N}(0,I)) = \frac{1}{2} \sum_{j=1}^{D_z} (\exp(\sigma_j) + \mu_j^2 - 1 - \sigma_j)\]</span> where <span class="math inline">\(D_z\)</span> is the dimensionality of <span class="math inline">\(\mathbf{z}\)</span>, and <span class="math inline">\(\mu_j\)</span> and <span class="math inline">\(\sigma_j\)</span> are the mean and log-variance (diagonal elements of <span class="math inline">\(\Sigma\)</span>) for the <span class="math inline">\(j\)</span>-th latent dimension, as output by the encoder.</p>
+<section id="numerical-example-for-q_phimathbfzmathbfx" class="level4">
+<h4 class="anchored" data-anchor-id="numerical-example-for-q_phimathbfzmathbfx">Numerical Example for <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x})\)</span></h4>
+<p>Let’s say our latent space <span class="math inline">\(\mathbf{z}\)</span> is 2-dimensional (<span class="math inline">\(D_z=2\)</span>). Our input is a specific image <span class="math inline">\(\mathbf{x}_{cat}\)</span> (an image of a cat).</p>
+<p>The encoder network takes <span class="math inline">\(\mathbf{x}_{cat}\)</span> as input. Its output layer (after processing through several hidden layers) has two sets of <span class="math inline">\(D_z=2\)</span> nodes:</p>
+<ul>
+<li><strong>Mean Output Nodes:</strong> For <span class="math inline">\(\mu_\phi(\mathbf{x}_{cat})\)</span></li>
+<li><strong>Log-Variance Output Nodes:</strong> For <span class="math inline">\(\log(\sigma_\phi(\mathbf{x}_{cat})^2)\)</span> (we use log-variance for numerical stability, as variance must be positive).</li>
+</ul>
+<p>Suppose for this specific <span class="math inline">\(\mathbf{x}_{cat}\)</span>, the encoder outputs:</p>
+<p><span class="math inline">\(\mu_\phi(\mathbf{x}_{cat})=\begin{bmatrix} 0.8 \\ -1.2 \end{bmatrix}\)</span></p>
+<p><span class="math inline">\(\log(\sigma_\phi(\mathbf{x}_{cat})^2)=\begin{bmatrix} -0.2 \\ 0.1 \end{bmatrix}\)</span></p>
+<p>From the log-variances, we calculate the variances:</p>
+<p><span class="math inline">\(\sigma_1^2 = \exp(-0.2) \approx 0.8187\)</span> <span class="math inline">\(\sigma_2^2 = \exp(0.1) \approx 1.1052\)</span></p>
+<p>So, for this input <span class="math inline">\(\mathbf{x}_{cat}\)</span>, the encoder defines the latent distribution: <span class="math display">\[q_\phi(\mathbf{z}|\mathbf{x}_{cat})=\mathcal{N}\left(\mathbf{z};\begin{bmatrix} 0.8 \\ -1.2 \end{bmatrix},\begin{bmatrix} 0.8187 &amp; 0 \\ 0 &amp; 1.1052 \end{bmatrix}\right)\]</span></p>
+<p>This means:</p>
+<ul>
+<li>The first latent dimension (<span class="math inline">\(z_1\)</span>) is modeled by a Gaussian with mean 0.8 and variance 0.8187.</li>
+<li>The second latent dimension (<span class="math inline">\(z_2\)</span>) is modeled by a Gaussian with mean <span class="math inline">\(-1.2\)</span> and variance 1.1052.</li>
+</ul>
+<p>These two dimensions are assumed to be independent (because the off-diagonal elements of the covariance matrix are zero).</p>
+<p>When we “sample <span class="math inline">\(\mathbf{z}\)</span> from <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_{cat})\)</span>” using the reparameterization trick, we would:</p>
+<ol type="1">
+<li>Sample <span class="math inline">\(\epsilon_1 \sim \mathcal{N}(0,1)\)</span> and <span class="math inline">\(\epsilon_2 \sim \mathcal{N}(0,1)\)</span>.</li>
+<li>Calculate <span class="math inline">\(z_1 = 0.8 + \sqrt{0.8187} \cdot \epsilon_1\)</span></li>
+<li>Calculate <span class="math inline">\(z_2 = -1.2 + \sqrt{1.1052} \cdot \epsilon_2\)</span></li>
+</ol>
+<p>The resulting <span class="math inline">\(\mathbf{z}=\begin{bmatrix} z_1 \\ z_2 \end{bmatrix}\)</span> is then passed to the decoder.</p>
+<p>This formulation allows the VAE to learn a distribution for each input, rather than a single point, enabling the desired properties of a continuous and meaningful latent space.</p>
+</section>
+<section id="numerical-example-regularization-using-kl" class="level4">
+<h4 class="anchored" data-anchor-id="numerical-example-regularization-using-kl">Numerical Example Regularization using KL</h4>
+<p>Imagine a very simplified VAE where our latent space <span class="math inline">\(\mathbf{z}\)</span> is just one-dimensional (<span class="math inline">\(D_z=1\)</span>). Our prior <span class="math inline">\(p(\mathbf{z})\)</span> is <span class="math inline">\(\mathcal{N}(0,1)\)</span> (mean 0, variance 1). The VAE’s job is to learn an encoder (<span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x})\)</span>) and a decoder (<span class="math inline">\(p_\theta(\mathbf{x}|\mathbf{z})\)</span>) such that:</p>
+<ul>
+<li>The decoder can reconstruct <span class="math inline">\(\mathbf{x}_A\)</span> from samples of <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_A)\)</span>.</li>
+<li>The decoder can reconstruct <span class="math inline">\(\mathbf{x}_B\)</span> from samples of <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_B)\)</span>.</li>
+<li>The KL divergence <span class="math inline">\(D_{KL}(q_\phi(\mathbf{z}|\mathbf{x})||p(\mathbf{z}))\)</span> is minimized for both <span class="math inline">\(\mathbf{x}_A\)</span> and <span class="math inline">\(\mathbf{x}_B\)</span>.</li>
+</ul>
+<p><strong>Scenario 1: No KL Regularization (like a vanilla Autoencoder)</strong></p>
+<p>If there were no KL term, the encoder might learn to map <span class="math inline">\(\mathbf{x}_A\)</span> to a specific point <span class="math inline">\(\mathbf{z}_A\)</span> and <span class="math inline">\(\mathbf{x}_B\)</span> to a specific point <span class="math inline">\(\mathbf{z}_B\)</span>.</p>
+<ul>
+<li>Encoder output for <span class="math inline">\(\mathbf{x}_A\)</span>: <span class="math inline">\(\mu_A=-5.0, \sigma_A=0.001\)</span> (a very tight distribution at -5.0)</li>
+<li>Encoder output for <span class="math inline">\(\mathbf{x}_B\)</span>: <span class="math inline">\(\mu_B=+5.0, \sigma_B=0.001\)</span> (a very tight distribution at +5.0)</li>
+</ul>
+<p><strong>Scenario 2: With KL Regularization (VAE)</strong></p>
+<p>Now, the KL term <span class="math inline">\(D_{KL}(q_\phi(\mathbf{z}|\mathbf{x})||\mathcal{N}(0,1))\)</span> is active.</p>
+<p>Let’s say the encoder tries to map <span class="math inline">\(\mathbf{x}_A\)</span> and <span class="math inline">\(\mathbf{x}_B\)</span> far apart again:</p>
+<ul>
+<li>Encoder output for <span class="math inline">\(\mathbf{x}_A\)</span>: <span class="math inline">\(\mu_A=-5.0, \sigma_A=0.1\)</span></li>
+<li>Encoder output for <span class="math inline">\(\mathbf{x}_B\)</span>: <span class="math inline">\(\mu_B=+5.0, \sigma_B=0.1\)</span></li>
+</ul>
+<p>Let’s calculate the KL divergence for <span class="math inline">\(\mathbf{x}_A\)</span>: <span class="math display">\[D_{KL}(\mathcal{N}(-5.0,0.1^2)||\mathcal{N}(0,1)) = \frac{1}{2} (\exp(2\log(0.1))+(-5.0)^2-1-2\log(0.1))\]</span> <span class="math display">\[= \frac{1}{2} (0.01+25-1-(-4.6)) = \frac{1}{2} (24.01+4.6)=14.3\]</span></p>
+<p>This KL value (14.3) is very high! The VAE loss function will strongly penalize this. To minimize this KL term, the encoder is forced to:</p>
+<ul>
+<li>Pull the means towards 0: <span class="math inline">\(\mu_A\)</span> and <span class="math inline">\(\mu_B\)</span> must be closer to 0.</li>
+<li>Push the variances towards 1: <span class="math inline">\(\sigma_A\)</span> and <span class="math inline">\(\sigma_B\)</span> must be closer to 1.</li>
+</ul>
+<p>So, for similar inputs <span class="math inline">\(\mathbf{x}_A\)</span> and <span class="math inline">\(\mathbf{x}_B\)</span>, the trained encoder might output:</p>
+<ul>
+<li>Encoder output for <span class="math inline">\(\mathbf{x}_A\)</span>: <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_A)=\mathcal{N}(\mathbf{z};\mu_A=-0.5,\sigma_A=0.8)\)</span></li>
+<li>Encoder output for <span class="math inline">\(\mathbf{x}_B\)</span>: <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_B)=\mathcal{N}(\mathbf{z};\mu_B=+0.5,\sigma_B=0.8)\)</span></li>
+</ul>
+<p>Now, let’s evaluate the KL divergence again (for <span class="math inline">\(\mathbf{x}_A\)</span>): <span class="math display">\[D_{KL}(\mathcal{N}(-0.5,0.8^2)||\mathcal{N}(0,1)) = \frac{1}{2} (\exp(2\log(0.8))+(-0.5)^2-1-2\log(0.8))\]</span> <span class="math display">\[= \frac{1}{2} (0.64+0.25-1-(-0.446))= \frac{1}{2} (-0.11+0.446)=0.168\]</span></p>
+<p>This KL value (0.168) is much smaller! The KL regularization successfully compressed the latent distributions closer to the prior.</p>
+<p><strong>Why this helps:</strong></p>
+<p>The only way for the encoder to reconstruct accurately AND stay close to the prior when presented with similar inputs is to map them to overlapping distributions.</p>
+</section>
+</section>
+</section>
+<section id="how-two-terms-work-with-each-other-to-ensure-a-smooth-generative-model-for-unseen-data" class="level2">
+<h2 class="anchored" data-anchor-id="how-two-terms-work-with-each-other-to-ensure-a-smooth-generative-model-for-unseen-data">How two terms work with each other to ensure a smooth generative model for unseen data</h2>
+<p>Let’s consider two distinct but very similar input data points, <span class="math inline">\(\mathbf{x}_A\)</span> and <span class="math inline">\(\mathbf{x}_B\)</span>, both from training distribution</p>
+<p><strong>Pressure from KL Divergence: Make them similar</strong></p>
+<ul>
+<li>For <span class="math inline">\(\mathbf{x}_A\)</span>, the encoder will produce <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_A)=\mathcal{N}(\mu_A,\Sigma_A)\)</span>. The KL term wants <span class="math inline">\(\mu_A \approx 0\)</span> and <span class="math inline">\(\Sigma_A \approx I\)</span>.</li>
+<li>For <span class="math inline">\(\mathbf{x}_B\)</span>, the encoder will produce <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_B)=\mathcal{N}(\mu_B,\Sigma_B)\)</span>. The KL term wants <span class="math inline">\(\mu_B \approx 0\)</span> and <span class="math inline">\(\Sigma_B \approx I\)</span>.</li>
+</ul>
+<p>The mathematical consequence of minimizing <span class="math inline">\(D_{KL}(Q||P)\)</span> is that <span class="math inline">\(Q\)</span> is forced to be similar to <span class="math inline">\(P\)</span>. Since <span class="math inline">\(P\)</span> is the same prior for all <span class="math inline">\(\mathbf{x}\)</span>, this means all <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x})\)</span> distributions for any <span class="math inline">\(\mathbf{x}\)</span> are pulled towards the same central region of the latent space (around 0). This inherently forces them to be closer to each other than they might be in a vanilla autoencoder without this regularization.</p>
+<p><strong>Pressure from Reconstruction Loss: Make them distinct</strong></p>
+<p>If the encoder were to map <span class="math inline">\(\mathbf{x}_A\)</span> and <span class="math inline">\(\mathbf{x}_B\)</span> to identical distributions (e.g., <span class="math inline">\(\mu_A=\mu_B=0\)</span> and <span class="math inline">\(\Sigma_A=\Sigma_B=I\)</span>), the reconstruction loss would be high to penalize that.</p>
+<p><strong>The Interplay (The “Dual Pressure”):</strong></p>
+<ol type="1">
+<li>The KL term pushes all latent distributions for different <span class="math inline">\(\mathbf{x}\)</span> towards the same central region of the latent space and encourages them to have a certain “spread” (variance <span class="math inline">\(\approx I\)</span>). This means they will naturally overlap.</li>
+<li>The reconstruction term pulls these distributions slightly apart (or adjusts their means and variances) just enough so that the decoder can distinguish between similar inputs and reconstruct them accurately.</li>
+</ol>
+<p>The balance between these two forces is key. The optimal solution is where the encoder maps similar inputs <span class="math inline">\(\mathbf{x}_A\)</span> and <span class="math inline">\(\mathbf{x}_B\)</span> to latent distributions <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_A)\)</span> and <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_B)\)</span> that are:</p>
+<ul>
+<li>Close to each other (due to KL regularization towards the common prior).</li>
+<li>Significantly overlapping (due to the variances being pushed towards 1 by KL, and their means being close).</li>
+<li>Slightly distinct in their means/variances such that the decoder can still reconstruct <span class="math inline">\(\mathbf{x}_A\)</span> from samples of <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_A)\)</span> and <span class="math inline">\(\mathbf{x}_B\)</span> from samples of <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x}_B)\)</span> with low reconstruction error.</li>
+</ul>
+<section id="the-reparameterization-trick" class="level3">
+<h3 class="anchored" data-anchor-id="the-reparameterization-trick">The Reparameterization Trick:</h3>
+<p>A challenge arises because sampling <span class="math inline">\(\mathbf{z}\)</span> from <span class="math inline">\(q_\phi(\mathbf{z}|\mathbf{x})\)</span> is a stochastic operation, which makes backpropagation through the sampling step difficult. The reparameterization trick solves this. Instead of sampling <span class="math inline">\(\mathbf{z} \sim \mathcal{N}(\mu,\Sigma)\)</span>, we sample an auxiliary random variable <span class="math inline">\(\boldsymbol{\epsilon} \sim \mathcal{N}(0,I)\)</span> and then compute:</p>
+<p><span class="math display">\[\mathbf{z} = \mu_\phi(\mathbf{x}) + \sigma_\phi(\mathbf{x}) \odot \boldsymbol{\epsilon}\]</span> (where <span class="math inline">\(\odot\)</span> is element-wise multiplication, and <span class="math inline">\(\sigma_\phi(\mathbf{x})\)</span> is the standard deviation, often computed from log-variance to ensure positivity). Now, the stochasticity is moved to <span class="math inline">\(\boldsymbol{\epsilon}\)</span>, and <span class="math inline">\(\mathbf{z}\)</span> becomes a deterministic function of <span class="math inline">\(\mu\)</span>, <span class="math inline">\(\sigma\)</span>, and <span class="math inline">\(\boldsymbol{\epsilon}\)</span>, allowing gradients to flow back through <span class="math inline">\(\mu_\phi(\mathbf{x})\)</span> and <span class="math inline">\(\sigma_\phi(\mathbf{x})\)</span> to the encoder’s parameters <span class="math inline">\(\phi\)</span>.</p>
+</section>
+</section>
+<section id="key-points-of-vae" class="level2">
+<h2 class="anchored" data-anchor-id="key-points-of-vae">Key Points of VAE</h2>
+<ul>
+<li><p><strong>Generative Model:</strong> By sampling a <span class="math inline">\(\mathbf{z}\)</span> from the simple prior <span class="math inline">\(p(\mathbf{z})\)</span> (e.g., standard normal) and passing it through the decoder <span class="math inline">\(p_\theta(\mathbf{x}|\mathbf{z})\)</span>, we can generate entirely new data that resembles the training data</p></li>
+<li><p><strong>Variational Inference &amp; Trade-off between Reconstruction and Regularization:</strong> The balance between the reconstruction loss and the KL divergence term is critical. If the KL term is too strong, the model might prioritize learning the prior over accurate reconstruction, leading to blurry reconstructions. If too weak, the latent space might not be well-regularized for generation. This balance is often controlled by a weighting factor (beta-VAE).</p></li>
+</ul>
+</section>
+</section>
+<section id="dreamer" class="level1">
+<h1>Dreamer</h1>
+<p>Dreamer is a MBRL model that learns the model simultaneously with behavior.</p>
+<section id="modules-involved" class="level2">
+<h2 class="anchored" data-anchor-id="modules-involved">Modules Involved:</h2>
+<ul>
+<li><strong>Encoder (Representation Model):</strong> <span class="math inline">\(q_\phi(s_t|h_t,o_t)\)</span> maps observation <span class="math inline">\(o_t\)</span> and recurrent state <span class="math inline">\(h_t\)</span> to posterior distribution parameters (<span class="math inline">\(\mu_{post},\sigma_{post}\)</span>) for <span class="math inline">\(s_t\)</span>.</li>
+<li><strong>Decoder (Observation Model):</strong> <span class="math inline">\(p_\theta(o_t|s_t)\)</span> maps stochastic state <span class="math inline">\(s_t\)</span> to observation reconstruction parameters.</li>
+<li><strong>Reward Model:</strong> <span class="math inline">\(p_\theta(r_t|s_t)\)</span> maps stochastic state <span class="math inline">\(s_t\)</span> to reward prediction parameters.</li>
+<li><strong>Recurrent Model (Deterministic Dynamics):</strong> <span class="math inline">\(f_{recurrent}(h_{t-1},s_{t-1},a_{t-1})\)</span> updates <span class="math inline">\(h_t\)</span>.</li>
+<li><strong>Prior Model (Transition Dynamics):</strong> <span class="math inline">\(p(s_t|h_t)\)</span> maps recurrent state <span class="math inline">\(h_t\)</span> to prior distribution parameters (<span class="math inline">\(\mu_{prior},\sigma_{prior}\)</span>) for <span class="math inline">\(s_t\)</span>.</li>
+<li><strong>Actor (Policy Network):</strong> <span class="math inline">\(p_\psi(a_t|s_t)\)</span> maps stochastic state <span class="math inline">\(s_t\)</span> to action distribution parameters.</li>
+<li><strong>Critic (Value Network):</strong> <span class="math inline">\(V_\psi(s_t)\)</span> predicts the expected future value from state <span class="math inline">\(s_t\)</span>.</li>
+</ul>
+</section>
+<section id="training-steps-one-iteration" class="level2">
+<h2 class="anchored" data-anchor-id="training-steps-one-iteration">Training Steps (One Iteration):</h2>
+<section id="phase-1-data-collection-real-world-interaction" class="level3">
+<h3 class="anchored" data-anchor-id="phase-1-data-collection-real-world-interaction">Phase 1: Data Collection (Real-World Interaction)</h3>
+<ol type="1">
+<li><strong>Observe Current State:</strong> The agent receives the current observation <span class="math inline">\(o_t\)</span> from the real environment.</li>
+<li><strong>Infer Latent State (Encoder):</strong> Using the Encoder and Recurrent Model, infer the current stochastic latent state <span class="math inline">\(s_t\)</span> and update the deterministic hidden state <span class="math inline">\(h_t\)</span>:
+<ul>
+<li><span class="math inline">\(h_t=f_{recurrent}(h_{t-1},s_{t-1},a_{t-1})\)</span> (using the last actual state and action from the environment)</li>
+<li><span class="math inline">\(q(s_t|h_t,o_t)\)</span> is computed by the Encoder. A sample <span class="math inline">\(s_t\)</span> is drawn (using the reparameterization trick) from this posterior distribution.</li>
+</ul></li>
+<li><strong>Choose Action (Actor):</strong> Feed the inferred latent state <span class="math inline">\(s_t\)</span> to the Actor (Policy Network) <span class="math inline">\(p_\psi(a_t|s_t)\)</span> to get an action distribution. Sample an action <span class="math inline">\(a_t\)</span> from this distribution (e.g., using <span class="math inline">\(\epsilon\)</span>-greedy for exploration or pure sampling for stochastic policies).</li>
+<li><strong>Execute Action:</strong> Execute action <span class="math inline">\(a_t\)</span> in the real environment.</li>
+<li><strong>Receive Feedback:</strong> Get the next observation <span class="math inline">\(o_{t+1}\)</span> and reward <span class="math inline">\(r_{t+1}\)</span> from the environment.</li>
+<li><strong>Store Experience:</strong> Store the tuple <span class="math inline">\((o_t,a_t,r_{t+1},o_{t+1})\)</span> in a replay buffer.</li>
+</ol>
+</section>
+<section id="phase-2-model-training-world-model-update" class="level3">
+<h3 class="anchored" data-anchor-id="phase-2-model-training-world-model-update">Phase 2: Model Training (World Model Update)</h3>
+<p>This phase happens after collecting a batch of new experiences (e.g., a short trajectory or a few steps) or can be done continuously from the replay buffer.</p>
+<ol type="1">
+<li><strong>Sample Batch:</strong> Sample a batch of (e.g., 50-step) sequences from the replay buffer.</li>
+<li><strong>Process Sequence (RSSM Pass):</strong> For each sequence in the batch, process it through the Recurrent State-Space Model (RSSM):
+<ul>
+<li>For each step <span class="math inline">\(t\)</span> in the sequence:
+<ul>
+<li><strong>Update Recurrent State:</strong> <span class="math inline">\(h_t=f_{recurrent}(h_{t-1},s_{t-1},a_{t-1})\)</span></li>
+<li><strong>Compute Prior:</strong> <span class="math inline">\(p(s_t|h_t)\)</span> (using the Prior Model)</li>
+<li><strong>Compute Posterior:</strong> <span class="math inline">\(q(s_t|h_t,o_t)\)</span> (using the Encoder and the observed <span class="math inline">\(o_t\)</span>)</li>
+<li><strong>Sample Latent State:</strong> Sample <span class="math inline">\(s_t\)</span> from the posterior <span class="math inline">\(q(s_t|h_t,o_t)\)</span> (using reparameterization trick for gradients).</li>
+</ul></li>
+</ul></li>
+<li><strong>Calculate World Model Loss:</strong> The total world model loss is calculated for the entire batch. It typically combines three terms for each step <span class="math inline">\(t\)</span>:
+<ul>
+<li><strong>Reconstruction Loss:</strong> <span class="math inline">\(Loss_{obs} = -\log p_\theta(o_t|s_t)\)</span> (from Decoder). This encourages <span class="math inline">\(s_t\)</span> to contain enough information to reconstruct the observation.</li>
+<li><strong>Reward Loss:</strong> <span class="math inline">\(Loss_{reward} = -\log p_\theta(r_t|s_t)\)</span> (from Reward Model). This encourages <span class="math inline">\(s_t\)</span> to contain enough information to predict the reward.</li>
+<li><strong>KL Divergence (Consistency Loss):</strong> <span class="math inline">\(Loss_{KL} = D_{KL}(q(s_t|h_t,o_t)||p(s_t|h_t))\)</span>. This is crucial:
+<ul>
+<li>It regularizes the posterior <span class="math inline">\(q\)</span> towards the prior <span class="math inline">\(p\)</span>.</li>
+<li>It also forces the Prior Model to learn to accurately predict the next stochastic state before seeing the actual observation, by pulling it closer to the posterior that does see the observation. This is key for effective imagination.</li>
+</ul></li>
+<li><strong>Total World Model Loss:</strong> <span class="math inline">\(L_{WM} = \sum_t (Loss_{obs} + Loss_{reward} + \beta \cdot Loss_{KL})\)</span> (where <span class="math inline">\(\beta\)</span> is a KL weight, often 1 or adjusted).</li>
+</ul></li>
+<li><strong>Optimize World Model:</strong> Perform an optimization step (e.g., Adam) to update the parameters of the Encoder, Decoder, Reward Model, Recurrent Model, and Prior Model based on <span class="math inline">\(L_{WM}\)</span>.</li>
+</ol>
+</section>
+<section id="phase-3-behavior-learning-policy-value-update-by-imagination" class="level3">
+<h3 class="anchored" data-anchor-id="phase-3-behavior-learning-policy-value-update-by-imagination">Phase 3: Behavior Learning (Policy &amp; Value Update by Imagination)</h3>
+<p>This phase also happens concurrently with World Model training, typically after a few world model updates. It leverages the current learned world model.</p>
+<ol type="1">
+<li><strong>Sample Initial States:</strong> Sample a batch of latent states <span class="math inline">\(s_k\)</span> from recent past experiences in the replay buffer. These serve as starting points for imagined trajectories.</li>
+<li><strong>Imagine Trajectories:</strong> For each sampled <span class="math inline">\(s_k\)</span>:
+<ul>
+<li><strong>Rollout:</strong> Use the learned Prior Model (<span class="math inline">\(p(s_{t+1}|h_{t+1})\)</span>) and Recurrent Model (<span class="math inline">\(h_{t+1}=f_{recurrent}(\dots)\)</span>) to simulate forward in the latent space for <span class="math inline">\(H\)</span> steps (the imagination horizon).</li>
+<li><strong>Act in Imagination:</strong> At each step <span class="math inline">\(t'\)</span> in the imagination, the Actor <span class="math inline">\(p_\psi(a_{t'}|s_{t'})\)</span> chooses an action <span class="math inline">\(a_{t'}\)</span>.</li>
+<li><strong>Predict Reward:</strong> The Reward Model <span class="math inline">\(p_\theta(r_{t'}|s_{t'})\)</span> predicts the reward for that step.</li>
+<li><strong>Predict Value:</strong> The Critic <span class="math inline">\(V_\psi(s_{t'})\)</span> predicts the value of the future state.</li>
+<li>This generates an imagined trajectory of states (<span class="math inline">\(s_k,s'_{k+1},\dots,s'_{k+H}\)</span>) and rewards (<span class="math inline">\(r'_k,\dots,r'_{k+H}\)</span>).</li>
+</ul></li>
+<li><strong>Calculate Policy Loss:</strong>
+<ul>
+<li><strong>Value Target:</strong> Calculate value targets (e.g., GAE-lambda returns or N-step returns) using the predicted imagined rewards <span class="math inline">\(r'_{t'}\)</span> and the Critic’s predicted values <span class="math inline">\(V_\psi(s'_{t'})\)</span> along the imagined trajectory.</li>
+<li><strong>Actor Loss:</strong> Optimize the Actor to maximize the expected value from imagined trajectories. This typically involves maximizing the expected return from actions chosen by the policy. Gradients flow back through the entire imagined sequence and the dynamics of the world model.</li>
+<li><strong>Critic Loss:</strong> Optimize the Critic to accurately predict the value of imagined states, typically using an MSE loss between its prediction and the calculated value targets.</li>
+<li><strong>Total Policy Loss:</strong> <span class="math inline">\(L_{Policy} = \text{Actor Loss} + \text{Critic Loss}\)</span></li>
+</ul></li>
+<li><strong>Optimize Policy &amp; Value Networks:</strong> Perform an optimization step (e.g., Adam) to update the parameters of the Actor and Critic Networks based on <span class="math inline">\(L_{Policy}\)</span>.</li>
+</ol>
+<section id="parameters-we-are-trying-to-learn-the-psi-parameters" class="level4">
+<h4 class="anchored" data-anchor-id="parameters-we-are-trying-to-learn-the-psi-parameters">1. Parameters We Are Trying to Learn (The <span class="math inline">\(\psi\)</span> Parameters)</h4>
+<p>In the behavior learning phase, we are trying to learn the parameters of two distinct neural networks:</p>
+<ul>
+<li><strong>Actor Network (Policy Network):</strong> <span class="math inline">\(p_\psi(a_t|s_t)\)</span>
+<ul>
+<li><strong>Parameters:</strong> These are the weights and biases of the neural network that takes a latent state <span class="math inline">\(s_t\)</span> as input and outputs a distribution over actions <span class="math inline">\(a_t\)</span>. Let’s denote these specific parameters as <span class="math inline">\(\psi_{actor}\)</span>.</li>
+<li><strong>Purpose:</strong> To learn a policy that chooses actions which maximize expected future rewards within the imagined world.</li>
+</ul></li>
+<li><strong>Critic Network (Value Network):</strong> <span class="math inline">\(V_\psi(s_t)\)</span>
+<ul>
+<li><strong>Parameters:</strong> These are the weights and biases of the neural network that takes a latent state <span class="math inline">\(s_t\)</span> as input and outputs a single scalar value, representing the estimated expected future return (value) from that state. Let’s denote these specific parameters as <span class="math inline">\(\psi_{critic}\)</span>.</li>
+<li><strong>Purpose:</strong> To learn to accurately predict the “goodness” (value) of a given latent state. This value prediction is then used as a baseline and target for training the Actor.</li>
+</ul></li>
+</ul>
+<p>So, when we talk about optimizing <span class="math inline">\(\psi\)</span>, we are jointly optimizing <span class="math inline">\(\psi_{actor}\)</span> and <span class="math inline">\(\psi_{critic}\)</span>.</p>
+</section>
+<section id="loss-functions-summed-up-mathematical-formulation" class="level4">
+<h4 class="anchored" data-anchor-id="loss-functions-summed-up-mathematical-formulation">2. Loss Functions Summed Up (Mathematical Formulation)</h4>
+<p>The total policy loss, <span class="math inline">\(L_{Policy}(\psi)\)</span>, is composed of two main parts, each designed to update its respective network:</p>
+<p><span class="math display">\[L_{Policy}(\psi) = \underbrace{L_{Critic}(\psi_{critic})}_{\text{Value Estimation Loss}} + \underbrace{L_{Actor}(\psi_{actor})}_{\text{Policy Improvement Loss}}\]</span></p>
+<p>Let’s detail each:</p>
+<section id="critic-loss-l_criticpsi_critic" class="level5">
+<h5 class="anchored" data-anchor-id="critic-loss-l_criticpsi_critic">Critic Loss: <span class="math inline">\(L_{Critic}(\psi_{critic})\)</span></h5>
+<p><strong>Goal:</strong> Make the Critic’s value predictions <span class="math inline">\(V_{\psi_{critic}}(s''_{t'})\)</span> as accurate as possible for the imagined states <span class="math inline">\(s''_{t'}\)</span>. “Accurate” here means matching the calculated value targets (or <span class="math inline">\(\lambda\)</span>-returns) <span class="math inline">\(V_{target}(s''_{t'})\)</span>.</p>
+<p><strong>Formulation:</strong> It’s a standard Mean Squared Error (MSE) loss.</p>
+<p><span class="math display">\[L_{Critic}(\psi_{critic}) = \frac{1}{M} \sum_{m=1}^{M} (V_{\psi_{critic}}(s_m'') - V_{target}(s_m''))^2\]</span></p>
+<p>Where:</p>
+<ul>
+<li><p><span class="math inline">\(M\)</span> is the total number of (state, target) pairs from all imagined trajectories in the current batch.</p></li>
+<li><p><span class="math inline">\(s_m''\)</span> is an imagined latent state at some time step <span class="math inline">\(t'\)</span> from an imagined trajectory.</p></li>
+<li><p><span class="math inline">\(V_{\psi_{critic}}(s_m'')\)</span>: The Critic’s Prediction (The Thing We Want to Improve)</p>
+<ul>
+<li><strong>What it is:</strong> This is the current output of your Critic neural network. It’s the network’s best guess or estimate of the expected sum of future discounted rewards that the agent will receive if it starts from the imagined latent state <span class="math inline">\(s_m''\)</span> and then follows its current policy <span class="math inline">\(p_{\psi_{actor}}\)</span> thereafter.</li>
+<li><strong>Source:</strong> It comes directly from the forward pass of the Critic network (<span class="math inline">\(V_{\psi_{critic}}\)</span>) with <span class="math inline">\(s_m''\)</span> as input.</li>
+<li><strong>Purpose in Loss:</strong> This is the value that we are trying to adjust during training. The Critic loss will compute how “wrong” this prediction is compared to the target, and then use that error to update the Critic’s parameters <span class="math inline">\(\psi_{critic}\)</span> via backpropagation. We want to make this prediction get closer to the target value.</li>
+</ul></li>
+<li><p><span class="math inline">\(V_{target}(s_m'')\)</span> is the computed target value for <span class="math inline">\(s_m''\)</span> (Ground Truth). This target is crucial and calculated using the imagined rewards <span class="math inline">\(r''_{t'+1}\)</span> and the bootstrapped value predictions from the Critic itself, specifically the <span class="math inline">\(\lambda\)</span>-return (or GAE-based target): <span class="math display">\[ V_{target}(s_{t'}' ) = \sum_{j=0}^{H-t'-1} (\gamma\lambda)^j r_{t'+j+1}' + (\gamma\lambda)^{H-t'} V_{\psi_{critic}}(s_{k+H}') \quad \text{(simplified } \lambda\text{-return)}\]</span> More robustly, using GAE: <span class="math display">\[ V_{target}(s_{t'}' ) = V_{\psi_{critic}}(s_{t'}' ) + A_{t'}^{\text{GAE}(\gamma, \lambda)}\]</span> where <span class="math inline">\(A_{t'}^{\text{GAE}(\gamma,\lambda)} = \sum_{j=0}^{H-t'-1} (\gamma\lambda)^j \delta''_{t'+j}\)</span> and <span class="math inline">\(\delta''_{t'} = r''_{t'+1} + \gamma V_{\psi_{critic}}(s''_{t'+1}) - V_{\psi_{critic}}(s''_{t'})\)</span>.</p></li>
+</ul>
+</section>
+<section id="actor-loss-l_actorpsi_actor" class="level5">
+<h5 class="anchored" data-anchor-id="actor-loss-l_actorpsi_actor">Actor Loss: <span class="math inline">\(L_{Actor}(\psi_{actor})\)</span></h5>
+<p><strong>Goal:</strong> Adjust the Actor’s policy parameters <span class="math inline">\(\psi_{actor}\)</span> so that actions that lead to higher rewards (higher advantages) become more probable. Also, encourage exploration (entropy).</p>
+<p><strong>Formulation:</strong> This is a policy gradient loss, typically based on the REINFORCE algorithm but with the addition of a value baseline (the Critic’s prediction) and entropy regularization.</p>
+<p><span class="math display">\[L_{Actor}(\psi_{actor}) = -\frac{1}{M} \sum_{m=1}^{M} (A_m^{\text{GAE}(\gamma,\lambda)} \cdot \log p_{\psi_{actor}}(a_m''|s_m'') + \beta_H \cdot H(p_{\psi_{actor}}(a_m''|s_m'')))\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(M\)</span> is the total number of (state, action, advantage) triples from all imagined trajectories.</li>
+<li><span class="math inline">\(A_m^{\text{GAE}(\gamma,\lambda)}\)</span> is the calculated Generalized Advantage Estimate for the imagined state <span class="math inline">\(s_m''\)</span> and action <span class="math inline">\(a_m''\)</span>. This term serves as the “credit assignment” for the action.</li>
+<li><span class="math inline">\(\log p_{\psi_{actor}}(a_m''|s_m'')\)</span> is the log-probability of the imagined action <span class="math inline">\(a_m''\)</span> under the current policy <span class="math inline">\(p_{\psi_{actor}}\)</span>. This is the standard policy gradient term.</li>
+<li><span class="math inline">\(H(p_{\psi_{actor}}(a_m''|s_m''))\)</span> is the entropy of the action distribution at state <span class="math inline">\(s_m''\)</span>.</li>
+<li><span class="math inline">\(\beta_H\)</span> is a hyperparameter for entropy regularization. A positive <span class="math inline">\(\beta_H\)</span> means we add a negative entropy term to the loss, which encourages maximizing entropy (more exploration).</li>
+</ul>
+<p>I will explain more down here</p>
+<section id="the-thing-we-want-to-improve-log-p_psi_actora_ms_m-the-policy-itself" class="level6">
+<h6 class="anchored" data-anchor-id="the-thing-we-want-to-improve-log-p_psi_actora_ms_m-the-policy-itself">1. The Thing We Want to Improve: <span class="math inline">\(\log p_{\psi_{actor}}(a_m''|s_m'')\)</span> (The Policy Itself)</h6>
+<ul>
+<li><strong>What it is:</strong> This term represents the log-probability of the action <span class="math inline">\(a_m''\)</span> that was actually chosen by the Actor (policy) network for the imagined latent state <span class="math inline">\(s_m''\)</span>. The Actor network <span class="math inline">\(p_{\psi_{actor}}(a|s)\)</span> outputs an action distribution, and this is the log-likelihood of a specific action under that distribution.</li>
+<li><strong>Source:</strong> It comes directly from a forward pass of the Actor network <span class="math inline">\(p_{\psi_{actor}}\)</span> given input <span class="math inline">\(s_m''\)</span>, and then evaluating the log-probability of <span class="math inline">\(a_m''\)</span>.</li>
+<li><strong>Purpose in Loss:</strong> This is the core part of the policy that we are trying to adjust. By optimizing the Actor loss, we are trying to change the parameters <span class="math inline">\(\psi_{actor}\)</span> such that the probability of “good” actions increases, and the probability of “bad” actions decreases.</li>
+</ul>
+</section>
+<section id="the-ground-truth-the-guidance-signal-a_mtextgaegammalambda-the-advantage" class="level6">
+<h6 class="anchored" data-anchor-id="the-ground-truth-the-guidance-signal-a_mtextgaegammalambda-the-advantage">2. The “Ground Truth” (The Guidance Signal): <span class="math inline">\(A_m^{\text{GAE}(\gamma,\lambda)}\)</span> (The Advantage)</h6>
+<ul>
+<li><strong>What it is:</strong> This is the Generalized Advantage Estimate (GAE) for the imagined state-action pair (<span class="math inline">\(s_m'',a_m''\)</span>). The advantage function tells us how much better (or worse) a specific action <span class="math inline">\(a_m''\)</span> taken in state <span class="math inline">\(s_m''\)</span> was compared to the average expected value of that state <span class="math inline">\(V_{\psi_{critic}}(s_m'')\)</span>.
+<ul>
+<li>If <span class="math inline">\(A_m^{\text{GAE}} &gt; 0\)</span>: The action <span class="math inline">\(a_m''\)</span> led to better-than-expected rewards.</li>
+<li>If <span class="math inline">\(A_m^{\text{GAE}} &lt; 0\)</span>: The action <span class="math inline">\(a_m''\)</span> led to worse-than-expected rewards.</li>
+</ul></li>
+<li><strong>Source:</strong> This is computed based on the imagined rewards <span class="math inline">\(r''_{t'}\)</span> (from the Reward Model) and the Critic’s value predictions <span class="math inline">\(V_{\psi_{critic}}(s''_{t'})\)</span> (from the Critic Network).</li>
+<li><strong>Purpose in Loss:</strong> This is the signal that tells the Actor whether the action it just took (in imagination) was good or bad. It serves as the “ground truth” in the sense that it’s the target direction and magnitude for policy improvement. We want to increase the likelihood of actions associated with positive advantages and decrease the likelihood of actions associated with negative advantages.</li>
+</ul>
+</section>
+<section id="the-entropy-term-beta_h-cdot-hp_psi_actora_ms_m" class="level6">
+<h6 class="anchored" data-anchor-id="the-entropy-term-beta_h-cdot-hp_psi_actora_ms_m">3. The Entropy Term: <span class="math inline">\(\beta_H \cdot H(p_{\psi_{actor}}(a_m''|s_m''))\)</span></h6>
+<ul>
+<li><strong>What it is:</strong> This is the entropy of the action distribution output by the Actor for state <span class="math inline">\(s_m''\)</span>. It measures the “randomness” or “predictability” of the policy. High entropy means the policy is more exploratory (less confident in a single action), low entropy means it’s more deterministic.</li>
+<li><strong>Source:</strong> It’s calculated directly from the action distribution output by the Actor network.</li>
+<li><strong>Purpose in Loss:</strong> This is a regularization term. It’s not about “improving a prediction” in the same way as the other terms. Instead, we typically want to maximize entropy (hence the negative sign in the loss formulation) to encourage exploration and prevent the policy from collapsing to a single action too quickly. This helps the agent continue to discover better strategies.</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="how-the-loss-helps-learn-psi_actor" class="level4">
+<h4 class="anchored" data-anchor-id="how-the-loss-helps-learn-psi_actor">How the Loss Helps Learn <span class="math inline">\(\psi_{actor}\)</span></h4>
+<p>The Actor loss, when minimized, works as follows:</p>
+<ul>
+<li><strong>Policy Gradient:</strong> The core term <span class="math inline">\(A_m^{\text{GAE}(\gamma,\lambda)} \cdot \log p_{\psi_{actor}}(a_m''|s_m'')\)</span> is the standard policy gradient component. When we minimize the negative of this term:
+<ul>
+<li>If <span class="math inline">\(A_m^{\text{GAE}} &gt; 0\)</span> (good action): We want to increase <span class="math inline">\(\log p_{\psi_{actor}}(a_m''|s_m'')\)</span>, meaning we increase the probability of taking action <span class="math inline">\(a_m''\)</span> in state <span class="math inline">\(s_m''\)</span>.</li>
+<li>If <span class="math inline">\(A_m^{\text{GAE}} &lt; 0\)</span> (bad action): We want to decrease <span class="math inline">\(\log p_{\psi_{actor}}(a_m''|s_m'')\)</span>, meaning we decrease the probability of taking action <span class="math inline">\(a_m''\)</span> in state <span class="math inline">\(s_m''\)</span>.</li>
+<li>The magnitude of the advantage dictates the strength of this probability adjustment.</li>
+</ul></li>
+<li><strong>Entropy Regularization:</strong> The <span class="math inline">\(-\beta_H \cdot H(\dots)\)</span> term ensures that even while the policy is being pushed towards high-advantage actions, it doesn’t become overly deterministic. It retains some level of randomness, which is beneficial for continued exploration.</li>
+</ul>
+
+
+
+</section>
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
