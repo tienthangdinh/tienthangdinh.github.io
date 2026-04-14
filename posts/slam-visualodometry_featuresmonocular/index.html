@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-04-11">
+
+<title>Feature-based Visual Odometry on Monocular Camera – the brachistochrone traveller</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">the brachistochrone traveller</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Đinh Tiến Thắng</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Feature-based Visual Odometry on Monocular Camera</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">Computer Graphics</div>
+                <div class="quarto-category">Computer Vision</div>
+                <div class="quarto-category">SLAM</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">April 11, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#feature-method" id="toc-feature-method" class="nav-link active" data-scroll-target="#feature-method">Feature Method</a>
+  <ul class="collapse">
+  <li><a href="#orb" id="toc-orb" class="nav-link" data-scroll-target="#orb">ORB</a></li>
+  <li><a href="#feature-matching" id="toc-feature-matching" class="nav-link" data-scroll-target="#feature-matching">Feature Matching</a></li>
+  </ul></li>
+  <li><a href="#epipolar-geometry-monocular" id="toc-epipolar-geometry-monocular" class="nav-link" data-scroll-target="#epipolar-geometry-monocular">Epipolar Geometry (Monocular)</a>
+  <ul class="collapse">
+  <li><a href="#epipolar-constraint-essential-matrix" id="toc-epipolar-constraint-essential-matrix" class="nav-link" data-scroll-target="#epipolar-constraint-essential-matrix">Epipolar Constraint (Essential Matrix)</a></li>
+  <li><a href="#find-r-and-t-from-essential-matrix" id="toc-find-r-and-t-from-essential-matrix" class="nav-link" data-scroll-target="#find-r-and-t-from-essential-matrix">Find R and t from Essential Matrix</a>
+  <ul class="collapse">
+  <li><a href="#solving-with-8-point-algorithm" id="toc-solving-with-8-point-algorithm" class="nav-link" data-scroll-target="#solving-with-8-point-algorithm">Solving with 8-Point Algorithm</a></li>
+  <li><a href="#singular-value-decomposition-svd" id="toc-singular-value-decomposition-svd" class="nav-link" data-scroll-target="#singular-value-decomposition-svd">Singular Value Decomposition (SVD)</a></li>
+  <li><a href="#recovering-rotation-and-translation" id="toc-recovering-rotation-and-translation" class="nav-link" data-scroll-target="#recovering-rotation-and-translation">Recovering Rotation and Translation</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#homography-monocular-but-for-planar" id="toc-homography-monocular-but-for-planar" class="nav-link" data-scroll-target="#homography-monocular-but-for-planar">Homography (Monocular but for Planar)</a>
+  <ul class="collapse">
+  <li><a href="#formulation-h" id="toc-formulation-h" class="nav-link" data-scroll-target="#formulation-h">Formulation H</a></li>
+  <li><a href="#lets-solve-h" id="toc-lets-solve-h" class="nav-link" data-scroll-target="#lets-solve-h">Let’s solve H</a></li>
+  </ul></li>
+  <li><a href="#last-step-triangulation" id="toc-last-step-triangulation" class="nav-link" data-scroll-target="#last-step-triangulation">Last step, Triangulation</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="feature-method" class="level1">
+<h1>Feature Method</h1>
+<p>Goal: estimate camera motion based on adjacent images. Based on landmarks/image features. It could be corners (Harris, FAST), blobs (SIFT, SURF, ORB), or edges. Extracting about 1000 feature points in the same image takes about 15.3ms for ORB, 217.3ms for SURF, and 5228.7ms for SIFT. It can be seen that ORB made a significant boost in speed while maintaining the features of rotation and scale invariance</p>
+<section id="orb" class="level2">
+<h2 class="anchored" data-anchor-id="orb">ORB</h2>
+<p>the extraction of ORB features is divided into the following two steps:</p>
+<ol type="1">
+<li><p>original FAST corner detector has a major weakness: it is rotation-invariant. If you rotate the camera, the corner looks different to the computer, and it can’t match it anymore. Therefore, ORB finds the “orientation” of each corner from a small circle around the corner <span class="math display">\[m_{pq} = \sum_{x,y \in B} x^p y^q I(x,y) \quad p,q \in \{0,1\}\]</span></p>
+<ul>
+<li><span class="math inline">\(I(x,y)\)</span>: The brightness (gray value) of the pixel at coordinates <span class="math inline">\((x,y)\)</span>.</li>
+<li><span class="math inline">\(m_{00}\)</span>: The total “mass” (sum of all pixel values). Not multiply by any coordinate</li>
+<li><span class="math inline">\(m_{10}\)</span> and <span class="math inline">\(m_{01}\)</span>: The weighted sums in the <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> directions. Basically multiply by its x or y coordinate.</li>
+</ul>
+<p>The Centroid is the “center of brightness” of the patch. <span class="math display">\[C = \left( \frac{m_{10}}{m_{00}}, \frac{m_{01}}{m_{00}} \right)\]</span></p>
+<p>Now we have two points:</p>
+<ul>
+<li><span class="math inline">\(O\)</span>: The geometric center of the patch (where the corner was detected).</li>
+<li><span class="math inline">\(C\)</span>: The intensity centroid (the “center of mass”).</li>
+</ul>
+<p>So we get a vector <span class="math inline">\(\vec{OC}\)</span>. The angle of this vector tells us which way the “brightness” is leaning: <span class="math display">\[\theta = \arctan(m_{01} / m_{10})\]</span></p></li>
+<li><p>BRIEF descriptor:</p>
+<ul>
+<li>We pre-define a set of <span class="math inline">\(n\)</span> pairs of coordinates <span class="math inline">\((p, q)\)</span> relative to a center point. Usually, <span class="math inline">\(n = 128, 256, \text{ or } 512\)</span>.</li>
+<li>We used the angle <span class="math inline">\(\theta\)</span> calculated in the previous step to rotate these pairs.</li>
+<li>For each pair, we perform a simple test <span class="math inline">\(\tau\)</span>: <span class="math display">\[\tau(p, q) =
+  \begin{cases}
+  1 &amp; \text{if } I(p) &gt; I(q) \
+  0 &amp; \text{otherwise}
+  \end{cases}\]</span></li>
+<li>We string all these 1s and 0s together to form a descriptor vector <span class="math inline">\(\mathbf{d}\)</span></li>
+<li>Compare (e.g.&nbsp;1011 XOR 1010 = 0001 - very small distance, so maybe same feature)</li>
+</ul></li>
+</ol>
+</section>
+<section id="feature-matching" class="level2">
+<h2 class="anchored" data-anchor-id="feature-matching">Feature Matching</h2>
+<ul>
+<li>If monocular =&gt; 2 sets of 2D points =&gt; solved by epipolar geometry</li>
+<li>If stereo =&gt; 2 sets of 3D points =&gt; solved by ICP</li>
+<li>If one set is 3D and one set is projected 2D =&gt; PnP</li>
+</ul>
+</section>
+</section>
+<section id="epipolar-geometry-monocular" class="level1">
+<h1>Epipolar Geometry (Monocular)</h1>
+<section id="epipolar-constraint-essential-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="epipolar-constraint-essential-matrix">Epipolar Constraint (Essential Matrix)</h2>
+<p>Firstly, defining the 3D point <span class="math inline">\(P\)</span> in world coordinates: <span class="math display">\[\mathbf{P} = [X, Y, Z]^T\]</span></p>
+<p>Assume the first camera lies on origin world (0,0,0) (no external). Relationship between a 3D point <span class="math inline">\(\mathbf{P}\)</span> and its pixel locations <span class="math inline">\(\mathbf{p}_1, \mathbf{p}_2\)</span>: <span class="math display">\[\mathbf{p}_1 \simeq \mathbf{K P}, \quad \mathbf{p}_2 \simeq \mathbf{K}(\mathbf{R P} + \mathbf{t})\]</span></p>
+<p>Now normalized camera coordinates of point <span class="math inline">\(P\)</span> in each camera <span class="math inline">\(\mathbf{x}_1, \mathbf{x}_2\)</span>: <span class="math display">\[\mathbf{x}_1 = \mathbf{K}^{-1}\mathbf{p}_1 = \mathbf{P}, \quad \mathbf{x}_2 = \mathbf{K}^{-1}\mathbf{p}_2 = \mathbf{R P} + \mathbf{t}\]</span></p>
+<p>Substituting these into the relationship, we get: <span class="math display">\[\mathbf{x}_2 \simeq \mathbf{R} \mathbf{x}_1 + \mathbf{t}\]</span></p>
+<p>Let’s apply a cross product of a vector that is perpendicular to the plane containing <span class="math inline">\(\mathbf{t}\)</span> and <span class="math inline">\(\mathbf{x}_2\)</span> (which is written as skew-symmetric matrix <span class="math inline">\(\mathbf{t}^\wedge\)</span>): <span class="math display">\[\mathbf{t}^\wedge \mathbf{x}_2 \simeq \mathbf{t}^\wedge (\mathbf{R} \mathbf{x}_1 + \mathbf{t})\]</span> <span class="math display">\[\mathbf{t}^\wedge \mathbf{x}_2 \simeq \mathbf{t}^\wedge \mathbf{R} \mathbf{x}_1 + \underbrace{\mathbf{t}^\wedge \mathbf{t}}_{\mathbf{0}}\]</span> <span class="math display">\[\mathbf{t}^\wedge \mathbf{x}_2 \simeq \mathbf{t}^\wedge \mathbf{R} \mathbf{x}_1\]</span></p>
+<p>Left multiply by <span class="math inline">\(\mathbf{x}_2^T\)</span> to reveal the magic: <span class="math display">\[\mathbf{x}_2^T \mathbf{t}^\wedge \mathbf{x}_2 \simeq \mathbf{x}_2^T \mathbf{t}^\wedge \mathbf{R} \mathbf{x}_1\]</span></p>
+<p>Because <span class="math inline">\(\mathbf{t}^\wedge \mathbf{x}_2\)</span> is a vector perpendicular to both <span class="math inline">\(\mathbf{t}\)</span> and <span class="math inline">\(\mathbf{x}_2\)</span>, the dot product <span class="math inline">\(\mathbf{x}_2^T (\mathbf{t}^\wedge \mathbf{x}_2)\)</span> is strictly zero. This gives us the concise Epipolar Constraint: <span class="math display">\[\mathbf{x}_2^T \mathbf{t}^\wedge \mathbf{R} \mathbf{x}_1 = 0\]</span> <span class="math display">\[\mathbf{x}_2^T \mathbf{E} \mathbf{x}_1 = 0\]</span></p>
+<p>where <span class="math inline">\(\mathbf{E} = [\mathbf{t}]_\times \mathbf{R}\)</span> is the essential matrix.</p>
+<p>Or if you want to work directly with <span class="math inline">\(\mathbf{p}_1, \mathbf{p}_2\)</span>: <span class="math display">\[\mathbf{p}_2^T \mathbf{K}^{-T} \mathbf{E} \mathbf{K}^{-1} \mathbf{p}_1 = 0\]</span> <span class="math display">\[\mathbf{p}_2^T \mathbf{F} \mathbf{p}_1 = 0\]</span></p>
+<p>where <span class="math inline">\(\mathbf{F} = \mathbf{K}^{-T} \mathbf{E} \mathbf{K}^{-1}\)</span> is the fundamental matrix.</p>
+<p>OK, now that means, we need to find <span class="math inline">\(\mathbf{t}\)</span> and <span class="math inline">\(\mathbf{R}\)</span> from the essential matrix <span class="math inline">\(\mathbf{E}\)</span>.</p>
+</section>
+<section id="find-r-and-t-from-essential-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="find-r-and-t-from-essential-matrix">Find R and t from Essential Matrix</h2>
+<p>Now that we have the theory (<span class="math inline">\(\mathbf{x}_2^T \mathbf{E} \mathbf{x}_1 = 0\)</span>), we need to solve for the 9 numbers inside <span class="math inline">\(\mathbf{E}\)</span>. It has the following properties:</p>
+<ul>
+<li>Scale Equivalence: Because the equation equals zero, multiplying <span class="math inline">\(\mathbf{E}\)</span> by any number (like 2 or 10) doesn’t change anything. This means we can only determine <span class="math inline">\(\mathbf{E}\)</span> up to a scale.</li>
+<li>Singular Values: Singular values must be <span class="math inline">\([\sigma, \sigma, 0]^T\)</span>. The first two are equal, and the last is zero. This is a consequence of <span class="math inline">\(\mathbf{E}\)</span> being built from a rotation and a cross-product matrix.</li>
+<li>5 Degrees of Freedom (DoF): Even though it has 9 slots, it only has 5 independent “moving parts” (3 for rotation, 3 for translation, minus 1 for the scale we can’t know)</li>
+</ul>
+<section id="solving-with-8-point-algorithm" class="level3">
+<h3 class="anchored" data-anchor-id="solving-with-8-point-algorithm">Solving with 8-Point Algorithm</h3>
+<p>Since <span class="math inline">\(\mathbf{E}\)</span> has 5 DoF, you might think we only need 5 pairs of points. However, the math for a 5-point solution is incredibly complex (nonlinear).Instead, we use the Eight-Point Algorithm. It treats the 9 elements of <span class="math inline">\(\mathbf{E}\)</span> as independent linear variables and assuming the linear algebra estimation is good enough. But actually in SLAM, we have more than 8 points, so we can use the least square method to solve for <span class="math inline">\(\mathbf{E}\)</span>.</p>
+<p>Take a pair of matched points in normalized coordinates and put them into the epipolar constraint equation: <span class="math inline">\(\mathbf{x}_1 = [u_1, v_1, 1]^T\)</span> and <span class="math inline">\(\mathbf{x}_2 = [u_2, v_2, 1]^T\)</span>.</p>
+<p><span class="math display">\[(u_2, v_2, 1) \begin{pmatrix} e_1 &amp; e_2 &amp; e_3 \\ e_4 &amp; e_5 &amp; e_6 \\ e_7 &amp; e_8 &amp; e_9 \end{pmatrix} \begin{pmatrix} u_1 \\ v_1 \\ 1 \end{pmatrix} = 0\]</span></p>
+<p>Expanding this out, we get a linear equation with 9 unknowns (the elements of <span class="math inline">\(\mathbf{E}\)</span>): <span class="math display">\[u_1 u_2 e_1 + v_1 u_2 e_2 + u_2 e_3 + u_1 v_2 e_4 + v_1 v_2 e_5 + v_2 e_6 + u_1 e_7 + v_1 e_8 + e_9 = 0\]</span> Or in matrix form: <span class="math display">\[[u_2u_1, u_2v_1, u_2, v_2u_1, v_2v_1, v_2, u_1, v_1, 1] \cdot \mathbf{e} = 0\]</span> where <span class="math inline">\(\mathbf{e} = [e_1, e_2, \dots, e_9]^T\)</span> is a vector containing all 9 elements of the matrix <span class="math inline">\(\mathbf{E}\)</span>.</p>
+<p>By taking 8 pairs of matched points, we create a giant <span class="math inline">\(8 \times 9\)</span> matrix. Each row represents one matched pair <span class="math inline">\((u_1, v_1) \leftrightarrow (u_2, v_2)\)</span>. <span class="math display">\[\begin{pmatrix} u_2^1 u_1^1 &amp; u_2^1 v_1^1 &amp; u_2^1 &amp; v_2^1 u_1^1 &amp; v_2^1 v_1^1 &amp; v_2^1 &amp; u_1^1 &amp; v_1^1 &amp; 1 \\ u_2^2 u_1^2 &amp; u_2^2 v_1^2 &amp; u_2^2 &amp; v_2^2 u_1^2 &amp; v_2^2 v_1^2 &amp; v_2^2 &amp; u_1^2 &amp; v_1^2 &amp; 1 \\ \vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\ u_2^8 u_1^8 &amp; u_2^8 v_1^8 &amp; u_2^8 &amp; v_2^8 u_1^8 &amp; v_2^8 v_1^8 &amp; v_2^8 &amp; u_1^8 &amp; v_1^8 &amp; 1 \end{pmatrix} \begin{pmatrix} e_1 \\ e_2 \\ e_3 \\ e_4 \\ e_5 \\ e_6 \\ e_7 \\ e_8 \\ e_9 \end{pmatrix} = \mathbf{0}\]</span></p>
+<ul>
+<li>Logic: <span class="math inline">\(\mathbf{e}\)</span> is lying in the null space of this coefficient matrix (definition <span class="math inline">\(\mathbf{A}\mathbf{e} = \mathbf{0}\)</span>)</li>
+<li>Scale Equivalence: Since the right side is <span class="math inline">\(\mathbf{0}\)</span>, <span class="math inline">\(\mathbf{e}\)</span> can only be solved “up to a scale.” If the matrix has a rank of 8, the null space has a dimension of 1 (a line), which perfectly matches this scale ambiguity. Because if <span class="math inline">\(\mathbf{e}\)</span> is a solution, then any multiple of it (<span class="math inline">\(2\mathbf{e}\)</span>, <span class="math inline">\(-5\mathbf{e}\)</span>, <span class="math inline">\(0.3\mathbf{e}\)</span>) is also a solution.</li>
+<li>Example: It is like Moving 1 meter and seeing a house 10 meters away is the same as Moving 10 meters and seeing a giant house 100 meters away.</li>
+</ul>
+</section>
+<section id="singular-value-decomposition-svd" class="level3">
+<h3 class="anchored" data-anchor-id="singular-value-decomposition-svd">Singular Value Decomposition (SVD)</h3>
+<p>Any linear transformation (represented by a matrix <span class="math inline">\(\mathbf{A}\)</span>) can be broken down into three simple, sequential geometric steps: Rotate, Stretch, and Rotate again.</p>
+<ul>
+<li><span class="math inline">\(\mathbf{V}^T\)</span> (First Rotation): You rotate the circle so its axes align with the “stretching” directions of the matrix.</li>
+<li><span class="math inline">\(\mathbf{\Sigma}\)</span> (Stretching): You pull or squish the circle into an ellipse. The singular values (<span class="math inline">\(\sigma_1, \sigma_2\)</span>) (example in 2D) tell you exactly how long the axes of that ellipse are.</li>
+<li><span class="math inline">\(\mathbf{U}\)</span> (Second Rotation): You rotate the resulting ellipse into its final orientation in the output space.</li>
+</ul>
+<p>When we say <span class="math inline">\(\mathbf{e}\)</span> is in the “null space,” we are looking for a direction that the matrix <span class="math inline">\(\mathbf{A}\)</span> “squishes” down to zero. If the last singular value <span class="math inline">\(\sigma_9\)</span> is zero, it means the transformation represented by <span class="math inline">\(\mathbf{A}\)</span> completely collapses any vector pointing in the direction of the last column of <span class="math inline">\(\mathbf{V}\)</span>.</p>
+<p>To find the best approximate solution that satisfies the geometric constraints, we use Singular Value Decomposition (SVD). Any matrix <span class="math inline">\(\mathbf{A}\)</span> can be decomposed as: <span class="math display">\[\mathbf{A} = \mathbf{U} \mathbf{\Sigma} \mathbf{V}^T\]</span></p>
+<p>So our problem is now: <span class="math display">\[\min_{\|\mathbf{e}\|=1} \|\mathbf{Ae}\|^2\]</span> <span class="math display">\[\|\mathbf{Ae}\|^2 = \|\mathbf{U\Sigma V}^T \mathbf{e}\|^2 = \|\mathbf{\Sigma V}^T \mathbf{e}\|^2\]</span></p>
+<ul>
+<li><span class="math inline">\(\mathbf{U}\)</span> (Left Singular Vectors): An <span class="math inline">\(m \times m\)</span> orthogonal matrix. The columns of <span class="math inline">\(\mathbf{U}\)</span> are the <strong>orthoginal</strong> eigenvectors of <strong>symmetric</strong> <span class="math inline">\(\mathbf{A}\mathbf{A}^T\)</span>. Bringing eigenvector back to the original space.</li>
+<li><span class="math inline">\(\mathbf{\Sigma}\)</span> (Singular Values): An <span class="math inline">\(m \times n\)</span> diagonal matrix. The entries <span class="math inline">\(\sigma_i\)</span> are the square roots of the eigenvalues of <span class="math inline">\(\mathbf{A}^T\mathbf{A}\)</span>. Scaling factors along the principal axes. This also contain <strong>dimension adder/reducer</strong>, <span class="math inline">\(\mathbf{\Sigma}\)</span> has actually same shape with <span class="math inline">\(\mathbf{A}\)</span>. In Essential Matrix calculation, a zero singular value means one dimension has no strength—it’s the direction where everything maps to zero.</li>
+<li><span class="math inline">\(\mathbf{V}^T\)</span> (Right Singular Vectors): An <span class="math inline">\(n \times n\)</span> orthogonal matrix. The columns of <span class="math inline">\(\mathbf{V}\)</span> are the <strong>orthoginal</strong> eigenvectors of <strong>symmetric</strong> <span class="math inline">\(\mathbf{A}^T\mathbf{A}\)</span>. Bringing original base vector to the eigenvectors. The very last column of <span class="math inline">\(\mathbf{V}\)</span> (associated with the smallest <span class="math inline">\(\sigma\)</span>) is the direction that is “least changed” (or most collapsed) by <span class="math inline">\(\mathbf{A}\)</span>.</li>
+</ul>
+<p>For the essential matrix, the theoretical singular values are <span class="math inline">\([\sigma, \sigma, 0]^T\)</span>. In practice, due to noise, we get something like <span class="math inline">\([\sigma_1, \sigma_2, \sigma_3]^T\)</span> where <span class="math inline">\(\sigma_1 \approx \sigma_2\)</span> and <span class="math inline">\(\sigma_3\)</span> is very small but not exactly zero.</p>
+<p>The solution <span class="math inline">\(\mathbf{e}\)</span> that minimizes the error <span class="math inline">\(|\mathbf{A} \mathbf{e}|\)</span> is the eigenvector corresponding to the smallest singular value. In the SVD decomposition, this corresponds to the last column of <span class="math inline">\(\mathbf{V}\)</span> (or the last row of <span class="math inline">\(\mathbf{V}^T\)</span>).</p>
+<p><strong>Explain THE LOGIC:</strong> The last column of <span class="math inline">\(\mathbf{V}\)</span> is the “least powerful” direction of the matrix <span class="math inline">\(\mathbf{A}\)</span>. Since we want <span class="math inline">\(\mathbf{Ae} \approx 0\)</span>, we pick the direction that <span class="math inline">\(\mathbf{A}\)</span> has the least power over! With the weighting of 1. So, we extract <span class="math inline">\(\mathbf{e}\)</span> from the last column of <span class="math inline">\(\mathbf{V}\)</span> and reshape it back into a <span class="math inline">\(3 \times 3\)</span> matrix to get our estimated essential matrix <span class="math inline">\(\mathbf{E}_{est}\)</span>.</p>
+</section>
+<section id="recovering-rotation-and-translation" class="level3">
+<h3 class="anchored" data-anchor-id="recovering-rotation-and-translation">Recovering Rotation and Translation</h3>
+<p>Once we have <span class="math inline">\(\mathbf{E}_{est}\)</span>, we can decompose it to find the rotation <span class="math inline">\(\mathbf{R}\)</span> and translation <span class="math inline">\(\mathbf{t}\)</span>. The decomposition is: <span class="math display">\[\mathbf{E} = [\mathbf{t}]_\times \mathbf{R}\]</span></p>
+<p>Using SVD on <span class="math inline">\(\mathbf{E}_{est}\)</span>: <span class="math display">\[\mathbf{E}_{est} = \mathbf{U} \mathbf{\Sigma} \mathbf{V}^T\]</span></p>
+<p>We can derive the possible solutions for <span class="math inline">\(\mathbf{R}\)</span> and <span class="math inline">\(\mathbf{t}\)</span>:</p>
+<ol type="1">
+<li><strong>Rotation Matrix <span class="math inline">\(\mathbf{R}\)</span></strong>: We know <span class="math inline">\(\mathbf{E} = \mathbf{t}^\wedge \mathbf{R}\)</span>. There is a mathematical identity (<strong>believe me its out of scope of this blog</strong>) that says a skew-symmetric matrix <span class="math inline">\(\mathbf{t}^\wedge\)</span> (with unit length) can be written as:<span class="math display">\[\mathbf{t}^\wedge = \mathbf{U} \mathbf{W} \mathbf{\Sigma} \mathbf{U}^T \quad \text{or} \quad \mathbf{t}^\wedge = \mathbf{U} \mathbf{W}^T \mathbf{\Sigma} \mathbf{U}^T\]</span></li>
+</ol>
+<p>Therefore: <span class="math display">\[\mathbf{U} \mathbf{\Sigma} \mathbf{V}^T = \mathbf{E} = \mathbf{t}^\wedge \mathbf{R} = \mathbf{U} \mathbf{W} \mathbf{\Sigma} \mathbf{U}^T \mathbf{R}\]</span></p>
+<p>So:</p>
+<p><span class="math display">\[\mathbf{R} = \mathbf{U} \mathbf{W} \mathbf{V}^T \quad \text{or} \quad \mathbf{R} = \mathbf{U} \mathbf{W}^T \mathbf{V}^T\]</span></p>
+<p>where <span class="math inline">\(\mathbf{W} = \begin{pmatrix} 0 &amp; -1 &amp; 0 \\ 1 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 1 \end{pmatrix}\)</span> (a rotation by 90 degrees around the z-axis).</p>
+<ol start="2" type="1">
+<li><strong>Translation Vector <span class="math inline">\(\mathbf{t}\)</span></strong>:</li>
+</ol>
+<p>By definition of the SVD, the columns of <span class="math inline">\(\mathbf{U}\)</span> represent the principal directions of the output space (the range of the transformation). Because the Essential Matrix has a rank of 2 (due to the singular values <span class="math inline">\([\sigma, \sigma, 0]\)</span>), it “squashes” one dimension to zero.In <span class="math inline">\(\mathbf{V}^T\)</span>, the last column is the direction that gets squashed (the null space of <span class="math inline">\(\mathbf{E}\)</span>).In <span class="math inline">\(\mathbf{U}\)</span>, the last column (<span class="math inline">\(\mathbf{u}_3\)</span>) is the direction that cannot be reached by the transformation.</p>
+<p>In the specific case of <span class="math inline">\(\mathbf{E} = \mathbf{t}^\wedge \mathbf{R}\)</span>, the “direction” that defines the transformation’s structure is the translation <span class="math inline">\(\mathbf{t}\)</span>. Because <span class="math inline">\(\mathbf{t}^\wedge\)</span> is a cross product with <span class="math inline">\(\mathbf{t}\)</span>, the output of <span class="math inline">\(\mathbf{t}^\wedge\)</span> is always perpendicular to <span class="math inline">\(\mathbf{t}\)</span>. Therefore, <span class="math inline">\(\mathbf{t}\)</span> is the “missing” direction in the output, which corresponds exactly to the third column of <span class="math inline">\(\mathbf{U}\)</span>.</p>
+<p><span class="math display">\[\mathbf{t} = \mathbf{U} \begin{pmatrix} 0 \\ 0 \\ 1 \end{pmatrix} \quad \text{or} \quad \mathbf{t} = -\mathbf{U} \begin{pmatrix} 0 \\ 0 \\ 1 \end{pmatrix}\]</span></p>
+<p>This gives us <strong>four possible pairs</strong> of <span class="math inline">\((\mathbf{R}, \mathbf{t})\)</span>. After that we test all 4 pairs with the condition that the 3D points should be in front of the camera (positive <span class="math inline">\(Z\)</span> coordinate in camera frame) using Triangulation.</p>
+</section>
+</section>
+</section>
+<section id="homography-monocular-but-for-planar" class="level1">
+<h1>Homography (Monocular but for Planar)</h1>
+<section id="formulation-h" class="level2">
+<h2 class="anchored" data-anchor-id="formulation-h">Formulation H</h2>
+<p>The above Essential matrix can be used in any case. But for features that we are sure they are on a planar surface (e.g.&nbsp;floor, wall, table, etc.), we can use Homography to estimate the relative pose of the camera.</p>
+<p>We have 3D points <span class="math inline">\(\mathbf{P}\)</span> lie on a plane. In 3D space, a plane is defined by its normal vector <span class="math inline">\(\mathbf{n}\)</span> and its distance to the origin <span class="math inline">\(d\)</span>: <span class="math display">\[\mathbf{n}^T \mathbf{P} + d = 0\]</span> <span class="math display">\[-\frac{\mathbf{n}^T \mathbf{P}}{d} = 1\]</span></p>
+<p><strong>Let’s derive!!!</strong> Now, we look at how the point <span class="math inline">\(\mathbf{P}\)</span> projects into our two cameras. Recall the general projection formula for the second camera: <span class="math display">\[\mathbf{p}_2 \simeq \mathbf{K}(\mathbf{R}\mathbf{P} + \mathbf{t})\]</span></p>
+<p>Now as we know all points are on the same plane, we are allowed to do this: <span class="math display">\[\mathbf{p}_2 \simeq \mathbf{K}\left(\mathbf{R}\mathbf{P} + \mathbf{t} \cdot \left(-\frac{\mathbf{n}^T \mathbf{P}}{d}\right)\right)\]</span> <span class="math display">\[\mathbf{p}_2 \simeq \mathbf{K}\left(\mathbf{R} - \frac{\mathbf{t}\mathbf{n}^T}{d}\right) \mathbf{P}\]</span> Finally, we want the relationship between pixels in Image 1 (<span class="math inline">\(\mathbf{p}_1\)</span>) and pixels in Image 2 (<span class="math inline">\(\mathbf{p}_2\)</span>). Since <span class="math inline">\(\mathbf{p}_1 \simeq \mathbf{K}\mathbf{P}\)</span>, we can say <span class="math inline">\(\mathbf{P} \simeq \mathbf{K}^{-1}\mathbf{p}_1\)</span>, we can substitue: <span class="math display">\[\mathbf{p}_2 \simeq \underbrace{\mathbf{K}\left(\mathbf{R} - \frac{\mathbf{t}\mathbf{n}^T}{d}\right) \mathbf{K}^{-1}}_{\mathbf{H}} \mathbf{p}_1\]</span></p>
+</section>
+<section id="lets-solve-h" class="level2">
+<h2 class="anchored" data-anchor-id="lets-solve-h">Let’s solve H</h2>
+<p>So now we have: <span class="math display">\[\mathbf{p}_2 \simeq \mathbf{H}\mathbf{p}_1\]</span> <span class="math display">\[\begin{pmatrix} u_2 \\ v_2 \\ 1 \end{pmatrix} \simeq \begin{pmatrix} h_1 &amp; h_2 &amp; h_3 \\ h_4 &amp; h_5 &amp; h_6 \\ h_7 &amp; h_8 &amp; h_9 \end{pmatrix} \begin{pmatrix} u_1 \\ v_1 \\ 1 \end{pmatrix}\]</span></p>
+<p>Because the relationship is “up to a scale,” we are allowed to divide the first two rows by the third row. <span class="math display">\[u_2 = \frac{h_1 u_1 + h_2 v_1 + h_3}{h_7 u_1 + h_8 v_1 + h_9}\]</span> <span class="math display">\[v_2 = \frac{h_4 u_1 + h_5 v_1 + h_6}{h_7 u_1 + h_8 v_1 + h_9}\]</span> By setting <span class="math inline">\(h_9 = 1\)</span> (normalizing the matrix), we have: <span class="math display">\[h_1 u_1 + h_2 v_1 + h_3 - h_7 u_1 u_2 - h_8 v_1 u_2 = u_2\]</span> <span class="math display">\[h_4 u_1 + h_5 v_1 + h_6 - h_7 u_1 v_2 - h_8 v_1 v_2 = v_2\]</span></p>
+<p>Since one pair of points provides 2 constraints, and the homography matrix has 8 degrees of freedom (9 elements minus 1 for scale), we need at least 4 pairs of matched points to solve for <span class="math inline">\(\mathbf{H}\)</span>. <span class="math display">\[\begin{pmatrix} u_1^1 &amp; v_1^1 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; -u_1^1 u_2^1 &amp; -v_1^1 u_2^1 \\ 0 &amp; 0 &amp; 0 &amp; u_1^1 &amp; v_1^1 &amp; 1 &amp; -u_1^1 v_2^1 &amp; -v_1^1 v_2^1 \\ u_1^2 &amp; v_1^2 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; -u_1^2 u_2^2 &amp; -v_1^2 u_2^2 \\ 0 &amp; 0 &amp; 0 &amp; u_1^2 &amp; v_1^2 &amp; 1 &amp; -u_1^2 v_2^2 &amp; -v_1^2 v_2^2 \\ u_1^3 &amp; v_1^3 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; -u_1^3 u_2^3 &amp; -v_1^3 u_2^3 \\ 0 &amp; 0 &amp; 0 &amp; u_1^3 &amp; v_1^3 &amp; 1 &amp; -u_1^3 v_2^3 &amp; -v_1^3 v_2^3 \\ u_1^4 &amp; v_1^4 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; -u_1^4 u_2^4 &amp; -v_1^4 u_2^4 \\ 0 &amp; 0 &amp; 0 &amp; u_1^4 &amp; v_1^4 &amp; 1 &amp; -u_1^4 v_2^4 &amp; -v_1^4 v_2^4 \end{pmatrix} \begin{pmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \\ h_5 \\ h_6 \\ h_7 \\ h_8 \end{pmatrix} = \begin{pmatrix} u_2^1 \\ v_2^1 \\ u_2^2 \\ v_2^2 \\ u_2^3 \\ v_2^3 \\ u_2^4 \\ v_2^4 \end{pmatrix}\]</span></p>
+<p>We find <span class="math inline">\(\mathbf{H}\)</span> by solving this linear equation.</p>
+<p>After that, we get <span class="math inline">\(\mathbf{R}\)</span> and <span class="math inline">\(\mathbf{t}\)</span> also from SVD.</p>
+<p>And eventually also choose 1 of 4 possible solutions using cheirality check.</p>
+<p>Well, in real SLAM, I think people do both F and H estimation and choose the best one (smaller error).</p>
+</section>
+</section>
+<section id="last-step-triangulation" class="level1">
+<h1>Last step, Triangulation</h1>
+<p>Now we have the relative pose of the camera, we can finally figure out where the points actually are in 3D space. This is Triangulation.</p>
+<p>We start with the relationship between the two normalized coordinates <span class="math inline">\(\mathbf{x}_1\)</span> and <span class="math inline">\(\mathbf{x}_2\)</span>. If <span class="math inline">\(s_1\)</span> is the depth in the first camera and <span class="math inline">\(s_2\)</span> is the depth in the second, then: <span class="math display">\[s_2\mathbf{x}_2 = s_1\mathbf{Rx}_1 + \mathbf{t}\]</span></p>
+<ul>
+<li>Left side (<span class="math inline">\(s_2\mathbf{x}_2\)</span>): The 3D position of point <span class="math inline">\(P\)</span> relative to the second camera.</li>
+<li>Right side (<span class="math inline">\(s_1\mathbf{Rx}_1 + \mathbf{t}\)</span>): The 3D position of point <span class="math inline">\(P\)</span> relative to the first camera, transformed into the second camera’s coordinate system using the rotation <span class="math inline">\(\mathbf{R}\)</span> and translation <span class="math inline">\(\mathbf{t}\)</span>.</li>
+</ul>
+<p>The goal is to find the values of <span class="math inline">\(s_1\)</span> and <span class="math inline">\(s_2\)</span>. To isolate <span class="math inline">\(s_1\)</span>, we use the same “trick” we used before: the skew-symmetric matrix (cross product). Let’s take the cross product of both sides with <span class="math inline">\(\mathbf{x}_2^\wedge\)</span>:</p>
+<p><span class="math display">\[s_2 \mathbf{x}_2^\wedge \mathbf{x}_2 = 0 = s_1 \mathbf{x}_2^\wedge \mathbf{Rx}_1 + \mathbf{x}_2^\wedge \mathbf{t}\]</span></p>
+<p>Rearranging the terms to solve for <span class="math inline">\(s_1\)</span>: <span class="math display">\[s_1 \mathbf{x}_2^\wedge \mathbf{Rx}_1 = -\mathbf{x}_2^\wedge \mathbf{t}\]</span> <span class="math display">\[s_1 = -\frac{\mathbf{x}_2^\wedge \mathbf{t}}{\mathbf{x}_2^\wedge \mathbf{Rx}_1}\]</span></p>
+<p>But in real life, we have noise. So basically we find the nearest point to <span class="math inline">\(P = s_1\mathbf{x}_1\)</span> and <span class="math inline">\(P' = s_2\mathbf{x}_2\)</span>.</p>
+
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

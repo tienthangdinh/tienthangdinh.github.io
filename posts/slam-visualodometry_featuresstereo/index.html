@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-04-14">
+
+<title>Feature-based Visual Odometry on Stereo Camera – the brachistochrone traveller</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">the brachistochrone traveller</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Đinh Tiến Thắng</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Feature-based Visual Odometry on Stereo Camera</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">Computer Graphics</div>
+                <div class="quarto-category">Computer Vision</div>
+                <div class="quarto-category">SLAM</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">April 14, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#direct-linear-transform-dlt" id="toc-direct-linear-transform-dlt" class="nav-link active" data-scroll-target="#direct-linear-transform-dlt">Direct Linear Transform (DLT)</a>
+  <ul class="collapse">
+  <li><a href="#solving-with-6-points" id="toc-solving-with-6-points" class="nav-link" data-scroll-target="#solving-with-6-points">Solving with 6+ points</a></li>
+  <li><a href="#dummy-reminder-for-the-depth-s" id="toc-dummy-reminder-for-the-depth-s" class="nav-link" data-scroll-target="#dummy-reminder-for-the-depth-s">Dummy reminder for the depth s!</a></li>
+  </ul></li>
+  <li><a href="#p3p" id="toc-p3p" class="nav-link" data-scroll-target="#p3p">P3P</a></li>
+  <li><a href="#solve-pnp-by-minimizing-reprojection-error-bundle-adjustment" id="toc-solve-pnp-by-minimizing-reprojection-error-bundle-adjustment" class="nav-link" data-scroll-target="#solve-pnp-by-minimizing-reprojection-error-bundle-adjustment">Solve PnP by Minimizing Reprojection Error (Bundle Adjustment)</a>
+  <ul class="collapse">
+  <li><a href="#conceptually-ba" id="toc-conceptually-ba" class="nav-link" data-scroll-target="#conceptually-ba">Conceptually BA</a></li>
+  <li><a href="#formulation" id="toc-formulation" class="nav-link" data-scroll-target="#formulation">Formulation</a></li>
+  <li><a href="#solving-to-update-camera-pose-visual-odometry" id="toc-solving-to-update-camera-pose-visual-odometry" class="nav-link" data-scroll-target="#solving-to-update-camera-pose-visual-odometry">Solving to Update Camera Pose (Visual Odometry)</a></li>
+  <li><a href="#solving-to-update-map-points-map---ba" id="toc-solving-to-update-map-points-map---ba" class="nav-link" data-scroll-target="#solving-to-update-map-points-map---ba">Solving to Update Map Points (Map - BA)</a></li>
+  </ul></li>
+  <li><a href="#small-explaination-on-lie-algebra-stuffs" id="toc-small-explaination-on-lie-algebra-stuffs" class="nav-link" data-scroll-target="#small-explaination-on-lie-algebra-stuffs">Small Explaination on Lie Algebra Stuffs</a>
+  <ul class="collapse">
+  <li><a href="#left-perturbation" id="toc-left-perturbation" class="nav-link" data-scroll-target="#left-perturbation">“Left Perturbation”</a></li>
+  <li><a href="#algebra-trick-rearranging-delta-xiwedge-mathbfp" id="toc-algebra-trick-rearranging-delta-xiwedge-mathbfp" class="nav-link" data-scroll-target="#algebra-trick-rearranging-delta-xiwedge-mathbfp">Algebra Trick: Rearranging <span class="math inline">\(\delta \xi^\wedge \mathbf{P}'\)</span></a></li>
+  <li><a href="#odot-odot-operator" id="toc-odot-odot-operator" class="nav-link" data-scroll-target="#odot-odot-operator">“Odot” (<span class="math inline">\(\odot\)</span>) Operator</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<p>OK so imagine you dont have a monocular camera anymore, instead a stereo camera. Instead of matching 2D pixels to 2D pixels (2D-2D), we are now matching known 3D map points to 2D image pixels (3D-2D). A <strong>good news</strong> about this is, You only need as few as 3 pairs of points (P3P) to solve the motion, compared to 8 for the Epipolar Geometry (2D-2D) case. This can be solved using DLT, P3P,PnP,…</p>
+<section id="direct-linear-transform-dlt" class="level1">
+<h1>Direct Linear Transform (DLT)</h1>
+<section id="solving-with-6-points" class="level2">
+<h2 class="anchored" data-anchor-id="solving-with-6-points">Solving with 6+ points</h2>
+<p>The first way to solve PnP is the DLT method. Imagine the first pose is considered as the world frame. We want to find the camera pose <span class="math inline">\([\mathbf{R}|\mathbf{t}]\)</span>, which is a <span class="math inline">\(3 \times 4\)</span> matrix.</p>
+<p>Consider a 3D point <span class="math inline">\(P\)</span> in the <strong>earlier camera frame</strong> (also now considered as world frame) with homogeneous coordinates:<span class="math display">\[\mathbf{P} = (X, Y, Z, 1)^T\]</span></p>
+<p>And its projection in the image as normalized coordinates:<span class="math display">\[\mathbf{x}_1 = (u_1, v_1, 1)^T\]</span></p>
+<p>Our goal now is to <strong>find the shift</strong> of that same point between the earlier camera frame and the current camera frame. OK, so let’s expand the transformation of the 3D point <span class="math inline">\(\mathbf{P}_w\)</span> (in World coordinates) into the camera’s local frame <span class="math inline">\(\mathbf{P}_c\)</span>:<span class="math display">\[\mathbf{P}_c = \mathbf{R}\mathbf{P}_w + \mathbf{t}\]</span> Now, we project that local 3D point <span class="math inline">\(\mathbf{P}_c\)</span> into pixels <span class="math inline">\(\mathbf{p}\)</span> using the Intrinsic matrix <span class="math inline">\(\mathbf{K}\)</span>:<span class="math display">\[s \mathbf{p} = \mathbf{K} \mathbf{P}_c\]</span> <span class="math display">\[s \mathbf{p} = \mathbf{K} (\mathbf{R}\mathbf{P}_w + \mathbf{t})\]</span> In the DLT derivation, we combined everything into one matrix <span class="math inline">\(\mathbf{M}\)</span>:<span class="math display">\[s \mathbf{p} = \mathbf{M} \mathbf{P}_w \quad \text{where} \quad \mathbf{M} = \mathbf{K} [\mathbf{R} | \mathbf{t}]\]</span> When we solve for <span class="math inline">\(\mathbf{M}\)</span> using those linear equations (DLT), we are solving for a matrix that contains both the lens info (<span class="math inline">\(\mathbf{K}\)</span>) and the pose (<span class="math inline">\(\mathbf{R, t}\)</span>).Since we already know <span class="math inline">\(\mathbf{K}\)</span> (from calibration), once we find <span class="math inline">\(\mathbf{M}\)</span>, we can “extract” the pose:<span class="math display">\[[\mathbf{R} | \mathbf{t}] = \mathbf{K}^{-1} \mathbf{M}\]</span></p>
+<p>Let’s start at the projection relationship:<span class="math display">\[s \begin{pmatrix} u_1 \\ v_1 \\ 1 \end{pmatrix} = \underbrace{\begin{pmatrix} t_1 &amp; t_2 &amp; t_3 &amp; t_4 \\ t_5 &amp; t_6 &amp; t_7 &amp; t_8 \\ t_9 &amp; t_{10} &amp; t_{11} &amp; t_{12} \end{pmatrix}}_{\mathbf{M} = \mathbf{K}[\mathbf{R}|\mathbf{t}]} \begin{pmatrix} X \\ Y \\ Z \\ 1 \end{pmatrix}\]</span></p>
+<blockquote class="blockquote">
+<p>WAIT, WELL uhm uhm, isnt this the Projection Matrix for Camera Calibration???? Right, in calibration we are just trying to find the whole parameters, but here we are just trying to find R|t, the shift of the observed points in current camera coordinates relative to the point location from origin coordinates. Because normally, you actually only need intrinsic K to know physical relationship between points in camera coords. Extrinsic is exactly the thing telling camera location in world coordinate, it is magically also what we are looking for</p>
+</blockquote>
+<p>Just as we did with Homography, because the depth s exists in all rows, we use the third row of the matrix to eliminate the unknown depth <span class="math inline">\(s\)</span>. This gives us two linear constraints for every point:<span class="math display">\[u_1 = \frac{t_1 X + t_2 Y + t_3 Z + t_4}{t_9 X + t_{10} Y + t_{11} Z + t_{12}}\]</span><span class="math display">\[v_1 = \frac{t_5 X + t_6 Y + t_7 Z + t_8}{t_9 X + t_{10} Y + t_{11} Z + t_{12}}\]</span></p>
+<p>To make the math cleaner, let’s define three row vectors from the <span class="math inline">\(3 \times 4\)</span> transformation matrix <span class="math inline">\(\mathbf{T}\)</span>:<span class="math display">\[\mathbf{t}_1 = (t_1, t_2, t_3, t_4)^T \quad \mathbf{t}_2 = (t_5, t_6, t_7, t_8)^T \quad \mathbf{t}_3 = (t_9, t_{10}, t_{11}, t_{12})^T\]</span></p>
+<p>So basically we have: <span class="math display">\[s \begin{pmatrix} u_1 \\ v_1 \\ 1 \end{pmatrix} = \begin{pmatrix} \mathbf{t}_1^T \\ \mathbf{t}_2^T \\ \mathbf{t}_3^T \end{pmatrix} \mathbf{P}\]</span></p>
+<p>Substitute <span class="math inline">\(s = \mathbf{t}_3^T \mathbf{P}\)</span> into the first two equations:<span class="math display">\[(\mathbf{t}_3^T \mathbf{P}) \cdot u_1 = \mathbf{t}_1^T \mathbf{P} \implies \mathbf{t}_1^T \mathbf{P} - u_1 \mathbf{t}_3^T \mathbf{P} = 0\]</span><span class="math display">\[(\mathbf{t}_3^T \mathbf{P}) \cdot v_1 = \mathbf{t}_2^T \mathbf{P} \implies \mathbf{t}_2^T \mathbf{P} - v_1 \mathbf{t}_3^T \mathbf{P} = 0\]</span></p>
+<p>If we have <span class="math inline">\(N\)</span> points, we stack these into a giant matrix equation:<span class="math display">\[\begin{pmatrix} \mathbf{P}_1^T &amp; 0 &amp; -u_1 \mathbf{P}_1^T \\ 0 &amp; \mathbf{P}_1^T &amp; -v_1 \mathbf{P}_1^T \\ \vdots &amp; \vdots &amp; \vdots \\ \mathbf{P}_N^T &amp; 0 &amp; -u_N \mathbf{P}_N^T \\ 0 &amp; \mathbf{P}_N^T &amp; -v_N \mathbf{P}_N^T \end{pmatrix} \begin{pmatrix} \mathbf{t}_1 \\ \mathbf{t}_2 \\ \mathbf{t}_3 \end{pmatrix} = 0 \tag{6.27}\]</span></p>
+<p>Solving: Just like the 8-point algorithm, we have 12 unknowns. Each point provides 2 equations, so we need at least 6 points to solve this directly. Or if we have more than 6 points, just like the Essential matrix in epipolar geometry, we can also find the least-square solution of the overdetermined equation.</p>
+<p>The DLT treats all 12 elements of <span class="math inline">\(\mathbf{T}\)</span> as independent. However, the first <span class="math inline">\(3 \times 3\)</span> block of <span class="math inline">\(\mathbf{T}\)</span> must be a valid Rotation Matrix (<span class="math inline">\(\mathbf{R} \in SO(3)\)</span>). Because of noise, the DLT result is usually just a “general matrix” that might be slightly skewed or scaled. To “fix” it, we project the result back onto the <span class="math inline">\(SO(3)\)</span> manifold (making it orthogonal with a determinant of 1). One way to approximate the “closest” valid rotation matrix is: <span class="math display">\[\mathbf{R} \leftarrow (\mathbf{R}\mathbf{R}^T)^{-\frac{1}{2}} \mathbf{R} \tag{6.28}\]</span></p>
+</section>
+<section id="dummy-reminder-for-the-depth-s" class="level2">
+<h2 class="anchored" data-anchor-id="dummy-reminder-for-the-depth-s">Dummy reminder for the depth s!</h2>
+<p>If u ever wonder why we keep having the <span class="math inline">\(s\)</span>-cale in the equation, Let’s start with the real pinhole camera model. Imagine a 3D point <span class="math inline">\(\mathbf{P} = (X, Y, Z)\)</span> in the real world. Light travels from that point through the camera’s pinhole (the origin) and hits the image sensor.Because of similar triangles, the relationship between the 3D position and the 2D pixel <span class="math inline">\((u, v)\)</span> is:<span class="math display">\[u = f \frac{X}{Z}, \quad v = f \frac{Y}{Z}\]</span> <span class="math display">\[Z \cdot u = f \cdot X\]</span> <span class="math display">\[Z \cdot v = f \cdot Y\]</span> So yeah as you see, we have: <span class="math display">\[s \begin{pmatrix} u \\ v \\ 1 \end{pmatrix} = \mathbf{K} \mathbf{P}\]</span> where <span class="math inline">\(s\)</span> is the depth of the point in the camera frame.</p>
+</section>
+</section>
+<section id="p3p" class="level1">
+<h1>P3P</h1>
+<p>P3P is another way to solve PnP. It only uses 3 pairs of matching points because it utilizes the angles formed by the points triangle.</p>
+<ul>
+<li>Firstly, we always know 3D coordinates of the points <span class="math inline">\(A, B, C\)</span> relative to the “World” origin.</li>
+<li>Now, P3P is used to calculate 3D coordinates of the points <span class="math inline">\(A, B, C\)</span> relative to the <strong>current</strong> camera’s optical center <span class="math inline">\(O\)</span>.</li>
+</ul>
+<p>So basically the idea is: P3P is a wrapper of <span class="math inline">\(\mathbf{K}\)</span>:</p>
+<ul>
+<li><span class="math inline">\(\mathbf{K}\)</span> tells you: “This pixel corresponds to a ray <span class="math inline">\(30^\circ\)</span> to the left.”</li>
+<li>P3P then says: “Okay, if that landmark is <span class="math inline">\(30^\circ\)</span> to my left and that other one is <span class="math inline">\(20^\circ\)</span> to my right, I must be standing right here!”</li>
+</ul>
+<p>Define 3D points as A, B, C and 2D points as a, b, c the projection of the points on the camera image plane. We can imagine three pairs of similar triangles formed by the camera optical center (<span class="math inline">\(O\)</span>), the 3D points (<span class="math inline">\(A, B, C\)</span>), and their 2D projections (<span class="math inline">\(a, b, c\)</span>):<span class="math display">\[\Delta Oab \sim \Delta OAB, \quad \Delta Obc \sim \Delta OBC, \quad \Delta Oac \sim \Delta OAC\]</span></p>
+<p>The goal is to find the lengths of the “legs” <span class="math inline">\(\overline{OA}, \overline{OB}, \text{ and } \overline{OC}\)</span> (which are the depths of the points). Using the Law of Cosines on triangle <span class="math inline">\(\Delta OAB\)</span>:<span class="math display">\[\overline{OA}^2 + \overline{OB}^2 - 2 \cdot \overline{OA} \cdot \overline{OB} \cdot \cos \langle a, b \rangle = \overline{AB}^2\]</span></p>
+<ul>
+<li><span class="math inline">\(\cos \langle a, b \rangle\)</span>: This is known because we know the pixel coordinates of <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> and the camera intrinsics.</li>
+<li><span class="math inline">\(\overline{AB}^2\)</span>: This is known because we know the 3D coordinates of the points in the world.</li>
+</ul>
+<p>Applying this to all three triangles gives the system:<span class="math display">\[\begin{cases} \overline{OA}^2 + \overline{OB}^2 - 2 \cdot \overline{OA} \cdot \overline{OB} \cdot \cos \langle a, b \rangle = \overline{AB}^2 \\ \overline{OB}^2 + \overline{OC}^2 - 2 \cdot \overline{OB} \cdot \overline{OC} \cdot \cos \langle b, c \rangle = \overline{BC}^2 \\ \overline{OA}^2 + \overline{OC}^2 - 2 \cdot \overline{OA} \cdot \overline{OC} \cdot \cos \langle a, c \rangle = \overline{AC}^2 \end{cases}\]</span></p>
+<p>To solve this system, we reduce the number of variables by dividing everything by <span class="math inline">\(\overline{OC}^2\)</span>. We define two ratios:<span class="math display">\[x = \overline{OA}/\overline{OC}, \quad y = \overline{OB}/\overline{OC}\]</span></p>
+<p><span class="math display">\[\begin{cases} x^2 + y^2 - 2xy \cos \langle a, b \rangle = \overline{AB}^2/\overline{OC}^2 \\ y^2 + 1^2 - 2y \cos \langle b, c \rangle = \overline{BC}^2/\overline{OC}^2 \\ x^2 + 1^2 - 2x \cos \langle a, c \rangle = \overline{AC}^2/\overline{OC}^2 \end{cases}\]</span></p>
+<p>To further simplify, we define constants based on the known 3D side lengths:Let <span class="math inline">\(v = \overline{AB}^2/\overline{OC}^2, \quad u \cdot v = \overline{BC}^2/\overline{OC}^2, \quad w \cdot v = \overline{AC}^2/\overline{OC}^2\)</span>.The system becomes:<span class="math display">\[\begin{cases} x^2 + y^2 - 2xy \cos \langle a, b \rangle - v = 0 \\ y^2 + 1 - 2y \cos \langle b, c \rangle - u \cdot v = 0 \\ x^2 + 1 - 2x \cos \langle a, c \rangle - w \cdot v = 0 \end{cases}\]</span></p>
+<p>By substituting the first row <span class="math inline">\(v\)</span> in the two last equations: <span class="math display">\[\begin{cases} (1 - u) y^2 - ux^2 - 2 \cos \langle b, c \rangle y + 2uxy \cos \langle a, b \rangle + 1 = 0 \\ (1 - w) x^2 - wy^2 - 2 \cos \langle a, c \rangle x + 2wxy \cos \langle a, b \rangle + 1 = 0 \end{cases}\]</span></p>
+<p>From now on:</p>
+<ul>
+<li>Solve for <span class="math inline">\(x, y\)</span>: This gives us the depths of the 3D points in the Camera Frame (this also have 4 solutions)</li>
+<li>Verification: Use a 4th point pair (<span class="math inline">\(D-d\)</span>) to check which of the 4 solutions is the “real” one.</li>
+<li>3D-to-3D Conversion: Now we have the coordinates of <span class="math inline">\(A, B, C\)</span> in the <strong>World Frame</strong> AND in the <strong>Camera Frame</strong>.</li>
+<li>Eventually: We solve for the transformation (<span class="math inline">\(\mathbf{R, t}\)</span>) between these two sets of 3D points. Using ICP.</li>
+</ul>
+<p>In SLAM, the usual approach is to first estimate the camera pose using P3P/EPnP and then construct a least-squares optimization problem to adjust the estimated values (bundle adjustment). When the camera motion is suﬀiciently continuous, or you can also assume that the camera does not move or move at a constant speed, you can use the estimated values as the initial values for optimization. Next, we look at the PnP problem from the perspective of nonlinear optimization.</p>
+</section>
+<section id="solve-pnp-by-minimizing-reprojection-error-bundle-adjustment" class="level1">
+<h1>Solve PnP by Minimizing Reprojection Error (Bundle Adjustment)</h1>
+<section id="conceptually-ba" class="level2">
+<h2 class="anchored" data-anchor-id="conceptually-ba">Conceptually BA</h2>
+<p>The linear method mentioned above is often divided into many steps, estimating the camera pose first and then the point’s position, or the opposite. We can also construct the PnP problem as a nonlinear least-square problem about reprojection errors that treats them as optimization variables and optimizes them together.</p>
+<p>Goal: We want to find the camera pose <span class="math inline">\(\mathbf{T}\)</span> that makes our 3D map points “land” as close as possible to the pixels we actually see. For each 3D point <span class="math inline">\(\mathbf{P}_i\)</span> and its observed pixel <span class="math inline">\(\mathbf{u}_i\)</span>: <span class="math display">\[s_i \mathbf{u}_i = \mathbf{K}\mathbf{T}\mathbf{P}_i\]</span></p>
+<ul>
+<li><span class="math inline">\(\mathbf{u}_i = [u_i, v_i, 1]^T\)</span>: The observed pixel in the image.</li>
+<li><span class="math inline">\(\mathbf{T}\)</span>: The camera pose we want to find (containing <span class="math inline">\(\mathbf{R}\)</span> and <span class="math inline">\(\mathbf{t}\)</span>).</li>
+<li><span class="math inline">\(\mathbf{P}_i = [X_i, Y_i, Z_i, 1]^T\)</span>: The 3D point in the World Frame.</li>
+<li><span class="math inline">\(s_i\)</span>: The depth of the point.</li>
+</ul>
+<p>We want to find the camera pose <span class="math inline">\(\mathbf{T}\)</span> that minimizes the sum of all reprojection errors. Because of noise, the projection <span class="math inline">\(\frac{1}{s_i} \mathbf{K}\mathbf{T}\mathbf{P}_i\)</span> will never perfectly equal the pixel <span class="math inline">\(\mathbf{u}_i\)</span>. We calculate the Residual (the error) and try to minimize the sum of all these errors: <span class="math display">\[\mathbf{T}^* = \arg \min_{\mathbf{T}} \sum_{i} e_i^2\]</span> <span class="math display">\[\mathbf{T}^* = \arg \min_{\mathbf{T}} \frac{1}{2} \sum_{i=1}^{n} \left\| \mathbf{u}_i - \frac{1}{s_i} \mathbf{K}\mathbf{T}\mathbf{P}_i \right\|_2^2\]</span></p>
+<ul>
+<li>The Calculation: Every single point <span class="math inline">\(i\)</span> produces its own error (<span class="math inline">\(e_i\)</span>)—the distance between where it should be and where it is on the screen.</li>
+<li>The Stacking: To solve the system, you stack all 100 errors into one giant vector <span class="math inline">\(\mathbf{e}\)</span> and all 100 Jacobians into one giant matrix <span class="math inline">\(\mathbf{J}\)</span>.</li>
+<li>The Goal: You are using the information from all points <span class="math inline">\(i\)</span> to find one single update (<span class="math inline">\(\Delta \mathbf{T}\)</span>) for the camera.</li>
+</ul>
+<p>Since the projection function is non-linear (because of the division by depth <span class="math inline">\(s_i\)</span> and the rotation matrix), we solve it iteratively using methods like Gauss-Newton or Levenberg-Marquardt. We linearize the error <span class="math inline">\(\mathbf{e}\)</span> using the Jacobian matrix (<span class="math inline">\(\mathbf{J}\)</span>): <span class="math display">\[\mathbf{e}(\mathbf{x} + \Delta\mathbf{x}) \approx \mathbf{e}(\mathbf{x}) + \mathbf{J}^T \Delta\mathbf{x}\]</span></p>
+<ul>
+<li>Conceptually: <span class="math inline">\(\mathbf{x}\)</span> is the camera pose <span class="math inline">\(\mathbf{T}\)</span>.</li>
+<li>Numerically, optimization algorithms like Gauss-Newton need to work with vectors so they can calculate “steps” (<span class="math inline">\(\Delta\mathbf{x}\)</span>). Therefore, <span class="math inline">\(\mathbf{x}\)</span> is the camera pose expressed in Lie Algebra (<span class="math inline">\(\mathfrak{se}(3)\)</span>).
+<ul>
+<li>The State (<span class="math inline">\(\mathbf{x}\)</span>): A 6-dimensional vector <span class="math inline">\(\xi = [\rho, \phi]^T\)</span>.</li>
+<li>The Transformation: We convert it back to the matrix form using the exponential map: <span class="math inline">\(\mathbf{T} = \exp(\xi^\wedge)\)</span>.</li>
+</ul></li>
+</ul>
+<p>Now, we substitute our linear approximation back into our cost function. We want to find the <span class="math inline">\(\Delta \mathbf{x}\)</span> that makes the error as small as possible:<span class="math display">\[E(\Delta \mathbf{x}) = \frac{1}{2} \| \mathbf{e} + \mathbf{J} \Delta \mathbf{x} \|^2\]</span> <span class="math display">\[E(\Delta \mathbf{x}) = \frac{1}{2} (\mathbf{e}^T\mathbf{e} + 2\mathbf{e}^T\mathbf{J}\Delta\mathbf{x} + \Delta\mathbf{x}^T\mathbf{J}^T\mathbf{J}\Delta\mathbf{x})\]</span> <span class="math display">\[\frac{d E}{d \Delta \mathbf{x}} = \mathbf{J}^T \mathbf{e} + \mathbf{J}^T \mathbf{J} \Delta \mathbf{x} = 0\]</span> <span class="math display">\[\mathbf{J}^T \mathbf{J} \Delta \mathbf{x} = -\mathbf{J}^T \mathbf{e}\]</span></p>
+<ul>
+<li><span class="math inline">\(\mathbf{J}^T \mathbf{J}\)</span>: This is often called the Hessian approximation (<span class="math inline">\(\mathbf{H}\)</span>). It represents the “curvature” of our error surface. It tells the computer how “steep” the hill is in every direction.</li>
+<li><span class="math inline">\(-\mathbf{J}^T \mathbf{e}\)</span>: This is the Negative Gradient (<span class="math inline">\(-\mathbf{g}\)</span>). It points directly “downhill.”</li>
+</ul>
+<blockquote class="blockquote">
+<p>“Take the downhill direction (<span class="math inline">\(-\mathbf{g}\)</span>) and scale it by the local curvature (<span class="math inline">\(\mathbf{H}\)</span>) to find exactly how big of a step (<span class="math inline">\(\Delta \mathbf{x}\)</span>) I should take to reach the bottom.”</p>
+</blockquote>
+<ol type="1">
+<li>Initialize the camera pose <span class="math inline">\(\mathbf{T}_0\)</span>.</li>
+<li>For <span class="math inline">\(k = 0, 1, 2, \dots\)</span>:
+<ol type="a">
+<li>Calculate the reprojection error <span class="math inline">\(e_i\)</span> for each point.</li>
+<li>Calculate the Jacobian matrix <span class="math inline">\(\mathbf{J}_i\)</span> of the reprojection error with respect to the camera pose.</li>
+<li>Solve the linear system <span class="math inline">\(\mathbf{J}^T \mathbf{J} \Delta \mathbf{T} = -\mathbf{J}^T \mathbf{e}\)</span> for the update step <span class="math inline">\(\Delta \mathbf{T}\)</span>.</li>
+<li>Update the camera pose <span class="math inline">\(\mathbf{T}_{k+1} = \mathbf{T}_k + \Delta \mathbf{T}\)</span>.</li>
+</ol></li>
+<li>Repeat until convergence.</li>
+</ol>
+<p>Here, <span class="math inline">\(\Delta \mathbf{T}\)</span> is a 6-dimensional Lie Algebra vector (<span class="math inline">\(\delta \xi\)</span>). The “update” in Step 2d actually looks like this in the code:<span class="math display">\[\mathbf{T}_{k+1} = \exp(\delta \xi^\wedge) \mathbf{T}_k\]</span>.</p>
+</section>
+<section id="formulation" class="level2">
+<h2 class="anchored" data-anchor-id="formulation">Formulation</h2>
+<p>Since the camera pose lives on a manifold (<span class="math inline">\(SE(3)\)</span>), we can’t take a “normal” derivative. Instead, we use the perturbation model we learned in the Lie Algebra blog I have written. We apply a tiny “nudge” <span class="math inline">\(\delta\xi\)</span> and see how much the pixel moves.</p>
+<p>First, we take a 3D point <span class="math inline">\(\mathbf{P}\)</span> from the world and transform it into the local coordinates of the current camera. We call this local 3D point <span class="math inline">\(\mathbf{P}'\)</span>:<span class="math display">\[\mathbf{P}' = (\mathbf{TP})_{1:3} = [X', Y', Z']^T\]</span></p>
+<p>Now, we project that local 3D point <span class="math inline">\(\mathbf{P}'\)</span> onto the image sensor using the Intrinsic matrix <span class="math inline">\(\mathbf{K}\)</span>:<span class="math display">\[s\mathbf{u} = \mathbf{K}\mathbf{P}'\]</span></p>
+<p><span class="math display">\[\begin{bmatrix} su \\ sv \\ s \end{bmatrix} = \begin{bmatrix} f_x &amp; 0 &amp; c_x \\ 0 &amp; f_y &amp; c_y \\ 0 &amp; 0 &amp; 1 \end{bmatrix} \begin{bmatrix} X' \\ Y' \\ Z' \end{bmatrix}\]</span></p>
+<p>To get the actual pixel coordinates (<span class="math inline">\(u, v\)</span>), we divide by the depth (<span class="math inline">\(s = Z'\)</span>) using the third row: <span class="math display">\[u = f_x \frac{X'}{Z'} + c_x, \quad v = f_y \frac{Y'}{Z'} + c_y\]</span></p>
+<p>The Jacobian <span class="math inline">\(\mathbf{J}\)</span> represents how the error <span class="math inline">\(\mathbf{e}\)</span> (the distance between projected and observed pixels) changes when we wiggle the camera pose by a tiny amount <span class="math inline">\(\delta\xi\)</span>.Using the Chain Rule, we break this derivative into two manageable pieces:<span class="math display">\[\frac{\partial \mathbf{e}}{\partial \delta \xi} = \lim_{\delta \xi \to 0} \frac{\mathbf{e}(\delta \xi \oplus \xi) - \mathbf{e}(\xi)}{\delta \xi} = \frac{\partial \mathbf{e}}{\partial \mathbf{P}'} \frac{\partial \mathbf{P}'}{\partial \delta \xi}\]</span></p>
+<ul>
+<li><span class="math inline">\(\frac{\partial \mathbf{e}}{\partial \mathbf{P}'}\)</span> (Dimension <span class="math inline">\(2 \times 3\)</span>): This is the Projection Jacobian. It asks: “If I move the 3D point <span class="math inline">\(P'\)</span> slightly in camera space, how much do the pixels <span class="math inline">\(u, v\)</span> move?” (This depends only on the lens/intrinsics).</li>
+<li><span class="math inline">\(\frac{\partial \mathbf{P}'}{\partial \delta \xi}\)</span> (Dimension <span class="math inline">\(3 \times 6\)</span>): This is the Pose Jacobian. It asks: “If I wiggle the camera pose <span class="math inline">\(\delta\xi\)</span>, how much does the 3D point <span class="math inline">\(P'\)</span> appear to move relative to the camera?” (This depends on Lie Algebra).</li>
+</ul>
+<blockquote class="blockquote">
+<ul>
+<li>The Goal: Find the <span class="math inline">\(2 \times 6\)</span> matrix that relates pose-wiggles to pixel-wiggles.</li>
+<li>The Strategy: Use <span class="math inline">\(\mathbf{P}'\)</span> as a “middle-man.”</li>
+<li>The “<span class="math inline">\(\oplus\)</span>” symbol: This represents left-multiplication in <span class="math inline">\(SE(3)\)</span>. Instead of adding a vector, we are multiplying the current pose by a tiny incremental rotation and translation.</li>
+</ul>
+</blockquote>
+</section>
+<section id="solving-to-update-camera-pose-visual-odometry" class="level2">
+<h2 class="anchored" data-anchor-id="solving-to-update-camera-pose-visual-odometry">Solving to Update Camera Pose (Visual Odometry)</h2>
+<p>We start by finding how the pixel error <span class="math inline">\(\mathbf{e}\)</span> changes with respect to the 3D point position in the camera frame <span class="math inline">\(\mathbf{P}' = [X', Y', Z']^T\)</span>. By differentiating the projection equations from the pinhole camera model from previous chapter, we get this <span class="math inline">\(2 \times 3\)</span> matrix:<span class="math display">\[\frac{\partial \mathbf{e}}{\partial \mathbf{P}'} = - \begin{bmatrix} \frac{\partial u}{\partial X'} &amp; \frac{\partial u}{\partial Y'} &amp; \frac{\partial u}{\partial Z'} \\ \frac{\partial v}{\partial X'} &amp; \frac{\partial v}{\partial Y'} &amp; \frac{\partial v}{\partial Z'} \end{bmatrix} = - \begin{bmatrix} \frac{f_x}{Z'} &amp; 0 &amp; -\frac{f_x X'}{Z'^2} \\ 0 &amp; \frac{f_y}{Z'} &amp; -\frac{f_y Y'}{Z'^2} \end{bmatrix}\]</span></p>
+<p>Next, we need to know how the 3D point <span class="math inline">\(\mathbf{P}'\)</span> moves when we perturb the camera pose <span class="math inline">\(\delta \xi\)</span>. Using the Lie algebra perturbation model (this will be introduced in another blog):<span class="math display">\[\frac{\partial (\mathbf{T P})}{\partial \delta \xi} = (\mathbf{T P})^\odot = \begin{bmatrix} \mathbf{I} &amp; -\mathbf{P}'^\wedge \\ \mathbf{0}^T &amp; \mathbf{0}^T \end{bmatrix}\]</span></p>
+<p>Since we only care about the 3D coordinates (the first 3 dimensions), we use:<span class="math display">\[\frac{\partial \mathbf{P}'}{\partial \delta \xi} = \begin{bmatrix} \mathbf{I}, -\mathbf{P}'^\wedge \end{bmatrix}\]</span></p>
+<p>When we multiply the two terms together (<span class="math inline">\(\frac{\partial \mathbf{e}}{\partial \mathbf{P}'} \cdot \frac{\partial \mathbf{P}'}{\partial \delta \xi}\)</span>), we get the full Jacobian matrix for the camera pose:<span class="math display">\[\frac{\partial \mathbf{e}}{\partial \delta \xi} = - \begin{bmatrix} \frac{f_x}{Z'} &amp; 0 &amp; -\frac{f_x X'}{Z'^2} &amp; -\frac{f_x X' Y'}{Z'^2} &amp; f_x + \frac{f_x X'^2}{Z'^2} &amp; -\frac{f_x Y'}{Z'} \\ 0 &amp; \frac{f_y}{Z'} &amp; -\frac{f_y Y'}{Z'^2} &amp; -f_y - \frac{f_y Y'^2}{Z'^2} &amp; \frac{f_y X' Y'}{Z'^2} &amp; \frac{f_y X'}{Z'} \end{bmatrix}\]</span></p>
+<p>The first 3 columns correspond to translation (moving the camera), and the last 3 columns correspond to rotation (tilting the camera).</p>
+</section>
+<section id="solving-to-update-map-points-map---ba" class="level2">
+<h2 class="anchored" data-anchor-id="solving-to-update-map-points-map---ba">Solving to Update Map Points (Map - BA)</h2>
+<p>On top of optimizing the pose, we want to optimize the spatial position of the feature points. Therefore, we also need to discuss the derivative of <span class="math inline">\(\mathbf{e}\)</span> with respect to the space point <span class="math inline">\(\mathbf{P}\)</span>. <span class="math display">\[\frac{\partial \mathbf{e}}{\partial \mathbf{P}} = \frac{\partial \mathbf{e}}{\partial \mathbf{P}'} \frac{\partial \mathbf{P}'}{\partial \mathbf{P}}\]</span></p>
+<p>Since <span class="math inline">\(\mathbf{P}' = \mathbf{R P} + \mathbf{t}\)</span>, the derivative <span class="math inline">\(\frac{\partial \mathbf{P}'}{\partial \mathbf{P}}\)</span> is simply the rotation matrix <span class="math inline">\(\mathbf{R}\)</span> we derived above. Plugging in our previous results: <span class="math display">\[\frac{\partial \mathbf{e}}{\partial \mathbf{P}} = - \begin{bmatrix} \frac{f_x}{Z'} &amp; 0 &amp; -\frac{f_x X'}{Z'^2} \\ 0 &amp; \frac{f_y}{Z'} &amp; -\frac{f_y Y'}{Z'^2} \end{bmatrix} \mathbf{R}\]</span></p>
+<p>So yeah, combining these two, that’s how SLAM can simultaneously refine where the robot is and where the landmarks are.</p>
+</section>
+</section>
+<section id="small-explaination-on-lie-algebra-stuffs" class="level1">
+<h1>Small Explaination on Lie Algebra Stuffs</h1>
+<section id="left-perturbation" class="level3">
+<h3 class="anchored" data-anchor-id="left-perturbation">“Left Perturbation”</h3>
+<p>We can’t just add a number to a rotation matrix because it would break the “rotation-ness” of the matrix. In the perturbation model, we define the derivative as the limit of the difference:<span class="math display">\[\frac{\partial \mathbf{P}'}{\partial \delta \xi} = \lim_{\delta \xi \to 0} \frac{\text{New Point} - \text{Old Point}}{\delta \xi}\]</span> Because: <span class="math display">\[\text{New Point} - \text{Old Point} = (\mathbf{I} + \delta \xi^\wedge)\mathbf{P}' - \mathbf{P}' = \mathbf{\delta \xi^\wedge P'}\]</span> Therefore: <span class="math display">\[\frac{\partial \mathbf{P}'}{\partial \delta \xi} = \lim_{\delta \xi \to 0} \frac{\mathbf{\delta \xi^\wedge P'}}{\delta \xi}\]</span> But in matrix calculus, we can’t literally “divide” by a vector <span class="math inline">\(\delta \xi\)</span>. Instead, we find a matrix <span class="math inline">\(\mathbf{J}\)</span> such that:<span class="math display">\[\delta \xi^\wedge \mathbf{P}' = \mathbf{J} \cdot \delta \xi\]</span>Once we find that <span class="math inline">\(\mathbf{J}\)</span>, then by definition: <span class="math inline">\(\frac{\partial \mathbf{P}'}{\partial \delta \xi} = \mathbf{J}\)</span>.</p>
+</section>
+<section id="algebra-trick-rearranging-delta-xiwedge-mathbfp" class="level3">
+<h3 class="anchored" data-anchor-id="algebra-trick-rearranging-delta-xiwedge-mathbfp">Algebra Trick: Rearranging <span class="math inline">\(\delta \xi^\wedge \mathbf{P}'\)</span></h3>
+<p>We want to find the derivative with respect to <span class="math inline">\(\delta \xi\)</span>, where <span class="math inline">\(\delta \xi\)</span> is a 6D vector: <span class="math inline">\([\rho_1, \rho_2, \rho_3, \phi_1, \phi_2, \phi_3]^T\)</span>. That means we need to get <span class="math inline">\(\delta \xi\)</span> out of the matrix and sitting by itself on the right side. Recall that <span class="math inline">\(\delta \xi\)</span> is a 6D vector containing translation (<span class="math inline">\(\rho\)</span>) and rotation (<span class="math inline">\(\phi\)</span>): <span class="math inline">\(\delta \xi = [\rho, \phi]^T\)</span>. The matrix version <span class="math inline">\(\delta \xi^\wedge\)</span> looks like this: <span class="math display">\[\delta \xi^\wedge = \begin{bmatrix} \phi^\wedge &amp; \rho \\ \mathbf{0}^T &amp; 0 \end{bmatrix}\]</span> When we multiply this <span class="math inline">\(4 \times 4\)</span> matrix by our <span class="math inline">\(4 \times 1\)</span> homogeneous point <span class="math inline">\(\mathbf{P}' = [X, Y, Z, 1]^T\)</span>: <span class="math display">\[\delta \xi^\wedge \mathbf{P}' = \begin{bmatrix} \phi^\wedge &amp; \rho \\ \mathbf{0}^T &amp; 0 \end{bmatrix} \begin{bmatrix} \mathbf{P}'_{3D} \\ 1 \end{bmatrix} = \begin{bmatrix} \phi^\wedge \mathbf{P}'_{3D} + \rho \\ 0 \end{bmatrix}\]</span></p>
+</section>
+<section id="odot-odot-operator" class="level3">
+<h3 class="anchored" data-anchor-id="odot-odot-operator">“Odot” (<span class="math inline">\(\odot\)</span>) Operator</h3>
+<p>To solve for the derivative, we use a trick: <span class="math inline">\(\phi^\wedge \mathbf{P}' = -\mathbf{P}'^\wedge \phi\)</span>. (This is just a property of cross products: <span class="math inline">\(a \times b = -b \times a\)</span>). We can rewrite the result from Step above as a matrix multiplied by the 6D vector <span class="math inline">\(\delta \xi\)</span>:<span class="math display">\[\begin{bmatrix} \phi^\wedge \mathbf{P}'_{3D} + \rho \\ 0 \end{bmatrix} = \underbrace{\begin{bmatrix} \mathbf{I} &amp; -\mathbf{P}'^\wedge_{3D} \\ \mathbf{0}^T &amp; \mathbf{0}^T \end{bmatrix}}_{(\mathbf{T P})^\odot} \begin{bmatrix} \rho \\ \phi \end{bmatrix}\]</span></p>
+<ul>
+<li>The <span class="math inline">\(\mathbf{I}\)</span> (Identity) part is multiplied by <span class="math inline">\(\rho\)</span> (translation). This makes sense: if you move the camera 1cm left, the point appears to move 1cm right.</li>
+<li>The <span class="math inline">\(-\mathbf{P}'^\wedge\)</span> part is multiplied by <span class="math inline">\(\phi\)</span> (rotation). This represents the circular motion caused by rotating the camera.</li>
+</ul>
+<p>in our projection model, we only care about the actual 3D coordinates (<span class="math inline">\(X, Y, Z\)</span>). The 4th dimension of our point is always 1, and its derivative is always 0. So, we throw away that useless bottom row:<span class="math display">\[\frac{\partial \mathbf{P}'}{\partial \delta \xi} = \begin{bmatrix} \mathbf{I} &amp; -\mathbf{P}'^\wedge \end{bmatrix}\]</span></p>
+<ul>
+<li><span class="math inline">\(\delta \xi\)</span>: The 6-DOF wiggle vector (3 for moving, 3 for tilting).</li>
+<li><span class="math inline">\(\mathbf{I}\)</span>: A <span class="math inline">\(3 \times 3\)</span> Identity matrix. It says “translation affects the point directly.”</li>
+<li><span class="math inline">\(\mathbf{P}'^\wedge\)</span>: The “skew-symmetric” matrix of the point. It turns a rotation into a linear velocity (the “swing” of the point when you tilt the camera).</li>
+<li><span class="math inline">\((\cdot)^\odot\)</span>: Just a shorthand name for this specific rearrangement trick.</li>
+</ul>
+
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
