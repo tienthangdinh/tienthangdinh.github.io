@@ -1,5 +1,5 @@
 ---
-title: "Visual Odometry 1: Feature-Based Method"
+title: "Feature-based Visual Odometry on Monocular Camera"
 date: "2026-04-11"
 categories: [Computer Graphics, Computer Vision, SLAM]
 format:

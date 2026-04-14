@@ -124,5 +124,14 @@
   },
   "posts/slam-visualodometry1/index.qmd": {
     "index.html": "14b90896"
+  },
+  "posts/slam-visualodometry_featuresmonocular/index.qmd": {
+    "index.html": "4216a275"
+  },
+  "posts/slam-visualodometry_features3D/index.qmd": {
+    "index.html": "f23923f9"
+  },
+  "posts/slam-visualodometry_featuresstereo/index.qmd": {
+    "index.html": "7397fcd1"
   }
 }

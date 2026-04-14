@@ -1,0 +1,222 @@
+---
+title: "Feature-based Visual Odometry on Stereo Camera"
+date: "2026-04-14"
+categories: [Computer Graphics, Computer Vision, SLAM]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+OK so imagine you dont have a monocular camera anymore, instead a stereo camera. Instead of matching 2D pixels to 2D pixels (2D-2D), we are now matching known 3D map points to 2D image pixels (3D-2D). A **good news** about this is, You only need as few as 3 pairs of points (P3P) to solve the motion, compared to 8 for the Epipolar Geometry (2D-2D) case. This can be solved using DLT, P3P,PnP,...
+
+# Direct Linear Transform (DLT)
+## Solving with 6+ points
+The first way to solve PnP is the DLT method. Imagine the first pose is considered as the world frame. We want to find the camera pose $[\mathbf{R}|\mathbf{t}]$, which is a $3 \times 4$ matrix.
+
+Consider a 3D point $P$ in the **earlier camera frame** (also now considered as world frame) with homogeneous coordinates:$$\mathbf{P} = (X, Y, Z, 1)^T$$
+
+And its projection in the image as normalized coordinates:$$\mathbf{x}_1 = (u_1, v_1, 1)^T$$
+
+Our goal now is to **find the shift** of that same point between the earlier camera frame and the current camera frame. OK, so let's expand the transformation of the 3D point $\mathbf{P}_w$ (in World coordinates) into the camera's local frame $\mathbf{P}_c$:$$\mathbf{P}_c = \mathbf{R}\mathbf{P}_w + \mathbf{t}$$
+Now, we project that local 3D point $\mathbf{P}_c$ into pixels $\mathbf{p}$ using the Intrinsic matrix $\mathbf{K}$:$$s \mathbf{p} = \mathbf{K} \mathbf{P}_c$$
+$$s \mathbf{p} = \mathbf{K} (\mathbf{R}\mathbf{P}_w + \mathbf{t})$$
+In the DLT derivation, we combined everything into one matrix $\mathbf{M}$:$$s \mathbf{p} = \mathbf{M} \mathbf{P}_w \quad \text{where} \quad \mathbf{M} = \mathbf{K} [\mathbf{R} | \mathbf{t}]$$
+When we solve for $\mathbf{M}$ using those linear equations (DLT), we are solving for a matrix that contains both the lens info ($\mathbf{K}$) and the pose ($\mathbf{R, t}$).Since we already know $\mathbf{K}$ (from calibration), once we find $\mathbf{M}$, we can "extract" the pose:$$[\mathbf{R} | \mathbf{t}] = \mathbf{K}^{-1} \mathbf{M}$$
+
+
+Let's start at the projection relationship:$$s \begin{pmatrix} u_1 \\ v_1 \\ 1 \end{pmatrix} = \underbrace{\begin{pmatrix} t_1 & t_2 & t_3 & t_4 \\ t_5 & t_6 & t_7 & t_8 \\ t_9 & t_{10} & t_{11} & t_{12} \end{pmatrix}}_{\mathbf{M} = \mathbf{K}[\mathbf{R}|\mathbf{t}]} \begin{pmatrix} X \\ Y \\ Z \\ 1 \end{pmatrix}$$
+
+> WAIT, WELL uhm uhm, isnt this the Projection Matrix for Camera Calibration???? Right, in calibration we are just trying to find the whole parameters, but here we are just trying to find R|t, the shift of the observed points in current camera coordinates relative to the point location from origin coordinates. Because normally, you actually only need intrinsic K to know physical relationship between points in camera coords. Extrinsic is exactly the thing telling camera location in world coordinate, it is magically also what we are looking for
+
+
+
+Just as we did with Homography, because the depth s exists in all rows, we use the third row of the matrix to eliminate the unknown depth $s$. This gives us two linear constraints for every point:$$u_1 = \frac{t_1 X + t_2 Y + t_3 Z + t_4}{t_9 X + t_{10} Y + t_{11} Z + t_{12}}$$$$v_1 = \frac{t_5 X + t_6 Y + t_7 Z + t_8}{t_9 X + t_{10} Y + t_{11} Z + t_{12}}$$
+
+To make the math cleaner, let's define three row vectors from the $3 \times 4$ transformation matrix $\mathbf{T}$:$$\mathbf{t}_1 = (t_1, t_2, t_3, t_4)^T \quad \mathbf{t}_2 = (t_5, t_6, t_7, t_8)^T \quad \mathbf{t}_3 = (t_9, t_{10}, t_{11}, t_{12})^T$$
+
+So basically we have:
+$$s \begin{pmatrix} u_1 \\ v_1 \\ 1 \end{pmatrix} = \begin{pmatrix} \mathbf{t}_1^T \\ \mathbf{t}_2^T \\ \mathbf{t}_3^T \end{pmatrix} \mathbf{P}$$
+
+Substitute $s = \mathbf{t}_3^T \mathbf{P}$ into the first two equations:$$(\mathbf{t}_3^T \mathbf{P}) \cdot u_1 = \mathbf{t}_1^T \mathbf{P} \implies \mathbf{t}_1^T \mathbf{P} - u_1 \mathbf{t}_3^T \mathbf{P} = 0$$$$(\mathbf{t}_3^T \mathbf{P}) \cdot v_1 = \mathbf{t}_2^T \mathbf{P} \implies \mathbf{t}_2^T \mathbf{P} - v_1 \mathbf{t}_3^T \mathbf{P} = 0$$
+
+If we have $N$ points, we stack these into a giant matrix equation:$$\begin{pmatrix} \mathbf{P}_1^T & 0 & -u_1 \mathbf{P}_1^T \\ 0 & \mathbf{P}_1^T & -v_1 \mathbf{P}_1^T \\ \vdots & \vdots & \vdots \\ \mathbf{P}_N^T & 0 & -u_N \mathbf{P}_N^T \\ 0 & \mathbf{P}_N^T & -v_N \mathbf{P}_N^T \end{pmatrix} \begin{pmatrix} \mathbf{t}_1 \\ \mathbf{t}_2 \\ \mathbf{t}_3 \end{pmatrix} = 0 \tag{6.27}$$
+
+Solving: Just like the 8-point algorithm, we have 12 unknowns. Each point provides 2 equations, so we need at least 6 points to solve this directly. Or if we have more than 6 points, just like the Essential matrix in epipolar geometry, we can also find the least-square solution of the overdetermined equation.
+
+The DLT treats all 12 elements of $\mathbf{T}$ as independent. However, the first $3 \times 3$ block of $\mathbf{T}$ must be a valid Rotation Matrix ($\mathbf{R} \in SO(3)$). Because of noise, the DLT result is usually just a "general matrix" that might be slightly skewed or scaled. To "fix" it, we project the result back onto the $SO(3)$ manifold (making it orthogonal with a determinant of 1). One way to approximate the "closest" valid rotation matrix is:
+$$\mathbf{R} \leftarrow (\mathbf{R}\mathbf{R}^T)^{-\frac{1}{2}} \mathbf{R} \tag{6.28}$$
+
+
+## Dummy reminder for the depth s!
+If u ever wonder why we keep having the $s$-cale in the equation, Let's start with the real pinhole camera model. Imagine a 3D point $\mathbf{P} = (X, Y, Z)$ in the real world. Light travels from that point through the camera's pinhole (the origin) and hits the image sensor.Because of similar triangles, the relationship between the 3D position and the 2D pixel $(u, v)$ is:$$u = f \frac{X}{Z}, \quad v = f \frac{Y}{Z}$$
+$$Z \cdot u = f \cdot X$$
+$$Z \cdot v = f \cdot Y$$
+So yeah as you see, we have:
+$$s \begin{pmatrix} u \\ v \\ 1 \end{pmatrix} = \mathbf{K} \mathbf{P}$$
+where $s$ is the depth of the point in the camera frame.
+
+# P3P
+P3P is another way to solve PnP. It only uses 3 pairs of matching points because it utilizes the angles formed by the points triangle. 
+
+* Firstly, we always know 3D coordinates of the points $A, B, C$ relative to the "World" origin.
+* Now, P3P is used to calculate 3D coordinates of the points $A, B, C$ relative to the **current** camera's optical center $O$.
+
+So basically the idea is: P3P is a wrapper of $\mathbf{K}$:
+
+* $\mathbf{K}$ tells you: "This pixel corresponds to a ray $30^\circ$ to the left."
+* P3P then says: "Okay, if that landmark is $30^\circ$ to my left and that other one is $20^\circ$ to my right, I must be standing right here!"
+
+
+Define 3D points as A, B, C and 2D points as a, b, c the projection of the points on the camera image plane. We can imagine three pairs of similar triangles formed by the camera optical center ($O$), the 3D points ($A, B, C$), and their 2D projections ($a, b, c$):$$\Delta Oab \sim \Delta OAB, \quad \Delta Obc \sim \Delta OBC, \quad \Delta Oac \sim \Delta OAC$$
+
+The goal is to find the lengths of the "legs" $\overline{OA}, \overline{OB}, \text{ and } \overline{OC}$ (which are the depths of the points). Using the Law of Cosines on triangle $\Delta OAB$:$$\overline{OA}^2 + \overline{OB}^2 - 2 \cdot \overline{OA} \cdot \overline{OB} \cdot \cos \langle a, b \rangle = \overline{AB}^2$$
+
+* $\cos \langle a, b \rangle$: This is known because we know the pixel coordinates of $a$ and $b$ and the camera intrinsics.
+* $\overline{AB}^2$: This is known because we know the 3D coordinates of the points in the world.
+
+Applying this to all three triangles gives the system:$$\begin{cases} \overline{OA}^2 + \overline{OB}^2 - 2 \cdot \overline{OA} \cdot \overline{OB} \cdot \cos \langle a, b \rangle = \overline{AB}^2 \\ \overline{OB}^2 + \overline{OC}^2 - 2 \cdot \overline{OB} \cdot \overline{OC} \cdot \cos \langle b, c \rangle = \overline{BC}^2 \\ \overline{OA}^2 + \overline{OC}^2 - 2 \cdot \overline{OA} \cdot \overline{OC} \cdot \cos \langle a, c \rangle = \overline{AC}^2 \end{cases}$$
+
+To solve this system, we reduce the number of variables by dividing everything by $\overline{OC}^2$. We define two ratios:$$x = \overline{OA}/\overline{OC}, \quad y = \overline{OB}/\overline{OC}$$
+
+$$\begin{cases} x^2 + y^2 - 2xy \cos \langle a, b \rangle = \overline{AB}^2/\overline{OC}^2 \\ y^2 + 1^2 - 2y \cos \langle b, c \rangle = \overline{BC}^2/\overline{OC}^2 \\ x^2 + 1^2 - 2x \cos \langle a, c \rangle = \overline{AC}^2/\overline{OC}^2 \end{cases}$$
+
+To further simplify, we define constants based on the known 3D side lengths:Let $v = \overline{AB}^2/\overline{OC}^2, \quad u \cdot v = \overline{BC}^2/\overline{OC}^2, \quad w \cdot v = \overline{AC}^2/\overline{OC}^2$.The system becomes:$$\begin{cases} x^2 + y^2 - 2xy \cos \langle a, b \rangle - v = 0 \\ y^2 + 1 - 2y \cos \langle b, c \rangle - u \cdot v = 0 \\ x^2 + 1 - 2x \cos \langle a, c \rangle - w \cdot v = 0 \end{cases}$$
+
+By substituting the first row $v$ in the two last equations:
+$$\begin{cases} (1 - u) y^2 - ux^2 - 2 \cos \langle b, c \rangle y + 2uxy \cos \langle a, b \rangle + 1 = 0 \\ (1 - w) x^2 - wy^2 - 2 \cos \langle a, c \rangle x + 2wxy \cos \langle a, b \rangle + 1 = 0 \end{cases}$$
+
+From now on:
+
+* Solve for $x, y$: This gives us the depths of the 3D points in the Camera Frame (this also have 4 solutions)
+* Verification: Use a 4th point pair ($D-d$) to check which of the 4 solutions is the "real" one.
+* 3D-to-3D Conversion: Now we have the coordinates of $A, B, C$ in the **World Frame** AND in the **Camera Frame**.
+* Eventually: We solve for the transformation ($\mathbf{R, t}$) between these two sets of 3D points. Using ICP.
+
+In SLAM, the usual approach is to first estimate the camera pose using P3P/EPnP and then construct a least-squares optimization problem to adjust the estimated values (bundle adjustment). When the camera motion is suﬀiciently continuous, or you can also assume that the camera does not move or move at a constant speed, you can use the estimated values as the initial values for optimization. Next, we look at the PnP problem from the perspective of nonlinear optimization.
+
+# Solve PnP by Minimizing Reprojection Error (Bundle Adjustment)
+
+## Conceptually BA
+The linear method mentioned above is often divided into many steps, estimating the camera pose first and then the point’s position, or the opposite. We can also construct the PnP problem as a nonlinear least-square problem about reprojection errors that treats them as optimization variables and optimizes them together.
+
+Goal: We want to find the camera pose $\mathbf{T}$ that makes our 3D map points "land" as close as possible to the pixels we actually see. For each 3D point $\mathbf{P}_i$ and its observed pixel $\mathbf{u}_i$:
+$$s_i \mathbf{u}_i = \mathbf{K}\mathbf{T}\mathbf{P}_i$$
+
+* $\mathbf{u}_i = [u_i, v_i, 1]^T$: The observed pixel in the image.
+* $\mathbf{T}$: The camera pose we want to find (containing $\mathbf{R}$ and $\mathbf{t}$).
+* $\mathbf{P}_i = [X_i, Y_i, Z_i, 1]^T$: The 3D point in the World Frame.
+* $s_i$: The depth of the point.
+
+
+
+We want to find the camera pose $\mathbf{T}$ that minimizes the sum of all reprojection errors. Because of noise, the projection $\frac{1}{s_i} \mathbf{K}\mathbf{T}\mathbf{P}_i$ will never perfectly equal the pixel $\mathbf{u}_i$. We calculate the Residual (the error) and try to minimize the sum of all these errors:
+$$\mathbf{T}^* = \arg \min_{\mathbf{T}} \sum_{i} e_i^2$$
+$$\mathbf{T}^* = \arg \min_{\mathbf{T}} \frac{1}{2} \sum_{i=1}^{n} \left\| \mathbf{u}_i - \frac{1}{s_i} \mathbf{K}\mathbf{T}\mathbf{P}_i \right\|_2^2$$
+
+* The Calculation: Every single point $i$ produces its own error ($e_i$)—the distance between where it should be and where it is on the screen.
+* The Stacking: To solve the system, you stack all 100 errors into one giant vector $\mathbf{e}$ and all 100 Jacobians into one giant matrix $\mathbf{J}$.
+* The Goal: You are using the information from all points $i$ to find one single update ($\Delta \mathbf{T}$) for the camera.
+
+Since the projection function is non-linear (because of the division by depth $s_i$ and the rotation matrix), we solve it iteratively using methods like Gauss-Newton or Levenberg-Marquardt. We linearize the error $\mathbf{e}$ using the Jacobian matrix ($\mathbf{J}$):
+$$\mathbf{e}(\mathbf{x} + \Delta\mathbf{x}) \approx \mathbf{e}(\mathbf{x}) + \mathbf{J}^T \Delta\mathbf{x}$$
+
+* Conceptually: $\mathbf{x}$ is the camera pose $\mathbf{T}$.
+* Numerically, optimization algorithms like Gauss-Newton need to work with vectors so they can calculate "steps" ($\Delta\mathbf{x}$). Therefore, $\mathbf{x}$ is the camera pose expressed in Lie Algebra ($\mathfrak{se}(3)$).    
+  * The State ($\mathbf{x}$): A 6-dimensional vector $\xi = [\rho, \phi]^T$.
+  * The Transformation: We convert it back to the matrix form using the exponential map: $\mathbf{T} = \exp(\xi^\wedge)$.
+
+Now, we substitute our linear approximation back into our cost function. We want to find the $\Delta \mathbf{x}$ that makes the error as small as possible:$$E(\Delta \mathbf{x}) = \frac{1}{2} \| \mathbf{e} + \mathbf{J} \Delta \mathbf{x} \|^2$$
+$$E(\Delta \mathbf{x}) = \frac{1}{2} (\mathbf{e}^T\mathbf{e} + 2\mathbf{e}^T\mathbf{J}\Delta\mathbf{x} + \Delta\mathbf{x}^T\mathbf{J}^T\mathbf{J}\Delta\mathbf{x})$$
+$$\frac{d E}{d \Delta \mathbf{x}} = \mathbf{J}^T \mathbf{e} + \mathbf{J}^T \mathbf{J} \Delta \mathbf{x} = 0$$
+$$\mathbf{J}^T \mathbf{J} \Delta \mathbf{x} = -\mathbf{J}^T \mathbf{e}$$
+
+* $\mathbf{J}^T \mathbf{J}$: This is often called the Hessian approximation ($\mathbf{H}$). It represents the "curvature" of our error surface. It tells the computer how "steep" the hill is in every direction.
+* $-\mathbf{J}^T \mathbf{e}$: This is the Negative Gradient ($-\mathbf{g}$). It points directly "downhill."
+
+> "Take the downhill direction ($-\mathbf{g}$) and scale it by the local curvature ($\mathbf{H}$) to find exactly how big of a step ($\Delta \mathbf{x}$) I should take to reach the bottom."
+
+1. Initialize the camera pose $\mathbf{T}_0$.
+2. For $k = 0, 1, 2, \dots$:
+   a. Calculate the reprojection error $e_i$ for each point.
+   b. Calculate the Jacobian matrix $\mathbf{J}_i$ of the reprojection error with respect to the camera pose.
+   c. Solve the linear system $\mathbf{J}^T \mathbf{J} \Delta \mathbf{T} = -\mathbf{J}^T \mathbf{e}$ for the update step $\Delta \mathbf{T}$.
+   d. Update the camera pose $\mathbf{T}_{k+1} = \mathbf{T}_k + \Delta \mathbf{T}$.
+3. Repeat until convergence.
+
+Here, $\Delta \mathbf{T}$ is a 6-dimensional Lie Algebra vector ($\delta \xi$). The "update" in Step 2d actually looks like this in the code:$$\mathbf{T}_{k+1} = \exp(\delta \xi^\wedge) \mathbf{T}_k$$.
+
+## Formulation
+Since the camera pose lives on a manifold ($SE(3)$), we can't take a "normal" derivative. Instead, we use the perturbation model we learned in the Lie Algebra blog I have written. We apply a tiny "nudge" $\delta\xi$ and see how much the pixel moves.
+
+First, we take a 3D point $\mathbf{P}$ from the world and transform it into the local coordinates of the current camera. We call this local 3D point $\mathbf{P}'$:$$\mathbf{P}' = (\mathbf{TP})_{1:3} = [X', Y', Z']^T$$
+
+Now, we project that local 3D point $\mathbf{P}'$ onto the image sensor using the Intrinsic matrix $\mathbf{K}$:$$s\mathbf{u} = \mathbf{K}\mathbf{P}'$$
+
+$$\begin{bmatrix} su \\ sv \\ s \end{bmatrix} = \begin{bmatrix} f_x & 0 & c_x \\ 0 & f_y & c_y \\ 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} X' \\ Y' \\ Z' \end{bmatrix}$$
+
+To get the actual pixel coordinates ($u, v$), we divide by the depth ($s = Z'$) using the third row:
+$$u = f_x \frac{X'}{Z'} + c_x, \quad v = f_y \frac{Y'}{Z'} + c_y$$
+
+The Jacobian $\mathbf{J}$ represents how the error $\mathbf{e}$ (the distance between projected and observed pixels) changes when we wiggle the camera pose by a tiny amount $\delta\xi$.Using the Chain Rule, we break this derivative into two manageable pieces:$$\frac{\partial \mathbf{e}}{\partial \delta \xi} = \lim_{\delta \xi \to 0} \frac{\mathbf{e}(\delta \xi \oplus \xi) - \mathbf{e}(\xi)}{\delta \xi} = \frac{\partial \mathbf{e}}{\partial \mathbf{P}'} \frac{\partial \mathbf{P}'}{\partial \delta \xi}$$
+
+* $\frac{\partial \mathbf{e}}{\partial \mathbf{P}'}$ (Dimension $2 \times 3$): This is the Projection Jacobian. It asks: "If I move the 3D point $P'$ slightly in camera space, how much do the pixels $u, v$ move?" (This depends only on the lens/intrinsics).
+* $\frac{\partial \mathbf{P}'}{\partial \delta \xi}$ (Dimension $3 \times 6$): This is the Pose Jacobian. It asks: "If I wiggle the camera pose $\delta\xi$, how much does the 3D point $P'$ appear to move relative to the camera?" (This depends on Lie Algebra).
+
+> * The Goal: Find the $2 \times 6$ matrix that relates pose-wiggles to pixel-wiggles.
+> * The Strategy: Use $\mathbf{P}'$ as a "middle-man."
+> * The "$\oplus$" symbol: This represents left-multiplication in $SE(3)$. Instead of adding a vector, we are multiplying the current pose by a tiny incremental rotation and translation.
+
+## Solving to Update Camera Pose (Visual Odometry)
+We start by finding how the pixel error $\mathbf{e}$ changes with respect to the 3D point position in the camera frame $\mathbf{P}' = [X', Y', Z']^T$. By differentiating the projection equations from the pinhole camera model from previous chapter, we get this $2 \times 3$ matrix:$$\frac{\partial \mathbf{e}}{\partial \mathbf{P}'} = - \begin{bmatrix} \frac{\partial u}{\partial X'} & \frac{\partial u}{\partial Y'} & \frac{\partial u}{\partial Z'} \\ \frac{\partial v}{\partial X'} & \frac{\partial v}{\partial Y'} & \frac{\partial v}{\partial Z'} \end{bmatrix} = - \begin{bmatrix} \frac{f_x}{Z'} & 0 & -\frac{f_x X'}{Z'^2} \\ 0 & \frac{f_y}{Z'} & -\frac{f_y Y'}{Z'^2} \end{bmatrix}$$
+
+Next, we need to know how the 3D point $\mathbf{P}'$ moves when we perturb the camera pose $\delta \xi$. Using the Lie algebra perturbation model (this will be introduced in another blog):$$\frac{\partial (\mathbf{T P})}{\partial \delta \xi} = (\mathbf{T P})^\odot = \begin{bmatrix} \mathbf{I} & -\mathbf{P}'^\wedge \\ \mathbf{0}^T & \mathbf{0}^T \end{bmatrix}$$
+
+Since we only care about the 3D coordinates (the first 3 dimensions), we use:$$\frac{\partial \mathbf{P}'}{\partial \delta \xi} = \begin{bmatrix} \mathbf{I}, -\mathbf{P}'^\wedge \end{bmatrix}$$
+
+When we multiply the two terms together ($\frac{\partial \mathbf{e}}{\partial \mathbf{P}'} \cdot \frac{\partial \mathbf{P}'}{\partial \delta \xi}$), we get the full Jacobian matrix for the camera pose:$$\frac{\partial \mathbf{e}}{\partial \delta \xi} = - \begin{bmatrix} \frac{f_x}{Z'} & 0 & -\frac{f_x X'}{Z'^2} & -\frac{f_x X' Y'}{Z'^2} & f_x + \frac{f_x X'^2}{Z'^2} & -\frac{f_x Y'}{Z'} \\ 0 & \frac{f_y}{Z'} & -\frac{f_y Y'}{Z'^2} & -f_y - \frac{f_y Y'^2}{Z'^2} & \frac{f_y X' Y'}{Z'^2} & \frac{f_y X'}{Z'} \end{bmatrix}$$
+
+The first 3 columns correspond to translation (moving the camera), and the last 3 columns correspond to rotation (tilting the camera).
+
+## Solving to Update Map Points (Map - BA)
+
+On top of optimizing the pose, we want to optimize the spatial position of the
+feature points. Therefore, we also need to discuss the derivative of $\mathbf{e}$ with respect to
+the space point $\mathbf{P}$.
+$$\frac{\partial \mathbf{e}}{\partial \mathbf{P}} = \frac{\partial \mathbf{e}}{\partial \mathbf{P}'} \frac{\partial \mathbf{P}'}{\partial \mathbf{P}}$$
+
+Since $\mathbf{P}' = \mathbf{R P} + \mathbf{t}$, the derivative $\frac{\partial \mathbf{P}'}{\partial \mathbf{P}}$ is simply the rotation matrix $\mathbf{R}$ we derived above. Plugging in our previous results:
+$$\frac{\partial \mathbf{e}}{\partial \mathbf{P}} = - \begin{bmatrix} \frac{f_x}{Z'} & 0 & -\frac{f_x X'}{Z'^2} \\ 0 & \frac{f_y}{Z'} & -\frac{f_y Y'}{Z'^2} \end{bmatrix} \mathbf{R}$$
+
+
+So yeah, combining these two, that's how SLAM can simultaneously refine where the robot is and where the landmarks are.
+
+
+# Small Explaination on Lie Algebra Stuffs
+### "Left Perturbation"
+We can't just add a number to a rotation matrix because it would break the "rotation-ness" of the matrix. In the perturbation model, we define the derivative as the limit of the difference:$$\frac{\partial \mathbf{P}'}{\partial \delta \xi} = \lim_{\delta \xi \to 0} \frac{\text{New Point} - \text{Old Point}}{\delta \xi}$$
+Because: $$\text{New Point} - \text{Old Point} = (\mathbf{I} + \delta \xi^\wedge)\mathbf{P}' - \mathbf{P}' = \mathbf{\delta \xi^\wedge P'}$$
+Therefore:
+$$\frac{\partial \mathbf{P}'}{\partial \delta \xi} = \lim_{\delta \xi \to 0} \frac{\mathbf{\delta \xi^\wedge P'}}{\delta \xi}$$
+But in matrix calculus, we can't literally "divide" by a vector $\delta \xi$. Instead, we find a matrix $\mathbf{J}$ such that:$$\delta \xi^\wedge \mathbf{P}' = \mathbf{J} \cdot \delta \xi$$Once we find that $\mathbf{J}$, then by definition: $\frac{\partial \mathbf{P}'}{\partial \delta \xi} = \mathbf{J}$.
+
+### Algebra Trick: Rearranging $\delta \xi^\wedge \mathbf{P}'$
+We want to find the derivative with respect to $\delta \xi$, where $\delta \xi$ is a 6D vector: $[\rho_1, \rho_2, \rho_3, \phi_1, \phi_2, \phi_3]^T$. That means we need to get $\delta \xi$ out of the matrix and sitting by itself on the right side. Recall that $\delta \xi$ is a 6D vector containing translation ($\rho$) and rotation ($\phi$): $\delta \xi = [\rho, \phi]^T$.
+The matrix version $\delta \xi^\wedge$ looks like this:
+$$\delta \xi^\wedge = \begin{bmatrix} \phi^\wedge & \rho \\ \mathbf{0}^T & 0 \end{bmatrix}$$
+When we multiply this $4 \times 4$ matrix by our $4 \times 1$ homogeneous point $\mathbf{P}' = [X, Y, Z, 1]^T$:
+$$\delta \xi^\wedge \mathbf{P}' = \begin{bmatrix} \phi^\wedge & \rho \\ \mathbf{0}^T & 0 \end{bmatrix} \begin{bmatrix} \mathbf{P}'_{3D} \\ 1 \end{bmatrix} = \begin{bmatrix} \phi^\wedge \mathbf{P}'_{3D} + \rho \\ 0 \end{bmatrix}$$
+
+### "Odot" ($\odot$) Operator
+To solve for the derivative, we use a trick: $\phi^\wedge \mathbf{P}' = -\mathbf{P}'^\wedge \phi$. (This is just a property of cross products: $a \times b = -b \times a$).
+We can rewrite the result from Step above as a matrix multiplied by the 6D vector $\delta \xi$:$$\begin{bmatrix} \phi^\wedge \mathbf{P}'_{3D} + \rho \\ 0 \end{bmatrix} = \underbrace{\begin{bmatrix} \mathbf{I} & -\mathbf{P}'^\wedge_{3D} \\ \mathbf{0}^T & \mathbf{0}^T \end{bmatrix}}_{(\mathbf{T P})^\odot} \begin{bmatrix} \rho \\ \phi \end{bmatrix}$$
+
+* The $\mathbf{I}$ (Identity) part is multiplied by $\rho$ (translation). This makes sense: if you move the camera 1cm left, the point appears to move 1cm right.
+* The $-\mathbf{P}'^\wedge$ part is multiplied by $\phi$ (rotation). This represents the circular motion caused by rotating the camera.
+
+in our projection model, we only care about the actual 3D coordinates ($X, Y, Z$). The 4th dimension of our point is always 1, and its derivative is always 0. So, we throw away that useless bottom row:$$\frac{\partial \mathbf{P}'}{\partial \delta \xi} = \begin{bmatrix} \mathbf{I} & -\mathbf{P}'^\wedge \end{bmatrix}$$
+
+* $\delta \xi$: The 6-DOF wiggle vector (3 for moving, 3 for tilting).
+* $\mathbf{I}$: A $3 \times 3$ Identity matrix. It says "translation affects the point directly."
+* $\mathbf{P}'^\wedge$: The "skew-symmetric" matrix of the point. It turns a rotation into a linear velocity (the "swing" of the point when you tilt the camera).
+* $(\cdot)^\odot$: Just a shorthand name for this specific rearrangement trick.
