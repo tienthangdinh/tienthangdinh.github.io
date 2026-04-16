@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/slam-visualodometry_icp/index.html",
       "/posts/slam-visualodometry_featuresstereo/index.html",
       "/posts/slam-visualodometry_featuresmonocular/index.html",
       "/posts/slam-nonlinearoptimization/index.html",
