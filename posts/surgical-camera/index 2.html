@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-03-15">
+
+<title>Camera – the brachistochrone traveller</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">the brachistochrone traveller</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Đinh Tiến Thắng</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Camera</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">Computer Vision</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">March 15, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#camera" id="toc-camera" class="nav-link active" data-scroll-target="#camera">Camera</a>
+  <ul class="collapse">
+  <li><a href="#extended-camera-model" id="toc-extended-camera-model" class="nav-link" data-scroll-target="#extended-camera-model">Extended Camera Model</a>
+  <ul class="collapse">
+  <li><a href="#intrinsic-parameters" id="toc-intrinsic-parameters" class="nav-link" data-scroll-target="#intrinsic-parameters">Intrinsic Parameters</a></li>
+  <li><a href="#extrinsic-parameters" id="toc-extrinsic-parameters" class="nav-link" data-scroll-target="#extrinsic-parameters">Extrinsic Parameters</a></li>
+  <li><a href="#final-projection-matrix" id="toc-final-projection-matrix" class="nav-link" data-scroll-target="#final-projection-matrix">Final Projection Matrix</a></li>
+  </ul></li>
+  <li><a href="#epipolar-geometry" id="toc-epipolar-geometry" class="nav-link" data-scroll-target="#epipolar-geometry">Epipolar Geometry</a>
+  <ul class="collapse">
+  <li><a href="#fundamental-matrix" id="toc-fundamental-matrix" class="nav-link" data-scroll-target="#fundamental-matrix">Fundamental Matrix</a></li>
+  <li><a href="#essential-matrix" id="toc-essential-matrix" class="nav-link" data-scroll-target="#essential-matrix">Essential Matrix</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#segmentation" id="toc-segmentation" class="nav-link" data-scroll-target="#segmentation">Segmentation</a>
+  <ul class="collapse">
+  <li><a href="#random-walker-can-solve-weak-boundary" id="toc-random-walker-can-solve-weak-boundary" class="nav-link" data-scroll-target="#random-walker-can-solve-weak-boundary">Random Walker (can solve Weak Boundary)</a>
+  <ul class="collapse">
+  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#principle" id="toc-principle" class="nav-link" data-scroll-target="#principle">Principle</a></li>
+  </ul></li>
+  <li><a href="#active-contour-model-snakes" id="toc-active-contour-model-snakes" class="nav-link" data-scroll-target="#active-contour-model-snakes">Active Contour Model (Snakes)</a>
+  <ul class="collapse">
+  <li><a href="#setup-1" id="toc-setup-1" class="nav-link" data-scroll-target="#setup-1">Setup</a></li>
+  <li><a href="#principle-1" id="toc-principle-1" class="nav-link" data-scroll-target="#principle-1">Principle</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#registration" id="toc-registration" class="nav-link" data-scroll-target="#registration">Registration</a>
+  <ul class="collapse">
+  <li><a href="#feature-based-kabsch-algorithm" id="toc-feature-based-kabsch-algorithm" class="nav-link" data-scroll-target="#feature-based-kabsch-algorithm">Feature based (Kabsch Algorithm)</a>
+  <ul class="collapse">
+  <li><a href="#but-how-come-the-cross-covariance-matrix-can-solve-this-minimization-problem" id="toc-but-how-come-the-cross-covariance-matrix-can-solve-this-minimization-problem" class="nav-link" data-scroll-target="#but-how-come-the-cross-covariance-matrix-can-solve-this-minimization-problem">But how come the Cross-Covariance Matrix can solve this minimization problem?</a></li>
+  </ul></li>
+  <li><a href="#icp" id="toc-icp" class="nav-link" data-scroll-target="#icp">ICP</a>
+  <ul class="collapse">
+  <li><a href="#step-1-guess-the-closest-point" id="toc-step-1-guess-the-closest-point" class="nav-link" data-scroll-target="#step-1-guess-the-closest-point">Step 1: Guess the “Closest Point”</a></li>
+  <li><a href="#step-2-compute-transformation" id="toc-step-2-compute-transformation" class="nav-link" data-scroll-target="#step-2-compute-transformation">Step 2: Compute Transformation</a></li>
+  <li><a href="#step-3-repeat-again" id="toc-step-3-repeat-again" class="nav-link" data-scroll-target="#step-3-repeat-again">Step 3: Repeat again</a></li>
+  </ul></li>
+  <li><a href="#image-intensity-based" id="toc-image-intensity-based" class="nav-link" data-scroll-target="#image-intensity-based">Image Intensity based</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="camera" class="level1">
+<h1>Camera</h1>
+<section id="extended-camera-model" class="level2">
+<h2 class="anchored" data-anchor-id="extended-camera-model">Extended Camera Model</h2>
+<section id="intrinsic-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="intrinsic-parameters">Intrinsic Parameters</h3>
+<section id="camera-matrix-k" class="level4">
+<h4 class="anchored" data-anchor-id="camera-matrix-k">Camera Matrix <span class="math inline">\(K\)</span></h4>
+<p>Because the width and height of a pixel might be different to camera sensor,we need focal length in pixel unit for both axes (<span class="math inline">\(f_x\)</span>) and (<span class="math inline">\(f_y\)</span>), and the principal point <span class="math inline">\((c_x, c_y)\)</span> which is the projection of the camera center onto the image plane. We have <span class="math inline">\(u,v\)</span> as pixels: <span class="math display">\[\begin{pmatrix} u \\ v \end{pmatrix} = \frac{1}{z} \begin{pmatrix} f_x \cdot x \\ f_y \cdot y \end{pmatrix} + \begin{pmatrix} c_x \\ c_y \end{pmatrix}\]</span></p>
+<p>A better way to express this is using camera matrix <span class="math inline">\(K\)</span>: <span class="math display">\[\begin{pmatrix} u \\ v \\ 1 \end{pmatrix} = \frac{1}{z} \begin{pmatrix} f_x &amp; 0 &amp; c_x \\ 0 &amp; f_y &amp; c_y \\ 0 &amp; 0 &amp; 1 \end{pmatrix} \begin{pmatrix} x \\ y \\ z \end{pmatrix}\]</span> <span class="math display">\[K = \begin{pmatrix} f_x &amp; 0 &amp; c_x \\ 0 &amp; f_y &amp; c_y \\ 0 &amp; 0 &amp; 1 \end{pmatrix}\]</span></p>
+</section>
+<section id="distortion" class="level4">
+<h4 class="anchored" data-anchor-id="distortion">Distortion</h4>
+<p>Firstly get back the lens coordinate from <span class="math inline">\((u,v)\)</span>: <span class="math display">\[\begin{pmatrix} x_n \\ y_n \end{pmatrix} = \begin{pmatrix} \frac{u - c_x}{f_x} \\ \frac{v - c_y}{f_y} \end{pmatrix}\]</span></p>
+<p>Distortion is proportional to the distance from the center of the image: <span class="math display">\[\begin{pmatrix} x_d \\ y_d \end{pmatrix} = \begin{pmatrix} x_n \\ y_n \end{pmatrix} \cdot (1 + k_1 \cdot r^2 + k_2 \cdot r^4 + k_3 \cdot r^6)\]</span></p>
+<p>where <span class="math inline">\(r^2 = x_n^2 + y_n^2\)</span>. And <span class="math inline">\(k_1, k_2, k_3\)</span> are distortion coefficients that need to be calibrated.</p>
+</section>
+</section>
+<section id="extrinsic-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="extrinsic-parameters">Extrinsic Parameters</h3>
+<p>to make a self-driving car or a robot work, the computer needs to know where that camera is physically located in the real world. But this is really easy. <span class="math display">\[\begin{pmatrix} x_c \\ 1 \end{pmatrix} = \begin{pmatrix} R &amp; t \\ 0 \ 0 \ 0 &amp; 1 \end{pmatrix} \begin{pmatrix} x_w \\ 1 \end{pmatrix}\]</span></p>
+</section>
+<section id="final-projection-matrix" class="level3">
+<h3 class="anchored" data-anchor-id="final-projection-matrix">Final Projection Matrix</h3>
+<p>So yes this is the final projection matrix: <span class="math display">\[P = K \cdot [R|t]\]</span></p>
+<p><span class="math display">\[P = \begin{pmatrix} f_x &amp; 0 &amp; c_x \\ 0 &amp; f_y &amp; c_y \\ 0 &amp; 0 &amp; 1 \end{pmatrix} \begin{pmatrix} R &amp; t \\ 0 \ 0 \ 0 &amp; 1 \end{pmatrix}\]</span></p>
+<p><span class="math display">\[\begin{pmatrix} u \\ v \\ 1 \end{pmatrix} = \frac{1}{z} \begin{pmatrix} f_x &amp; 0 &amp; c_x \\ 0 &amp; f_y &amp; c_y \\ 0 &amp; 0 &amp; 1 \end{pmatrix} \begin{pmatrix} R &amp; t \\ 0 \ 0 \ 0 &amp; 1 \end{pmatrix} \begin{pmatrix} x_w \\ y_w \\ z_w \\ 1 \end{pmatrix}\]</span></p>
+<p>Formulating camera calibration, form <span class="math inline">\(Ax = b\)</span>: <span class="math display">\[\begin{pmatrix} u \\ v \\ 1 \end{pmatrix} = \frac{1}{z} P \begin{pmatrix} x_w \\ y_w \\ z_w \\ 1 \end{pmatrix}\]</span> <span class="math display">\[P = \begin{pmatrix} p_{11} &amp; p_{12} &amp; p_{13} &amp; p_{14} \\ p_{21} &amp; p_{22} &amp; p_{23} &amp; p_{24} \\ p_{31} &amp; p_{32} &amp; p_{33} &amp; p_{34} \end{pmatrix}\]</span></p>
+<p>at least 6 points are needed to calibrate a camera using linear algebra.</p>
+</section>
+</section>
+<section id="epipolar-geometry" class="level2">
+<h2 class="anchored" data-anchor-id="epipolar-geometry">Epipolar Geometry</h2>
+<p>General idea: left and right correspondences should lie on the same epipolar line to be searched faster. It should be verified using this: <span class="math display">\[x'^T F x = 0\]</span></p>
+<ul>
+<li><span class="math inline">\(x\)</span> is the pixel coordinate of the nose in the Left image.</li>
+<li><span class="math inline">\(x'\)</span> is the pixel coordinate of the nose in the Right image.</li>
+<li><span class="math inline">\(F\)</span> is the Fundamental Matrix.</li>
+</ul>
+<section id="fundamental-matrix" class="level3">
+<h3 class="anchored" data-anchor-id="fundamental-matrix">Fundamental Matrix</h3>
+<ol type="1">
+<li><p>Generating Epipolar Lines When we multiply the <span class="math inline">\(3 \times 3\)</span> Fundamental Matrix <span class="math inline">\(F\)</span> by the 2D Left pixel coordinate <span class="math inline">\(x_L\)</span> (in homogeneous form), the output is a 3-part vector <span class="math inline">\((a, b, c)\)</span>. The line in the right image is (<span class="math inline">\(ax + by + c = 0\)</span>): <span class="math display">\[l_R = F \cdot x_L\]</span></p></li>
+<li><p>Finding Correspondences Now we have the epipolar line in the right image, we can search for the corresponding pixel <span class="math inline">\(x_R\)</span> on this line. Using intensiry for example</p></li>
+</ol>
+<section id="ok-but-how-to-calculate-f" class="level4">
+<h4 class="anchored" data-anchor-id="ok-but-how-to-calculate-f">OK but how to calculate <span class="math inline">\(F\)</span>?</h4>
+<p>We know <span class="math inline">\(E\)</span> and <span class="math inline">\(K_L, K_R\)</span> from the manufacturer, we can calculate <span class="math inline">\(F\)</span> using the formula <span class="math display">\[F = K_R^{-T} \cdot E \cdot K_L^{-1}\]</span></p>
+</section>
+</section>
+<section id="essential-matrix" class="level3">
+<h3 class="anchored" data-anchor-id="essential-matrix">Essential Matrix</h3>
+<p>What is the difference?</p>
+<ul>
+<li><p>The Essential Matrix (<span class="math inline">\(E\)</span>) is pure 3D physical geometry, already given from the manufacturer. It represents the translation and rotation between the two cameras, assuming perfect, theoretical cameras (ignoring pixels, focal length, etc.). <span class="math display">\[E = [t]_{\times} \cdot R\]</span></p></li>
+<li><p>The Fundamental Matrix (<span class="math inline">\(F\)</span>) is the “messy real world” version. It includes the physical geometry (<span class="math inline">\(E\)</span>) plus the specific digital pixel properties (Intrinsics, <span class="math inline">\(K\)</span>) of the two cameras. If you know your physical camera setups (<span class="math inline">\(E\)</span>) and you know the internal digital specs of your cameras (<span class="math inline">\(K_L\)</span> and <span class="math inline">\(K_R\)</span>), you can construct the Fundamental Matrix perfectly! <span class="math display">\[F = K_R^{-T} \cdot E \cdot K_L^{-1}\]</span></p></li>
+</ul>
+<p>If you calculate <span class="math inline">\(F\)</span> by finding matching pixels in your images, you can pull out the Intrinsics to reverse-engineer the physical Essential matrix: <span class="math inline">\(E = K_R^T \cdot F \cdot K_L\)</span>.</p>
+<p>Rectification takes calibrated <span class="math inline">\(K_L, K_R, E\)</span> and warps and stretches the 2D images until it looks like both cameras were perfectly parallel, sitting on the exact same horizontal plane, looking straight ahead. In the end we get new <span class="math inline">\(K\)</span></p>
+</section>
+</section>
+</section>
+<section id="segmentation" class="level1">
+<h1>Segmentation</h1>
+<ul>
+<li>region growing: i know the best what downside it has</li>
+<li>split and merge:
+<ul>
+<li>keep spliting a cell into 4 quadrants until all cells are homogeneous</li>
+<li>then merge adjacent cells if they are homogeneous</li>
+</ul></li>
+</ul>
+<section id="random-walker-can-solve-weak-boundary" class="level2">
+<h2 class="anchored" data-anchor-id="random-walker-can-solve-weak-boundary">Random Walker (can solve Weak Boundary)</h2>
+<section id="setup" class="level3">
+<h3 class="anchored" data-anchor-id="setup">Setup</h3>
+<ul>
+<li><p>Nodes (<span class="math inline">\(v_i\)</span>): Every single pixel in the image becomes a node in the graph.</p></li>
+<li><p>Edges (<span class="math inline">\(e_{ij}\)</span>): Edges are inserted between neighboring pixels (<span class="math inline">\(v_i\)</span> and <span class="math inline">\(v_j\)</span>), connecting them.</p></li>
+<li><p>Edge Weight (<span class="math inline">\(w_{ij}\)</span>): This is the most crucial step, as it encodes the similarity between adjacent pixels: <span class="math display">\[w_{ij} = \exp(- \beta (g_i - g_j)^2)\]</span></p></li>
+<li><p><span class="math inline">\(g_i\)</span> and <span class="math inline">\(g_j\)</span>: The grayscale values (or intensity values) of the neighboring pixels.</p></li>
+<li><p><span class="math inline">\((g_i - g_j)^2\)</span>: The squared difference in intensity, representing how dissimilar the two pixels are.</p></li>
+<li><p><span class="math inline">\(-\beta\)</span> (Beta): A free parameter that controls the steepness (sensitivity) of the falloff. A larger <span class="math inline">\(\beta\)</span> makes the weight drop off very quickly, emphasizing sharp boundaries.</p></li>
+<li><p>Goal of the Weight: As you noted, the weight is designed so that a big gray value difference (a sharp boundary) results in a low edge weight. Conversely, pixels that are very similar (small intensity difference) have a high edge weight (close to 1). This models the probability of transition for a hypothetical random walker.</p></li>
+</ul>
+</section>
+<section id="principle" class="level3">
+<h3 class="anchored" data-anchor-id="principle">Principle</h3>
+<p>The core mathematical principle is to calculate the probability that a random walker, starting at any unseeded pixel, will reach a specific seed first. This is a problem solvable using the Laplacian matrix of the graph and methods from potential theory (related to solving the Laplace equation). The walker prefers to move along paths of high edge weight (smooth, uniform regions) and is reluctant to cross low-weight edges (boundaries).</p>
+<ol type="1">
+<li><p>Define Seeds (<span class="math inline">\(S\)</span>)The user must first define a small set of pixels (seeds) and assign them to labels (e.g., “Foreground,” “Background,” “Tumor,” etc.). Let <span class="math inline">\(S\)</span> be the set of all seed pixels.</p></li>
+<li><p>Determine Probability (<span class="math inline">\(x_{i}^{s}\)</span>)For every unseeded node <span class="math inline">\(v_i\)</span>, the algorithm determines the probability, <span class="math inline">\(x_i^{s}\)</span>, that a random walker starting at <span class="math inline">\(v_i\)</span> will reach a specific seed <span class="math inline">\(s\)</span> (where <span class="math inline">\(s \in S\)</span>) before reaching any other seed. This calculation is equivalent to finding the solution that minimizes the Dirichlet integral over the graph, which relates to minimal energy or maximal smoothness.</p></li>
+<li><p>Assign Labels (Final Segmentation)Once all probabilities are calculated, each unseeded pixel <span class="math inline">\(v_i\)</span> is assigned the label of the seed it has the highest probability of reaching. The final label <span class="math inline">\(L(v_i)\)</span> is: <span class="math display">\[L(v_i) = \arg\max_{s \in S} \left( x_i^{s} \right)\]</span></p></li>
+</ol>
+</section>
+</section>
+<section id="active-contour-model-snakes" class="level2">
+<h2 class="anchored" data-anchor-id="active-contour-model-snakes">Active Contour Model (Snakes)</h2>
+<section id="setup-1" class="level3">
+<h3 class="anchored" data-anchor-id="setup-1">Setup</h3>
+<ul>
+<li>Nodes (<span class="math inline">\(v_i\)</span>): A set of ordered points (a curve) that represents the boundary of the object to be segmented.</li>
+<li>Edges (<span class="math inline">\(e_{ij}\)</span>): Connections between adjacent points on the curve.</li>
+<li>Edge Weight (<span class="math inline">\(w_{ij}\)</span>): The weight is designed to penalize stretching or compressing the curve, encouraging smoothness.</li>
+</ul>
+</section>
+<section id="principle-1" class="level3">
+<h3 class="anchored" data-anchor-id="principle-1">Principle</h3>
+<p>The core idea is to minimize an energy function <span class="math inline">\(E\)</span> that represents the total “cost” of the snake’s shape. The snake starts near the object boundary and iteratively moves (deforms) in a direction that reduces this energy, effectively “snapping” to the true boundary.</p>
+<p><span class="math display">\[E = E_{internal} + E_{external}\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(E_{internal}\)</span>: The internal energy of the snake, which penalizes bending and stretching. It is composed of:
+<ul>
+<li>Elastic Energy (<span class="math inline">\(E_{elastic}\)</span>): Penalizes stretching or compressing the curve.</li>
+<li>Bending Energy (<span class="math inline">\(E_{bending}\)</span>): Penalizes sharp turns or curvature.</li>
+</ul></li>
+<li><span class="math inline">\(E_{external}\)</span>: The external energy, which is derived from the image itself. It is designed to attract the snake to the object’s boundary (e.g., high intensity regions).</li>
+</ul>
+<p>The snake stops deforming when it reaches a local minimum of the total energy function, which ideally corresponds to the object’s boundary.</p>
+<section id="internal-energy" class="level4">
+<h4 class="anchored" data-anchor-id="internal-energy">Internal Energy</h4>
+<p>The internal energy penalizes non-smooth or stretched contours:<span class="math display">\[E_{\text{int}}(v(s)) = \frac{1}{2} \int \left( \alpha(s) \cdot |v_s(s)|^2 + \beta(s) \cdot |v_{ss}(s)|^2 \right) ds\]</span></p>
+<p>Where <span class="math inline">\(v(s) = (x(s), y(s))\)</span> is the contour parameterized by arc length <span class="math inline">\(s\)</span>. The integration is over the entire curve.</p>
+<p>The first term, <span class="math inline">\(\frac{1}{2} \int \alpha(s) \cdot |v_s(s)|^2 ds\)</span>, relates to the length (elasticity or tension) of the curve. It penalizes stretching or compressing the curve. The first derivative <span class="math inline">\(v_s(s)\)</span> is the tangent vector to the curve at point <span class="math inline">\(s\)</span>:<span class="math display">\[v_s(s) = \left( \frac{\partial x(s)}{\partial s}, \frac{\partial y(s)}{\partial s} \right)\]</span> <span class="math inline">\(|v_s(s)|\)</span>, represents the rate of change of the curve’s position with respect to the parameter <span class="math inline">\(s\)</span>. <span class="math inline">\(|v_s(s)|^2\)</span> measures the local stretching or shrinking of the contour. It penalize when the curve being too long</p>
+<p>The second term, <span class="math inline">\(\frac{1}{2} \int \beta(s) \cdot |v_{ss}(s)|^2 ds\)</span>, relates to the curvature (stiffness or rigidity) of the curve. The second derivative <span class="math inline">\(v_{ss}(s)\)</span> is the rate of change of the tangent vector.<span class="math display">\[v_{ss}(s) = \left( \frac{\partial^2 x(s)}{\partial s^2}, \frac{\partial^2 y(s)}{\partial s^2} \right)\]</span> It penalize when the curve being too curvy, wrinkled.</p>
+</section>
+<section id="external-energy" class="level4">
+<h4 class="anchored" data-anchor-id="external-energy">External Energy</h4>
+<p>The most common way to define the external energy uses the image gradient (the change in pixel intensity) because gradients are large at object boundaries.Let <span class="math inline">\(I(x, y)\)</span> be the image intensity at position <span class="math inline">\((x, y)\)</span>. <span class="math display">\[\text{Gradient Magnitude} = |\nabla I(x, y)| = \sqrt{\left(\frac{\partial I}{\partial x}\right)^2 + \left(\frac{\partial I}{\partial y}\right)^2}\]</span></p>
+<p>Now we make them negative: <span class="math display">\[E_{\text{external}}(v(s)) = - |\nabla I(x, y)|^2\]</span></p>
+<ul>
+<li>At an Edge: <span class="math inline">\(|\nabla I|\)</span> is large <span class="math inline">\(\rightarrow E_{\text{external}}\)</span> is a large negative number (minimum).</li>
+<li>In a Uniform Region: <span class="math inline">\(|\nabla I|\)</span> is zero <span class="math inline">\(\rightarrow E_{\text{external}}\)</span> is zero (higher energy).</li>
+</ul>
+<p>And then we converge using Gradient Descent</p>
+</section>
+<section id="gradient-descent" class="level4">
+<h4 class="anchored" data-anchor-id="gradient-descent">Gradient Descent</h4>
+<p>The movement of a point on the contour, <span class="math inline">\(\frac{\partial v}{\partial t}\)</span>, is proportional to the negative gradient of the total energy:<span class="math display">\[\frac{\partial v}{\partial t} = - \nabla E_{\text{total}}\]</span></p>
+<p>The total force acting on the contour point <span class="math inline">\(v(s)\)</span> is the sum of the forces derived from the internal and external energies:<span class="math display">\[\mathbf{F}_{\text{total}} = \mathbf{F}_{\text{internal}} + \mathbf{F}_{\text{external}}\]</span></p>
+<p><span class="math display">\[\mathbf{F}_{\text{internal}} = - \frac{\partial}{\partial s} (\alpha |v_s|) + \frac{\partial^2}{\partial s^2} (\beta |v_{ss}|)\]</span></p>
+<ul>
+<li>Elasticity/Tension (First term): Pulls the contour inward, minimizing its length.</li>
+<li>Stiffness/Curvature (Second term): Smooths out sharp corners.</li>
+</ul>
+<p><span class="math display">\[\mathbf{F}_{\text{external}} = - \nabla I(x, y)\]</span></p>
+<ul>
+<li>At an Edge: <span class="math inline">\(|\nabla I|\)</span> is large <span class="math inline">\(\rightarrow \mathbf{F}_{\text{external}}\)</span> is a large negative number (minimum).</li>
+<li>In a Uniform Region: <span class="math inline">\(|\nabla I|\)</span> is zero <span class="math inline">\(\rightarrow \mathbf{F}_{\text{external}}\)</span> is zero (higher energy).</li>
+</ul>
+<p>The total force is then: <span class="math display">\[\mathbf{F}_{\text{total}} = - \frac{\partial}{\partial s} (\alpha |v_s|) + \frac{\partial^2}{\partial s^2} (\beta |v_{ss}|) - \nabla I(x, y)\]</span></p>
+<p>Update: <span class="math display">\[\mathbf{v}^{t+1}(s) = \mathbf{v}^{t}(s) + \gamma \cdot \mathbf{F}_{\text{total}}^{t}(s)\]</span></p>
+</section>
+</section>
+</section>
+</section>
+<section id="registration" class="level1">
+<h1>Registration</h1>
+<section id="feature-based-kabsch-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="feature-based-kabsch-algorithm">Feature based (Kabsch Algorithm)</h2>
+<p>Goal: to minimize the sum of the squared distances between all the matched points: <span class="math display">\[\sum_{i=1}^n ||Tp_i - q_i||^2\]</span></p>
+<p>Create relative position: <span class="math display">\[p_i \mapsto p_i - \bar{p} \quad \text{and} \quad q_i \mapsto q_i - \bar{q}\]</span>.</p>
+<p>Create <span class="math inline">\(3 \times 3\)</span> matrix called the Cross-Covariance Matrix (<span class="math inline">\(W\)</span>): <span class="math display">\[W = \sum_{i=1}^n p_i q_i^T = \begin{bmatrix} \sum_{i=1}^n p_{ix} q_{ix} &amp; \sum_{i=1}^n p_{ix} q_{iy} &amp; \sum_{i=1}^n p_{ix} q_{iz} \\ \sum_{i=1}^n p_{iy} q_{ix} &amp; \sum_{i=1}^n p_{iy} q_{iy} &amp; \sum_{i=1}^n p_{iy} q_{iz} \\ \sum_{i=1}^n p_{iz} q_{ix} &amp; \sum_{i=1}^n p_{iz} q_{iy} &amp; \sum_{i=1}^n p_{iz} q_{iz} \end{bmatrix}\]</span></p>
+<p>SVD to find Optimal Rotation Matrix (<span class="math inline">\(R\)</span>): <span class="math display">\[W = USV^T\]</span> <span class="math display">\[R = U \begin{pmatrix} 1 &amp; &amp; \\ &amp; 1 &amp; \\ &amp; &amp; \det(UV^T) \end{pmatrix} V^T\]</span></p>
+<p>Translation (<span class="math inline">\(t\)</span>) is easy: <span class="math display">\[t = \bar{q} - R\bar{p}\]</span></p>
+<section id="but-how-come-the-cross-covariance-matrix-can-solve-this-minimization-problem" class="level3">
+<h3 class="anchored" data-anchor-id="but-how-come-the-cross-covariance-matrix-can-solve-this-minimization-problem">But how come the Cross-Covariance Matrix can solve this minimization problem?</h3>
+<p>Analogy: <span class="math display">\[(a - b)^2 = a^2 + b^2 - 2ab\]</span></p>
+<p>Our case: <span class="math display">\[||R p_i - q_i||^2 = ||p_i||^2 + ||q_i||^2 - 2(R p_i \cdot q_i)\]</span> <span class="math display">\[\sum_{i=1}^n ||R p_i - q_i||^2 = \sum_{i=1}^n ||p_i||^2 + ||q_i||^2 - 2(R p_i \cdot q_i)\]</span></p>
+<ul>
+<li><span class="math inline">\(||p_i||^2\)</span> is just the size of the source cloud. (Constant)</li>
+<li><span class="math inline">\(||q_i||^2\)</span> is just the size of the target cloud. (Constant)</li>
+<li><span class="math inline">\(- 2(R p_i \cdot q_i)\)</span> is the only part we can actually change by rotating the cloud!</li>
+</ul>
+<p>The only way to make the total equation as small as possible is to make that <span class="math inline">\((R p_i \cdot q_i)\)</span> part as large as possible. And yeah it is exactly the Cross-Covariance Matrix (<span class="math inline">\(W\)</span>)!</p>
+</section>
+</section>
+<section id="icp" class="level2">
+<h2 class="anchored" data-anchor-id="icp">ICP</h2>
+<section id="step-1-guess-the-closest-point" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-guess-the-closest-point">Step 1: Guess the “Closest Point”</h3>
+<p>We temporarily ignore the fact that we don’t know the real matches.</p>
+<ul>
+<li>We look at a point <span class="math inline">\(f_i\)</span> in Cloud A.</li>
+<li>We search Cloud B and find the single point <span class="math inline">\(v_i\)</span> that is physically closest to it right now.</li>
+<li>We assume these two points are a correspondence pair.</li>
+</ul>
+</section>
+<section id="step-2-compute-transformation" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-compute-transformation">Step 2: Compute Transformation</h3>
+<p>At this iteration, we have a set of correspondences <span class="math inline">\(\{f_i, v_i\}\)</span>. Once again we want to minimize this</p>
+<p><span class="math display">\[D_{k+1} = \sum_i ||v_i - T_{k+1} \cdot f_i||^2\]</span></p>
+<p>Then just like before, we can use the Cross-Covariance Matrix to find the optimal transformation.</p>
+<p><span class="math display">\[W = \sum_{i=1}^n v_i f_i^T\]</span> <span class="math display">\[W = USV^T\]</span> <span class="math display">\[R = U \begin{pmatrix} 1 &amp; &amp; .\\ &amp; 1 &amp; .\\ &amp; &amp; \det(UV^T) \end{pmatrix} V^T\]</span> <span class="math display">\[t = \bar{v} - R\bar{f}\]</span></p>
+</section>
+<section id="step-3-repeat-again" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-repeat-again">Step 3: Repeat again</h3>
+<p>repeat step 1 and 2 until the change is small enough</p>
+</section>
+</section>
+<section id="image-intensity-based" class="level2">
+<h2 class="anchored" data-anchor-id="image-intensity-based">Image Intensity based</h2>
+<p>Based on information theory, in general we want to minimize the Entropy (randomness): <span class="math display">\[H(A) = -\sum_{i} p_A(i) \log_2 p_A(i)\]</span></p>
+<p>Goal here: we want to minimize the Cross-Entropy: <span class="math display">\[H(A,B) = -\sum_{i,j} p_{AB}(i,j) \log p_{AB}(i,j)\]</span></p>
+<ul>
+<li><span class="math inline">\(p_A(i)\)</span>: The probability that a pixel in Image A has intensity <span class="math inline">\(i\)</span> (1D histogram)</li>
+<li><span class="math inline">\(p_B(j)\)</span>: The probability that a pixel in Image B has intensity <span class="math inline">\(j\)</span> (1D histogram)</li>
+<li><span class="math inline">\(p_{AB}(i, j)\)</span>: The Joint Probability. This is the 2D “scatter plot” in the center. It represents the probability that a pixel <strong>at a specific location <span class="math inline">\((x, y)\)</span></strong> has intensity <span class="math inline">\(i\)</span> in Image A AND intensity <span class="math inline">\(j\)</span> in Image B.</li>
+</ul>
+<blockquote class="blockquote">
+<p><strong>REMEMBER, IT HAS TO BE SAME COORDINATES <span class="math inline">\((x, y)\)</span></strong></p>
+</blockquote>
+<p>Change our goal numerically a bit, We want a score that goes up when the images are perfectly aligned. This is Mutual Information (MI). <span class="math display">\[MI(A,B) = H(A) + H(B) - H(A,B)\]</span> <span class="math display">\[MI(A,B) = \left[ - \sum_{i,j} p_{AB}(i,j) \log p_A(i) \right] + \left[ - \sum_{i,j} p_{AB}(i,j) \log p_B(j) \right] - \left[ - \sum_{i,j} p_{AB}(i,j) \log p_{AB}(i,j) \right] \quad \text{(Marginalization)}\]</span> <span class="math display">\[MI(A,B) = \sum_{i,j} p_{AB}(i,j) \Big[ -\log p_A(i) - \log p_B(j) + \log p_{AB}(i,j) \Big]\]</span> <span class="math display">\[MI(A,B) = \sum_i \sum_j p_{AB}(i,j) \log \frac{p_{AB}(i,j)}{p_A(i)p_B(j)}\]</span></p>
+<p>Solve this using Gradient Ascent!</p>
+
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
