@@ -1,0 +1,160 @@
+---
+title: "Direct Method for Visual Odometry"
+date: "2026-04-19"
+categories: [Computer Graphics, Computer Vision, SLAM]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+
+# Getting into direct method
+Feature-based methods in general are good, but:
+
+* it is pretty slow to calculate descriptor and finding matching (20ms for ORB, 217ms for SURF, 5228ms for SIFT, this is sad for 30Hz robotic system).
+* For an image of 300000 pixels, we probably only use 500 features, aka 0.16% of total pixels. This is a waste of information.
+* or sometimes we go into a wall of no features
+
+Therefore current research trying to replace descriptor+feature matching using direct method.
+
+| Feature-Based Method | Direct Method |
+| :--- | :--- |
+| **Minimizes Reprojection Error** | **Minimizes Photometric Error** |
+| **Goal:** Make the distance between the "predicted pixel" and "observed pixel" zero. | **Goal:** Make the difference in brightness (grayscale value) zero. |
+| 1. Calculate descriptors first to match points then 2. minimize the error. (2 steps) | Minimize the error directly (from pixel intensity) (1 step) |
+
+# Optical Flow
+The idea is: an object at time $t$ at $(x, y)$ is still the same object at time $t+1$ at $(x+\delta x, y+\delta y)$. We represent the image as a function $I(x, y, t)$, where the output is the brightness (grayscale value). Our core assumption is:
+$$I(x + dx, y + dy, t + dt) = I(x, y, t)$$
+
+First order Taylor sweep:
+$$I(x + dx, y + dy, t + dt) \approx I(x, y, t) + \frac{\partial I}{\partial x}dx + \frac{\partial I}{\partial y}dy + \frac{\partial I}{\partial t}dt$$
+
+Combining these two equations, we get:
+$$\frac{\partial I}{\partial x}dx + \frac{\partial I}{\partial y}dy + \frac{\partial I}{\partial t}dt = 0$$
+$$\frac{\partial I}{\partial x}dx + \frac{\partial I}{\partial y}dy = -\frac{\partial I}{\partial t}dt$$
+$$\frac{\partial I}{\partial x}\frac{dx}{dt} + \frac{\partial I}{\partial y}\frac{dy}{dt} = -\frac{\partial I}{\partial t}$$
+$$\frac{\partial I}{\partial x}u + \frac{\partial I}{\partial y}v = -\frac{\partial I}{\partial t}$$
+
+We define our variables to make them easier to work with:
+
+* $u = \frac{dx}{dt}, v = \frac{dy}{dt}$: The velocity of the pixel (what we want to find).
+* $I_x = \frac{\partial I}{\partial x}, I_y = \frac{\partial I}{\partial y}$: The image gradient (how brightness changes as you move across the pixels).
+* $I_t = \frac{\partial I}{\partial t}$: The temporal gradient (how brightness at a fixed spot changes over time).
+
+$$[I_x \quad I_y] \begin{bmatrix} u \\ v \end{bmatrix} = -I_t$$
+
+A little explaination:
+$$\underbrace{I_x}_{\text{"Local Steepness" (Inside ONE frame)}} \times \underbrace{u}_{\text{"Displacement" (Between TWO frames)}} = \underbrace{-I_t}_{\text{"Brightness Change" (Between TWO frames)}}$$
+
+For example you are hiking and need to find how far you walked, but you only have a barometer (which measures altitude). You use the slope to calculate the distance you walked (diagonal)
+$$\underbrace{I_x}_{\text{Slope (known)}} \cdot \underbrace{u}_{\text{Distance Walked (to find)}} = \underbrace{-I_t}_{\text{Change in Altitude (can be measured by barometer)}}$$
+
+What we want is to calculate the motion $u, v$ of the pixel, but this formula has two variables, and we cannot find $u, v$ by a single pixel.
+Therefore, additional constraints are needed to calculate $u, v$. In LK optical flow, we also assume the pixels in a certain window have the same motion. For example with 3x3 window we can find 9 equations.
+
+For a window of size $w \times w$, we have $w^2$ pixels. We assume every pixel in that small patch has the exact same velocity $\begin{bmatrix} u & v \end{bmatrix}^T$. This gives us a set of $w^2$ equations:
+
+$$[ \mathbf{I}_x \quad \mathbf{I}_y ]_k \begin{bmatrix} u \\ v \end{bmatrix} = -\mathbf{I}_{t_k}, \quad k = 1, \dots, w^2$$
+
+we stack the individual gradients into a large matrix $\mathbf{A}$ and the temporal changes into a vector $\mathbf{b}$:
+$$\mathbf{A} = \begin{bmatrix} [\mathbf{I}_x, \mathbf{I}_y]_1 \\ \vdots \\ [\mathbf{I}_x, \mathbf{I}_y]_k \end{bmatrix}, \quad \mathbf{b} = \begin{bmatrix} \mathbf{I}_{t1} \\ \vdots \\ \mathbf{I}_{tk} \end{bmatrix}$$
+
+$$\mathbf{A} \begin{bmatrix} u \\ v \end{bmatrix} = -\mathbf{b}$$
+
+Because we have more equations ($w^2$) than unknowns ($2$), the system is overdetermined. There likely isn't a single $(u, v)$ that is 100% perfect for every pixel due to noise. We find the "best fit" using the Least-Squares method (the Normal Equation):
+
+$$\begin{bmatrix} u \\ v \end{bmatrix}^* = -(\mathbf{A}^T\mathbf{A})^{-1} \mathbf{A}^T \mathbf{b}$$
+
+# Direct Method
+In the Feature-Based method, we minimized the distance between points (geometry). Here, we minimize the difference in brightness (photometry).
+
+We assume the first camera is at the origin. A 3D point $\mathbf{P}$ in the world projects to pixel $\mathbf{p}_1$ in the first image and $\mathbf{p}_2$ in the second image.In the first image ($I_1$):
+
+$$\mathbf{p}_1 = \begin{bmatrix} u \\ v \\ 1 \end{bmatrix}_1 = \frac{1}{Z_1} \mathbf{K P}$$
+
+In the second image ($I_2$):The camera has moved by a transformation $\mathbf{T}$ (rotation $\mathbf{R}$ and translation $\mathbf{t}$). The point $\mathbf{P}$ is transformed into the second camera's coordinate system before being projected:
+
+$$\mathbf{p}_2 = \begin{bmatrix} u \\ v \\ 1 \end{bmatrix}_2 = \frac{1}{Z_2} \mathbf{K}(\mathbf{R P} + \mathbf{t}) = \frac{1}{Z_2} \mathbf{K}(\mathbf{T P})_{1:3}$$
+
+In Feature-Based SLAM, we match $\mathbf{p}_1$ and $\mathbf{p}_2$ using descriptors. In the Direct Method, we don't know where $\mathbf{p}_2$ is yet! We only have a "guess" for the camera pose $\mathbf{T}$.
+
+We define the Photometric Error ($e$) as the difference in brightness between the two pixels that (we hope) represent the same 3D point:
+
+$$e = I_1(\mathbf{p}_1) - I_2(\mathbf{p}_2)$$
+
+* $I_1(\mathbf{p}_1)$ is the grayscale value at $\mathbf{p}_1$ in the first image.
+* $I_2(\mathbf{p}_2)$ is the grayscale value at the projected location $\mathbf{p}_2$ in the second image.
+
+Our goal is to find the transformation $\mathbf{T}$ that makes the brightness difference as small as possible across all $N$ visible points - maybe even all pixels:
+
+$$\min_{\mathbf{T}} J(\mathbf{T}) = \sum_{i=1}^N e_i^2 = \sum_{i=1}^N \|I_1(\mathbf{p}_{1,i}) - I_2(\mathbf{p}_{2,i})\|^2$$
+
+This is still a Non-linear Least Squares problem, just like PnP or ICP, but the "error" is now a brightness difference instead of a coordinate distance.
+
+To solve this with Gauss-Newton, we need to know how the error $e$ changes when we wiggle the pose $\mathbf{T}$. We define two intermediate variables to make the Chain Rule easier to manage:
+
+* $\mathbf{q} = \mathbf{T P}$: The 3D coordinates of the point in the second camera frame. dependent to $\mathbf{T}$
+* $\mathbf{u} = \frac{1}{Z_2} \mathbf{K q}$: The 2D pixel coordinates in the second image (this is just $\mathbf{p}_2$ without the subscript). dependent to $\mathbf{q}$, which dependent to $\mathbf{T}$
+
+The photometric error is defined as $e(\mathbf{T}) = I_1(\mathbf{p}_1) - I_2(\mathbf{u})$. Since $I_1$ is constant, we only differentiate the second term. By the chain rule, the derivative is split into three parts:
+
+$$\frac{\partial e}{\partial \mathbf{T}} = - \underbrace{\frac{\partial I_2}{\partial \mathbf{u}}}_{\text{Term 1}} \underbrace{\frac{\partial \mathbf{u}}{\partial \mathbf{q}}}_{\text{Term 2}} \underbrace{\frac{\partial \mathbf{q}}{\partial \delta \xi}}_{\text{Term 3}}$$
+
+* Term 1: Image Gradient ($\frac{\partial I_2}{\partial \mathbf{u}}$) (new in direct method)
+
+    This is the spatial gradient of the second image at pixel coordinates $\mathbf{u}$. It is a $1 \times 2$ vector: $[I_x, I_y]$. It represents the "slope" of the brightness at that specific pixel.
+
+* Term 2: Projection Derivative ($\frac{\partial \mathbf{u}}{\partial \mathbf{q}}$)
+
+    This $2 \times 3$ matrix describes how the pixel coordinates change if the 3D point $\mathbf{q}$ moves slightly within the camera's field of view:$$\frac{\partial \mathbf{u}}{\partial \mathbf{q}} = \begin{bmatrix} \frac{f_x}{Z} & 0 & -\frac{f_x X}{Z^2} \\ 0 & \frac{f_y}{Z} & -\frac{f_y Y}{Z^2} \end{bmatrix}$$
+
+* Term 3: Pose Perturbation ($\frac{\partial \mathbf{q}}{\partial \delta \xi}$)
+
+    This $3 \times 6$ matrix is our old friend from Lie Algebra. It describes how the 3D point $\mathbf{q}$ moves relative to the camera when the camera itself wiggles:$$\frac{\partial \mathbf{q}}{\partial \delta \xi} = [\mathbf{I}, -\mathbf{q}^\wedge]$$
+
+In practice, we multiply Term 2 and Term 3 together first. This gives us a $2 \times 6$ matrix that represents the Geometric Jacobian—how camera motion affects pixel coordinates:$$\frac{\partial \mathbf{u}}{\partial \delta \xi} = \begin{bmatrix} \frac{f_x}{Z} & 0 & -\frac{f_x X}{Z^2} & -\frac{f_x XY}{Z^2} & f_x + \frac{f_x X^2}{Z^2} & -\frac{f_x Y}{Z} \\ 0 & \frac{f_y}{Z} & -\frac{f_y Y}{Z^2} & -f_y - \frac{f_y Y^2}{Z^2} & \frac{f_y XY}{Z^2} & \frac{f_y X}{Z} \end{bmatrix}$$
+
+Finally, we multiply by the image gradient to get the Photometric Jacobian for a single point:$$\mathbf{J} = - \frac{\partial I_2}{\partial \mathbf{u}} \frac{\partial \mathbf{u}}{\partial \delta \xi}$$
+
+* Size: $(1 \times 2) \times (2 \times 6) = \mathbf{1 \times 6}$.
+* Result: A single row of 6 numbers that tells the optimizer exactly how to rotate and translate the camera to make the colors match.
+
+Sum up this:
+
+* The camera takes a tiny step ($\delta \xi$).
+* That step causes the 3D point to move relative to the camera (Term 3).
+* That 3D movement causes the point's projection to "slide" on the image sensor (Term 2).
+* That "slide" causes the pixel at that spot to change its brightness based on the local texture (Term 1) this is the new thing in this method.
+
+Discussion: for this to work, we need to know the depth ($Z$) of the points. to reconstruct $P$
+
+* RGB-D cameras: Depth is given for every pixel.
+* Binocular (Stereo): Depth is calculated via parallax.
+* Monocular: This is the "Hard Mode" of SLAM. You have to estimate the depth over multiple frames as the camera moves, which we will see in another blog. (**Structure from Motion** or **Depth Filter**)
+
+# FAQ
+- **So we still have to find keypoint first?**
+    Yes, once again, we first calculate keypoints, then instead of descriptor+feature matching, we directly apply direct method THEREFORE the name!!!
+- **BUT... How do we know which $p_2$ corresponds to $p_1$?**
+    In feature-based SLAM, we look for $p_2$ by searching the whole image for a similar descriptor.In the Direct Method, we don't "find" $p_2$; we "calculate" it.
+    
+    1. We take $p_1$ and its depth $Z_1$.
+    2. We "unproject" it into 3D space to find its world position $\mathbf{P}$.
+    3. We take our current best guess of the camera pose $\mathbf{T}$.
+    4. We project $\mathbf{P}$ into the second camera frame using that guess. Wherever it lands is $p_2$.
+
+- **Is Direct Method just Optical Flow added with camera pose?**
+    Yes, in Optical Flow (2D Optimization):
+
+    * We are looking for the pixel velocity $\mathbf{w} = [u, v]^T$.
+    * Error: $e = I_1(x,y) - I_2(x+u, y+v)$
+    * Jacobian: $\mathbf{J} = [I_x, I_y]$ (Just the image gradients).
+    * Update: We move the pixel in 2D.
+    
+    Direct Method (6D Optimization):
+
+    * We are looking for the camera pose $\xi \in \mathfrak{se}(3)$.
+    * Error: $e = I_1(p_1) - I_2(\text{project}(\mathbf{T} \cdot \text{unproject}(p_1)))$
+    * Jacobian: $\mathbf{J} = \underbrace{-[I_x, I_y]}_{\text{Optical Flow part}} \cdot \underbrace{\frac{\partial \mathbf{u}}{\partial \delta \xi}}_{\text{The extra "Pose" part}}$

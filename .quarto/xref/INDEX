@@ -133,5 +133,11 @@
   },
   "posts/slam-visualodometry_featuresstereo/index.qmd": {
     "index.html": "7397fcd1"
+  },
+  "posts/slam-visualodometry_icp/index.qmd": {
+    "index.html": "dc9adcd6"
+  },
+  "posts/slam-visualodometry_opticalflow/index.qmd": {
+    "index.html": "d99f4c61"
   }
 }

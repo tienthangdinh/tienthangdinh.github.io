@@ -1,0 +1,125 @@
+---
+title: "Feature-based Visual Odometry on Stereo or LiDAR (ICP)"
+date: "2026-04-16"
+categories: [Computer Graphics, Computer Vision, SLAM]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+
+# Solution using SVD
+Suppose we have a set of points $\mathbf{P} = \{p_1, \dots, p_n\}$ and a second set of matched points $\mathbf{P}' = \{p_1', \dots, p_n'\}$. We want to find the rotation $\mathbf{R}$ and translation $\mathbf{t}$ that best aligns $\mathbf{P}'$ onto $\mathbf{P}$.The error for a single pair $i$ is:
+$$\mathbf{e}_i = p_i - (\mathbf{R}p_i' + \mathbf{t})$$
+
+We want to minimize the sum of the squared errors for all $n$ points:
+$$\min_{\mathbf{R}, \mathbf{t}} \frac{1}{2} \sum_{i=1}^{n} \|\mathbf{p}_i - (\mathbf{R}\mathbf{p}_i' + \mathbf{t})\|_2^2$$
+
+**Centroid Trick.** Solving for $\mathbf{R}$ and $\mathbf{t}$ simultaneously is difficult because they are "tangled" together. To fix this, we calculate the centroids (the average position) of both point sets:
+$$\mathbf{p} = \frac{1}{n} \sum_{i=1}^{n} \mathbf{p}_i, \quad \mathbf{p}' = \frac{1}{n} \sum_{i=1}^{n} \mathbf{p}_i'$$
+
+Error after centroid trick:
+$$\frac{1}{2} \sum_{i=1}^{n} \|\mathbf{p}_i - (\mathbf{R}\mathbf{p}_i' + \mathbf{t})\|^2 = \frac{1}{2} \sum_{i=1}^{n} \|\mathbf{p}_i - \mathbf{R}\mathbf{p}_i' - \mathbf{t} - \mathbf{p} + \mathbf{R}\mathbf{p}' + \mathbf{p} - \mathbf{R}\mathbf{p}'\|^2$$
+$$= \frac{1}{2} \sum_{i=1}^{n} \|(\mathbf{p}_i - \mathbf{p} - \mathbf{R} (\mathbf{p}_i' - \mathbf{p}')) + (\mathbf{p} - \mathbf{R}\mathbf{p}' - \mathbf{t})\|^2$$
+$$= \frac{1}{2} \sum_{i=1}^{n} (\|\mathbf{p}_i - \mathbf{p} - \mathbf{R} (\mathbf{p}_i' - \mathbf{p}'))\|^2 + \|\mathbf{p} - \mathbf{R}\mathbf{p}' - \mathbf{t}\|^2 + 2(\mathbf{p}_i - \mathbf{p} - \mathbf{R} (\mathbf{p}_i' - \mathbf{p}'))^T (\mathbf{p} - \mathbf{R}\mathbf{p}' - \mathbf{t})).$$
+
+$(\mathbf{p}_i - \mathbf{p} - \mathbf{R} (\mathbf{p}_i' - \mathbf{p}')) = 0$ because $\sum (\mathbf{p}_i - \mathbf{p}) = 0$ (because $\mathbf{p}$ is the average of $\mathbf{p}_i$) and $\sum (\mathbf{p}_i' - \mathbf{p}') = 0$ (because $\mathbf{p}'$ is the average of $\mathbf{p}_i'$). Therefore:
+
+$$\min_{\mathbf{R}, \mathbf{t}} J = \frac{1}{2} \sum_{i=1}^{n} \underbrace{\|\mathbf{p}_i - \mathbf{p} - \mathbf{R}(\mathbf{p}_i' - \mathbf{p}')\|^2}_{\text{Term 1: Only depends on } \mathbf{R}} + \underbrace{\|\mathbf{p} - \mathbf{R}\mathbf{p}' - \mathbf{t}\|^2}_{\text{Term 2: Depends on both}}$$
+
+* Term 1 only cares about the shape and orientation of the point clouds, not where they are in the world. We can solve for $\mathbf{R}$ here first.
+* Term 2 is trivial. Once we have $\mathbf{R}$, we just pick a $\mathbf{t}$ that makes this term zero. Specifically, $\mathbf{t} = \mathbf{p} - \mathbf{R}\mathbf{p}'$.
+
+To solve Term 1, we define "centered" coordinates (or de-centroid coordinates), effectively moving the center of both point clouds to the origin $(0,0,0)$:$$\mathbf{q}_i = \mathbf{p}_i - \mathbf{p}$$
+$$\mathbf{q}_i' = \mathbf{p}_i' - \mathbf{p}'$$
+
+The optimization for the rotation then becomes:
+$$\mathbf{R}^* = \arg \min_{\mathbf{R}} \frac{1}{2} \sum_{i=1}^{n} \|\mathbf{q}_i - \mathbf{R}\mathbf{q}_i'\|^2$$
+$$\mathbf{R}^* =\arg \min_{\mathbf{R}} \frac{1}{2} \sum_{i=1}^{n} (\mathbf{q}_i^T\mathbf{q}_i + \mathbf{q}_i'^T\mathbf{R}^T\mathbf{R}\mathbf{q}_i' - 2\mathbf{q}_i^T\mathbf{R}\mathbf{q}_i')$$
+
+* $\mathbf{q}_i^T\mathbf{q}_i$: This is just the length of the point from its own center. It doesn't change when we rotate things. (Not relevant).
+* $\mathbf{R}^T\mathbf{R} = \mathbf{I}$: Since $\mathbf{R}$ is an orthogonal rotation matrix, this term simplifies to $\mathbf{q}_i'^T\mathbf{q}_i'$, which is also constant.
+* The only term that changes when we change $\mathbf{R}$ is the last one: $-2\mathbf{q}_i^T\mathbf{R}\mathbf{q}_i'$.
+To minimize a negative number, we must maximize the positive part. So the goal is now:
+$$\max_{\mathbf{R}} \sum_{i=1}^n \mathbf{q}_i^T \mathbf{R} \mathbf{q}_i'$$
+
+A single dot product $\mathbf{a}^T\mathbf{b}$ can be written as the Trace ($\text{tr}$) of a matrix product. Summing all these dot products together allows us to pull the $\mathbf{R}$ out of the summation:
+$$\sum \mathbf{q}_i^T \mathbf{R} \mathbf{q}_i' = \text{tr}\left( \mathbf{R} \sum \mathbf{q}_i' \mathbf{q}_i^T \right)$$
+
+This is brilliant because it turns a "sum of many little problems" into a "single matrix problem."
+
+Now we solve $\mathbf{R}$ by using SVD. Idk why but just see. We define a "Cross-Covariance" matrix $\mathbf{W}$, which represents how the two point clouds are correlated in 3D space:
+$$\mathbf{W} = \sum_{i=1}^n \mathbf{q}_i \mathbf{q}_i'^T$$
+We then perform SVD on this matrix:
+$$\mathbf{W} = \mathbf{U} \mathbf{\Sigma} \mathbf{V}^T$$
+
+Think of $\mathbf{U}$ and $\mathbf{V}$ as the "principal axes" of the two point clouds. To find the rotation that aligns these axes, the mathematical solution is simply:
+$$\mathbf{R} = \mathbf{U}\mathbf{V}^T$$
+
+## Little Explaination on Trace
+The goal is to maximize the alignment between two sets of points. We express this as the sum of their dot products: $\sum \mathbf{q}_i^T (\mathbf{R} \mathbf{q}_i')$.We use two specific properties of the Trace ($\text{tr}$):
+
+* Scalar Property: A single number (like a dot product result) is equal to its own trace: $\mathbf{a}^T\mathbf{b} = \text{tr}(\mathbf{a}^T\mathbf{b})$ (1x1 matrix is still a matrix, **this is exactly the trick!!!**)
+* Cyclic Property: You can move matrices around in a circle inside a trace: $\text{tr}(AB) = \text{tr}(BA)$.
+
+Let’s apply this to one pair of points:
+$$\mathbf{q}_i^T (\mathbf{R} \mathbf{q}_i') = \text{tr}(\mathbf{q}_i^T \mathbf{R} \mathbf{q}_i')$$
+Now, "cycle" $\mathbf{q}_i^T$ to the back:
+$$= \text{tr}(\mathbf{R} \mathbf{q}_i' \mathbf{q}_i^T)$$
+Because the Trace of a sum is the same as the sum of the Traces ($\sum \text{tr} = \text{tr} \sum$), we can pull the constant rotation $\mathbf{R}$ and the Trace operator out of the summation:$$\sum \text{tr}(\mathbf{R} \mathbf{q}_i' \mathbf{q}_i^T) = \text{tr}\left( \mathbf{R} \sum \mathbf{q}_i' \mathbf{q}_i^T \right)$$
+
+> SO this is exactly the trick converting single vectors problem to the whole matrix
+
+The dot product $\mathbf{q}_i^T \mathbf{R} \mathbf{q}_i'$ measures how much point $A$ and point $B$ "agree" on their direction.
+
+* Without the trick: You are asking 100 individual questions: "Does point 1 line up? Does point 2 line up?"
+* With the trick: You condense all the relative directions into one single matrix $\mathbf{W} = \sum \mathbf{q}_i \mathbf{q}_i'^T$. This matrix is like a "summary" of how the two point clouds are oriented relative to each other. The Trace then measures the total "agreement" between $\mathbf{R}$ and that summary.
+
+## Little explaination on SVD
+Why $\mathbf{R} = \mathbf{U}\mathbf{V}^T$? This is known as the Orthogonal Procrustes Problem. Once we have our summary matrix $\mathbf{W}$, we want to find the rotation $\mathbf{R}$ that makes $\text{tr}(\mathbf{R}\mathbf{W})$ as large as possible.
+
+Think of the SVD $\mathbf{W} = \mathbf{U}\mathbf{\Sigma}\mathbf{V}^T$ like this:
+
+* $\mathbf{V}$: "Principal Axes" (the main directions) of the first point cloud.
+* $\mathbf{U}$: "Principal Axes" of the second point cloud.
+* $\mathbf{\Sigma}$: How strongly the features in the first cloud line up with features in the second.
+
+If you want to align two objects, the most logical thing to do is align their axes.
+Multiplying $\mathbf{U}$ by $\mathbf{V}^T$ essentially creates a map that says: "Take the X-axis of cloud A and point it toward the X-axis of cloud B."
+
+So to formalize, we want to maximize $\text{tr}(\mathbf{R}\mathbf{U}\mathbf{\Sigma}\mathbf{V}^T)$. Using the cyclic property again, this is $\text{tr}(\mathbf{\Sigma}\mathbf{V}^T\mathbf{R}\mathbf{U})$.Let’s define a new matrix $\mathbf{Z} = \mathbf{V}^T\mathbf{R}\mathbf{U}$.Since $\mathbf{V}, \mathbf{R}, \text{and } \mathbf{U}$ are all orthogonal matrices, $\mathbf{Z}$ must also be an orthogonal matrix.The maximum possible value for any entry in an orthogonal matrix is $1$.To maximize the trace (the sum of the diagonal), we want $\mathbf{Z}$ to be the Identity Matrix ($\mathbf{I}$).If $\mathbf{Z} = \mathbf{I}$, then:
+$$\mathbf{I} = \mathbf{V}^T\mathbf{R}\mathbf{U}$$
+$$\mathbf{V}\mathbf{I}\mathbf{U}^T = \mathbf{R}$$
+$$\mathbf{R} = \mathbf{U}\mathbf{V}^T$$
+
+**Why do we ignore $\mathbf{\Sigma}$ for Rotation?**
+If I want to tell you how to rotate a football to match another football, I only need to tell you which way the "long ends" should point ($\mathbf{U}$ and $\mathbf{V}$). I don't care how long the football actually is ($\mathbf{\Sigma}$).
+
+**What exactly is $\mathbf{\Sigma}$?**
+Think of $\mathbf{\Sigma}$ as a measure of "Common Signal Strength.". $\sigma_i$ is effectively the sum of the projections of the points onto those axes.$$\sigma_i = \sum (\text{Point } i \text{'s position on axis } v) \cdot (\text{Point } i \text{'s position on axis } u)$$
+If both clouds have points very far out on their respective axes, $\sigma$ is huge. If one cloud is "flat" in a direction where the other is "tall," $\sigma$ will be tiny.
+
+# SOlution using Non-linear Optimization
+ICP so well-solved using SVD when matching pairs are known. But sometimes, we don't have perfect matching pairs. Because in some cases, such as in RGB-D SLAM, the depth of a pixel may or may not be measured, so we can combine PnP and ICP optimization. For feature points with known depth, model their 3D-3D errors; for feature points with unknown depths, model 3D-2D reprojection errors. 
+
+Instead of centroids and traces, we write the error directly in terms of the Lie Algebra $\xi \in \mathfrak{se}(3)$. We want to find the pose that minimizes the squared distance between the fixed points $\mathbf{p}_i$ and the transformed points:
+$$\min_{\boldsymbol{\xi}} \frac{1}{2} \sum_{i=1}^n \|\mathbf{p}_i - \exp(\boldsymbol{\xi}^\wedge) \mathbf{p}_i'\|_2^2$$
+
+* $\exp(\boldsymbol{\xi}^\wedge)$: This is just the matrix $\mathbf{T}$. We write it this way because we want to optimize the 6 variables in the vector $\boldsymbol{\xi}$ (3 for translation, 3 for rotation).
+* $\mathbf{p}_i'$: The point in the "moving" frame.
+* $\mathbf{p}_i$: The target point in the "fixed" frame.
+
+To use Gauss-Newton, we need to know how the error changes if we wiggle the pose by a tiny perturbation $\delta \boldsymbol{\xi}$.
+$$\frac{\partial \mathbf{e}}{\partial \delta \boldsymbol{\xi}} = -(\exp(\boldsymbol{\xi}^\wedge) \mathbf{p}_i')^\odot$$
+
+Derivative step-by-step:
+
+* The Error: $\mathbf{e} = \mathbf{p}_i - \mathbf{T} \mathbf{p}_i'$.
+* The Transformation: Let $\mathbf{P}_i^{inv} = \mathbf{T} \mathbf{p}_i'$ be the point transformed into the target frame.
+* The Perturbation: We wiggle the pose: $\mathbf{e} = \mathbf{p}_i - \exp(\delta \boldsymbol{\xi}^\wedge) \mathbf{P}_i^{inv}$.
+* The Result: Since the derivative of $(\mathbf{I} + \delta \boldsymbol{\xi}^\wedge)\mathbf{P}_i^{inv}$ with respect to $\delta \boldsymbol{\xi}$ is the "odot" operator, and we have a negative sign in front of the transformation, we get:
+$$\frac{\partial \mathbf{e}}{\partial \delta \boldsymbol{\xi}} = - \begin{bmatrix} \mathbf{I} & -(\mathbf{P}_i^{inv})^\wedge \\ \mathbf{0}^T & \mathbf{0}^T \end{bmatrix}$$
+
+Dropping the homogeneous dimension (the bottom row), we get the $3 \times 6$ matrix:
+$$\frac{\partial \mathbf{e}}{\partial \delta \boldsymbol{\xi}} = - \begin{bmatrix} \mathbf{I} & -(\mathbf{P}_i^{inv})^\wedge \end{bmatrix}$$
