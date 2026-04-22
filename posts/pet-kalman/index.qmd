@@ -7,7 +7,6 @@ format:
     toc: true
     code-fold: true
     math: mathjax
-draft: true
 ---
 # Kalman Filter
 

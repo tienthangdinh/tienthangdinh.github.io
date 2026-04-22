@@ -139,5 +139,8 @@
   },
   "posts/slam-visualodometry_opticalflow/index.qmd": {
     "index.html": "d99f4c61"
+  },
+  "posts/slam-state_estimation/index.qmd": {
+    "index.html": "704ef47c"
   }
 }

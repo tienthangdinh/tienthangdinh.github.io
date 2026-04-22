@@ -1,0 +1,329 @@
+---
+title: "State Estimation"
+date: "2026-04-21"
+categories: [State Estimation, SLAM]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+# Formulation
+In all other blogs, we usually use $\mathbf{x}$ to denote **only** the camera pose. In SLAM, we don't just want to know where we are; we want to know where everything else is too. We pack them all into one giant vector to optimize them together:$$\mathbf{x}_k \triangleq \{ \mathbf{x}_k, \mathbf{y}_1, \dots, \mathbf{y}_m \} \tag{8.2}$$
+
+Every SLAM system, whether it uses a Kalman Filter or Optimization, is built on these two pillars:
+
+* **Prediction (Motion Model):**
+$$\mathbf{x}_k = f(\mathbf{x}_{k-1}, \mathbf{u}_k) + \mathbf{w}_k$$
+* **Correction (Measurement Model):**
+$$\mathbf{z}_k = h(\mathbf{x}_k) + \mathbf{v}_k$$
+
+We want to find the probability distribution of the state $\mathbf{x}_k$ given all our past inputs ($\mathbf{u}$) and observations ($\mathbf{z}$):$$P(\mathbf{x}_k | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k})$$
+In SLAM, we are always working with Conditional Bayes, where everything is already dependent on our "history" (let's call the history $H$):$$P(A|B, H) = \frac{P(B|A, H) P(A|H)}{P(B|H)}$$
+We want the probability of our position using both measurement and history:$$P(\mathbf{x}_k | \mathbf{z}_k, H)$$
+
+Using Conditiona Bayes to "flip" the problem between $\mathbf{z}_k$ and $\mathbf{x}_k$:$$P(\mathbf{x}_k | \mathbf{z}_k, H) = \frac{P(\mathbf{z}_k | \mathbf{x}_k, H) P(\mathbf{x}_k | H)}{P(\mathbf{z}_k | H)}$$
+
+Look at the term $P(\mathbf{z}_k | \mathbf{x}_k, H)$. The measurement, physics of camera etc are not dependent on our history. It is true that in BA, we maximize the samt $P(\mathbf{x}_1, \dots, \mathbf{x}_k, \mathbf{y}_1, \dots, \mathbf{y}_m | \mathbf{z}_{1:k})$,  **but inside each frame $z_{i,j}$ only depends on $x_i$ and $y_j$** :
+$$P(\mathbf{z}_k | \mathbf{x}_k, H) \approx P(\mathbf{z}_k | \mathbf{x}_k)$$
+
+The denominator $P(\mathbf{z}_k | H)$ is just the probability of seeing those specific pixels regardless of where you are. Since it doesn't depend on our variable $\mathbf{x}_k$, we treat it as a constant:$$P(\mathbf{x}_k | \mathbf{z}_k, H) \propto P(\mathbf{z}_k | \mathbf{x}_k) P(\mathbf{x}_k | H)$$
+Which is:
+$$P(\mathbf{x}_k | \dots) \propto \underbrace{P(\mathbf{z}_k | \mathbf{x}_k)}_{\text{Likelihood}} \underbrace{P(\mathbf{x}_k | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1})}_{\text{Prior}}$$
+
+* **Likelihood**: "How well does my current guess explain the pixels I am seeing right now?" (reprojection/photometric error in previous blog).
+* **Prior**: "What did I think my position was before I opened my eyes in this frame, based on my previous movement?". And the prior itself is also not sure:
+$$P(\mathbf{x}_k | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) = \int P(\mathbf{x}_k | \mathbf{x}_{k-1}, \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) P(\mathbf{x}_{k-1} | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) d\mathbf{x}_{k-1}$$
+
+
+There are 2 approaches to solve this problem:
+
+* Filtering Method (EKF) faster but less accurate
+* Optimization Method (Batch/Nonlinear) slower but more accurate
+
+# Linear State Estimation - KF
+Let's look back at this:
+$$P(\mathbf{x}_k | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) = \int P(\mathbf{x}_k | \mathbf{x}_{k-1}, \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) P(\mathbf{x}_{k-1} | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) d\mathbf{x}_{k-1}$$
+
+Simplifying the Motion Model: **Markov property** If we know the previous state $\mathbf{x}_{k-1}$ and the current command $\mathbf{u}_k$, the rest of the history is irrelevant:$$P(\mathbf{x}_k | \mathbf{x}_{k-1}, \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) = P(\mathbf{x}_k | \mathbf{x}_{k-1}, \mathbf{u}_k)$$
+
+Simplifying the Previous Distribution:The distribution at $k-1$ doesn't care about the command $\mathbf{u}_k$ we just gave (because the command hasn't happened yet in that timeframe):$$P(\mathbf{x}_{k-1} | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) = P(\mathbf{x}_{k-1} | \mathbf{x}_0, \mathbf{u}_{1:k-1}, \mathbf{z}_{1:k-1})$$
+
+We assume the robot's life follows these two linear equations:$$\begin{cases} \mathbf{x}_k = \mathbf{A}_k \mathbf{x}_{k-1} + \mathbf{u}_k + \mathbf{w}_k \\ \mathbf{z}_k = \mathbf{C}_k \mathbf{x}_k + \mathbf{v}_k \end{cases} $$
+
+* $\mathbf{A}_k$: State transition matrix (how the robot moves).
+* $\mathbf{C}_k$: Observation matrix (how the camera sees).
+* $\mathbf{w}_k, \mathbf{v}_k$: Random noise.
+
+We assume this noise is Zero-mean Gaussian:$$\mathbf{w}_k \sim N(\mathbf{0}, \mathbf{R}), \quad \mathbf{v}_k \sim N(\mathbf{0}, \mathbf{Q})$$
+
+* $\hat{\mathbf{x}}_k$ (Up Hat): The Posterior. This is our best guess after looking at the camera image.
+* $\check{\mathbf{x}}_k$ (Down Hat): The Prior. This is our best guess after moving, but before looking at the camera image.
+
+**Step 1: PREDICTION**
+
+We take our previous best guess ($\hat{\mathbf{x}}_{k-1}$ and its uncertainty $\hat{\mathbf{P}}_{k-1}$) and push it through the motion equation.The Probability Distribution:$$P(\mathbf{x}_k | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) = N(\mathbf{A}_k \hat{\mathbf{x}}_{k-1} + \mathbf{u}_k, \mathbf{A}_k \hat{\mathbf{P}}_{k-1} \mathbf{A}_k^T + \mathbf{R})$$
+
+The Practical Update Formulas:$$\check{\mathbf{x}}_k = \mathbf{A}_k \hat{\mathbf{x}}_{k-1} + \mathbf{u}_k, \quad \check{\mathbf{P}}_k = \mathbf{A}_k \hat{\mathbf{P}}_{k-1} \mathbf{A}_k^T + \mathbf{R}$$
+
+Intuition: Notice that $\check{\mathbf{P}}_k$ (the new uncertainty) is the old uncertainty plus $\mathbf{R}$ (the motion noise). **"The more you move without looking, the more lost you get."**
+
+Then, we define what we expect to see. If we are at state $\mathbf{x}_k$, our camera should see:$$P(\mathbf{z}_k | \mathbf{x}_k) = N(\mathbf{C}_k \mathbf{x}_k, \mathbf{Q})$$
+
+**Step 2: UPDATE** We have a Prior (our guess after moving) and a Likelihood (what the camera sees). Now, we multiply them together to get the Posterior (the final, best estimate).
+We want the posterior distribution $N(\hat{\mathbf{x}}_k, \hat{\mathbf{P}}_k)$. According to Bayes' rule, this is the product of the likelihood and the prior:$$N(\hat{\mathbf{x}}_k, \hat{\mathbf{P}}_k) = \eta N(\mathbf{C}_k \mathbf{x}_k, \mathbf{Q}) \cdot N(\mathbf{x}_k, \check{\mathbf{P}}_k)$$$\eta$: A normalization constant (to make sure the probability area sums to 1).
+
+The Goal now: Find the new mean ($\hat{\mathbf{x}}_k$) and new covariance ($\hat{\mathbf{P}}_k$).
+
+The exponent of a Gaussian $N(\mu, \Sigma)$ is $-\frac{1}{2}(x - \mu)^T \Sigma^{-1} (x - \mu)$. Since we are multiplying Gaussians, we add their exponents. To find the new parameters, we compare the coefficients of the quadratic terms:$$(\mathbf{x}_k - \hat{\mathbf{x}}_k)^T \hat{\mathbf{P}}_k^{-1} (\mathbf{x}_k - \hat{\mathbf{x}}_k) = (\mathbf{z}_k - \mathbf{C}_k \mathbf{x}_k)^T \mathbf{Q}^{-1} (\mathbf{z}_k - \mathbf{C}_k \mathbf{x}_k) + (\mathbf{x}_k - \check{\mathbf{x}}_k)^T \check{\mathbf{P}}_k^{-1} (\mathbf{x}_k - \check{\mathbf{x}}_k)$$
+
+By looking at the terms containing $\mathbf{x}_k^2$ (the second-order coefficients), we find the Information Matrix (the inverse of the covariance):$$\hat{\mathbf{P}}_k^{-1} = \mathbf{C}_k^T \mathbf{Q}^{-1} \mathbf{C}_k + \check{\mathbf{P}}_k^{-1}$$
+
+Intuition: Information adds up! The "sureness" of your final position is the "sureness" of your move plus the "sureness" of your camera. This is why the final $\hat{\mathbf{P}}_k$ is always smaller (more certain) than either the prior or the likelihood alone.
+
+To make this easier to compute, we defines the Kalman Gain (K):$$\mathbf{K} = \hat{\mathbf{P}}_k \mathbf{C}_k^T \mathbf{Q}^{-1}$$
+
+Using some matrix algebra, we get the standard update for the covariance:$$\hat{\mathbf{P}}_k = (\mathbf{I} - \mathbf{K} \mathbf{C}_k) \check{\mathbf{P}}_k$$
+
+By comparing the first-order coefficients (the terms with just $\mathbf{x}_k$), we find how the mean shifts:$$\hat{\mathbf{P}}_k^{-1} \hat{\mathbf{x}}_k = \mathbf{C}_k^T \mathbf{Q}^{-1} \mathbf{z}_k + \check{\mathbf{P}}_k^{-1} \check{\mathbf{x}}_k$$
+
+After substituting the Kalman Gain $\mathbf{K}$ and rearranging, we reach the famous Kalman Filter update equation:$$\hat{\mathbf{x}}_k = \check{\mathbf{x}}_k + \mathbf{K}(\mathbf{z}_k - \mathbf{C}_k \check{\mathbf{x}}_k)$$
+
+Explaination:
+
+* $(\mathbf{z}_k - \mathbf{C}_k \check{\mathbf{x}}_k)$: This is the Innovation (or Residual). it is the difference between what the camera actually saw ($\mathbf{z}_k$) and what we expected it to see ($\mathbf{C}_k \check{\mathbf{x}}_k$).
+* $\mathbf{K}$: This is the Trust Factor.If the camera is very noisy ($\mathbf{Q}$ is huge), $\mathbf{K}$ becomes small. We ignore the camera and stay with our prior guess.If the camera is perfect ($\mathbf{Q}$ is zero), $\mathbf{K}$ becomes large. We ignore our prior and jump to whatever the camera says.
+* The Update: Your new position is your old guess + (The Kalman Gain $\times$ The Prediction Error).
+* You might notice that $\hat{\mathbf{P}}_k^{-1} = \mathbf{C}_k^T \mathbf{Q}^{-1} \mathbf{C}_k + \check{\mathbf{P}}_k^{-1}$ looks very similar to the $\mathbf{J}^T \mathbf{J}$ we saw in Gauss-Newton. The Kalman Filter is indeed doing one single step of Gauss-Newton every time a new image arrives.
+
+## Sum up Kalman Filter Algorithm
+1. Predict (Motion Update)
+We project our current state and uncertainty forward in time using the motion model.
+$$
+\begin{aligned}
+\check{\mathbf{x}}_k &= \mathbf{A}_k \hat{\mathbf{x}}_{k-1} + \mathbf{u}_k \\
+\check{\mathbf{P}}_k &= \mathbf{A}_k \hat{\mathbf{P}}_{k-1} \mathbf{A}_k^T + \mathbf{R}
+\end{aligned}
+$$
+
+2. Update (Measurement Update)
+First, we calculate the Kalman Gain ($\mathbf{K}$), which determines how much we trust the new sensor data versus our internal prediction:
+$$
+\mathbf{K} = \check{\mathbf{P}}_k \mathbf{C}_k^T (\mathbf{C}_k \check{\mathbf{P}}_k \mathbf{C}_k^T + \mathbf{Q}_k)^{-1}
+$$
+Then, we calculate the Posterior state and covariance:
+$$
+\begin{aligned}
+\hat{\mathbf{x}}_k &= \check{\mathbf{x}}_k + \mathbf{K}(\mathbf{z}_k - \mathbf{C}_k \check{\mathbf{x}}_k) \\
+\hat{\mathbf{P}}_k &= (\mathbf{I} - \mathbf{K} \mathbf{C}_k) \check{\mathbf{P}}_k
+\end{aligned}
+$$
+
+## Explaination:
+Your question would be, how did we come from $$P(\mathbf{x}_k | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) = \int P(\mathbf{x}_k | \mathbf{x}_{k-1}, \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) P(\mathbf{x}_{k-1} | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) d\mathbf{x}_{k-1}$$
+to
+$$\begin{cases} \mathbf{x}_k = \mathbf{A}_k \mathbf{x}_{k-1} + \mathbf{u}_k + \mathbf{w}_k \\ \mathbf{z}_k = \mathbf{C}_k \mathbf{x}_k + \mathbf{v}_k \end{cases} $$
+
+Firstly, $\mathbf{x}_k = \mathbf{A}_k \mathbf{x}_{k-1} + \mathbf{u}_k + \mathbf{w}_k$ is the probability $P(\mathbf{x}_k | \mathbf{x}_{k-1}, \mathbf{u}_k)$.
+
+* The Mean of the probability is $\mathbf{A}_k \mathbf{x}_{k-1} + \mathbf{u}_k$ (where we expect to land).
+* The Variance (the spread of the cloud) is determined by the noise term $\mathbf{w}_k$.
+
+Secondly, The term $P(\mathbf{x}_{k-1} | \mathbf{x}_0, \mathbf{u}_{1:k-1}, \mathbf{z}_{1:k-1}) d\mathbf{x}_{k-1}$ represents all the result points of the previous frame. It is the bell curve (Gaussian) that the robot calculated at time $k-1$. And you know, we dont save all points like that, we summarize them into two variables:
+
+* $\hat{\mathbf{x}}_{k-1}$: The mean (the center of the earlier point).
+* $\hat{\mathbf{P}}_{k-1}$: The covariance (how dense the distribution is).
+
+AND EVENTUALLY, both things above are collapsed into this:
+
+* The center of the distribution: $\hat{\mathbf{x}}_{k-1}$ (in: $\check{\mathbf{x}}_k = \mathbf{A}_k \hat{\mathbf{x}}_{k-1} + \mathbf{u}_k$ ) 
+* The width of the distribution: $\hat{\mathbf{P}}_{k-1}$ (in: $\check{\mathbf{P}}_k = \mathbf{A}_k \hat{\mathbf{P}}_{k-1} \mathbf{A}_k^T + \mathbf{R}$ ) 
+
+
+# Non-linear Kalman Filter (EKF)
+But u know, in reality, camera projections (division by $Z$) and rotations ($SE(3)$ or Quaternions) are "curvy" functions. If you push Gaussian bell curve through a "curvy" function, the output is no longer Gaussian. Since the Kalman Filter only knows how to handle bell curves, we have a problem. To keep the math fast and "Gaussian," the EKF uses a trick: Taylor Expansion. We pretend the function is a straight line, but only for a tiny, local area around our current guess.
+
+Instead of the simple $\mathbf{A}x$ and $\mathbf{C}x$, we now have general nonlinear functions:
+
+* Motion: $\mathbf{x}_k = f(\mathbf{x}_{k-1}, \mathbf{u}_k) + \mathbf{w}_k$
+* Observation: $\mathbf{z}_k = h(\mathbf{x}_k) + \mathbf{n}_k$
+
+To make these "linear," we perform a First-order Taylor Expansion at our current best estimate. And you know, first order is always linear.
+
+**The Motion Model Approximation** We expand around the previous posterior $\hat{\mathbf{x}}_{k-1}$:$$\mathbf{x}_k \approx f(\hat{\mathbf{x}}_{k-1}, \mathbf{u}_k) + \frac{\partial f}{\partial \mathbf{x}_{k-1}}\bigg|_{\hat{\mathbf{x}}_{k-1}} (\mathbf{x}_{k-1} - \hat{\mathbf{x}}_{k-1}) + \mathbf{w}_k$$
+$$\mathbf{x}_k \approx \underbrace{f(\hat{\mathbf{x}}_{k-1}, \mathbf{u}_k)}_{\text{Center Move}} + \underbrace{\mathbf{F} \cdot (\text{Deviation from Center})}_{\text{Cloud Stretching}}$$
+
+$(\mathbf{x}_{k-1} - \hat{\mathbf{x}}_{k-1})$ is the "Error" or the "Deviation" from our mean. Our robot thinks it is at the center of a bell curve ($\hat{\mathbf{x}}_{k-1}$). But the bell curve has "width." in different direction. The term $(\mathbf{x}_{k-1} - \hat{\mathbf{x}}_{k-1})$ represents any random point inside that cloud relative to the center. So yes, we take the "width" of our old uncertainty and multiply it by the slope ($\mathbf{F}$) to see how much the cloud "stretches" or "squashes" during the move.
+ 
+Jacobian Matrix for $f$ is $\mathbf{F}$. It now plays the role of the matrix $\mathbf{A}$ from the linear version.
+$$\mathbf{F} = \frac{\partial f}{\partial \mathbf{x}_{k-1}}\bigg|_{\hat{\mathbf{x}}_{k-1}}$$
+
+**The Observation Model Approximation** Exactly the same way, we expand the camera's observation function around our predicted state $\check{\mathbf{x}}_k$:$$\mathbf{z}_k \approx h(\check{\mathbf{x}}_k) + \frac{\partial h}{\partial \mathbf{x}_k}\bigg|_{\check{\mathbf{x}}_k} (\mathbf{x}_k - \check{\mathbf{x}}_k) + \mathbf{n}_k$$
+
+Just like we found the slope of the motion ($\mathbf{F}$), we now find the slope of the camera observation function $h$ at our predicted position $\check{\mathbf{x}}_k$:$$\mathbf{H} = \frac{\partial h}{\partial \mathbf{x}_k} \bigg|_{\check{\mathbf{x}}_k}$$
+
+Remember that giant $2 \times 6$ matrix we talked about in the Direct Method in an earlier blog?$\mathbf{J} = \frac{\partial \mathbf{u}}{\partial \delta \xi}$. That IS the Jacobian for the observation model $H$, you are literally plugging in those geometric derivatives.
+
+**1. Prediction**
+We move the center of our distribution through the "curvy" reality, but we stretch the uncertainty as if it were a straight line:$$P(\mathbf{x}_k | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{0:k-1}) = N(f(\hat{\mathbf{x}}_{k-1}, \mathbf{u}_k), \mathbf{F}\hat{\mathbf{P}}_{k-1}\mathbf{F}^T + \mathbf{R}_k)$$
+
+In practical terms:
+
+* Predicted Mean: $\check{\mathbf{x}}_k = f(\hat{\mathbf{x}}_{k-1}, \mathbf{u}_k)$
+* Predicted Covariance: $\check{\mathbf{P}}_k = \mathbf{F}\hat{\mathbf{P}}_{k-1}\mathbf{F}^T + \mathbf{R}_k$
+
+**2. Update**
+Now we "open our eyes" and look at the camera image $\mathbf{z}_k$. We calculate the Kalman Gain, substituting our Jacobian $\mathbf{H}$ for the old linear matrix $\mathbf{C}$:$$\mathbf{K}_k = \check{\mathbf{P}}_k \mathbf{H}^T (\mathbf{H}\check{\mathbf{P}}_k \mathbf{H}^T + \mathbf{Q}_k)^{-1}$$
+
+Finally, we update our guess to get the Posterior:
+$$\hat{\mathbf{x}}_k = \check{\mathbf{x}}_k + \mathbf{K}_k(\mathbf{z}_k - h(\check{\mathbf{x}}_k))$$
+$$\hat{\mathbf{P}}_k = (\mathbf{I} - \mathbf{K}_k \mathbf{H}) \check{\mathbf{P}}_k$$
+
+**Observation:**
+* We use the linear Jacobian $\mathbf{H}$ to decide how much to trust the sensor.
+* But we use the nonlinear projection $h$ to calculate the actual error.
+* This "hybrid" approach helps the EKF stay much more accurate than if it were purely linear.
+
+# Bundle Adjustment
+While the EKF (from the previous section) tries to "summarize" the past into a single state, BA keeps all the original data and wiggles everything—poses and points—until they fit together perfectly. Let's see how it works.
+
+## Camera Projection Model
+To formulate error,let's start with a 3D point $\mathbf{p}$ becomes a 2D pixel $\mathbf{z}$. This is the "Observation Equation" $h(\mathbf{x}, \mathbf{y})$ broken down into its physics steps.
+
+**Step 1: World to Camera Frame** Transform the 3D point $\mathbf{p}$ using the camera's rotation $\mathbf{R}$ and translation $\mathbf{t}$:$$\mathbf{P}' = \mathbf{R}\mathbf{p} + \mathbf{t} = [X', Y', Z']^T$$
+
+**Step 2: Projection to Normalized Plane**Divide by depth ($Z'$) to get coordinates on the virtual plane 1 meter away from the lens:$$\mathbf{P}_c = [u_c, v_c, 1]^T = [X'/Z', Y'/Z', 1]^T$$
+
+**Step 3: Distortion** Distortion coefficients $k_1, k_2$ (Note: $r_c^2 = u_c^2 + v_c^2$ is the squared distance from the center).:$$\begin{cases} u'_c = u_c(1 + k_1r_c^2 + k_2r_c^4) \\ v'_c = v_c(1 + k_1r_c^2 + k_2r_c^4) \end{cases}$$
+
+**Step 4: Intrinsics to Pixel Coordinates** Use the focal lengths ($f_x, f_y$) and principal point ($c_x, c_y$) to find the final pixel address:$$\begin{cases} u_s = f_x u'_c + c_x \\ v_s = f_y v'_c + c_y \end{cases}$$
+
+**Summarize**: If we group all the camera parameters (like pose $\mathbf{T}$ and intrinsics) as $\mathbf{x}$ and the 3D landmark positions as $\mathbf{y}$, we can summarize all four steps above into one function $h$:$$\mathbf{z} = h(\mathbf{x}, \mathbf{y})$$
+
+In a perfect world, your camera would see the landmark exactly where $h(\mathbf{x}, \mathbf{y})$ says it should be. In reality, noise makes them different. We define the Reprojection Error ($\mathbf{e}$):$$\mathbf{e} = \mathbf{z} - h(\mathbf{T}, \mathbf{p})$$
+
+Our goal is to minimize the sum of all squared errors:$$\frac{1}{2} \sum_{i=1}^m \sum_{j=1}^n \|\mathbf{e}_{ij}\|^2 = \frac{1}{2} \sum_{i=1}^m \sum_{j=1}^n \|\mathbf{z}_{ij} - h(\mathbf{T}_i, \mathbf{p}_j)\|^2$$
+
+## Solve BA
+In BA, our unknown variable $\mathbf{x}$ is a giant vector containing every camera pose and every 3D landmark.$$\mathbf{x} = [\mathbf{T}_1, \dots, \mathbf{T}_m, \mathbf{p}_1, \dots, \mathbf{p}_n]^T$$
+
+To solve this using Gauss-Newton, we need to find an increment $\Delta \mathbf{x}$ that reduces the error. We split this increment into two parts:
+
+* $\Delta \mathbf{x}_c$: The update for all $m$ camera poses (in Lie Algebra $\mathfrak{se}(3)$).
+* $\Delta \mathbf{x}_p$: The update for all $n$ 3D point positions.
+
+The cost function is the sum of all reprojection errors. We use a Taylor expansion to linearize it. For a single observation of point $j$ by camera $i$, the error becomes:$$\frac{1}{2} \|f(\mathbf{x} + \Delta\mathbf{x})\|^2 \approx \frac{1}{2} \sum_{i=1}^m \sum_{j=1}^n \|\mathbf{e}_{ij} + \mathbf{F}_{ij}\Delta\xi_i + \mathbf{E}_{ij}\Delta\mathbf{p}_j\|^2$$
+
+* $\mathbf{F}_{ij}$: "If I wiggle the $i$-th camera pose ($\delta\xi_i$), how much does the $j$-th pixel move?"
+* $\mathbf{E}_{ij}$: "If I wiggle the $j$-th 3D point ($\Delta \mathbf{p}_j$), how much does its projection move on the $i$-th camera's sensor?"
+
+When we stack all these observations into one large matrix, the equation simplifies to:$$\frac{1}{2} \|f(\mathbf{x} + \Delta\mathbf{x})\|^2 = \frac{1}{2} \|\mathbf{e} + \mathbf{F}\Delta\mathbf{x}_c + \mathbf{E}\Delta\mathbf{x}_p\|^2$$
+
+To find the best Gradient and $\Delta\mathbf{x}$, we solve the linear system derived from the Gauss-Newton or Levenberg-Marquardt method:$$\mathbf{H}\Delta\mathbf{x} = \mathbf{g}$$
+
+* $\mathbf{H}$: The Hessian matrix (Information Matrix).
+* $\mathbf{g}$: The Gradient vector.
+
+Since we categorized the variables into poses and landmarks. We define the global Jacobian $\mathbf{J}$ by placing the camera Jacobians and point Jacobians side-by-side:$$\mathbf{J} = [\mathbf{F} \quad \mathbf{E}]$$
+$$\mathbf{J} = \left[ \begin{array}{ccc|ccc} \mathbf{F}_{11} & \mathbf{0} & \dots & \mathbf{E}_{11} & \mathbf{0} & \dots \\ \mathbf{0} & \mathbf{F}_{21} & \dots & \mathbf{E}_{21} & \dots & \dots \\ \vdots & \vdots & \ddots & \vdots & \vdots & \ddots \end{array} \right]$$
+
+The Hessian matrix $\mathbf{H}$ is built by multiplying $\mathbf{J}^T \mathbf{J}$. This results in a very specific block-matrix structure:$$\mathbf{H} = \mathbf{J}^T \mathbf{J} = \begin{bmatrix} \mathbf{F}^T\mathbf{F} & \mathbf{F}^T\mathbf{E} \\ \mathbf{E}^T\mathbf{F} & \mathbf{E}^T\mathbf{E} \end{bmatrix}$$
+
+* $\mathbf{F}^T\mathbf{F}$: Interactions between cameras.
+* $\mathbf{E}^T\mathbf{E}$: Interactions between landmarks.
+* The Off-Diagonals: The constraints that connect cameras to landmarks.
+
+You know, H is a huge huge huge matrix. But it is mostly sparse, so in next chapter we solve uisng Schur Complement.
+
+## More explaination on E and F
+
+### Derivation
+Main idea, we need to see how the error $\mathbf{e}$ changes when we wiggle the landmark $\mathbf{p}$ or the camera pose $\mathbf{T}$.Let's break down the projection $h(\mathbf{T}, \mathbf{p})$ into two main layers:
+
+* Geometry Layer: The 3D point in world coordinates $\mathbf{p}$ is moved to the camera frame $\mathbf{P}' = [X', Y', Z']^T$.
+* Projection Layer: The camera-frame point $\mathbf{P}'$ is projected into pixel coordinates $\mathbf{u} = [u, v]^T$.
+
+### The Common Starting Component
+ $\frac{\partial \mathbf{u}}{\partial \mathbf{P}'}$Both $\mathbf{F}$ and $\mathbf{E}$ share a middle step: How do pixel coordinates change if the 3D point inside the camera frame moves?From the projection equations $u = f_x \frac{X'}{Z'} + c_x$ and $v = f_y \frac{Y'}{Z'} + c_y$, we take the partial derivatives with respect to $X', Y', Z'$:$$\frac{\partial \mathbf{u}}{\partial \mathbf{P}'} = \begin{bmatrix} \frac{\partial u}{\partial X'} & \frac{\partial u}{\partial Y'} & \frac{\partial u}{\partial Z'} \\ \frac{\partial v}{\partial X'} & \frac{\partial v}{\partial Y'} & \frac{\partial v}{\partial Z'} \end{bmatrix} = \begin{bmatrix} \frac{f_x}{Z'} & 0 & -\frac{f_x X'}{Z'^2} \\ 0 & \frac{f_y}{Z'} & -\frac{f_y Y'}{Z'^2} \end{bmatrix}$$
+
+### Deriving $\mathbf{E}$ (Landmark Jacobian)
+
+$\mathbf{E}$ is the derivative of the error with respect to the 3D world point $\mathbf{p}$.Since $\mathbf{e} = \mathbf{z} - h(\mathbf{T}, \mathbf{p})$, the Jacobian is $-\frac{\partial h}{\partial \mathbf{p}}$.The Chain Rule:$$\mathbf{E} = - \frac{\partial \mathbf{u}}{\partial \mathbf{P}'} \cdot \frac{\partial \mathbf{P}'}{\partial \mathbf{p}}$$
+
+We already have the first part. For the second part, since $\mathbf{P}' = \mathbf{R}\mathbf{p} + \mathbf{t}$, the derivative with respect to $\mathbf{p}$ is simply the rotation matrix $\mathbf{R}$.The Final Result for $\mathbf{E}$ has size $2 \times 3$:$$\mathbf{E} = - \begin{bmatrix} \frac{f_x}{Z'} & 0 & -\frac{f_x X'}{Z'^2} \\ 0 & \frac{f_y}{Z'} & -\frac{f_y Y'}{Z'^2} \end{bmatrix} \mathbf{R}$$
+
+
+### Deriving $\mathbf{F}$ (Camera Jacobian)
+$\mathbf{F}$ is the derivative of the error with respect to the camera pose perturbation $\delta\xi \in \mathfrak{se}(3)$.The Chain Rule:$$\mathbf{F} = - \frac{\partial \mathbf{u}}{\partial \mathbf{P}'} \cdot \frac{\partial \mathbf{P}'}{\partial \delta \xi}$$
+
+From Lie Algebra, we know that if we apply a tiny left-multiplication perturbation $\exp(\delta\xi^\wedge)$ to the transformation, the derivative of the transformed point $\mathbf{P}'$ with respect to the perturbation is:$$\frac{\partial \mathbf{P}'}{\partial \delta \xi} = [\mathbf{I} \quad -\mathbf{P}'^\wedge] = \begin{bmatrix} 1 & 0 & 0 & 0 & Z' & -Y' \\ 0 & 1 & 0 & -Z' & 0 & X' \\ 0 & 0 & 1 & Y' & -X' & 0 \end{bmatrix}$$Now, multiply the two matrices together:$$\mathbf{F} = - \begin{bmatrix} \frac{f_x}{Z'} & 0 & -\frac{f_x X'}{Z'^2} \\ 0 & \frac{f_y}{Z'} & -\frac{f_y Y'}{Z'^2} \end{bmatrix} \begin{bmatrix} 1 & 0 & 0 & 0 & Z' & -Y' \\ 0 & 1 & 0 & -Z' & 0 & X' \\ 0 & 0 & 1 & Y' & -X' & 0 \end{bmatrix}$$The Final Result for $\mathbf{F}$:After performing the matrix multiplication, you get the $2 \times 6$ matrix:$$\mathbf{F} = - \begin{bmatrix} \frac{f_x}{Z'} & 0 & -\frac{f_x X'}{Z'^2} & -\frac{f_x X' Y'}{Z'^2} & f_x + \frac{f_x X'^2}{Z'^2} & -\frac{f_x Y'}{Z'} \\ 0 & \frac{f_y}{Z'} & -\frac{f_y Y'}{Z'^2} & -f_y - \frac{f_y Y'^2}{Z'^2} & \frac{f_y X' Y'}{Z'^2} & \frac{f_y X'}{Z'} \end{bmatrix}$$
+
+### Example
+* Camera Intrinsics ($\mathbf{K}$): $f_x = 500, f_y = 500, c_x = 320, c_y = 240$.
+* 3D Point ($\mathbf{p}$): $[1, 1, 5]^T$ in the camera frame. (So $X'=1, Y'=1, Z'=5$).
+* Camera Pose ($\mathbf{T}$): For simplicity, we'll assume the camera is at the world origin with no rotation. (So $\mathbf{R} = \mathbf{I}$ and $\mathbf{t} = [0,0,0]^T$).
+
+### Step 1: The Intermediate Projection Jacobian
+First, we calculate $\frac{\partial \mathbf{u}}{\partial \mathbf{P}'}$. This tells us how the pixels $(u, v)$ react to 3D movement in the camera frame.Using the formulas:
+
+* $\frac{f_x}{Z'} = \frac{500}{5} = \mathbf{100}$
+* $-\frac{f_x X'}{Z'^2} = -\frac{500 \cdot 1}{25} = \mathbf{-20}$
+* $\frac{f_y}{Z'} = \frac{500}{5} = \mathbf{100}$
+* $-\frac{f_y Y'}{Z'^2} = -\frac{500 \cdot 1}{25} = \mathbf{-20}$
+$$\frac{\partial \mathbf{u}}{\partial \mathbf{P}'} = \begin{bmatrix} 100 & 0 & -20 \\ 0 & 100 & -20 \end{bmatrix}$$
+
+### Step 3: Calculate the Camera Jacobian ($\mathbf{F}$)
+We use the formula $\mathbf{F} = -\frac{\partial \mathbf{u}}{\partial \mathbf{P}'} [\mathbf{I}, -\mathbf{P}'^\wedge]$.First, let's find the skew-symmetric matrix $-\mathbf{P}'^\wedge$:$$-\mathbf{P}'^\wedge = \begin{bmatrix} 0 & Z' & -Y' \\ -Z' & 0 & X' \\ Y' & -X' & 0 \end{bmatrix} = \begin{bmatrix} 0 & 5 & -1 \\ -5 & 0 & 1 \\ 1 & -1 & 0 \end{bmatrix}$$
+
+Now we multiply:
+$$\mathbf{F} = - \begin{bmatrix} 100 & 0 & -20 \\ 0 & 100 & -20 \end{bmatrix} \begin{bmatrix} 1 & 0 & 0 & 0 & 5 & -1 \\ 0 & 1 & 0 & -5 & 0 & 1 \\ 0 & 0 & 1 & 1 & -1 & 0 \end{bmatrix}$$
+
+After the matrix multiplication, we get:
+$$\mathbf{F} = \begin{bmatrix} -100 & 0 & 20 & 20 & -520 & 100 \\ 0 & -100 & 20 & 520 & -20 & -100 \end{bmatrix}$$
+
+The first 3 columns are translation. The last 3 are rotation. Notice how rotation ($520$) has a much bigger impact on the pixels than translation ($-100$)? This is why camera "shake" ruins photos so easily!
+
+### Step 4: Putting them together
+$$\mathbf{J} = \left[ \begin{array}{ccc|ccc} \mathbf{F}_{11} & \mathbf{0} & \dots & \mathbf{E}_{11} & \mathbf{0} & \dots \\ \mathbf{0} & \mathbf{F}_{21} & \dots & \mathbf{E}_{21} & \dots & \dots \\ \vdots & \vdots & \ddots & \vdots & \vdots & \ddots \end{array} \right]$$
+
+#### Setup
+
+* Cameras ($m=3$): Each has 6 degrees of freedom (Lie Algebra $\xi \in \mathfrak{se}(3)$).
+* Points ($n=5$): Each has 3 degrees of freedom ($X, Y, Z$).
+* Visibility: Let's assume a realistic scenario where not every camera sees every point:
+    * Cam 1 sees Points 1, 2, 3. (3 observations)
+    * Cam 2 sees Points 2, 3, 4. (3 observations)
+    * Cam 3 sees Points 3, 4, 5. (3 observations)
+* Total Observations: 9 pairs of (Camera $i$, Point $j$).
+
+#### Dimensions of the "Mega" Matrix $J$
+
+The columns correspond to our variables. We have a "Camera section" and a "Landmark section."
+* Camera Columns: $3 \text{ cameras} \times 6 \text{ DOF} = \mathbf{18 \text{ columns}}$.
+* Landmark Columns: $5 \text{ points} \times 3 \text{ DOF} = \mathbf{15 \text{ columns}}$.
+* Total Width of $J$: 33 columns.
+
+The rows correspond to our errors. Each observation $z_{ij}$ produces a 2D residual (error in $u$ and error in $v$).
+* Total Rows: $9 \text{ observations} \times 2 \text{ residuals} = \mathbf{18 \text{ rows}}$.
+
+=> Total Size of $J$ for this example: $18 \times 33$.
+
+#### The Global Jacobian $\mathbf{J}$
+
+This matrix has 18 rows (9 observations $\times$ 2 pixels) and 33 columns (18 for poses + 15 for points).
+$$\mathbf{J} = 
+\left[
+\begin{array}{ccc|ccccc}
+\mathbf{F}_{11} & \mathbf{0} & \mathbf{0} & \mathbf{E}_{11} & \mathbf{0} & \mathbf{0} & \mathbf{0} & \mathbf{0} \\
+\mathbf{F}_{12} & \mathbf{0} & \mathbf{0} & \mathbf{0} & \mathbf{E}_{12} & \mathbf{0} & \mathbf{0} & \mathbf{0} \\
+\mathbf{F}_{13} & \mathbf{0} & \mathbf{0} & \mathbf{0} & \mathbf{0} & \mathbf{E}_{13} & \mathbf{0} & \mathbf{0} \\ \hline
+\mathbf{0} & \mathbf{F}_{22} & \mathbf{0} & \mathbf{0} & \mathbf{E}_{22} & \mathbf{0} & \mathbf{0} & \mathbf{0} \\
+\mathbf{0} & \mathbf{F}_{23} & \mathbf{0} & \mathbf{0} & \mathbf{0} & \mathbf{E}_{23} & \mathbf{0} & \mathbf{0} \\
+\mathbf{0} & \mathbf{F}_{24} & \mathbf{0} & \mathbf{0} & \mathbf{0} & \mathbf{0} & \mathbf{E}_{24} & \mathbf{0} \\ \hline
+\mathbf{0} & \mathbf{0} & \mathbf{F}_{33} & \mathbf{0} & \mathbf{0} & \mathbf{E}_{33} & \mathbf{0} & \mathbf{0} \\
+\mathbf{0} & \mathbf{0} & \mathbf{F}_{34} & \mathbf{0} & \mathbf{0} & \mathbf{0} & \mathbf{E}_{34} & \mathbf{0} \\
+\mathbf{0} & \mathbf{0} & \mathbf{F}_{35} & \mathbf{0} & \mathbf{0} & \mathbf{0} & \mathbf{0} & \mathbf{E}_{35}
+\end{array}
+\right]$$
+
+Pixel resolution does not change anything. It is only about the number of features detected, and the number of camera poses.
