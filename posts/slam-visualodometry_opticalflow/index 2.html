@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-03-27">
+<meta name="dcterms.date" content="2026-04-19">
 
-<title>Kalman Filter – the brachistochrone traveller</title>
+<title>Direct Method for Visual Odometry – the brachistochrone traveller</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -134,10 +134,11 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Kalman Filter</h1>
+      <h1 class="title">Direct Method for Visual Odometry</h1>
                                 <div class="quarto-categories">
-                <div class="quarto-category">Statistics</div>
-                <div class="quarto-category">Estimation</div>
+                <div class="quarto-category">Computer Graphics</div>
+                <div class="quarto-category">Computer Vision</div>
+                <div class="quarto-category">SLAM</div>
               </div>
                   </div>
   </div>
@@ -149,7 +150,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">March 27, 2026</p>
+        <p class="date">April 19, 2026</p>
       </div>
     </div>
     
@@ -165,35 +166,10 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#kalman-filter" id="toc-kalman-filter" class="nav-link active" data-scroll-target="#kalman-filter">Kalman Filter</a>
-  <ul class="collapse">
-  <li><a href="#start-with-assumption-about-system-model" id="toc-start-with-assumption-about-system-model" class="nav-link" data-scroll-target="#start-with-assumption-about-system-model">Start with Assumption about System Model</a></li>
-  <li><a href="#step-1-predict" id="toc-step-1-predict" class="nav-link" data-scroll-target="#step-1-predict">Step 1: Predict</a></li>
-  <li><a href="#step-2-update-using-measurement" id="toc-step-2-update-using-measurement" class="nav-link" data-scroll-target="#step-2-update-using-measurement">Step 2: Update using Measurement</a></li>
-  </ul></li>
-  <li><a href="#faq" id="toc-faq" class="nav-link" data-scroll-target="#faq">FAQ</a>
-  <ul class="collapse">
-  <li><a href="#why-phi-p_k-1-phit-for-project-the-error-covariance" id="toc-why-phi-p_k-1-phit-for-project-the-error-covariance" class="nav-link" data-scroll-target="#why-phi-p_k-1-phit-for-project-the-error-covariance">Why <span class="math inline">\(\Phi P_{k-1} \Phi^T\)</span> for Project the Error Covariance?</a></li>
-  <li><a href="#why-h-p-ht-in-the-kalman-gain" id="toc-why-h-p-ht-in-the-kalman-gain" class="nav-link" data-scroll-target="#why-h-p-ht-in-the-kalman-gain">Why <span class="math inline">\(H P H^T\)</span> in the Kalman Gain?</a></li>
-  <li><a href="#why-p-ht-in-the-kalman-gain" id="toc-why-p-ht-in-the-kalman-gain" class="nav-link" data-scroll-target="#why-p-ht-in-the-kalman-gain">Why $<span class="math inline">\(P H^T\)</span> in the Kalman Gain?</a></li>
-  <li><a href="#why-k_k-h-in-uncertainty-update" id="toc-why-k_k-h-in-uncertainty-update" class="nav-link" data-scroll-target="#why-k_k-h-in-uncertainty-update">Why <span class="math inline">\(K_k H\)</span> in Uncertainty Update?</a></li>
-  </ul></li>
-  <li><a href="#example-1" id="toc-example-1" class="nav-link" data-scroll-target="#example-1">Example 1</a>
-  <ul class="collapse">
-  <li><a href="#system-setup-model-assumption" id="toc-system-setup-model-assumption" class="nav-link" data-scroll-target="#system-setup-model-assumption">System Setup (Model Assumption)</a></li>
-  <li><a href="#initial-guess" id="toc-initial-guess" class="nav-link" data-scroll-target="#initial-guess">Initial Guess</a></li>
-  <li><a href="#prediction-step-time-1s" id="toc-prediction-step-time-1s" class="nav-link" data-scroll-target="#prediction-step-time-1s">Prediction Step (Time = 1s)</a></li>
-  <li><a href="#update-step-time-1s" id="toc-update-step-time-1s" class="nav-link" data-scroll-target="#update-step-time-1s">Update Step (Time = 1s)</a></li>
-  </ul></li>
-  <li><a href="#scalar-examples" id="toc-scalar-examples" class="nav-link" data-scroll-target="#scalar-examples">Scalar Examples</a>
-  <ul class="collapse">
-  <li><a href="#simplest-static-example" id="toc-simplest-static-example" class="nav-link" data-scroll-target="#simplest-static-example">Simplest Static Example</a>
-  <ul class="collapse">
-  <li><a href="#the-static-mse-approach" id="toc-the-static-mse-approach" class="nav-link" data-scroll-target="#the-static-mse-approach">The Static MSE Approach</a></li>
-  <li><a href="#static-kalman-filter" id="toc-static-kalman-filter" class="nav-link" data-scroll-target="#static-kalman-filter">Static Kalman Filter</a></li>
-  </ul></li>
-  <li><a href="#dynamic-example" id="toc-dynamic-example" class="nav-link" data-scroll-target="#dynamic-example">Dynamic Example</a></li>
-  </ul></li>
+  <li><a href="#getting-into-direct-method" id="toc-getting-into-direct-method" class="nav-link active" data-scroll-target="#getting-into-direct-method">Getting into direct method</a></li>
+  <li><a href="#optical-flow" id="toc-optical-flow" class="nav-link" data-scroll-target="#optical-flow">Optical Flow</a></li>
+  <li><a href="#direct-method" id="toc-direct-method" class="nav-link" data-scroll-target="#direct-method">Direct Method</a></li>
+  <li><a href="#faq" id="toc-faq" class="nav-link" data-scroll-target="#faq">FAQ</a></li>
   </ul>
 </nav>
     </div>
@@ -204,146 +180,144 @@ window.Quarto = {
 
 
 
-<section id="kalman-filter" class="level1">
-<h1>Kalman Filter</h1>
-<section id="start-with-assumption-about-system-model" class="level2">
-<h2 class="anchored" data-anchor-id="start-with-assumption-about-system-model">Start with Assumption about System Model</h2>
-<p>Before we calculate anything, we define how the world works using 2 things:</p>
+<section id="getting-into-direct-method" class="level1">
+<h1>Getting into direct method</h1>
+<p>Feature-based methods in general are good, but:</p>
 <ul>
-<li><p>State Transition Equation: <span class="math inline">\(x_k = \Phi x_{k-1} + w_k\)</span></p>
-<ul>
-<li><span class="math inline">\(x_k\)</span>: The true state (e.g., position and velocity) at time <span class="math inline">\(k\)</span>.</li>
-<li><span class="math inline">\(\Phi\)</span> (or <span class="math inline">\(F\)</span>): The matrix that moves the state forward in time (the “physics”).</li>
-<li><span class="math inline">\(w_k\)</span>: Process Noise (variance <span class="math inline">\(Q\)</span>) (like the wind?)</li>
-</ul></li>
-<li><p>Observation Equation: <span class="math inline">\(z_k = H x_k + v_k\)</span></p>
-<ul>
-<li><span class="math inline">\(z_k\)</span>: The actual measurement from the sensor. (what sensor sees)</li>
-<li><span class="math inline">\(H\)</span>: The matrix that maps the state to what the sensor “sees.”</li>
-<li><span class="math inline">\(v_k\)</span>: Measurement Noise (variance <span class="math inline">\(R\)</span>).</li>
-</ul></li>
+<li>it is pretty slow to calculate descriptor and finding matching (20ms for ORB, 217ms for SURF, 5228ms for SIFT, this is sad for 30Hz robotic system).</li>
+<li>For an image of 300000 pixels, we probably only use 500 features, aka 0.16% of total pixels. This is a waste of information.</li>
+<li>or sometimes we go into a wall of no features</li>
 </ul>
+<p>Therefore current research trying to replace descriptor+feature matching using direct method.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Feature-Based Method</th>
+<th style="text-align: left;">Direct Method</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Minimizes Reprojection Error</strong></td>
+<td style="text-align: left;"><strong>Minimizes Photometric Error</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Goal:</strong> Make the distance between the “predicted pixel” and “observed pixel” zero.</td>
+<td style="text-align: left;"><strong>Goal:</strong> Make the difference in brightness (grayscale value) zero.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">1. Calculate descriptors first to match points then 2. minimize the error. (2 steps)</td>
+<td style="text-align: left;">Minimize the error directly (from pixel intensity) (1 step)</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="step-1-predict" class="level2">
-<h2 class="anchored" data-anchor-id="step-1-predict">Step 1: Predict</h2>
-<p>Project the State:<span class="math display">\[\hat{x}_{k|k-1} = \Phi \hat{x}_{k-1}\]</span></p>
-<p>Project the Error Covariance:<span class="math display">\[P_{k|k-1} = \Phi P_{k-1} \Phi^T + Q\]</span></p>
+<section id="optical-flow" class="level1">
+<h1>Optical Flow</h1>
+<p>The idea is: an object at time <span class="math inline">\(t\)</span> at <span class="math inline">\((x, y)\)</span> is still the same object at time <span class="math inline">\(t+1\)</span> at <span class="math inline">\((x+\delta x, y+\delta y)\)</span>. We represent the image as a function <span class="math inline">\(I(x, y, t)\)</span>, where the output is the brightness (grayscale value). Our core assumption is: <span class="math display">\[I(x + dx, y + dy, t + dt) = I(x, y, t)\]</span></p>
+<p>First order Taylor sweep: <span class="math display">\[I(x + dx, y + dy, t + dt) \approx I(x, y, t) + \frac{\partial I}{\partial x}dx + \frac{\partial I}{\partial y}dy + \frac{\partial I}{\partial t}dt\]</span></p>
+<p>Combining these two equations, we get: <span class="math display">\[\frac{\partial I}{\partial x}dx + \frac{\partial I}{\partial y}dy + \frac{\partial I}{\partial t}dt = 0\]</span> <span class="math display">\[\frac{\partial I}{\partial x}dx + \frac{\partial I}{\partial y}dy = -\frac{\partial I}{\partial t}dt\]</span> <span class="math display">\[\frac{\partial I}{\partial x}\frac{dx}{dt} + \frac{\partial I}{\partial y}\frac{dy}{dt} = -\frac{\partial I}{\partial t}\]</span> <span class="math display">\[\frac{\partial I}{\partial x}u + \frac{\partial I}{\partial y}v = -\frac{\partial I}{\partial t}\]</span></p>
+<p>We define our variables to make them easier to work with:</p>
+<ul>
+<li><span class="math inline">\(u = \frac{dx}{dt}, v = \frac{dy}{dt}\)</span>: The velocity of the pixel (what we want to find).</li>
+<li><span class="math inline">\(I_x = \frac{\partial I}{\partial x}, I_y = \frac{\partial I}{\partial y}\)</span>: The image gradient (how brightness changes as you move across the pixels).</li>
+<li><span class="math inline">\(I_t = \frac{\partial I}{\partial t}\)</span>: The temporal gradient (how brightness at a fixed spot changes over time).</li>
+</ul>
+<p><span class="math display">\[[I_x \quad I_y] \begin{bmatrix} u \\ v \end{bmatrix} = -I_t\]</span></p>
+<p>A little explaination: <span class="math display">\[\underbrace{I_x}_{\text{"Local Steepness" (Inside ONE frame)}} \times \underbrace{u}_{\text{"Displacement" (Between TWO frames)}} = \underbrace{-I_t}_{\text{"Brightness Change" (Between TWO frames)}}\]</span></p>
+<p>For example you are hiking and need to find how far you walked, but you only have a barometer (which measures altitude). You use the slope to calculate the distance you walked (diagonal) <span class="math display">\[\underbrace{I_x}_{\text{Slope (known)}} \cdot \underbrace{u}_{\text{Distance Walked (to find)}} = \underbrace{-I_t}_{\text{Change in Altitude (can be measured by barometer)}}\]</span></p>
+<p>What we want is to calculate the motion <span class="math inline">\(u, v\)</span> of the pixel, but this formula has two variables, and we cannot find <span class="math inline">\(u, v\)</span> by a single pixel. Therefore, additional constraints are needed to calculate <span class="math inline">\(u, v\)</span>. In LK optical flow, we also assume the pixels in a certain window have the same motion. For example with 3x3 window we can find 9 equations.</p>
+<p>For a window of size <span class="math inline">\(w \times w\)</span>, we have <span class="math inline">\(w^2\)</span> pixels. We assume every pixel in that small patch has the exact same velocity <span class="math inline">\(\begin{bmatrix} u &amp; v \end{bmatrix}^T\)</span>. This gives us a set of <span class="math inline">\(w^2\)</span> equations:</p>
+<p><span class="math display">\[[ \mathbf{I}_x \quad \mathbf{I}_y ]_k \begin{bmatrix} u \\ v \end{bmatrix} = -\mathbf{I}_{t_k}, \quad k = 1, \dots, w^2\]</span></p>
+<p>we stack the individual gradients into a large matrix <span class="math inline">\(\mathbf{A}\)</span> and the temporal changes into a vector <span class="math inline">\(\mathbf{b}\)</span>: <span class="math display">\[\mathbf{A} = \begin{bmatrix} [\mathbf{I}_x, \mathbf{I}_y]_1 \\ \vdots \\ [\mathbf{I}_x, \mathbf{I}_y]_k \end{bmatrix}, \quad \mathbf{b} = \begin{bmatrix} \mathbf{I}_{t1} \\ \vdots \\ \mathbf{I}_{tk} \end{bmatrix}\]</span></p>
+<p><span class="math display">\[\mathbf{A} \begin{bmatrix} u \\ v \end{bmatrix} = -\mathbf{b}\]</span></p>
+<p>Because we have more equations (<span class="math inline">\(w^2\)</span>) than unknowns (<span class="math inline">\(2\)</span>), the system is overdetermined. There likely isn’t a single <span class="math inline">\((u, v)\)</span> that is 100% perfect for every pixel due to noise. We find the “best fit” using the Least-Squares method (the Normal Equation):</p>
+<p><span class="math display">\[\begin{bmatrix} u \\ v \end{bmatrix}^* = -(\mathbf{A}^T\mathbf{A})^{-1} \mathbf{A}^T \mathbf{b}\]</span></p>
 </section>
-<section id="step-2-update-using-measurement" class="level2">
-<h2 class="anchored" data-anchor-id="step-2-update-using-measurement">Step 2: Update using Measurement</h2>
-<p>Calculate Kalman Gain (<span class="math inline">\(K\)</span>): (how much we trust the sensor measurement = <strong>how much we untrust the prediction</strong>) <span class="math display">\[K_k = P_{k|k-1} H^T (H P_{k|k-1} H^T + R)^{-1}\]</span></p>
-<p>Update State with the trust of sensor measurement: <span class="math display">\[\hat{x}_k = \hat{x}_{k|k-1} + K_k (z_k - H \hat{x}_{k|k-1})\]</span></p>
-<p>Decrease the Uncertainty: <span class="math display">\[P_k = (I - K_k H) P_{k|k-1}\]</span></p>
-</section>
+<section id="direct-method" class="level1">
+<h1>Direct Method</h1>
+<p>In the Feature-Based method, we minimized the distance between points (geometry). Here, we minimize the difference in brightness (photometry).</p>
+<p>We assume the first camera is at the origin. A 3D point <span class="math inline">\(\mathbf{P}\)</span> in the world projects to pixel <span class="math inline">\(\mathbf{p}_1\)</span> in the first image and <span class="math inline">\(\mathbf{p}_2\)</span> in the second image.In the first image (<span class="math inline">\(I_1\)</span>):</p>
+<p><span class="math display">\[\mathbf{p}_1 = \begin{bmatrix} u \\ v \\ 1 \end{bmatrix}_1 = \frac{1}{Z_1} \mathbf{K P}\]</span></p>
+<p>In the second image (<span class="math inline">\(I_2\)</span>):The camera has moved by a transformation <span class="math inline">\(\mathbf{T}\)</span> (rotation <span class="math inline">\(\mathbf{R}\)</span> and translation <span class="math inline">\(\mathbf{t}\)</span>). The point <span class="math inline">\(\mathbf{P}\)</span> is transformed into the second camera’s coordinate system before being projected:</p>
+<p><span class="math display">\[\mathbf{p}_2 = \begin{bmatrix} u \\ v \\ 1 \end{bmatrix}_2 = \frac{1}{Z_2} \mathbf{K}(\mathbf{R P} + \mathbf{t}) = \frac{1}{Z_2} \mathbf{K}(\mathbf{T P})_{1:3}\]</span></p>
+<p>In Feature-Based SLAM, we match <span class="math inline">\(\mathbf{p}_1\)</span> and <span class="math inline">\(\mathbf{p}_2\)</span> using descriptors. In the Direct Method, we don’t know where <span class="math inline">\(\mathbf{p}_2\)</span> is yet! We only have a “guess” for the camera pose <span class="math inline">\(\mathbf{T}\)</span>.</p>
+<p>We define the Photometric Error (<span class="math inline">\(e\)</span>) as the difference in brightness between the two pixels that (we hope) represent the same 3D point:</p>
+<p><span class="math display">\[e = I_1(\mathbf{p}_1) - I_2(\mathbf{p}_2)\]</span></p>
+<ul>
+<li><span class="math inline">\(I_1(\mathbf{p}_1)\)</span> is the grayscale value at <span class="math inline">\(\mathbf{p}_1\)</span> in the first image.</li>
+<li><span class="math inline">\(I_2(\mathbf{p}_2)\)</span> is the grayscale value at the projected location <span class="math inline">\(\mathbf{p}_2\)</span> in the second image.</li>
+</ul>
+<p>Our goal is to find the transformation <span class="math inline">\(\mathbf{T}\)</span> that makes the brightness difference as small as possible across all <span class="math inline">\(N\)</span> visible points - maybe even all pixels:</p>
+<p><span class="math display">\[\min_{\mathbf{T}} J(\mathbf{T}) = \sum_{i=1}^N e_i^2 = \sum_{i=1}^N \|I_1(\mathbf{p}_{1,i}) - I_2(\mathbf{p}_{2,i})\|^2\]</span></p>
+<p>This is still a Non-linear Least Squares problem, just like PnP or ICP, but the “error” is now a brightness difference instead of a coordinate distance.</p>
+<p>To solve this with Gauss-Newton, we need to know how the error <span class="math inline">\(e\)</span> changes when we wiggle the pose <span class="math inline">\(\mathbf{T}\)</span>. We define two intermediate variables to make the Chain Rule easier to manage:</p>
+<ul>
+<li><span class="math inline">\(\mathbf{q} = \mathbf{T P}\)</span>: The 3D coordinates of the point in the second camera frame. dependent to <span class="math inline">\(\mathbf{T}\)</span></li>
+<li><span class="math inline">\(\mathbf{u} = \frac{1}{Z_2} \mathbf{K q}\)</span>: The 2D pixel coordinates in the second image (this is just <span class="math inline">\(\mathbf{p}_2\)</span> without the subscript). dependent to <span class="math inline">\(\mathbf{q}\)</span>, which dependent to <span class="math inline">\(\mathbf{T}\)</span></li>
+</ul>
+<p>The photometric error is defined as <span class="math inline">\(e(\mathbf{T}) = I_1(\mathbf{p}_1) - I_2(\mathbf{u})\)</span>. Since <span class="math inline">\(I_1\)</span> is constant, we only differentiate the second term. By the chain rule, the derivative is split into three parts:</p>
+<p><span class="math display">\[\frac{\partial e}{\partial \mathbf{T}} = - \underbrace{\frac{\partial I_2}{\partial \mathbf{u}}}_{\text{Term 1}} \underbrace{\frac{\partial \mathbf{u}}{\partial \mathbf{q}}}_{\text{Term 2}} \underbrace{\frac{\partial \mathbf{q}}{\partial \delta \xi}}_{\text{Term 3}}\]</span></p>
+<ul>
+<li><p>Term 1: Image Gradient (<span class="math inline">\(\frac{\partial I_2}{\partial \mathbf{u}}\)</span>) (new in direct method)</p>
+<p>This is the spatial gradient of the second image at pixel coordinates <span class="math inline">\(\mathbf{u}\)</span>. It is a <span class="math inline">\(1 \times 2\)</span> vector: <span class="math inline">\([I_x, I_y]\)</span>. It represents the “slope” of the brightness at that specific pixel.</p></li>
+<li><p>Term 2: Projection Derivative (<span class="math inline">\(\frac{\partial \mathbf{u}}{\partial \mathbf{q}}\)</span>)</p>
+<p>This <span class="math inline">\(2 \times 3\)</span> matrix describes how the pixel coordinates change if the 3D point <span class="math inline">\(\mathbf{q}\)</span> moves slightly within the camera’s field of view:<span class="math display">\[\frac{\partial \mathbf{u}}{\partial \mathbf{q}} = \begin{bmatrix} \frac{f_x}{Z} &amp; 0 &amp; -\frac{f_x X}{Z^2} \\ 0 &amp; \frac{f_y}{Z} &amp; -\frac{f_y Y}{Z^2} \end{bmatrix}\]</span></p></li>
+<li><p>Term 3: Pose Perturbation (<span class="math inline">\(\frac{\partial \mathbf{q}}{\partial \delta \xi}\)</span>)</p>
+<p>This <span class="math inline">\(3 \times 6\)</span> matrix is our old friend from Lie Algebra. It describes how the 3D point <span class="math inline">\(\mathbf{q}\)</span> moves relative to the camera when the camera itself wiggles:<span class="math display">\[\frac{\partial \mathbf{q}}{\partial \delta \xi} = [\mathbf{I}, -\mathbf{q}^\wedge]\]</span></p></li>
+</ul>
+<p>In practice, we multiply Term 2 and Term 3 together first. This gives us a <span class="math inline">\(2 \times 6\)</span> matrix that represents the Geometric Jacobian—how camera motion affects pixel coordinates:<span class="math display">\[\frac{\partial \mathbf{u}}{\partial \delta \xi} = \begin{bmatrix} \frac{f_x}{Z} &amp; 0 &amp; -\frac{f_x X}{Z^2} &amp; -\frac{f_x XY}{Z^2} &amp; f_x + \frac{f_x X^2}{Z^2} &amp; -\frac{f_x Y}{Z} \\ 0 &amp; \frac{f_y}{Z} &amp; -\frac{f_y Y}{Z^2} &amp; -f_y - \frac{f_y Y^2}{Z^2} &amp; \frac{f_y XY}{Z^2} &amp; \frac{f_y X}{Z} \end{bmatrix}\]</span></p>
+<p>Finally, we multiply by the image gradient to get the Photometric Jacobian for a single point:<span class="math display">\[\mathbf{J} = - \frac{\partial I_2}{\partial \mathbf{u}} \frac{\partial \mathbf{u}}{\partial \delta \xi}\]</span></p>
+<ul>
+<li>Size: <span class="math inline">\((1 \times 2) \times (2 \times 6) = \mathbf{1 \times 6}\)</span>.</li>
+<li>Result: A single row of 6 numbers that tells the optimizer exactly how to rotate and translate the camera to make the colors match.</li>
+</ul>
+<p>Sum up this:</p>
+<ul>
+<li>The camera takes a tiny step (<span class="math inline">\(\delta \xi\)</span>).</li>
+<li>That step causes the 3D point to move relative to the camera (Term 3).</li>
+<li>That 3D movement causes the point’s projection to “slide” on the image sensor (Term 2).</li>
+<li>That “slide” causes the pixel at that spot to change its brightness based on the local texture (Term 1) this is the new thing in this method.</li>
+</ul>
+<p>Discussion: for this to work, we need to know the depth (<span class="math inline">\(Z\)</span>) of the points. to reconstruct <span class="math inline">\(P\)</span></p>
+<ul>
+<li>RGB-D cameras: Depth is given for every pixel.</li>
+<li>Binocular (Stereo): Depth is calculated via parallax.</li>
+<li>Monocular: This is the “Hard Mode” of SLAM. You have to estimate the depth over multiple frames as the camera moves, which we will see in another blog. (<strong>Structure from Motion</strong> or <strong>Depth Filter</strong>)</li>
+</ul>
 </section>
 <section id="faq" class="level1">
 <h1>FAQ</h1>
-<section id="why-phi-p_k-1-phit-for-project-the-error-covariance" class="level3">
-<h3 class="anchored" data-anchor-id="why-phi-p_k-1-phit-for-project-the-error-covariance">Why <span class="math inline">\(\Phi P_{k-1} \Phi^T\)</span> for Project the Error Covariance?</h3>
-<p>Well it is called covariance propagation from current state <span class="math inline">\(x_{old}\)</span> to next state <span class="math inline">\(x_{new}\)</span>. If <span class="math inline">\(x_{new} = \phi x_{old}\)</span>, then the variance <span class="math inline">\(P_{new} = \phi^2 P_{old}\)</span>.</p>
-</section>
-<section id="why-h-p-ht-in-the-kalman-gain" class="level3">
-<h3 class="anchored" data-anchor-id="why-h-p-ht-in-the-kalman-gain">Why <span class="math inline">\(H P H^T\)</span> in the Kalman Gain?</h3>
-<p>Actually for exactly the same reason. Covariance propagation from the state space <span class="math inline">\(x\)</span> to the measurement space <span class="math inline">\(z = Hx\)</span>. So there covariance has quadratic relationship <span class="math inline">\(P_z = H P H^T\)</span></p>
-</section>
-<section id="why-p-ht-in-the-kalman-gain" class="level3">
-<h3 class="anchored" data-anchor-id="why-p-ht-in-the-kalman-gain">Why $<span class="math inline">\(P H^T\)</span> in the Kalman Gain?</h3>
-<p>Actually we are just applying the <span class="math inline">\(z = Hx\)</span>, we are just mapping the same <span class="math inline">\(P\)</span> of <span class="math inline">\(x\)</span> to <span class="math inline">\(z\)</span> space. <strong>IT IS A MAPPING OF COVARIANCE; NOT A PROPAGATION OF COVARIANCE</strong></p>
-</section>
-<section id="why-k_k-h-in-uncertainty-update" class="level3">
-<h3 class="anchored" data-anchor-id="why-k_k-h-in-uncertainty-update">Why <span class="math inline">\(K_k H\)</span> in Uncertainty Update?</h3>
 <ul>
-<li><span class="math inline">\(H\)</span> takes your internal state (Position) and maps it to the sensor (Volts) (<span class="math inline">\(z_k = H x_k + v_k\)</span>).</li>
-<li><span class="math inline">\(K\)</span> takes that sensor information (Volts) and maps it back to your state (Position) (<span class="math inline">\(x_k = x_{k|k-1} + K_k (z_k - H x_{k|k-1})\)</span>).</li>
-<li><span class="math inline">\(KH\)</span> eventually bring back to a scaling scalar in sensor measurement space, it is the percentage of your current uncertainty that has been “explained” or “resolved” by the new measurement.</li>
+<li><p><strong>So we still have to find keypoint first?</strong> Yes, once again, we first calculate keypoints, then instead of descriptor+feature matching, we directly apply direct method THEREFORE the name!!!</p></li>
+<li><p><strong>BUT… How do we know which <span class="math inline">\(p_2\)</span> corresponds to <span class="math inline">\(p_1\)</span>?</strong> In feature-based SLAM, we look for <span class="math inline">\(p_2\)</span> by searching the whole image for a similar descriptor.In the Direct Method, we don’t “find” <span class="math inline">\(p_2\)</span>; we “calculate” it.</p>
+<ol type="1">
+<li>We take <span class="math inline">\(p_1\)</span> and its depth <span class="math inline">\(Z_1\)</span>.</li>
+<li>We “unproject” it into 3D space to find its world position <span class="math inline">\(\mathbf{P}\)</span>.</li>
+<li>We take our current best guess of the camera pose <span class="math inline">\(\mathbf{T}\)</span>.</li>
+<li>We project <span class="math inline">\(\mathbf{P}\)</span> into the second camera frame using that guess. Wherever it lands is <span class="math inline">\(p_2\)</span>.</li>
+</ol></li>
+<li><p><strong>Is Direct Method just Optical Flow added with camera pose?</strong> Yes, in Optical Flow (2D Optimization):</p>
+<ul>
+<li>We are looking for the pixel velocity <span class="math inline">\(\mathbf{w} = [u, v]^T\)</span>.</li>
+<li>Error: <span class="math inline">\(e = I_1(x,y) - I_2(x+u, y+v)\)</span></li>
+<li>Jacobian: <span class="math inline">\(\mathbf{J} = [I_x, I_y]\)</span> (Just the image gradients).</li>
+<li>Update: We move the pixel in 2D.</li>
 </ul>
-</section>
-</section>
-<section id="example-1" class="level1">
-<h1>Example 1</h1>
-<section id="system-setup-model-assumption" class="level2">
-<h2 class="anchored" data-anchor-id="system-setup-model-assumption">System Setup (Model Assumption)</h2>
-<p>Imagine a car moving along a straight line. We check its status every <span class="math inline">\(\Delta t = 1\)</span> second.</p>
-<p>State Vector: <span class="math inline">\(\mathbf{x}_k = \begin{bmatrix} s_k \\ v_k \end{bmatrix}\)</span> (Position, Velocity)</p>
-<p>State Transition Matrix (<span class="math inline">\(\Phi\)</span>) in <span class="math inline">\(x_k = \Phi x_{k-1} + w_k\)</span>: (<span class="math inline">\(s_{new} = s_{old} + v \cdot \Delta t\)</span> and <span class="math inline">\(v_{new} = v_{old}\)</span>): <span class="math display">\[\Phi = \begin{bmatrix} 1 &amp; 1 \\ 0 &amp; 1 \end{bmatrix}\]</span></p>
-<p>Observation Matrix (<span class="math inline">\(H\)</span>) in <span class="math inline">\(z_k = H x_k + v_k\)</span>: Our GPS measures directly only position, so 1 for that: <span class="math display">\[H = \begin{bmatrix} 1 &amp; 0 \end{bmatrix}\]</span></p>
-<p>Noise: Let’s assume Measurement Noise <span class="math inline">\(R = 4\)</span> and Process Noise <span class="math inline">\(Q = 0\)</span> (perfect physics).</p>
-</section>
-<section id="initial-guess" class="level2">
-<h2 class="anchored" data-anchor-id="initial-guess">Initial Guess</h2>
-<p><span class="math inline">\(\mathbf{\hat{x}}_0 = \begin{bmatrix} 0 \\ 10 \end{bmatrix}\)</span> and <span class="math inline">\(P_0 = \begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix}\)</span></p>
-</section>
-<section id="prediction-step-time-1s" class="level2">
-<h2 class="anchored" data-anchor-id="prediction-step-time-1s">Prediction Step (Time = 1s)</h2>
-<p>Before looking at the GPS, we predict: <span class="math display">\[\mathbf{\hat{x}}_{1|0} = \Phi \mathbf{\hat{x}}_0 = \begin{bmatrix} 1 &amp; 1 \\ 0 &amp; 1 \end{bmatrix} \begin{bmatrix} 0 \\ 10 \end{bmatrix} = \mathbf{\begin{bmatrix} 10 \\ 10 \end{bmatrix}}\]</span> <span class="math display">\[P_{1|0} = \Phi P_0 \Phi^T = \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 1 \end{bmatrix}\]</span></p>
-</section>
-<section id="update-step-time-1s" class="level2">
-<h2 class="anchored" data-anchor-id="update-step-time-1s">Update Step (Time = 1s)</h2>
-<p>Now we get the GPS measurement <span class="math inline">\(z_1 = 13\)</span> (eventhough we predicted 10 :)))</p>
-<p>Calculate Kalman Gain (trust of sensor measurement = <strong>how much we untrust the prediction</strong>): <span class="math display">\[K_1 = P_{1|0} H^T (H P_{1|0} H^T + R)^{-1} = \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 1 \end{bmatrix} \begin{bmatrix} 1 \\ 0 \end{bmatrix} (\begin{bmatrix} 1 &amp; 0 \end{bmatrix} \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 1 \end{bmatrix} \begin{bmatrix} 1 \\ 0 \end{bmatrix} + 4)^{-1} = \begin{bmatrix} 2 \\ 1 \end{bmatrix} (2 + 4)^{-1} = \begin{bmatrix} 2/6 \\ 1/6 \end{bmatrix} = \begin{bmatrix} 0.333 \\ 0.167 \end{bmatrix}\]</span></p>
-<p>Update State with the trust of sensor measurement: <span class="math display">\[\mathbf{\hat{x}}_1 = \mathbf{\hat{x}}_{1|0} + K_1 (z_1 - H \mathbf{\hat{x}}_{1|0}) = \begin{bmatrix} 10 \\ 10 \end{bmatrix} + \begin{bmatrix} 0.333 \\ 0.167 \end{bmatrix} (13 - 10) = \begin{bmatrix} 10 \\ 10 \end{bmatrix} + \begin{bmatrix} 1 \\ 0.5 \end{bmatrix} = \mathbf{\begin{bmatrix} 11 \\ 10.5 \end{bmatrix}}\]</span></p>
-<p>Decrease the Uncertainty: <span class="math display">\[P_1 = (I - K_1 H) P_{1|0} = (\begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix} - \begin{bmatrix} 0.333 &amp; 0 \\ 0.167 &amp; 0 \end{bmatrix}) \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 1 \end{bmatrix} = \begin{bmatrix} 0.667 &amp; 1 \\ -0.167 &amp; 1 \end{bmatrix} \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 1 \end{bmatrix} = \begin{bmatrix} 1.333 &amp; 0.667 \\ 0.833 &amp; 0.833 \end{bmatrix}\]</span></p>
-</section>
-</section>
-<section id="scalar-examples" class="level1">
-<h1>Scalar Examples</h1>
-<section id="simplest-static-example" class="level2">
-<h2 class="anchored" data-anchor-id="simplest-static-example">Simplest Static Example</h2>
-<p>Firstly the difference:</p>
+<p>Direct Method (6D Optimization):</p>
 <ul>
-<li>MSE says: “I used <span class="math inline">\(Y\)</span> once in the lab to find <span class="math inline">\(a=1.214\)</span>. I will use <span class="math inline">\(1.214\)</span> forever.”</li>
-<li>Kalman says: “I used the statistics of <span class="math inline">\(Y\)</span> (its variance) to set my initial trust. But as I see more <span class="math inline">\(X\)</span> values, I will look at the ‘surprises’ (innovations) to refine my guess in real-time.”</li>
-</ul>
-<section id="the-static-mse-approach" class="level3">
-<h3 class="anchored" data-anchor-id="the-static-mse-approach">The Static MSE Approach</h3>
-<blockquote class="blockquote">
-<p>You use the Ground Truth <span class="math inline">\(Y\)</span> in the lab to find a fixed weight <span class="math inline">\(a\)</span>. You never change that weight and use it to estimate <span class="math inline">\(Y\)</span> from <span class="math inline">\(X\)</span> in real world.</p>
-</blockquote>
-<p>What we know from the World Model: true temperature is constant <span class="math inline">\(x = 20\)</span> (or manufacturer etc…)</p>
-<p>Measurements: <span class="math inline">\(z_1 = 18\)</span>, <span class="math inline">\(z_2 = 22\)</span>, <span class="math inline">\(z_3 = 19\)</span>. We usually solve using <span class="math inline">\(C_{YX} = a C_X\)</span>. Now let’s calculate the Covariances (<span class="math inline">\(C_X\)</span> and <span class="math inline">\(C_{YX}\)</span>):</p>
-<p><span class="math display">\[E\{X_1^2\} = \frac{18^2 + 22^2 + 19^2}{3} = \frac{1161}{3} = 387\]</span> <span class="math display">\[E\{Y X_1\} = \frac{(20\cdot18) + (20\cdot22) + (20\cdot19)}{3} = \frac{1180}{3}\]</span></p>
-<p>Solution <span class="math inline">\(a = \frac{E\{YX_1\}}{E\{X_1^2\}} = \frac{1180/3}{387}\)</span> <span class="math display">\[\hat{Y} = \frac{1}{3}(a X_1 + a X_2 + a X_3) = \frac{1}{3} \cdot \frac{1180}{387 \cdot 3} \cdot (18 + 22 + 19) \approx 19.9885\]</span></p>
-</section>
-<section id="static-kalman-filter" class="level3">
-<h3 class="anchored" data-anchor-id="static-kalman-filter">Static Kalman Filter</h3>
-<blockquote class="blockquote">
-<p>“I don’t know the truth <span class="math inline">\(Y\)</span>, but I will keep collecting data until trust in data <span class="math inline">\(P\)</span> is more than trust in sensor noise <span class="math inline">\(\sigma_v^2\)</span>. Because it’s when we say ‘I trust my filter more than the next measurement’. And <span class="math inline">\(P_0\)</span> is the initial trust. and <span class="math inline">\(\hat{x}_0\)</span> is the initial guess.”</p>
-</blockquote>
-<p>What we know from the World Model: this time <strong>not the value <span class="math inline">\(x=20\)</span> but the statistics</strong>. Sensor with noise variance <span class="math inline">\(\sigma_v^2 = 4\)</span>.We start with a “Prior Belief” (initial guess) of <span class="math inline">\(\hat{x}_0 = 25\)</span> with an initial uncertainty (error variance) of <span class="math inline">\(P_0 = 10\)</span>.</p>
-<p>Step 1: <span class="math inline">\(z_1 = 18\)</span>: <span class="math display">\[K_1 = \frac{P_0}{P_0 + \sigma_v^2} = \frac{10}{10 + 4} = \mathbf{0.714}\]</span> <span class="math display">\[\hat{x}_1 = \hat{x}_0 + K_1(z_1 - \hat{x}_0) = 25 + 0.714(18 - 25) = \mathbf{20}\]</span> <span class="math display">\[P_1 = (1 - K_1)P_0 = (1 - 0.714) \times 10 = \mathbf{2.86}\]</span></p>
-<p>Step 2: <span class="math inline">\(z_2 = 22\)</span>: <span class="math display">\[K_2 = \frac{P_1}{P_1 + \sigma_v^2} = \frac{2.86}{2.86 + 4} = \mathbf{0.417}\]</span> <span class="math display">\[\hat{x}_2 = \hat{x}_1 + K_2(z_2 - \hat{x}_1) = 20 + 0.417(22 - 20) = \mathbf{20.83}\]</span> <span class="math display">\[P_2 = (1 - K_2)P_1 = (1 - 0.417) \times 2.86 = \mathbf{1.67}\]</span></p>
-<p><strong>We keep measuring until <span class="math inline">\(P_n\)</span> is smaller than sensor noise <span class="math inline">\(\sigma_v^2\)</span>. Because it’s when we say “I trust my filter more than the next measurement”.</strong></p>
-</section>
-</section>
-<section id="dynamic-example" class="level2">
-<h2 class="anchored" data-anchor-id="dynamic-example">Dynamic Example</h2>
-<p>Increasing temperature</p>
-<ul>
-<li>True State (<span class="math inline">\(x_t\)</span>): Starts at 20°C and increases: <span class="math inline">\(x_t = x_{t-1} + 1\)</span>.</li>
-<li>Process Noise (<span class="math inline">\(Q\)</span>): We are 100% sure about this “+1” rule, so <span class="math inline">\(Q = 0\)</span>.</li>
-<li>Sensor Noise (<span class="math inline">\(\sigma_v^2\)</span>): Still 4.</li>
-<li>Initial Guess: <span class="math inline">\(\hat{x}_0 = 20\)</span> with uncertainty <span class="math inline">\(P_0 = 2\)</span>.</li>
-</ul>
-<p>Step 1: (Sensor measured <span class="math inline">\(z_1 = 22.5\)</span>):</p>
-<ul>
-<li>Predicted State: <span class="math inline">\(\hat{x}_{1|0} = 20 + 1 = \mathbf{21}\)</span></li>
-<li>Predicted Uncertainty: <span class="math inline">\(P_{1|0} = P_0 + Q = 2 + 0 = \mathbf{2}\)</span></li>
-<li>Kalman Gain (how much we trust the sensor): <span class="math inline">\(K_1 = \frac{P_{1|0}}{P_{1|0} + \sigma_v^2} = \frac{2}{2 + 4} = \mathbf{0.333}\)</span></li>
-<li>Updated State: <span class="math inline">\(\hat{x}_1 = \hat{x}_{1|0} + K_1(z_1 - \hat{x}_{1|0}) = 21 + 0.333(22.5 - 21) = \mathbf{21.5}\)</span></li>
-<li>Updated Uncertainty: <span class="math inline">\(P_1 = (1 - K_1)P_{1|0} = (1 - 0.333) \times 2 = \mathbf{1.334}\)</span></li>
-</ul>
-<p>Step 2: (Sensor measured <span class="math inline">\(z_2 = 21\)</span>)</p>
-<ul>
-<li>Predicted State: <span class="math inline">\(\hat{x}_{2|1} = \hat{x}_1 + 1 = 21.5 + 1 = \mathbf{22.5}\)</span></li>
-<li>Predicted Uncertainty: <span class="math inline">\(P_{2|1} = P_1 + Q = 1.334 + 0 = \mathbf{1.334}\)</span></li>
-<li>Kalman Gain: <span class="math inline">\(K_2 = \frac{P_{2|1}}{P_{2|1} + \sigma_v^2} = \frac{1.334}{1.334 + 4} = \mathbf{0.249}\)</span></li>
-<li>Updated State: <span class="math inline">\(\hat{x}_2 = \hat{x}_{2|1} + K_2(z_2 - \hat{x}_{2|1}) = 22.5 + 0.249(21 - 22.5) = \mathbf{22.126}\)</span></li>
-<li>Updated Uncertainty: <span class="math inline">\(P_2 = (1 - K_2)P_{2|1} = (1 - 0.249) \times 1.334 = \mathbf{1.002}\)</span></li>
+<li>We are looking for the camera pose <span class="math inline">\(\xi \in \mathfrak{se}(3)\)</span>.</li>
+<li>Error: <span class="math inline">\(e = I_1(p_1) - I_2(\text{project}(\mathbf{T} \cdot \text{unproject}(p_1)))\)</span></li>
+<li>Jacobian: <span class="math inline">\(\mathbf{J} = \underbrace{-[I_x, I_y]}_{\text{Optical Flow part}} \cdot \underbrace{\frac{\partial \mathbf{u}}{\partial \delta \xi}}_{\text{The extra "Pose" part}}\)</span></li>
+</ul></li>
 </ul>
 
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
@@ -419,7 +393,7 @@ window.Quarto = {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+        var filterRegex = new RegExp('/' + window.location.host + '/');
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }

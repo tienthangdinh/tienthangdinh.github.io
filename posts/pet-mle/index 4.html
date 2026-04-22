@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-03-27">
+<meta name="dcterms.date" content="2026-02-20">
 
-<title>Kalman Filter – the brachistochrone traveller</title>
+<title>Maximum Likelihood Estimation – the brachistochrone traveller</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -134,9 +134,10 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Kalman Filter</h1>
+      <h1 class="title">Maximum Likelihood Estimation</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">Statistics</div>
+                <div class="quarto-category">Probability</div>
                 <div class="quarto-category">Estimation</div>
               </div>
                   </div>
@@ -149,7 +150,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">March 27, 2026</p>
+        <p class="date">February 20, 2026</p>
       </div>
     </div>
     
@@ -165,34 +166,31 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#kalman-filter" id="toc-kalman-filter" class="nav-link active" data-scroll-target="#kalman-filter">Kalman Filter</a>
+  <li><a href="#the-maximum-likelihood-estimator-mle" id="toc-the-maximum-likelihood-estimator-mle" class="nav-link active" data-scroll-target="#the-maximum-likelihood-estimator-mle">The Maximum Likelihood Estimator (MLE)</a></li>
+  <li><a href="#linear-estimator" id="toc-linear-estimator" class="nav-link" data-scroll-target="#linear-estimator">Linear Estimator</a>
   <ul class="collapse">
-  <li><a href="#start-with-assumption-about-system-model" id="toc-start-with-assumption-about-system-model" class="nav-link" data-scroll-target="#start-with-assumption-about-system-model">Start with Assumption about System Model</a></li>
-  <li><a href="#step-1-predict" id="toc-step-1-predict" class="nav-link" data-scroll-target="#step-1-predict">Step 1: Predict</a></li>
-  <li><a href="#step-2-update-using-measurement" id="toc-step-2-update-using-measurement" class="nav-link" data-scroll-target="#step-2-update-using-measurement">Step 2: Update using Measurement</a></li>
+  <li><a href="#example-1-normal-distribution" id="toc-example-1-normal-distribution" class="nav-link" data-scroll-target="#example-1-normal-distribution">Example 1: Normal Distribution</a>
+  <ul class="collapse">
+  <li><a href="#define-the-joint-pdf-likelihood-function" id="toc-define-the-joint-pdf-likelihood-function" class="nav-link" data-scroll-target="#define-the-joint-pdf-likelihood-function">1. Define the Joint PDF (Likelihood Function)</a></li>
+  <li><a href="#convert-to-log-likelihood" id="toc-convert-to-log-likelihood" class="nav-link" data-scroll-target="#convert-to-log-likelihood">2. Convert to Log-Likelihood</a></li>
+  <li><a href="#take-derivative" id="toc-take-derivative" class="nav-link" data-scroll-target="#take-derivative">3. Take Derivative</a></li>
+  <li><a href="#set-derivative-to-zero" id="toc-set-derivative-to-zero" class="nav-link" data-scroll-target="#set-derivative-to-zero">4. Set Derivative to Zero</a></li>
+  <li><a href="#expectation-value" id="toc-expectation-value" class="nav-link" data-scroll-target="#expectation-value">Expectation Value</a></li>
+  <li><a href="#variance" id="toc-variance" class="nav-link" data-scroll-target="#variance">Variance</a></li>
   </ul></li>
-  <li><a href="#faq" id="toc-faq" class="nav-link" data-scroll-target="#faq">FAQ</a>
+  <li><a href="#example-2-exponential-distribution" id="toc-example-2-exponential-distribution" class="nav-link" data-scroll-target="#example-2-exponential-distribution">Example 2: Exponential distribution</a>
   <ul class="collapse">
-  <li><a href="#why-phi-p_k-1-phit-for-project-the-error-covariance" id="toc-why-phi-p_k-1-phit-for-project-the-error-covariance" class="nav-link" data-scroll-target="#why-phi-p_k-1-phit-for-project-the-error-covariance">Why <span class="math inline">\(\Phi P_{k-1} \Phi^T\)</span> for Project the Error Covariance?</a></li>
-  <li><a href="#why-h-p-ht-in-the-kalman-gain" id="toc-why-h-p-ht-in-the-kalman-gain" class="nav-link" data-scroll-target="#why-h-p-ht-in-the-kalman-gain">Why <span class="math inline">\(H P H^T\)</span> in the Kalman Gain?</a></li>
-  <li><a href="#why-p-ht-in-the-kalman-gain" id="toc-why-p-ht-in-the-kalman-gain" class="nav-link" data-scroll-target="#why-p-ht-in-the-kalman-gain">Why $<span class="math inline">\(P H^T\)</span> in the Kalman Gain?</a></li>
-  <li><a href="#why-k_k-h-in-uncertainty-update" id="toc-why-k_k-h-in-uncertainty-update" class="nav-link" data-scroll-target="#why-k_k-h-in-uncertainty-update">Why <span class="math inline">\(K_k H\)</span> in Uncertainty Update?</a></li>
+  <li><a href="#define-the-joint-pdf-likelihood-function-1" id="toc-define-the-joint-pdf-likelihood-function-1" class="nav-link" data-scroll-target="#define-the-joint-pdf-likelihood-function-1">1. Define the Joint PDF (Likelihood Function)</a></li>
+  <li><a href="#convert-to-log-likelihood-1" id="toc-convert-to-log-likelihood-1" class="nav-link" data-scroll-target="#convert-to-log-likelihood-1">2. Convert to Log-Likelihood</a></li>
+  <li><a href="#take-derivative-1" id="toc-take-derivative-1" class="nav-link" data-scroll-target="#take-derivative-1">3. Take Derivative</a></li>
   </ul></li>
-  <li><a href="#example-1" id="toc-example-1" class="nav-link" data-scroll-target="#example-1">Example 1</a>
-  <ul class="collapse">
-  <li><a href="#system-setup-model-assumption" id="toc-system-setup-model-assumption" class="nav-link" data-scroll-target="#system-setup-model-assumption">System Setup (Model Assumption)</a></li>
-  <li><a href="#initial-guess" id="toc-initial-guess" class="nav-link" data-scroll-target="#initial-guess">Initial Guess</a></li>
-  <li><a href="#prediction-step-time-1s" id="toc-prediction-step-time-1s" class="nav-link" data-scroll-target="#prediction-step-time-1s">Prediction Step (Time = 1s)</a></li>
-  <li><a href="#update-step-time-1s" id="toc-update-step-time-1s" class="nav-link" data-scroll-target="#update-step-time-1s">Update Step (Time = 1s)</a></li>
+  <li><a href="#example-3-poisson-distribution" id="toc-example-3-poisson-distribution" class="nav-link" data-scroll-target="#example-3-poisson-distribution">Example 3: Poisson Distribution</a></li>
+  <li><a href="#example-4-binomial-distribution" id="toc-example-4-binomial-distribution" class="nav-link" data-scroll-target="#example-4-binomial-distribution">Example 4: Binomial Distribution</a></li>
   </ul></li>
-  <li><a href="#scalar-examples" id="toc-scalar-examples" class="nav-link" data-scroll-target="#scalar-examples">Scalar Examples</a>
+  <li><a href="#non-linear-estimator" id="toc-non-linear-estimator" class="nav-link" data-scroll-target="#non-linear-estimator">Non-Linear Estimator</a>
   <ul class="collapse">
-  <li><a href="#simplest-static-example" id="toc-simplest-static-example" class="nav-link" data-scroll-target="#simplest-static-example">Simplest Static Example</a>
-  <ul class="collapse">
-  <li><a href="#the-static-mse-approach" id="toc-the-static-mse-approach" class="nav-link" data-scroll-target="#the-static-mse-approach">The Static MSE Approach</a></li>
-  <li><a href="#static-kalman-filter" id="toc-static-kalman-filter" class="nav-link" data-scroll-target="#static-kalman-filter">Static Kalman Filter</a></li>
-  </ul></li>
-  <li><a href="#dynamic-example" id="toc-dynamic-example" class="nav-link" data-scroll-target="#dynamic-example">Dynamic Example</a></li>
+  <li><a href="#the-mathematical-hurdle" id="toc-the-mathematical-hurdle" class="nav-link" data-scroll-target="#the-mathematical-hurdle">The Mathematical Hurdle</a></li>
+  <li><a href="#numerical-optimization" id="toc-numerical-optimization" class="nav-link" data-scroll-target="#numerical-optimization">Numerical Optimization</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -204,141 +202,112 @@ window.Quarto = {
 
 
 
-<section id="kalman-filter" class="level1">
-<h1>Kalman Filter</h1>
-<section id="start-with-assumption-about-system-model" class="level2">
-<h2 class="anchored" data-anchor-id="start-with-assumption-about-system-model">Start with Assumption about System Model</h2>
-<p>Before we calculate anything, we define how the world works using 2 things:</p>
-<ul>
-<li><p>State Transition Equation: <span class="math inline">\(x_k = \Phi x_{k-1} + w_k\)</span></p>
-<ul>
-<li><span class="math inline">\(x_k\)</span>: The true state (e.g., position and velocity) at time <span class="math inline">\(k\)</span>.</li>
-<li><span class="math inline">\(\Phi\)</span> (or <span class="math inline">\(F\)</span>): The matrix that moves the state forward in time (the “physics”).</li>
-<li><span class="math inline">\(w_k\)</span>: Process Noise (variance <span class="math inline">\(Q\)</span>) (like the wind?)</li>
-</ul></li>
-<li><p>Observation Equation: <span class="math inline">\(z_k = H x_k + v_k\)</span></p>
-<ul>
-<li><span class="math inline">\(z_k\)</span>: The actual measurement from the sensor. (what sensor sees)</li>
-<li><span class="math inline">\(H\)</span>: The matrix that maps the state to what the sensor “sees.”</li>
-<li><span class="math inline">\(v_k\)</span>: Measurement Noise (variance <span class="math inline">\(R\)</span>).</li>
-</ul></li>
-</ul>
-</section>
-<section id="step-1-predict" class="level2">
-<h2 class="anchored" data-anchor-id="step-1-predict">Step 1: Predict</h2>
-<p>Project the State:<span class="math display">\[\hat{x}_{k|k-1} = \Phi \hat{x}_{k-1}\]</span></p>
-<p>Project the Error Covariance:<span class="math display">\[P_{k|k-1} = \Phi P_{k-1} \Phi^T + Q\]</span></p>
-</section>
-<section id="step-2-update-using-measurement" class="level2">
-<h2 class="anchored" data-anchor-id="step-2-update-using-measurement">Step 2: Update using Measurement</h2>
-<p>Calculate Kalman Gain (<span class="math inline">\(K\)</span>): (how much we trust the sensor measurement = <strong>how much we untrust the prediction</strong>) <span class="math display">\[K_k = P_{k|k-1} H^T (H P_{k|k-1} H^T + R)^{-1}\]</span></p>
-<p>Update State with the trust of sensor measurement: <span class="math display">\[\hat{x}_k = \hat{x}_{k|k-1} + K_k (z_k - H \hat{x}_{k|k-1})\]</span></p>
-<p>Decrease the Uncertainty: <span class="math display">\[P_k = (I - K_k H) P_{k|k-1}\]</span></p>
-</section>
-</section>
-<section id="faq" class="level1">
-<h1>FAQ</h1>
-<section id="why-phi-p_k-1-phit-for-project-the-error-covariance" class="level3">
-<h3 class="anchored" data-anchor-id="why-phi-p_k-1-phit-for-project-the-error-covariance">Why <span class="math inline">\(\Phi P_{k-1} \Phi^T\)</span> for Project the Error Covariance?</h3>
-<p>Well it is called covariance propagation from current state <span class="math inline">\(x_{old}\)</span> to next state <span class="math inline">\(x_{new}\)</span>. If <span class="math inline">\(x_{new} = \phi x_{old}\)</span>, then the variance <span class="math inline">\(P_{new} = \phi^2 P_{old}\)</span>.</p>
-</section>
-<section id="why-h-p-ht-in-the-kalman-gain" class="level3">
-<h3 class="anchored" data-anchor-id="why-h-p-ht-in-the-kalman-gain">Why <span class="math inline">\(H P H^T\)</span> in the Kalman Gain?</h3>
-<p>Actually for exactly the same reason. Covariance propagation from the state space <span class="math inline">\(x\)</span> to the measurement space <span class="math inline">\(z = Hx\)</span>. So there covariance has quadratic relationship <span class="math inline">\(P_z = H P H^T\)</span></p>
-</section>
-<section id="why-p-ht-in-the-kalman-gain" class="level3">
-<h3 class="anchored" data-anchor-id="why-p-ht-in-the-kalman-gain">Why $<span class="math inline">\(P H^T\)</span> in the Kalman Gain?</h3>
-<p>Actually we are just applying the <span class="math inline">\(z = Hx\)</span>, we are just mapping the same <span class="math inline">\(P\)</span> of <span class="math inline">\(x\)</span> to <span class="math inline">\(z\)</span> space. <strong>IT IS A MAPPING OF COVARIANCE; NOT A PROPAGATION OF COVARIANCE</strong></p>
-</section>
-<section id="why-k_k-h-in-uncertainty-update" class="level3">
-<h3 class="anchored" data-anchor-id="why-k_k-h-in-uncertainty-update">Why <span class="math inline">\(K_k H\)</span> in Uncertainty Update?</h3>
-<ul>
-<li><span class="math inline">\(H\)</span> takes your internal state (Position) and maps it to the sensor (Volts) (<span class="math inline">\(z_k = H x_k + v_k\)</span>).</li>
-<li><span class="math inline">\(K\)</span> takes that sensor information (Volts) and maps it back to your state (Position) (<span class="math inline">\(x_k = x_{k|k-1} + K_k (z_k - H x_{k|k-1})\)</span>).</li>
-<li><span class="math inline">\(KH\)</span> eventually bring back to a scaling scalar in sensor measurement space, it is the percentage of your current uncertainty that has been “explained” or “resolved” by the new measurement.</li>
-</ul>
-</section>
-</section>
-<section id="example-1" class="level1">
-<h1>Example 1</h1>
-<section id="system-setup-model-assumption" class="level2">
-<h2 class="anchored" data-anchor-id="system-setup-model-assumption">System Setup (Model Assumption)</h2>
-<p>Imagine a car moving along a straight line. We check its status every <span class="math inline">\(\Delta t = 1\)</span> second.</p>
-<p>State Vector: <span class="math inline">\(\mathbf{x}_k = \begin{bmatrix} s_k \\ v_k \end{bmatrix}\)</span> (Position, Velocity)</p>
-<p>State Transition Matrix (<span class="math inline">\(\Phi\)</span>) in <span class="math inline">\(x_k = \Phi x_{k-1} + w_k\)</span>: (<span class="math inline">\(s_{new} = s_{old} + v \cdot \Delta t\)</span> and <span class="math inline">\(v_{new} = v_{old}\)</span>): <span class="math display">\[\Phi = \begin{bmatrix} 1 &amp; 1 \\ 0 &amp; 1 \end{bmatrix}\]</span></p>
-<p>Observation Matrix (<span class="math inline">\(H\)</span>) in <span class="math inline">\(z_k = H x_k + v_k\)</span>: Our GPS measures directly only position, so 1 for that: <span class="math display">\[H = \begin{bmatrix} 1 &amp; 0 \end{bmatrix}\]</span></p>
-<p>Noise: Let’s assume Measurement Noise <span class="math inline">\(R = 4\)</span> and Process Noise <span class="math inline">\(Q = 0\)</span> (perfect physics).</p>
-</section>
-<section id="initial-guess" class="level2">
-<h2 class="anchored" data-anchor-id="initial-guess">Initial Guess</h2>
-<p><span class="math inline">\(\mathbf{\hat{x}}_0 = \begin{bmatrix} 0 \\ 10 \end{bmatrix}\)</span> and <span class="math inline">\(P_0 = \begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix}\)</span></p>
-</section>
-<section id="prediction-step-time-1s" class="level2">
-<h2 class="anchored" data-anchor-id="prediction-step-time-1s">Prediction Step (Time = 1s)</h2>
-<p>Before looking at the GPS, we predict: <span class="math display">\[\mathbf{\hat{x}}_{1|0} = \Phi \mathbf{\hat{x}}_0 = \begin{bmatrix} 1 &amp; 1 \\ 0 &amp; 1 \end{bmatrix} \begin{bmatrix} 0 \\ 10 \end{bmatrix} = \mathbf{\begin{bmatrix} 10 \\ 10 \end{bmatrix}}\]</span> <span class="math display">\[P_{1|0} = \Phi P_0 \Phi^T = \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 1 \end{bmatrix}\]</span></p>
-</section>
-<section id="update-step-time-1s" class="level2">
-<h2 class="anchored" data-anchor-id="update-step-time-1s">Update Step (Time = 1s)</h2>
-<p>Now we get the GPS measurement <span class="math inline">\(z_1 = 13\)</span> (eventhough we predicted 10 :)))</p>
-<p>Calculate Kalman Gain (trust of sensor measurement = <strong>how much we untrust the prediction</strong>): <span class="math display">\[K_1 = P_{1|0} H^T (H P_{1|0} H^T + R)^{-1} = \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 1 \end{bmatrix} \begin{bmatrix} 1 \\ 0 \end{bmatrix} (\begin{bmatrix} 1 &amp; 0 \end{bmatrix} \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 1 \end{bmatrix} \begin{bmatrix} 1 \\ 0 \end{bmatrix} + 4)^{-1} = \begin{bmatrix} 2 \\ 1 \end{bmatrix} (2 + 4)^{-1} = \begin{bmatrix} 2/6 \\ 1/6 \end{bmatrix} = \begin{bmatrix} 0.333 \\ 0.167 \end{bmatrix}\]</span></p>
-<p>Update State with the trust of sensor measurement: <span class="math display">\[\mathbf{\hat{x}}_1 = \mathbf{\hat{x}}_{1|0} + K_1 (z_1 - H \mathbf{\hat{x}}_{1|0}) = \begin{bmatrix} 10 \\ 10 \end{bmatrix} + \begin{bmatrix} 0.333 \\ 0.167 \end{bmatrix} (13 - 10) = \begin{bmatrix} 10 \\ 10 \end{bmatrix} + \begin{bmatrix} 1 \\ 0.5 \end{bmatrix} = \mathbf{\begin{bmatrix} 11 \\ 10.5 \end{bmatrix}}\]</span></p>
-<p>Decrease the Uncertainty: <span class="math display">\[P_1 = (I - K_1 H) P_{1|0} = (\begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix} - \begin{bmatrix} 0.333 &amp; 0 \\ 0.167 &amp; 0 \end{bmatrix}) \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 1 \end{bmatrix} = \begin{bmatrix} 0.667 &amp; 1 \\ -0.167 &amp; 1 \end{bmatrix} \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 1 \end{bmatrix} = \begin{bmatrix} 1.333 &amp; 0.667 \\ 0.833 &amp; 0.833 \end{bmatrix}\]</span></p>
-</section>
-</section>
-<section id="scalar-examples" class="level1">
-<h1>Scalar Examples</h1>
-<section id="simplest-static-example" class="level2">
-<h2 class="anchored" data-anchor-id="simplest-static-example">Simplest Static Example</h2>
-<p>Firstly the difference:</p>
-<ul>
-<li>MSE says: “I used <span class="math inline">\(Y\)</span> once in the lab to find <span class="math inline">\(a=1.214\)</span>. I will use <span class="math inline">\(1.214\)</span> forever.”</li>
-<li>Kalman says: “I used the statistics of <span class="math inline">\(Y\)</span> (its variance) to set my initial trust. But as I see more <span class="math inline">\(X\)</span> values, I will look at the ‘surprises’ (innovations) to refine my guess in real-time.”</li>
-</ul>
-<section id="the-static-mse-approach" class="level3">
-<h3 class="anchored" data-anchor-id="the-static-mse-approach">The Static MSE Approach</h3>
+<section id="the-maximum-likelihood-estimator-mle" class="level1">
+<h1>The Maximum Likelihood Estimator (MLE)</h1>
+<p>Up until now, we have assumed that we know the parameters of our distributions, like a Normal distribution with <span class="math inline">\(\mu=20\)</span> and <span class="math inline">\(\sigma=5\)</span>.</p>
+<p>But in the real world, nature doesn’t tell us <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\sigma\)</span>, or even <span class="math inline">\(\theta\)</span> as in Machine Learning. Instead we have measured a handful of data points <span class="math inline">\(\{x_1, x_2, \dots, x_n\}\)</span>, and it is our job to work backward to find the parameters <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\sigma\)</span> that produced them.</p>
 <blockquote class="blockquote">
-<p>You use the Ground Truth <span class="math inline">\(Y\)</span> in the lab to find a fixed weight <span class="math inline">\(a\)</span>. You never change that weight and use it to estimate <span class="math inline">\(Y\)</span> from <span class="math inline">\(X\)</span> in real world.</p>
+<p>find the “best” <span class="math inline">\(\{\mu, \sigma\}\)</span> that makes the data <span class="math inline">\(\{x_1, x_2, \dots, x_n\}\)</span> the most probable</p>
 </blockquote>
-<p>What we know from the World Model: true temperature is constant <span class="math inline">\(x = 20\)</span> (or manufacturer etc…)</p>
-<p>Measurements: <span class="math inline">\(z_1 = 18\)</span>, <span class="math inline">\(z_2 = 22\)</span>, <span class="math inline">\(z_3 = 19\)</span>. We usually solve using <span class="math inline">\(C_{YX} = a C_X\)</span>. Now let’s calculate the Covariances (<span class="math inline">\(C_X\)</span> and <span class="math inline">\(C_{YX}\)</span>):</p>
-<p><span class="math display">\[E\{X_1^2\} = \frac{18^2 + 22^2 + 19^2}{3} = \frac{1161}{3} = 387\]</span> <span class="math display">\[E\{Y X_1\} = \frac{(20\cdot18) + (20\cdot22) + (20\cdot19)}{3} = \frac{1180}{3}\]</span></p>
-<p>Solution <span class="math inline">\(a = \frac{E\{YX_1\}}{E\{X_1^2\}} = \frac{1180/3}{387}\)</span> <span class="math display">\[\hat{Y} = \frac{1}{3}(a X_1 + a X_2 + a X_3) = \frac{1}{3} \cdot \frac{1180}{387 \cdot 3} \cdot (18 + 22 + 19) \approx 19.9885\]</span></p>
-</section>
-<section id="static-kalman-filter" class="level3">
-<h3 class="anchored" data-anchor-id="static-kalman-filter">Static Kalman Filter</h3>
+<p>The Likelihood Function is the joint probability of seeing this specific data for a given <span class="math inline">\(\theta\)</span>: <span class="math display">\[L(\theta) = f(x_1, x_2, \dots, x_n | \theta)\]</span> Because the observations are independent, the joint density is just the product of the individual densities: <span class="math display">\[L(\theta) = \prod_{i=1}^{n} f(x_i | \theta)\]</span> Since the natural logarithm (<span class="math inline">\(\ln\)</span>) is a strictly increasing function, the <span class="math inline">\(\theta\)</span> that maximizes <span class="math inline">\(L(\theta)\)</span> will also maximize <span class="math inline">\(\ln L(\theta)\)</span>, so we define the log-likelihood function as: <span class="math display">\[\ell(\theta) = \ln L(\theta) = \sum_{i=1}^{n} \ln f(x_i | \theta)\]</span> And our goal is to find the <span class="math inline">\(\theta\)</span> that maximizes this log-likelihood function: <span class="math display">\[\hat{\theta} = \arg\max_{\theta} \ell(\theta)\]</span></p>
+<p>And to find the <span class="math inline">\(\hat{\theta}\)</span>, we set the derivative of the log-likelihood function to zero: <span class="math display">\[\frac{\partial \ell(\theta)}{\partial \theta} = \frac{\partial \log f_X(x_1, x_2, \dots, x_n | \theta)}{\partial \theta} \bigg|_{\theta = \hat{\theta}_{ML}} = 0\]</span></p>
+<p>This is basically how Machine Learning find <span class="math inline">\(\theta\)</span>.</p>
 <blockquote class="blockquote">
-<p>“I don’t know the truth <span class="math inline">\(Y\)</span>, but I will keep collecting data until trust in data <span class="math inline">\(P\)</span> is more than trust in sensor noise <span class="math inline">\(\sigma_v^2\)</span>. Because it’s when we say ‘I trust my filter more than the next measurement’. And <span class="math inline">\(P_0\)</span> is the initial trust. and <span class="math inline">\(\hat{x}_0\)</span> is the initial guess.”</p>
+<p>The beautiful thing is that, we assume the data is normally distributed around <span class="math inline">\(\theta\)</span></p>
 </blockquote>
-<p>What we know from the World Model: this time <strong>not the value <span class="math inline">\(x=20\)</span> but the statistics</strong>. Sensor with noise variance <span class="math inline">\(\sigma_v^2 = 4\)</span>.We start with a “Prior Belief” (initial guess) of <span class="math inline">\(\hat{x}_0 = 25\)</span> with an initial uncertainty (error variance) of <span class="math inline">\(P_0 = 10\)</span>.</p>
-<p>Step 1: <span class="math inline">\(z_1 = 18\)</span>: <span class="math display">\[K_1 = \frac{P_0}{P_0 + \sigma_v^2} = \frac{10}{10 + 4} = \mathbf{0.714}\]</span> <span class="math display">\[\hat{x}_1 = \hat{x}_0 + K_1(z_1 - \hat{x}_0) = 25 + 0.714(18 - 25) = \mathbf{20}\]</span> <span class="math display">\[P_1 = (1 - K_1)P_0 = (1 - 0.714) \times 10 = \mathbf{2.86}\]</span></p>
-<p>Step 2: <span class="math inline">\(z_2 = 22\)</span>: <span class="math display">\[K_2 = \frac{P_1}{P_1 + \sigma_v^2} = \frac{2.86}{2.86 + 4} = \mathbf{0.417}\]</span> <span class="math display">\[\hat{x}_2 = \hat{x}_1 + K_2(z_2 - \hat{x}_1) = 20 + 0.417(22 - 20) = \mathbf{20.83}\]</span> <span class="math display">\[P_2 = (1 - K_2)P_1 = (1 - 0.417) \times 2.86 = \mathbf{1.67}\]</span></p>
-<p><strong>We keep measuring until <span class="math inline">\(P_n\)</span> is smaller than sensor noise <span class="math inline">\(\sigma_v^2\)</span>. Because it’s when we say “I trust my filter more than the next measurement”.</strong></p>
+<p>Example: If you have three independent measurements (<span class="math inline">\(10.1, 9.9, 10.3\)</span>) from a normal distribution with an unknown mean <span class="math inline">\(\theta\)</span>:</p>
+<ul>
+<li>The likelihood function is the product of three bell curves.</li>
+<li>The log-likelihood turns that product into a sum of squares.</li>
+<li>Taking the derivative and setting it to zero results in the sample mean: <span class="math inline">\(\hat{\theta}_{ML} = \frac{10.1 + 9.9 + 10.3}{3} = 10.1\)</span>.</li>
+</ul>
+</section>
+<section id="linear-estimator" class="level1">
+<h1>Linear Estimator</h1>
+<section id="example-1-normal-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="example-1-normal-distribution">Example 1: Normal Distribution</h2>
+<section id="define-the-joint-pdf-likelihood-function" class="level3">
+<h3 class="anchored" data-anchor-id="define-the-joint-pdf-likelihood-function">1. Define the Joint PDF (Likelihood Function)</h3>
+<p>We start with <span class="math inline">\(n\)</span> independent observations <span class="math inline">\(X_i = \theta + w_i\)</span>, where the noise <span class="math inline">\(w_i\)</span> follows a Normal distribution <span class="math inline">\(N(0, \sigma^2)\)</span>. This means each observation <span class="math inline">\(X_i\)</span> is an independent Normal random variable <span class="math inline">\(X_i \sim N(\theta, \sigma^2)\)</span>. <span class="math display">\[f_X(x_1, \dots, x_n; \theta) = \prod_{i=1}^{n} \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{(x_i - \theta)^2}{2\sigma^2}}\]</span></p>
+</section>
+<section id="convert-to-log-likelihood" class="level3">
+<h3 class="anchored" data-anchor-id="convert-to-log-likelihood">2. Convert to Log-Likelihood</h3>
+<p><span class="math display">\[L(\theta) = \log \left( \prod_{i=1}^{n} \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{(x_i - \theta)^2}{2\sigma^2}} \right)\]</span> Using log properties (<span class="math inline">\(\log(ab) = \log a + \log b\)</span> and <span class="math inline">\(\log(e^u) = u\)</span>): <span class="math display">\[L(\theta) = \sum_{i=1}^{n} \left[ \log \left( \frac{1}{\sigma \sqrt{2\pi}} \right) - \frac{(x_i - \theta)^2}{2\sigma^2} \right]\]</span></p>
+</section>
+<section id="take-derivative" class="level3">
+<h3 class="anchored" data-anchor-id="take-derivative">3. Take Derivative</h3>
+<p><span class="math display">\[\frac{\partial L}{\partial \theta} = \frac{\partial}{\partial \theta} \sum_{i=1}^{n} \left[ \text{constant} - \frac{(x_i - \theta)^2}{2\sigma^2} \right]\]</span> <span class="math display">\[\frac{\partial L}{\partial \theta} = \sum_{i=1}^{n} \frac{2(x_i - \theta)}{2\sigma^2} = \frac{1}{\sigma^2} \sum_{i=1}^{n} (x_i - \theta)\]</span></p>
+</section>
+<section id="set-derivative-to-zero" class="level3">
+<h3 class="anchored" data-anchor-id="set-derivative-to-zero">4. Set Derivative to Zero</h3>
+<p><span class="math display">\[\frac{1}{\sigma^2} \sum_{i=1}^{n} (x_i - \hat{\theta}_{ML}) = 0\]</span> <span class="math display">\[\sum_{i=1}^{n} x_i - \sum_{i=1}^{n} \hat{\theta}_{ML} = 0\]</span> <span class="math display">\[\sum_{i=1}^{n} x_i - n\hat{\theta}_{ML} = 0\]</span> <span class="math display">\[\hat{\theta}_{ML} = \frac{1}{n} \sum_{i=1}^{n} x_i\]</span></p>
+<p>A Mean Estimator is best for Normal Distribution. But what if the distribution is not Normal? idk yet</p>
+</section>
+<section id="expectation-value" class="level3">
+<h3 class="anchored" data-anchor-id="expectation-value">Expectation Value</h3>
+<p><span class="math display">\[E[\hat{\theta}_{ML}(x)] = \frac{1}{n} \sum_{i=1}^{n} E(X_i)\]</span> <span class="math display">\[E[\hat{\theta}_{ML}(x)] = \frac{1}{n} \sum_{i=1}^{n} \theta = \theta\]</span></p>
+<p>Conclusion: Because the average value of our estimator exactly equals the desired parameter, there is no bias. These types of “ideal” estimators are formally known as unbiased estimators.</p>
+</section>
+<section id="variance" class="level3">
+<h3 class="anchored" data-anchor-id="variance">Variance</h3>
+<p><span class="math display">\[\text{Var}(\hat{\theta}_{ML}) = E[(\hat{\theta}_{ML} - \theta)^2]\]</span> <span class="math display">\[\text{Var}(\hat{\theta}_{ML}) = \frac{1}{n^2} E[(\sum_{i=1}^{n} (X_i - \theta))^2]\]</span> <span class="math display">\[\text{Var}(\hat{\theta}_{ML}) = \frac{1}{n^2} \sum_{i=1}^{n} E[(X_i - \theta)^2]\]</span> <span class="math display">\[\text{Var}(\hat{\theta}_{ML}) = \frac{1}{n^2} \sum_{i=1}^{n} \sigma^2\]</span> <span class="math display">\[\text{Var}(\hat{\theta}_{ML}) = \frac{1}{n^2} (n \sigma^2)\]</span> <span class="math display">\[\text{Var}(\hat{\theta}_{ML}) = \frac{\sigma^2}{n}\]</span></p>
+<p>Conclusion: the more measurements you take, the more “certain” your estimate becomes.</p>
 </section>
 </section>
-<section id="dynamic-example" class="level2">
-<h2 class="anchored" data-anchor-id="dynamic-example">Dynamic Example</h2>
-<p>Increasing temperature</p>
+<section id="example-2-exponential-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="example-2-exponential-distribution">Example 2: Exponential distribution</h2>
+<section id="define-the-joint-pdf-likelihood-function-1" class="level3">
+<h3 class="anchored" data-anchor-id="define-the-joint-pdf-likelihood-function-1">1. Define the Joint PDF (Likelihood Function)</h3>
+<p>We start with <span class="math inline">\(n\)</span> independent observations <span class="math inline">\(X_1, \dots, X_n\)</span>. We assume they follow an Exponential distribution with an unknown rate parameter <span class="math inline">\(\theta\)</span> (where <span class="math inline">\(\theta &gt; 0\)</span>). The individual PDF is <span class="math inline">\(f(x; \theta) = \theta e^{-\theta x}\)</span>. <span class="math display">\[f_X(x_1, \dots, x_n; \theta) = \prod_{i=1}^{n} \theta e^{-\theta x_i}\]</span></p>
+</section>
+<section id="convert-to-log-likelihood-1" class="level3">
+<h3 class="anchored" data-anchor-id="convert-to-log-likelihood-1">2. Convert to Log-Likelihood</h3>
+<p><span class="math display">\[L(\theta) = \log \left( \prod_{i=1}^{n} \theta e^{-\theta x_i} \right)\]</span> Because <span class="math inline">\(\log(a^n) = n \log a\)</span> and <span class="math inline">\(\log(e^u) = u\)</span>: <span class="math display">\[L(\theta) = \sum_{i=1}^{n} [ \log \theta - \theta x_i ]\]</span> <span class="math display">\[L(\theta) = n \log \theta - \theta \sum_{i=1}^{n} x_i\]</span></p>
+</section>
+<section id="take-derivative-1" class="level3">
+<h3 class="anchored" data-anchor-id="take-derivative-1">3. Take Derivative</h3>
+<p><span class="math display">\[\frac{\partial L}{\partial \theta} = \frac{\partial}{\partial \theta} \left[ n \log \theta - \theta \sum_{i=1}^{n} x_i \right]\]</span> <span class="math display">\[\frac{\partial L}{\partial \theta} = \frac{n}{\theta} - \sum_{i=1}^{n} x_i\]</span></p>
+<ol start="4" type="1">
+<li>Set Derivative to Zero <span class="math display">\[\frac{n}{\hat{\theta}_{ML}} - \sum_{i=1}^{n} x_i = 0\]</span> <span class="math display">\[\frac{n}{\hat{\theta}_{ML}} = \sum_{i=1}^{n} x_i\]</span> <span class="math display">\[\hat{\theta}_{ML} = \frac{n}{\sum_{i=1}^{n} x_i} = \frac{1}{\bar{x}}\]</span></li>
+</ol>
+<p>Conclusion: For the Exponential distribution, the Maximum Likelihood Estimator for the rate <span class="math inline">\(\theta\)</span> is the inverse of the sample mean.</p>
+<p>Expectation Value and Variance in general also similar to normal distribution.</p>
+</section>
+</section>
+<section id="example-3-poisson-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="example-3-poisson-distribution">Example 3: Poisson Distribution</h2>
+<ol type="1">
+<li><p>Define the Joint PDF (Likelihood Function) We have <span class="math inline">\(n\)</span> independent observations <span class="math inline">\(X_1, \dots, X_n\)</span>. We assume they follow a Poisson distribution with an unknown rate <span class="math inline">\(\lambda\)</span> (the average number of events). The individual probability mass function (PMF) is <span class="math inline">\(P(X=x; \lambda) = \frac{\lambda^x e^{-\lambda}}{x!}\)</span>. <span class="math display">\[f_X(x_1, \dots, x_n; \lambda) = \prod_{i=1}^{n} \frac{\lambda^{x_i} e^{-\lambda}}{x_i!}\]</span></p></li>
+<li><p>Convert to Log-Likelihood <span class="math display">\[L(\lambda) = \log \left( \prod_{i=1}^{n} \frac{\lambda^{x_i} e^{-\lambda}}{x_i!} \right)\]</span> <span class="math display">\[L(\lambda) = \sum_{i=1}^{n} \left[ \log(\lambda^{x_i}) + \log(e^{-\lambda}) - \log(x_i!) \right]\]</span> <span class="math display">\[L(\lambda) = \sum_{i=1}^{n} [ x_i \log \lambda - \lambda - \log(x_i!) ]\]</span> <span class="math display">\[L(\lambda) = (\log \lambda) \sum_{i=1}^{n} x_i - n\lambda - \sum_{i=1}^{n} \log(x_i!)\]</span></p></li>
+<li><p>Take Derivative Note that the last term <span class="math inline">\(\sum \log(x_i!)\)</span> does not contain <span class="math inline">\(\lambda\)</span>, so it becomes zero (constant): <span class="math display">\[\frac{\partial L}{\partial \lambda} = \frac{1}{\lambda} \sum_{i=1}^{n} x_i - n\]</span></p></li>
+<li><p>Set Derivative to Zero <span class="math display">\[\frac{1}{\hat{\lambda}_{ML}} \sum_{i=1}^{n} x_i - n = 0\]</span> <span class="math display">\[\frac{1}{\hat{\lambda}_{ML}} \sum_{i=1}^{n} x_i = n\]</span> <span class="math display">\[\hat{\lambda}_{ML} = \frac{1}{n} \sum_{i=1}^{n} x_i = \bar{x}\]</span></p></li>
+</ol>
+<p>Conclusion: For the Poisson distribution, the Maximum Likelihood Estimator for the rate <span class="math inline">\(\lambda\)</span> is simply the sample mean.</p>
+<p>Expectation Value: <span class="math display">\[E[\hat{\lambda}_{ML}] = E\left[ \frac{1}{n} \sum_{i=1}^{n} X_i \right] = \frac{1}{n} \sum_{i=1}^{n} E[X_i] = \lambda\]</span></p>
+<p>Variance: <span class="math display">\[\text{Var}(\hat{\lambda}_{ML}) = \text{Var}\left( \frac{1}{n} \sum_{i=1}^{n} X_i \right) = \frac{1}{n^2} \sum_{i=1}^{n} \text{Var}(X_i)\]</span> For Poisson, the variance is also <span class="math inline">\(\lambda\)</span>. <span class="math display">\[\text{Var}(\hat{\lambda}_{ML}) = \frac{1}{n^2} (n\lambda) = \frac{\lambda}{n}\]</span></p>
+</section>
+<section id="example-4-binomial-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="example-4-binomial-distribution">Example 4: Binomial Distribution</h2>
+<ol type="1">
+<li>Define the Joint PDF (Likelihood Function) Suppose we conduct <span class="math inline">\(n\)</span> independent experiments. In each experiment, we perform <span class="math inline">\(m\)</span> trials and count the number of successes <span class="math inline">\(X_i\)</span>. We assume <span class="math inline">\(X_i \sim \text{Binomial}(m, p)\)</span>, where <span class="math inline">\(m\)</span> is known and <span class="math inline">\(p\)</span> is the unknown parameter we want to estimate.The individual probability mass function (PMF) is <span class="math inline">\(P(X=x; p) = \binom{m}{x} p^x (1-p)^{m-x}\)</span>. <span class="math display">\[f_X(x_1, \dots, x_n; p) = \prod_{i=1}^{n} \binom{m}{x_i} p^{x_i} (1-p)^{m-x_i}\]</span></li>
+<li>Convert to Log-Likelihood <span class="math display">\[L(p) = \log \left( \prod_{i=1}^{n} \binom{m}{x_i} p^{x_i} (1-p)^{m-x_i} \right)\]</span> <span class="math display">\[L(p) = \sum_{i=1}^{n} \left[ \log \binom{m}{x_i} + x_i \log p + (m-x_i) \log(1-p) \right]\]</span> <span class="math display">\[L(p) = \sum_{i=1}^{n} \log \binom{m}{x_i} + (\log p) \sum_{i=1}^{n} x_i + \log(1-p) \sum_{i=1}^{n} (m-x_i)\]</span></li>
+</ol>
+<p>Then set derivative to zero and so on… you know what to do</p>
+</section>
+</section>
+<section id="non-linear-estimator" class="level1">
+<h1>Non-Linear Estimator</h1>
+<section id="the-mathematical-hurdle" class="level3">
+<h3 class="anchored" data-anchor-id="the-mathematical-hurdle">The Mathematical Hurdle</h3>
+<p>Consider a scenario where the mean of our Normal distribution isn’t just <span class="math inline">\(\theta\)</span>, but a non-linear function like <span class="math inline">\(h(\theta) = \sqrt{\theta^2 + 1}\)</span>. The log-likelihood derivative would look like this: <span class="math display">\[\frac{\partial \ell}{\partial \theta} = \sum_{i=1}^{n} \frac{(x_i - h(\theta))}{\sigma^2} \cdot \frac{\partial h(\theta)}{\partial \theta} = 0\]</span> If <span class="math inline">\(h(\theta)\)</span> is non-linear, you usually cannot isolate <span class="math inline">\(\theta\)</span> on one side of the equation.</p>
+</section>
+<section id="numerical-optimization" class="level3">
+<h3 class="anchored" data-anchor-id="numerical-optimization">Numerical Optimization</h3>
+<p>Since we cannot find a “closed-form” solution (like <span class="math inline">\(\bar{x}\)</span>), we need to use numerical optimization techniques to find the value of <span class="math inline">\(\theta\)</span> that maximizes the likelihood function.</p>
 <ul>
-<li>True State (<span class="math inline">\(x_t\)</span>): Starts at 20°C and increases: <span class="math inline">\(x_t = x_{t-1} + 1\)</span>.</li>
-<li>Process Noise (<span class="math inline">\(Q\)</span>): We are 100% sure about this “+1” rule, so <span class="math inline">\(Q = 0\)</span>.</li>
-<li>Sensor Noise (<span class="math inline">\(\sigma_v^2\)</span>): Still 4.</li>
-<li>Initial Guess: <span class="math inline">\(\hat{x}_0 = 20\)</span> with uncertainty <span class="math inline">\(P_0 = 2\)</span>.</li>
-</ul>
-<p>Step 1: (Sensor measured <span class="math inline">\(z_1 = 22.5\)</span>):</p>
-<ul>
-<li>Predicted State: <span class="math inline">\(\hat{x}_{1|0} = 20 + 1 = \mathbf{21}\)</span></li>
-<li>Predicted Uncertainty: <span class="math inline">\(P_{1|0} = P_0 + Q = 2 + 0 = \mathbf{2}\)</span></li>
-<li>Kalman Gain (how much we trust the sensor): <span class="math inline">\(K_1 = \frac{P_{1|0}}{P_{1|0} + \sigma_v^2} = \frac{2}{2 + 4} = \mathbf{0.333}\)</span></li>
-<li>Updated State: <span class="math inline">\(\hat{x}_1 = \hat{x}_{1|0} + K_1(z_1 - \hat{x}_{1|0}) = 21 + 0.333(22.5 - 21) = \mathbf{21.5}\)</span></li>
-<li>Updated Uncertainty: <span class="math inline">\(P_1 = (1 - K_1)P_{1|0} = (1 - 0.333) \times 2 = \mathbf{1.334}\)</span></li>
-</ul>
-<p>Step 2: (Sensor measured <span class="math inline">\(z_2 = 21\)</span>)</p>
-<ul>
-<li>Predicted State: <span class="math inline">\(\hat{x}_{2|1} = \hat{x}_1 + 1 = 21.5 + 1 = \mathbf{22.5}\)</span></li>
-<li>Predicted Uncertainty: <span class="math inline">\(P_{2|1} = P_1 + Q = 1.334 + 0 = \mathbf{1.334}\)</span></li>
-<li>Kalman Gain: <span class="math inline">\(K_2 = \frac{P_{2|1}}{P_{2|1} + \sigma_v^2} = \frac{1.334}{1.334 + 4} = \mathbf{0.249}\)</span></li>
-<li>Updated State: <span class="math inline">\(\hat{x}_2 = \hat{x}_{2|1} + K_2(z_2 - \hat{x}_{2|1}) = 22.5 + 0.249(21 - 22.5) = \mathbf{22.126}\)</span></li>
-<li>Updated Uncertainty: <span class="math inline">\(P_2 = (1 - K_2)P_{2|1} = (1 - 0.249) \times 1.334 = \mathbf{1.002}\)</span></li>
+<li>Gradient Descent: Moving “uphill” on the likelihood curve until you reach the peak.</li>
+<li>Newton-Raphson Method: Using the second derivative (curvature) to jump toward the maximum.</li>
+<li>Expectation-Maximization (EM): A specialized algorithm used when some data is missing or hidden.</li>
 </ul>
 
 
