@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-04-21">
+
+<title>State Estimation – the brachistochrone traveller</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">the brachistochrone traveller</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Đinh Tiến Thắng</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">State Estimation</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">State Estimation</div>
+                <div class="quarto-category">SLAM</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">April 21, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#formulation" id="toc-formulation" class="nav-link active" data-scroll-target="#formulation">Formulation</a></li>
+  <li><a href="#linear-state-estimation---kf" id="toc-linear-state-estimation---kf" class="nav-link" data-scroll-target="#linear-state-estimation---kf">Linear State Estimation - KF</a>
+  <ul class="collapse">
+  <li><a href="#sum-up-kalman-filter-algorithm" id="toc-sum-up-kalman-filter-algorithm" class="nav-link" data-scroll-target="#sum-up-kalman-filter-algorithm">Sum up Kalman Filter Algorithm</a></li>
+  <li><a href="#explaination" id="toc-explaination" class="nav-link" data-scroll-target="#explaination">Explaination:</a></li>
+  </ul></li>
+  <li><a href="#non-linear-kalman-filter-ekf" id="toc-non-linear-kalman-filter-ekf" class="nav-link" data-scroll-target="#non-linear-kalman-filter-ekf">Non-linear Kalman Filter (EKF)</a></li>
+  <li><a href="#bundle-adjustment" id="toc-bundle-adjustment" class="nav-link" data-scroll-target="#bundle-adjustment">Bundle Adjustment</a>
+  <ul class="collapse">
+  <li><a href="#camera-projection-model" id="toc-camera-projection-model" class="nav-link" data-scroll-target="#camera-projection-model">Camera Projection Model</a></li>
+  <li><a href="#solve-ba" id="toc-solve-ba" class="nav-link" data-scroll-target="#solve-ba">Solve BA</a></li>
+  <li><a href="#more-explaination-on-e-and-f" id="toc-more-explaination-on-e-and-f" class="nav-link" data-scroll-target="#more-explaination-on-e-and-f">More explaination on E and F</a>
+  <ul class="collapse">
+  <li><a href="#derivation" id="toc-derivation" class="nav-link" data-scroll-target="#derivation">Derivation</a></li>
+  <li><a href="#the-common-starting-component" id="toc-the-common-starting-component" class="nav-link" data-scroll-target="#the-common-starting-component">The Common Starting Component</a></li>
+  <li><a href="#deriving-mathbfe-landmark-jacobian" id="toc-deriving-mathbfe-landmark-jacobian" class="nav-link" data-scroll-target="#deriving-mathbfe-landmark-jacobian">Deriving <span class="math inline">\(\mathbf{E}\)</span> (Landmark Jacobian)</a></li>
+  <li><a href="#deriving-mathbff-camera-jacobian" id="toc-deriving-mathbff-camera-jacobian" class="nav-link" data-scroll-target="#deriving-mathbff-camera-jacobian">Deriving <span class="math inline">\(\mathbf{F}\)</span> (Camera Jacobian)</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example">Example</a></li>
+  <li><a href="#step-1-the-intermediate-projection-jacobian" id="toc-step-1-the-intermediate-projection-jacobian" class="nav-link" data-scroll-target="#step-1-the-intermediate-projection-jacobian">Step 1: The Intermediate Projection Jacobian</a></li>
+  <li><a href="#step-3-calculate-the-camera-jacobian-mathbff" id="toc-step-3-calculate-the-camera-jacobian-mathbff" class="nav-link" data-scroll-target="#step-3-calculate-the-camera-jacobian-mathbff">Step 3: Calculate the Camera Jacobian (<span class="math inline">\(\mathbf{F}\)</span>)</a></li>
+  <li><a href="#step-4-putting-them-together" id="toc-step-4-putting-them-together" class="nav-link" data-scroll-target="#step-4-putting-them-together">Step 4: Putting them together</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="formulation" class="level1">
+<h1>Formulation</h1>
+<p>In all other blogs, we usually use <span class="math inline">\(\mathbf{x}\)</span> to denote <strong>only</strong> the camera pose. In SLAM, we don’t just want to know where we are; we want to know where everything else is too. We pack them all into one giant vector to optimize them together:<span class="math display">\[\mathbf{x}_k \triangleq \{ \mathbf{x}_k, \mathbf{y}_1, \dots, \mathbf{y}_m \} \tag{8.2}\]</span></p>
+<p>Every SLAM system, whether it uses a Kalman Filter or Optimization, is built on these two pillars:</p>
+<ul>
+<li><strong>Prediction (Motion Model):</strong> <span class="math display">\[\mathbf{x}_k = f(\mathbf{x}_{k-1}, \mathbf{u}_k) + \mathbf{w}_k\]</span></li>
+<li><strong>Correction (Measurement Model):</strong> <span class="math display">\[\mathbf{z}_k = h(\mathbf{x}_k) + \mathbf{v}_k\]</span></li>
+</ul>
+<p>We want to find the probability distribution of the state <span class="math inline">\(\mathbf{x}_k\)</span> given all our past inputs (<span class="math inline">\(\mathbf{u}\)</span>) and observations (<span class="math inline">\(\mathbf{z}\)</span>):<span class="math display">\[P(\mathbf{x}_k | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k})\]</span> In SLAM, we are always working with Conditional Bayes, where everything is already dependent on our “history” (let’s call the history <span class="math inline">\(H\)</span>):<span class="math display">\[P(A|B, H) = \frac{P(B|A, H) P(A|H)}{P(B|H)}\]</span> We want the probability of our position using both measurement and history:<span class="math display">\[P(\mathbf{x}_k | \mathbf{z}_k, H)\]</span></p>
+<p>Using Conditiona Bayes to “flip” the problem between <span class="math inline">\(\mathbf{z}_k\)</span> and <span class="math inline">\(\mathbf{x}_k\)</span>:<span class="math display">\[P(\mathbf{x}_k | \mathbf{z}_k, H) = \frac{P(\mathbf{z}_k | \mathbf{x}_k, H) P(\mathbf{x}_k | H)}{P(\mathbf{z}_k | H)}\]</span></p>
+<p>Look at the term <span class="math inline">\(P(\mathbf{z}_k | \mathbf{x}_k, H)\)</span>. The measurement, physics of camera etc are not dependent on our history. It is true that in BA, we maximize the samt <span class="math inline">\(P(\mathbf{x}_1, \dots, \mathbf{x}_k, \mathbf{y}_1, \dots, \mathbf{y}_m | \mathbf{z}_{1:k})\)</span>, <strong>but inside each frame <span class="math inline">\(z_{i,j}\)</span> only depends on <span class="math inline">\(x_i\)</span> and <span class="math inline">\(y_j\)</span></strong> : <span class="math display">\[P(\mathbf{z}_k | \mathbf{x}_k, H) \approx P(\mathbf{z}_k | \mathbf{x}_k)\]</span></p>
+<p>The denominator <span class="math inline">\(P(\mathbf{z}_k | H)\)</span> is just the probability of seeing those specific pixels regardless of where you are. Since it doesn’t depend on our variable <span class="math inline">\(\mathbf{x}_k\)</span>, we treat it as a constant:<span class="math display">\[P(\mathbf{x}_k | \mathbf{z}_k, H) \propto P(\mathbf{z}_k | \mathbf{x}_k) P(\mathbf{x}_k | H)\]</span> Which is: <span class="math display">\[P(\mathbf{x}_k | \dots) \propto \underbrace{P(\mathbf{z}_k | \mathbf{x}_k)}_{\text{Likelihood}} \underbrace{P(\mathbf{x}_k | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1})}_{\text{Prior}}\]</span></p>
+<ul>
+<li><strong>Likelihood</strong>: “How well does my current guess explain the pixels I am seeing right now?” (reprojection/photometric error in previous blog).</li>
+<li><strong>Prior</strong>: “What did I think my position was before I opened my eyes in this frame, based on my previous movement?”. And the prior itself is also not sure: <span class="math display">\[P(\mathbf{x}_k | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) = \int P(\mathbf{x}_k | \mathbf{x}_{k-1}, \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) P(\mathbf{x}_{k-1} | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) d\mathbf{x}_{k-1}\]</span></li>
+</ul>
+<p>There are 2 approaches to solve this problem:</p>
+<ul>
+<li>Filtering Method (EKF) faster but less accurate</li>
+<li>Optimization Method (Batch/Nonlinear) slower but more accurate</li>
+</ul>
+</section>
+<section id="linear-state-estimation---kf" class="level1">
+<h1>Linear State Estimation - KF</h1>
+<p>Let’s look back at this: <span class="math display">\[P(\mathbf{x}_k | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) = \int P(\mathbf{x}_k | \mathbf{x}_{k-1}, \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) P(\mathbf{x}_{k-1} | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) d\mathbf{x}_{k-1}\]</span></p>
+<p>Simplifying the Motion Model: <strong>Markov property</strong> If we know the previous state <span class="math inline">\(\mathbf{x}_{k-1}\)</span> and the current command <span class="math inline">\(\mathbf{u}_k\)</span>, the rest of the history is irrelevant:<span class="math display">\[P(\mathbf{x}_k | \mathbf{x}_{k-1}, \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) = P(\mathbf{x}_k | \mathbf{x}_{k-1}, \mathbf{u}_k)\]</span></p>
+<p>Simplifying the Previous Distribution:The distribution at <span class="math inline">\(k-1\)</span> doesn’t care about the command <span class="math inline">\(\mathbf{u}_k\)</span> we just gave (because the command hasn’t happened yet in that timeframe):<span class="math display">\[P(\mathbf{x}_{k-1} | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) = P(\mathbf{x}_{k-1} | \mathbf{x}_0, \mathbf{u}_{1:k-1}, \mathbf{z}_{1:k-1})\]</span></p>
+<p>We assume the robot’s life follows these two linear equations:<span class="math display">\[\begin{cases} \mathbf{x}_k = \mathbf{A}_k \mathbf{x}_{k-1} + \mathbf{u}_k + \mathbf{w}_k \\ \mathbf{z}_k = \mathbf{C}_k \mathbf{x}_k + \mathbf{v}_k \end{cases} \]</span></p>
+<ul>
+<li><span class="math inline">\(\mathbf{A}_k\)</span>: State transition matrix (how the robot moves).</li>
+<li><span class="math inline">\(\mathbf{C}_k\)</span>: Observation matrix (how the camera sees).</li>
+<li><span class="math inline">\(\mathbf{w}_k, \mathbf{v}_k\)</span>: Random noise.</li>
+</ul>
+<p>We assume this noise is Zero-mean Gaussian:<span class="math display">\[\mathbf{w}_k \sim N(\mathbf{0}, \mathbf{R}), \quad \mathbf{v}_k \sim N(\mathbf{0}, \mathbf{Q})\]</span></p>
+<ul>
+<li><span class="math inline">\(\hat{\mathbf{x}}_k\)</span> (Up Hat): The Posterior. This is our best guess after looking at the camera image.</li>
+<li><span class="math inline">\(\check{\mathbf{x}}_k\)</span> (Down Hat): The Prior. This is our best guess after moving, but before looking at the camera image.</li>
+</ul>
+<p><strong>Step 1: PREDICTION</strong></p>
+<p>We take our previous best guess (<span class="math inline">\(\hat{\mathbf{x}}_{k-1}\)</span> and its uncertainty <span class="math inline">\(\hat{\mathbf{P}}_{k-1}\)</span>) and push it through the motion equation.The Probability Distribution:<span class="math display">\[P(\mathbf{x}_k | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) = N(\mathbf{A}_k \hat{\mathbf{x}}_{k-1} + \mathbf{u}_k, \mathbf{A}_k \hat{\mathbf{P}}_{k-1} \mathbf{A}_k^T + \mathbf{R})\]</span></p>
+<p>The Practical Update Formulas:<span class="math display">\[\check{\mathbf{x}}_k = \mathbf{A}_k \hat{\mathbf{x}}_{k-1} + \mathbf{u}_k, \quad \check{\mathbf{P}}_k = \mathbf{A}_k \hat{\mathbf{P}}_{k-1} \mathbf{A}_k^T + \mathbf{R}\]</span></p>
+<p>Intuition: Notice that <span class="math inline">\(\check{\mathbf{P}}_k\)</span> (the new uncertainty) is the old uncertainty plus <span class="math inline">\(\mathbf{R}\)</span> (the motion noise). <strong>“The more you move without looking, the more lost you get.”</strong></p>
+<p>Then, we define what we expect to see. If we are at state <span class="math inline">\(\mathbf{x}_k\)</span>, our camera should see:<span class="math display">\[P(\mathbf{z}_k | \mathbf{x}_k) = N(\mathbf{C}_k \mathbf{x}_k, \mathbf{Q})\]</span></p>
+<p><strong>Step 2: UPDATE</strong> We have a Prior (our guess after moving) and a Likelihood (what the camera sees). Now, we multiply them together to get the Posterior (the final, best estimate). We want the posterior distribution <span class="math inline">\(N(\hat{\mathbf{x}}_k, \hat{\mathbf{P}}_k)\)</span>. According to Bayes’ rule, this is the product of the likelihood and the prior:<span class="math display">\[N(\hat{\mathbf{x}}_k, \hat{\mathbf{P}}_k) = \eta N(\mathbf{C}_k \mathbf{x}_k, \mathbf{Q}) \cdot N(\mathbf{x}_k, \check{\mathbf{P}}_k)\]</span><span class="math inline">\(\eta\)</span>: A normalization constant (to make sure the probability area sums to 1).</p>
+<p>The Goal now: Find the new mean (<span class="math inline">\(\hat{\mathbf{x}}_k\)</span>) and new covariance (<span class="math inline">\(\hat{\mathbf{P}}_k\)</span>).</p>
+<p>The exponent of a Gaussian <span class="math inline">\(N(\mu, \Sigma)\)</span> is <span class="math inline">\(-\frac{1}{2}(x - \mu)^T \Sigma^{-1} (x - \mu)\)</span>. Since we are multiplying Gaussians, we add their exponents. To find the new parameters, we compare the coefficients of the quadratic terms:<span class="math display">\[(\mathbf{x}_k - \hat{\mathbf{x}}_k)^T \hat{\mathbf{P}}_k^{-1} (\mathbf{x}_k - \hat{\mathbf{x}}_k) = (\mathbf{z}_k - \mathbf{C}_k \mathbf{x}_k)^T \mathbf{Q}^{-1} (\mathbf{z}_k - \mathbf{C}_k \mathbf{x}_k) + (\mathbf{x}_k - \check{\mathbf{x}}_k)^T \check{\mathbf{P}}_k^{-1} (\mathbf{x}_k - \check{\mathbf{x}}_k)\]</span></p>
+<p>By looking at the terms containing <span class="math inline">\(\mathbf{x}_k^2\)</span> (the second-order coefficients), we find the Information Matrix (the inverse of the covariance):<span class="math display">\[\hat{\mathbf{P}}_k^{-1} = \mathbf{C}_k^T \mathbf{Q}^{-1} \mathbf{C}_k + \check{\mathbf{P}}_k^{-1}\]</span></p>
+<p>Intuition: Information adds up! The “sureness” of your final position is the “sureness” of your move plus the “sureness” of your camera. This is why the final <span class="math inline">\(\hat{\mathbf{P}}_k\)</span> is always smaller (more certain) than either the prior or the likelihood alone.</p>
+<p>To make this easier to compute, we defines the Kalman Gain (K):<span class="math display">\[\mathbf{K} = \hat{\mathbf{P}}_k \mathbf{C}_k^T \mathbf{Q}^{-1}\]</span></p>
+<p>Using some matrix algebra, we get the standard update for the covariance:<span class="math display">\[\hat{\mathbf{P}}_k = (\mathbf{I} - \mathbf{K} \mathbf{C}_k) \check{\mathbf{P}}_k\]</span></p>
+<p>By comparing the first-order coefficients (the terms with just <span class="math inline">\(\mathbf{x}_k\)</span>), we find how the mean shifts:<span class="math display">\[\hat{\mathbf{P}}_k^{-1} \hat{\mathbf{x}}_k = \mathbf{C}_k^T \mathbf{Q}^{-1} \mathbf{z}_k + \check{\mathbf{P}}_k^{-1} \check{\mathbf{x}}_k\]</span></p>
+<p>After substituting the Kalman Gain <span class="math inline">\(\mathbf{K}\)</span> and rearranging, we reach the famous Kalman Filter update equation:<span class="math display">\[\hat{\mathbf{x}}_k = \check{\mathbf{x}}_k + \mathbf{K}(\mathbf{z}_k - \mathbf{C}_k \check{\mathbf{x}}_k)\]</span></p>
+<p>Explaination:</p>
+<ul>
+<li><span class="math inline">\((\mathbf{z}_k - \mathbf{C}_k \check{\mathbf{x}}_k)\)</span>: This is the Innovation (or Residual). it is the difference between what the camera actually saw (<span class="math inline">\(\mathbf{z}_k\)</span>) and what we expected it to see (<span class="math inline">\(\mathbf{C}_k \check{\mathbf{x}}_k\)</span>).</li>
+<li><span class="math inline">\(\mathbf{K}\)</span>: This is the Trust Factor.If the camera is very noisy (<span class="math inline">\(\mathbf{Q}\)</span> is huge), <span class="math inline">\(\mathbf{K}\)</span> becomes small. We ignore the camera and stay with our prior guess.If the camera is perfect (<span class="math inline">\(\mathbf{Q}\)</span> is zero), <span class="math inline">\(\mathbf{K}\)</span> becomes large. We ignore our prior and jump to whatever the camera says.</li>
+<li>The Update: Your new position is your old guess + (The Kalman Gain <span class="math inline">\(\times\)</span> The Prediction Error).</li>
+<li>You might notice that <span class="math inline">\(\hat{\mathbf{P}}_k^{-1} = \mathbf{C}_k^T \mathbf{Q}^{-1} \mathbf{C}_k + \check{\mathbf{P}}_k^{-1}\)</span> looks very similar to the <span class="math inline">\(\mathbf{J}^T \mathbf{J}\)</span> we saw in Gauss-Newton. The Kalman Filter is indeed doing one single step of Gauss-Newton every time a new image arrives.</li>
+</ul>
+<section id="sum-up-kalman-filter-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="sum-up-kalman-filter-algorithm">Sum up Kalman Filter Algorithm</h2>
+<ol type="1">
+<li><p>Predict (Motion Update) We project our current state and uncertainty forward in time using the motion model. <span class="math display">\[
+\begin{aligned}
+\check{\mathbf{x}}_k &amp;= \mathbf{A}_k \hat{\mathbf{x}}_{k-1} + \mathbf{u}_k \\
+\check{\mathbf{P}}_k &amp;= \mathbf{A}_k \hat{\mathbf{P}}_{k-1} \mathbf{A}_k^T + \mathbf{R}
+\end{aligned}
+\]</span></p></li>
+<li><p>Update (Measurement Update) First, we calculate the Kalman Gain (<span class="math inline">\(\mathbf{K}\)</span>), which determines how much we trust the new sensor data versus our internal prediction: <span class="math display">\[
+\mathbf{K} = \check{\mathbf{P}}_k \mathbf{C}_k^T (\mathbf{C}_k \check{\mathbf{P}}_k \mathbf{C}_k^T + \mathbf{Q}_k)^{-1}
+\]</span> Then, we calculate the Posterior state and covariance: <span class="math display">\[
+\begin{aligned}
+\hat{\mathbf{x}}_k &amp;= \check{\mathbf{x}}_k + \mathbf{K}(\mathbf{z}_k - \mathbf{C}_k \check{\mathbf{x}}_k) \\
+\hat{\mathbf{P}}_k &amp;= (\mathbf{I} - \mathbf{K} \mathbf{C}_k) \check{\mathbf{P}}_k
+\end{aligned}
+\]</span></p></li>
+</ol>
+</section>
+<section id="explaination" class="level2">
+<h2 class="anchored" data-anchor-id="explaination">Explaination:</h2>
+<p>Your question would be, how did we come from <span class="math display">\[P(\mathbf{x}_k | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) = \int P(\mathbf{x}_k | \mathbf{x}_{k-1}, \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) P(\mathbf{x}_{k-1} | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{1:k-1}) d\mathbf{x}_{k-1}\]</span> to <span class="math display">\[\begin{cases} \mathbf{x}_k = \mathbf{A}_k \mathbf{x}_{k-1} + \mathbf{u}_k + \mathbf{w}_k \\ \mathbf{z}_k = \mathbf{C}_k \mathbf{x}_k + \mathbf{v}_k \end{cases} \]</span></p>
+<p>Firstly, <span class="math inline">\(\mathbf{x}_k = \mathbf{A}_k \mathbf{x}_{k-1} + \mathbf{u}_k + \mathbf{w}_k\)</span> is the probability <span class="math inline">\(P(\mathbf{x}_k | \mathbf{x}_{k-1}, \mathbf{u}_k)\)</span>.</p>
+<ul>
+<li>The Mean of the probability is <span class="math inline">\(\mathbf{A}_k \mathbf{x}_{k-1} + \mathbf{u}_k\)</span> (where we expect to land).</li>
+<li>The Variance (the spread of the cloud) is determined by the noise term <span class="math inline">\(\mathbf{w}_k\)</span>.</li>
+</ul>
+<p>Secondly, The term <span class="math inline">\(P(\mathbf{x}_{k-1} | \mathbf{x}_0, \mathbf{u}_{1:k-1}, \mathbf{z}_{1:k-1}) d\mathbf{x}_{k-1}\)</span> represents all the result points of the previous frame. It is the bell curve (Gaussian) that the robot calculated at time <span class="math inline">\(k-1\)</span>. And you know, we dont save all points like that, we summarize them into two variables:</p>
+<ul>
+<li><span class="math inline">\(\hat{\mathbf{x}}_{k-1}\)</span>: The mean (the center of the earlier point).</li>
+<li><span class="math inline">\(\hat{\mathbf{P}}_{k-1}\)</span>: The covariance (how dense the distribution is).</li>
+</ul>
+<p>AND EVENTUALLY, both things above are collapsed into this:</p>
+<ul>
+<li>The center of the distribution: <span class="math inline">\(\hat{\mathbf{x}}_{k-1}\)</span> (in: <span class="math inline">\(\check{\mathbf{x}}_k = \mathbf{A}_k \hat{\mathbf{x}}_{k-1} + \mathbf{u}_k\)</span> )</li>
+<li>The width of the distribution: <span class="math inline">\(\hat{\mathbf{P}}_{k-1}\)</span> (in: <span class="math inline">\(\check{\mathbf{P}}_k = \mathbf{A}_k \hat{\mathbf{P}}_{k-1} \mathbf{A}_k^T + \mathbf{R}\)</span> )</li>
+</ul>
+</section>
+</section>
+<section id="non-linear-kalman-filter-ekf" class="level1">
+<h1>Non-linear Kalman Filter (EKF)</h1>
+<p>But u know, in reality, camera projections (division by <span class="math inline">\(Z\)</span>) and rotations (<span class="math inline">\(SE(3)\)</span> or Quaternions) are “curvy” functions. If you push Gaussian bell curve through a “curvy” function, the output is no longer Gaussian. Since the Kalman Filter only knows how to handle bell curves, we have a problem. To keep the math fast and “Gaussian,” the EKF uses a trick: Taylor Expansion. We pretend the function is a straight line, but only for a tiny, local area around our current guess.</p>
+<p>Instead of the simple <span class="math inline">\(\mathbf{A}x\)</span> and <span class="math inline">\(\mathbf{C}x\)</span>, we now have general nonlinear functions:</p>
+<ul>
+<li>Motion: <span class="math inline">\(\mathbf{x}_k = f(\mathbf{x}_{k-1}, \mathbf{u}_k) + \mathbf{w}_k\)</span></li>
+<li>Observation: <span class="math inline">\(\mathbf{z}_k = h(\mathbf{x}_k) + \mathbf{n}_k\)</span></li>
+</ul>
+<p>To make these “linear,” we perform a First-order Taylor Expansion at our current best estimate. And you know, first order is always linear.</p>
+<p><strong>The Motion Model Approximation</strong> We expand around the previous posterior <span class="math inline">\(\hat{\mathbf{x}}_{k-1}\)</span>:<span class="math display">\[\mathbf{x}_k \approx f(\hat{\mathbf{x}}_{k-1}, \mathbf{u}_k) + \frac{\partial f}{\partial \mathbf{x}_{k-1}}\bigg|_{\hat{\mathbf{x}}_{k-1}} (\mathbf{x}_{k-1} - \hat{\mathbf{x}}_{k-1}) + \mathbf{w}_k\]</span> <span class="math display">\[\mathbf{x}_k \approx \underbrace{f(\hat{\mathbf{x}}_{k-1}, \mathbf{u}_k)}_{\text{Center Move}} + \underbrace{\mathbf{F} \cdot (\text{Deviation from Center})}_{\text{Cloud Stretching}}\]</span></p>
+<p><span class="math inline">\((\mathbf{x}_{k-1} - \hat{\mathbf{x}}_{k-1})\)</span> is the “Error” or the “Deviation” from our mean. Our robot thinks it is at the center of a bell curve (<span class="math inline">\(\hat{\mathbf{x}}_{k-1}\)</span>). But the bell curve has “width.” in different direction. The term <span class="math inline">\((\mathbf{x}_{k-1} - \hat{\mathbf{x}}_{k-1})\)</span> represents any random point inside that cloud relative to the center. So yes, we take the “width” of our old uncertainty and multiply it by the slope (<span class="math inline">\(\mathbf{F}\)</span>) to see how much the cloud “stretches” or “squashes” during the move.</p>
+<p>Jacobian Matrix for <span class="math inline">\(f\)</span> is <span class="math inline">\(\mathbf{F}\)</span>. It now plays the role of the matrix <span class="math inline">\(\mathbf{A}\)</span> from the linear version. <span class="math display">\[\mathbf{F} = \frac{\partial f}{\partial \mathbf{x}_{k-1}}\bigg|_{\hat{\mathbf{x}}_{k-1}}\]</span></p>
+<p><strong>The Observation Model Approximation</strong> Exactly the same way, we expand the camera’s observation function around our predicted state <span class="math inline">\(\check{\mathbf{x}}_k\)</span>:<span class="math display">\[\mathbf{z}_k \approx h(\check{\mathbf{x}}_k) + \frac{\partial h}{\partial \mathbf{x}_k}\bigg|_{\check{\mathbf{x}}_k} (\mathbf{x}_k - \check{\mathbf{x}}_k) + \mathbf{n}_k\]</span></p>
+<p>Just like we found the slope of the motion (<span class="math inline">\(\mathbf{F}\)</span>), we now find the slope of the camera observation function <span class="math inline">\(h\)</span> at our predicted position <span class="math inline">\(\check{\mathbf{x}}_k\)</span>:<span class="math display">\[\mathbf{H} = \frac{\partial h}{\partial \mathbf{x}_k} \bigg|_{\check{\mathbf{x}}_k}\]</span></p>
+<p>Remember that giant <span class="math inline">\(2 \times 6\)</span> matrix we talked about in the Direct Method in an earlier blog?<span class="math inline">\(\mathbf{J} = \frac{\partial \mathbf{u}}{\partial \delta \xi}\)</span>. That IS the Jacobian for the observation model <span class="math inline">\(H\)</span>, you are literally plugging in those geometric derivatives.</p>
+<p><strong>1. Prediction</strong> We move the center of our distribution through the “curvy” reality, but we stretch the uncertainty as if it were a straight line:<span class="math display">\[P(\mathbf{x}_k | \mathbf{x}_0, \mathbf{u}_{1:k}, \mathbf{z}_{0:k-1}) = N(f(\hat{\mathbf{x}}_{k-1}, \mathbf{u}_k), \mathbf{F}\hat{\mathbf{P}}_{k-1}\mathbf{F}^T + \mathbf{R}_k)\]</span></p>
+<p>In practical terms:</p>
+<ul>
+<li>Predicted Mean: <span class="math inline">\(\check{\mathbf{x}}_k = f(\hat{\mathbf{x}}_{k-1}, \mathbf{u}_k)\)</span></li>
+<li>Predicted Covariance: <span class="math inline">\(\check{\mathbf{P}}_k = \mathbf{F}\hat{\mathbf{P}}_{k-1}\mathbf{F}^T + \mathbf{R}_k\)</span></li>
+</ul>
+<p><strong>2. Update</strong> Now we “open our eyes” and look at the camera image <span class="math inline">\(\mathbf{z}_k\)</span>. We calculate the Kalman Gain, substituting our Jacobian <span class="math inline">\(\mathbf{H}\)</span> for the old linear matrix <span class="math inline">\(\mathbf{C}\)</span>:<span class="math display">\[\mathbf{K}_k = \check{\mathbf{P}}_k \mathbf{H}^T (\mathbf{H}\check{\mathbf{P}}_k \mathbf{H}^T + \mathbf{Q}_k)^{-1}\]</span></p>
+<p>Finally, we update our guess to get the Posterior: <span class="math display">\[\hat{\mathbf{x}}_k = \check{\mathbf{x}}_k + \mathbf{K}_k(\mathbf{z}_k - h(\check{\mathbf{x}}_k))\]</span> <span class="math display">\[\hat{\mathbf{P}}_k = (\mathbf{I} - \mathbf{K}_k \mathbf{H}) \check{\mathbf{P}}_k\]</span></p>
+<p><strong>Observation:</strong> * We use the linear Jacobian <span class="math inline">\(\mathbf{H}\)</span> to decide how much to trust the sensor. * But we use the nonlinear projection <span class="math inline">\(h\)</span> to calculate the actual error. * This “hybrid” approach helps the EKF stay much more accurate than if it were purely linear.</p>
+</section>
+<section id="bundle-adjustment" class="level1">
+<h1>Bundle Adjustment</h1>
+<p>While the EKF (from the previous section) tries to “summarize” the past into a single state, BA keeps all the original data and wiggles everything—poses and points—until they fit together perfectly. Let’s see how it works.</p>
+<section id="camera-projection-model" class="level2">
+<h2 class="anchored" data-anchor-id="camera-projection-model">Camera Projection Model</h2>
+<p>To formulate error,let’s start with a 3D point <span class="math inline">\(\mathbf{p}\)</span> becomes a 2D pixel <span class="math inline">\(\mathbf{z}\)</span>. This is the “Observation Equation” <span class="math inline">\(h(\mathbf{x}, \mathbf{y})\)</span> broken down into its physics steps.</p>
+<p><strong>Step 1: World to Camera Frame</strong> Transform the 3D point <span class="math inline">\(\mathbf{p}\)</span> using the camera’s rotation <span class="math inline">\(\mathbf{R}\)</span> and translation <span class="math inline">\(\mathbf{t}\)</span>:<span class="math display">\[\mathbf{P}' = \mathbf{R}\mathbf{p} + \mathbf{t} = [X', Y', Z']^T\]</span></p>
+<p><strong>Step 2: Projection to Normalized Plane</strong>Divide by depth (<span class="math inline">\(Z'\)</span>) to get coordinates on the virtual plane 1 meter away from the lens:<span class="math display">\[\mathbf{P}_c = [u_c, v_c, 1]^T = [X'/Z', Y'/Z', 1]^T\]</span></p>
+<p><strong>Step 3: Distortion</strong> Distortion coefficients <span class="math inline">\(k_1, k_2\)</span> (Note: <span class="math inline">\(r_c^2 = u_c^2 + v_c^2\)</span> is the squared distance from the center).:<span class="math display">\[\begin{cases} u'_c = u_c(1 + k_1r_c^2 + k_2r_c^4) \\ v'_c = v_c(1 + k_1r_c^2 + k_2r_c^4) \end{cases}\]</span></p>
+<p><strong>Step 4: Intrinsics to Pixel Coordinates</strong> Use the focal lengths (<span class="math inline">\(f_x, f_y\)</span>) and principal point (<span class="math inline">\(c_x, c_y\)</span>) to find the final pixel address:<span class="math display">\[\begin{cases} u_s = f_x u'_c + c_x \\ v_s = f_y v'_c + c_y \end{cases}\]</span></p>
+<p><strong>Summarize</strong>: If we group all the camera parameters (like pose <span class="math inline">\(\mathbf{T}\)</span> and intrinsics) as <span class="math inline">\(\mathbf{x}\)</span> and the 3D landmark positions as <span class="math inline">\(\mathbf{y}\)</span>, we can summarize all four steps above into one function <span class="math inline">\(h\)</span>:<span class="math display">\[\mathbf{z} = h(\mathbf{x}, \mathbf{y})\]</span></p>
+<p>In a perfect world, your camera would see the landmark exactly where <span class="math inline">\(h(\mathbf{x}, \mathbf{y})\)</span> says it should be. In reality, noise makes them different. We define the Reprojection Error (<span class="math inline">\(\mathbf{e}\)</span>):<span class="math display">\[\mathbf{e} = \mathbf{z} - h(\mathbf{T}, \mathbf{p})\]</span></p>
+<p>Our goal is to minimize the sum of all squared errors:<span class="math display">\[\frac{1}{2} \sum_{i=1}^m \sum_{j=1}^n \|\mathbf{e}_{ij}\|^2 = \frac{1}{2} \sum_{i=1}^m \sum_{j=1}^n \|\mathbf{z}_{ij} - h(\mathbf{T}_i, \mathbf{p}_j)\|^2\]</span></p>
+</section>
+<section id="solve-ba" class="level2">
+<h2 class="anchored" data-anchor-id="solve-ba">Solve BA</h2>
+<p>In BA, our unknown variable <span class="math inline">\(\mathbf{x}\)</span> is a giant vector containing every camera pose and every 3D landmark.<span class="math display">\[\mathbf{x} = [\mathbf{T}_1, \dots, \mathbf{T}_m, \mathbf{p}_1, \dots, \mathbf{p}_n]^T\]</span></p>
+<p>To solve this using Gauss-Newton, we need to find an increment <span class="math inline">\(\Delta \mathbf{x}\)</span> that reduces the error. We split this increment into two parts:</p>
+<ul>
+<li><span class="math inline">\(\Delta \mathbf{x}_c\)</span>: The update for all <span class="math inline">\(m\)</span> camera poses (in Lie Algebra <span class="math inline">\(\mathfrak{se}(3)\)</span>).</li>
+<li><span class="math inline">\(\Delta \mathbf{x}_p\)</span>: The update for all <span class="math inline">\(n\)</span> 3D point positions.</li>
+</ul>
+<p>The cost function is the sum of all reprojection errors. We use a Taylor expansion to linearize it. For a single observation of point <span class="math inline">\(j\)</span> by camera <span class="math inline">\(i\)</span>, the error becomes:<span class="math display">\[\frac{1}{2} \|f(\mathbf{x} + \Delta\mathbf{x})\|^2 \approx \frac{1}{2} \sum_{i=1}^m \sum_{j=1}^n \|\mathbf{e}_{ij} + \mathbf{F}_{ij}\Delta\xi_i + \mathbf{E}_{ij}\Delta\mathbf{p}_j\|^2\]</span></p>
+<ul>
+<li><span class="math inline">\(\mathbf{F}_{ij}\)</span>: “If I wiggle the <span class="math inline">\(i\)</span>-th camera pose (<span class="math inline">\(\delta\xi_i\)</span>), how much does the <span class="math inline">\(j\)</span>-th pixel move?”</li>
+<li><span class="math inline">\(\mathbf{E}_{ij}\)</span>: “If I wiggle the <span class="math inline">\(j\)</span>-th 3D point (<span class="math inline">\(\Delta \mathbf{p}_j\)</span>), how much does its projection move on the <span class="math inline">\(i\)</span>-th camera’s sensor?”</li>
+</ul>
+<p>When we stack all these observations into one large matrix, the equation simplifies to:<span class="math display">\[\frac{1}{2} \|f(\mathbf{x} + \Delta\mathbf{x})\|^2 = \frac{1}{2} \|\mathbf{e} + \mathbf{F}\Delta\mathbf{x}_c + \mathbf{E}\Delta\mathbf{x}_p\|^2\]</span></p>
+<p>To find the best Gradient and <span class="math inline">\(\Delta\mathbf{x}\)</span>, we solve the linear system derived from the Gauss-Newton or Levenberg-Marquardt method:<span class="math display">\[\mathbf{H}\Delta\mathbf{x} = \mathbf{g}\]</span></p>
+<ul>
+<li><span class="math inline">\(\mathbf{H}\)</span>: The Hessian matrix (Information Matrix).</li>
+<li><span class="math inline">\(\mathbf{g}\)</span>: The Gradient vector.</li>
+</ul>
+<p>Since we categorized the variables into poses and landmarks. We define the global Jacobian <span class="math inline">\(\mathbf{J}\)</span> by placing the camera Jacobians and point Jacobians side-by-side:<span class="math display">\[\mathbf{J} = [\mathbf{F} \quad \mathbf{E}]\]</span> <span class="math display">\[\mathbf{J} = \left[ \begin{array}{ccc|ccc} \mathbf{F}_{11} &amp; \mathbf{0} &amp; \dots &amp; \mathbf{E}_{11} &amp; \mathbf{0} &amp; \dots \\ \mathbf{0} &amp; \mathbf{F}_{21} &amp; \dots &amp; \mathbf{E}_{21} &amp; \dots &amp; \dots \\ \vdots &amp; \vdots &amp; \ddots &amp; \vdots &amp; \vdots &amp; \ddots \end{array} \right]\]</span></p>
+<p>The Hessian matrix <span class="math inline">\(\mathbf{H}\)</span> is built by multiplying <span class="math inline">\(\mathbf{J}^T \mathbf{J}\)</span>. This results in a very specific block-matrix structure:<span class="math display">\[\mathbf{H} = \mathbf{J}^T \mathbf{J} = \begin{bmatrix} \mathbf{F}^T\mathbf{F} &amp; \mathbf{F}^T\mathbf{E} \\ \mathbf{E}^T\mathbf{F} &amp; \mathbf{E}^T\mathbf{E} \end{bmatrix}\]</span></p>
+<ul>
+<li><span class="math inline">\(\mathbf{F}^T\mathbf{F}\)</span>: Interactions between cameras.</li>
+<li><span class="math inline">\(\mathbf{E}^T\mathbf{E}\)</span>: Interactions between landmarks.</li>
+<li>The Off-Diagonals: The constraints that connect cameras to landmarks.</li>
+</ul>
+<p>You know, H is a huge huge huge matrix. But it is mostly sparse, so in next chapter we solve uisng Schur Complement.</p>
+</section>
+<section id="more-explaination-on-e-and-f" class="level2">
+<h2 class="anchored" data-anchor-id="more-explaination-on-e-and-f">More explaination on E and F</h2>
+<section id="derivation" class="level3">
+<h3 class="anchored" data-anchor-id="derivation">Derivation</h3>
+<p>Main idea, we need to see how the error <span class="math inline">\(\mathbf{e}\)</span> changes when we wiggle the landmark <span class="math inline">\(\mathbf{p}\)</span> or the camera pose <span class="math inline">\(\mathbf{T}\)</span>.Let’s break down the projection <span class="math inline">\(h(\mathbf{T}, \mathbf{p})\)</span> into two main layers:</p>
+<ul>
+<li>Geometry Layer: The 3D point in world coordinates <span class="math inline">\(\mathbf{p}\)</span> is moved to the camera frame <span class="math inline">\(\mathbf{P}' = [X', Y', Z']^T\)</span>.</li>
+<li>Projection Layer: The camera-frame point <span class="math inline">\(\mathbf{P}'\)</span> is projected into pixel coordinates <span class="math inline">\(\mathbf{u} = [u, v]^T\)</span>.</li>
+</ul>
+</section>
+<section id="the-common-starting-component" class="level3">
+<h3 class="anchored" data-anchor-id="the-common-starting-component">The Common Starting Component</h3>
+<p><span class="math inline">\(\frac{\partial \mathbf{u}}{\partial \mathbf{P}'}\)</span>Both <span class="math inline">\(\mathbf{F}\)</span> and <span class="math inline">\(\mathbf{E}\)</span> share a middle step: How do pixel coordinates change if the 3D point inside the camera frame moves?From the projection equations <span class="math inline">\(u = f_x \frac{X'}{Z'} + c_x\)</span> and <span class="math inline">\(v = f_y \frac{Y'}{Z'} + c_y\)</span>, we take the partial derivatives with respect to <span class="math inline">\(X', Y', Z'\)</span>:<span class="math display">\[\frac{\partial \mathbf{u}}{\partial \mathbf{P}'} = \begin{bmatrix} \frac{\partial u}{\partial X'} &amp; \frac{\partial u}{\partial Y'} &amp; \frac{\partial u}{\partial Z'} \\ \frac{\partial v}{\partial X'} &amp; \frac{\partial v}{\partial Y'} &amp; \frac{\partial v}{\partial Z'} \end{bmatrix} = \begin{bmatrix} \frac{f_x}{Z'} &amp; 0 &amp; -\frac{f_x X'}{Z'^2} \\ 0 &amp; \frac{f_y}{Z'} &amp; -\frac{f_y Y'}{Z'^2} \end{bmatrix}\]</span></p>
+</section>
+<section id="deriving-mathbfe-landmark-jacobian" class="level3">
+<h3 class="anchored" data-anchor-id="deriving-mathbfe-landmark-jacobian">Deriving <span class="math inline">\(\mathbf{E}\)</span> (Landmark Jacobian)</h3>
+<p><span class="math inline">\(\mathbf{E}\)</span> is the derivative of the error with respect to the 3D world point <span class="math inline">\(\mathbf{p}\)</span>.Since <span class="math inline">\(\mathbf{e} = \mathbf{z} - h(\mathbf{T}, \mathbf{p})\)</span>, the Jacobian is <span class="math inline">\(-\frac{\partial h}{\partial \mathbf{p}}\)</span>.The Chain Rule:<span class="math display">\[\mathbf{E} = - \frac{\partial \mathbf{u}}{\partial \mathbf{P}'} \cdot \frac{\partial \mathbf{P}'}{\partial \mathbf{p}}\]</span></p>
+<p>We already have the first part. For the second part, since <span class="math inline">\(\mathbf{P}' = \mathbf{R}\mathbf{p} + \mathbf{t}\)</span>, the derivative with respect to <span class="math inline">\(\mathbf{p}\)</span> is simply the rotation matrix <span class="math inline">\(\mathbf{R}\)</span>.The Final Result for <span class="math inline">\(\mathbf{E}\)</span> has size <span class="math inline">\(2 \times 3\)</span>:<span class="math display">\[\mathbf{E} = - \begin{bmatrix} \frac{f_x}{Z'} &amp; 0 &amp; -\frac{f_x X'}{Z'^2} \\ 0 &amp; \frac{f_y}{Z'} &amp; -\frac{f_y Y'}{Z'^2} \end{bmatrix} \mathbf{R}\]</span></p>
+</section>
+<section id="deriving-mathbff-camera-jacobian" class="level3">
+<h3 class="anchored" data-anchor-id="deriving-mathbff-camera-jacobian">Deriving <span class="math inline">\(\mathbf{F}\)</span> (Camera Jacobian)</h3>
+<p><span class="math inline">\(\mathbf{F}\)</span> is the derivative of the error with respect to the camera pose perturbation <span class="math inline">\(\delta\xi \in \mathfrak{se}(3)\)</span>.The Chain Rule:<span class="math display">\[\mathbf{F} = - \frac{\partial \mathbf{u}}{\partial \mathbf{P}'} \cdot \frac{\partial \mathbf{P}'}{\partial \delta \xi}\]</span></p>
+<p>From Lie Algebra, we know that if we apply a tiny left-multiplication perturbation <span class="math inline">\(\exp(\delta\xi^\wedge)\)</span> to the transformation, the derivative of the transformed point <span class="math inline">\(\mathbf{P}'\)</span> with respect to the perturbation is:<span class="math display">\[\frac{\partial \mathbf{P}'}{\partial \delta \xi} = [\mathbf{I} \quad -\mathbf{P}'^\wedge] = \begin{bmatrix} 1 &amp; 0 &amp; 0 &amp; 0 &amp; Z' &amp; -Y' \\ 0 &amp; 1 &amp; 0 &amp; -Z' &amp; 0 &amp; X' \\ 0 &amp; 0 &amp; 1 &amp; Y' &amp; -X' &amp; 0 \end{bmatrix}\]</span>Now, multiply the two matrices together:<span class="math display">\[\mathbf{F} = - \begin{bmatrix} \frac{f_x}{Z'} &amp; 0 &amp; -\frac{f_x X'}{Z'^2} \\ 0 &amp; \frac{f_y}{Z'} &amp; -\frac{f_y Y'}{Z'^2} \end{bmatrix} \begin{bmatrix} 1 &amp; 0 &amp; 0 &amp; 0 &amp; Z' &amp; -Y' \\ 0 &amp; 1 &amp; 0 &amp; -Z' &amp; 0 &amp; X' \\ 0 &amp; 0 &amp; 1 &amp; Y' &amp; -X' &amp; 0 \end{bmatrix}\]</span>The Final Result for <span class="math inline">\(\mathbf{F}\)</span>:After performing the matrix multiplication, you get the <span class="math inline">\(2 \times 6\)</span> matrix:<span class="math display">\[\mathbf{F} = - \begin{bmatrix} \frac{f_x}{Z'} &amp; 0 &amp; -\frac{f_x X'}{Z'^2} &amp; -\frac{f_x X' Y'}{Z'^2} &amp; f_x + \frac{f_x X'^2}{Z'^2} &amp; -\frac{f_x Y'}{Z'} \\ 0 &amp; \frac{f_y}{Z'} &amp; -\frac{f_y Y'}{Z'^2} &amp; -f_y - \frac{f_y Y'^2}{Z'^2} &amp; \frac{f_y X' Y'}{Z'^2} &amp; \frac{f_y X'}{Z'} \end{bmatrix}\]</span></p>
+</section>
+<section id="example" class="level3">
+<h3 class="anchored" data-anchor-id="example">Example</h3>
+<ul>
+<li>Camera Intrinsics (<span class="math inline">\(\mathbf{K}\)</span>): <span class="math inline">\(f_x = 500, f_y = 500, c_x = 320, c_y = 240\)</span>.</li>
+<li>3D Point (<span class="math inline">\(\mathbf{p}\)</span>): <span class="math inline">\([1, 1, 5]^T\)</span> in the camera frame. (So <span class="math inline">\(X'=1, Y'=1, Z'=5\)</span>).</li>
+<li>Camera Pose (<span class="math inline">\(\mathbf{T}\)</span>): For simplicity, we’ll assume the camera is at the world origin with no rotation. (So <span class="math inline">\(\mathbf{R} = \mathbf{I}\)</span> and <span class="math inline">\(\mathbf{t} = [0,0,0]^T\)</span>).</li>
+</ul>
+</section>
+<section id="step-1-the-intermediate-projection-jacobian" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-the-intermediate-projection-jacobian">Step 1: The Intermediate Projection Jacobian</h3>
+<p>First, we calculate <span class="math inline">\(\frac{\partial \mathbf{u}}{\partial \mathbf{P}'}\)</span>. This tells us how the pixels <span class="math inline">\((u, v)\)</span> react to 3D movement in the camera frame.Using the formulas:</p>
+<ul>
+<li><span class="math inline">\(\frac{f_x}{Z'} = \frac{500}{5} = \mathbf{100}\)</span></li>
+<li><span class="math inline">\(-\frac{f_x X'}{Z'^2} = -\frac{500 \cdot 1}{25} = \mathbf{-20}\)</span></li>
+<li><span class="math inline">\(\frac{f_y}{Z'} = \frac{500}{5} = \mathbf{100}\)</span></li>
+<li><span class="math inline">\(-\frac{f_y Y'}{Z'^2} = -\frac{500 \cdot 1}{25} = \mathbf{-20}\)</span> <span class="math display">\[\frac{\partial \mathbf{u}}{\partial \mathbf{P}'} = \begin{bmatrix} 100 &amp; 0 &amp; -20 \\ 0 &amp; 100 &amp; -20 \end{bmatrix}\]</span></li>
+</ul>
+</section>
+<section id="step-3-calculate-the-camera-jacobian-mathbff" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-calculate-the-camera-jacobian-mathbff">Step 3: Calculate the Camera Jacobian (<span class="math inline">\(\mathbf{F}\)</span>)</h3>
+<p>We use the formula <span class="math inline">\(\mathbf{F} = -\frac{\partial \mathbf{u}}{\partial \mathbf{P}'} [\mathbf{I}, -\mathbf{P}'^\wedge]\)</span>.First, let’s find the skew-symmetric matrix <span class="math inline">\(-\mathbf{P}'^\wedge\)</span>:<span class="math display">\[-\mathbf{P}'^\wedge = \begin{bmatrix} 0 &amp; Z' &amp; -Y' \\ -Z' &amp; 0 &amp; X' \\ Y' &amp; -X' &amp; 0 \end{bmatrix} = \begin{bmatrix} 0 &amp; 5 &amp; -1 \\ -5 &amp; 0 &amp; 1 \\ 1 &amp; -1 &amp; 0 \end{bmatrix}\]</span></p>
+<p>Now we multiply: <span class="math display">\[\mathbf{F} = - \begin{bmatrix} 100 &amp; 0 &amp; -20 \\ 0 &amp; 100 &amp; -20 \end{bmatrix} \begin{bmatrix} 1 &amp; 0 &amp; 0 &amp; 0 &amp; 5 &amp; -1 \\ 0 &amp; 1 &amp; 0 &amp; -5 &amp; 0 &amp; 1 \\ 0 &amp; 0 &amp; 1 &amp; 1 &amp; -1 &amp; 0 \end{bmatrix}\]</span></p>
+<p>After the matrix multiplication, we get: <span class="math display">\[\mathbf{F} = \begin{bmatrix} -100 &amp; 0 &amp; 20 &amp; 20 &amp; -520 &amp; 100 \\ 0 &amp; -100 &amp; 20 &amp; 520 &amp; -20 &amp; -100 \end{bmatrix}\]</span></p>
+<p>The first 3 columns are translation. The last 3 are rotation. Notice how rotation (<span class="math inline">\(520\)</span>) has a much bigger impact on the pixels than translation (<span class="math inline">\(-100\)</span>)? This is why camera “shake” ruins photos so easily!</p>
+</section>
+<section id="step-4-putting-them-together" class="level3">
+<h3 class="anchored" data-anchor-id="step-4-putting-them-together">Step 4: Putting them together</h3>
+<p><span class="math display">\[\mathbf{J} = \left[ \begin{array}{ccc|ccc} \mathbf{F}_{11} &amp; \mathbf{0} &amp; \dots &amp; \mathbf{E}_{11} &amp; \mathbf{0} &amp; \dots \\ \mathbf{0} &amp; \mathbf{F}_{21} &amp; \dots &amp; \mathbf{E}_{21} &amp; \dots &amp; \dots \\ \vdots &amp; \vdots &amp; \ddots &amp; \vdots &amp; \vdots &amp; \ddots \end{array} \right]\]</span></p>
+<section id="setup" class="level4">
+<h4 class="anchored" data-anchor-id="setup">Setup</h4>
+<ul>
+<li>Cameras (<span class="math inline">\(m=3\)</span>): Each has 6 degrees of freedom (Lie Algebra <span class="math inline">\(\xi \in \mathfrak{se}(3)\)</span>).</li>
+<li>Points (<span class="math inline">\(n=5\)</span>): Each has 3 degrees of freedom (<span class="math inline">\(X, Y, Z\)</span>).</li>
+<li>Visibility: Let’s assume a realistic scenario where not every camera sees every point:
+<ul>
+<li>Cam 1 sees Points 1, 2, 3. (3 observations)</li>
+<li>Cam 2 sees Points 2, 3, 4. (3 observations)</li>
+<li>Cam 3 sees Points 3, 4, 5. (3 observations)</li>
+</ul></li>
+<li>Total Observations: 9 pairs of (Camera <span class="math inline">\(i\)</span>, Point <span class="math inline">\(j\)</span>).</li>
+</ul>
+</section>
+<section id="dimensions-of-the-mega-matrix-j" class="level4">
+<h4 class="anchored" data-anchor-id="dimensions-of-the-mega-matrix-j">Dimensions of the “Mega” Matrix <span class="math inline">\(J\)</span></h4>
+<p>The columns correspond to our variables. We have a “Camera section” and a “Landmark section.” * Camera Columns: <span class="math inline">\(3 \text{ cameras} \times 6 \text{ DOF} = \mathbf{18 \text{ columns}}\)</span>. * Landmark Columns: <span class="math inline">\(5 \text{ points} \times 3 \text{ DOF} = \mathbf{15 \text{ columns}}\)</span>. * Total Width of <span class="math inline">\(J\)</span>: 33 columns.</p>
+<p>The rows correspond to our errors. Each observation <span class="math inline">\(z_{ij}\)</span> produces a 2D residual (error in <span class="math inline">\(u\)</span> and error in <span class="math inline">\(v\)</span>). * Total Rows: <span class="math inline">\(9 \text{ observations} \times 2 \text{ residuals} = \mathbf{18 \text{ rows}}\)</span>.</p>
+<p>=&gt; Total Size of <span class="math inline">\(J\)</span> for this example: <span class="math inline">\(18 \times 33\)</span>.</p>
+</section>
+<section id="the-global-jacobian-mathbfj" class="level4">
+<h4 class="anchored" data-anchor-id="the-global-jacobian-mathbfj">The Global Jacobian <span class="math inline">\(\mathbf{J}\)</span></h4>
+<p>This matrix has 18 rows (9 observations <span class="math inline">\(\times\)</span> 2 pixels) and 33 columns (18 for poses + 15 for points). <span class="math display">\[\mathbf{J} =
+\left[
+\begin{array}{ccc|ccccc}
+\mathbf{F}_{11} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{E}_{11} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{0} \\
+\mathbf{F}_{12} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{E}_{12} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{0} \\
+\mathbf{F}_{13} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{E}_{13} &amp; \mathbf{0} &amp; \mathbf{0} \\ \hline
+\mathbf{0} &amp; \mathbf{F}_{22} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{E}_{22} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{0} \\
+\mathbf{0} &amp; \mathbf{F}_{23} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{E}_{23} &amp; \mathbf{0} &amp; \mathbf{0} \\
+\mathbf{0} &amp; \mathbf{F}_{24} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{E}_{24} &amp; \mathbf{0} \\ \hline
+\mathbf{0} &amp; \mathbf{0} &amp; \mathbf{F}_{33} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{E}_{33} &amp; \mathbf{0} &amp; \mathbf{0} \\
+\mathbf{0} &amp; \mathbf{0} &amp; \mathbf{F}_{34} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{E}_{34} &amp; \mathbf{0} \\
+\mathbf{0} &amp; \mathbf{0} &amp; \mathbf{F}_{35} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{0} &amp; \mathbf{E}_{35}
+\end{array}
+\right]\]</span></p>
+<p>Pixel resolution does not change anything. It is only about the number of features detected, and the number of camera poses.</p>
+
+
+
+</section>
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

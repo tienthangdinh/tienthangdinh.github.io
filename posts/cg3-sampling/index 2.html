@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-03-09">
+
+<title>Sampling Techniques – the brachistochrone traveller</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">the brachistochrone traveller</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Đinh Tiến Thắng</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Sampling Techniques</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">Computer Graphics</div>
+                <div class="quarto-category">Global Illumination</div>
+                <div class="quarto-category">Statistics</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">March 9, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#basic-sampling-techniques" id="toc-basic-sampling-techniques" class="nav-link active" data-scroll-target="#basic-sampling-techniques">Basic Sampling Techniques</a>
+  <ul class="collapse">
+  <li><a href="#generating-random-sampling" id="toc-generating-random-sampling" class="nav-link" data-scroll-target="#generating-random-sampling">Generating Random Sampling</a></li>
+  <li><a href="#rejection-sampling" id="toc-rejection-sampling" class="nav-link" data-scroll-target="#rejection-sampling">Rejection Sampling</a>
+  <ul class="collapse">
+  <li><a href="#procedure" id="toc-procedure" class="nav-link" data-scroll-target="#procedure">Procedure</a></li>
+  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion">Discussion</a></li>
+  </ul></li>
+  <li><a href="#inverse-transform-sampling" id="toc-inverse-transform-sampling" class="nav-link" data-scroll-target="#inverse-transform-sampling">Inverse Transform Sampling</a>
+  <ul class="collapse">
+  <li><a href="#procedure-1" id="toc-procedure-1" class="nav-link" data-scroll-target="#procedure-1">Procedure</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example">Example</a></li>
+  </ul></li>
+  <li><a href="#what-if-we-want-to-do-in-2-or-higher-dimension-marginalization" id="toc-what-if-we-want-to-do-in-2-or-higher-dimension-marginalization" class="nav-link" data-scroll-target="#what-if-we-want-to-do-in-2-or-higher-dimension-marginalization">What if we want to do in 2 or higher dimension? Marginalization</a>
+  <ul class="collapse">
+  <li><a href="#procedure-2" id="toc-procedure-2" class="nav-link" data-scroll-target="#procedure-2">Procedure</a></li>
+  <li><a href="#example-1" id="toc-example-1" class="nav-link" data-scroll-target="#example-1">Example</a></li>
+  <li><a href="#practical-example-transformation-sampling-a-diffuse" id="toc-practical-example-transformation-sampling-a-diffuse" class="nav-link" data-scroll-target="#practical-example-transformation-sampling-a-diffuse">Practical Example Transformation Sampling a Diffuse</a></li>
+  <li><a href="#practical-example-sampling-phong-lobe" id="toc-practical-example-sampling-phong-lobe" class="nav-link" data-scroll-target="#practical-example-sampling-phong-lobe">Practical Example Sampling Phong Lobe</a></li>
+  <li><a href="#but-how-to-sample-numerically" id="toc-but-how-to-sample-numerically" class="nav-link" data-scroll-target="#but-how-to-sample-numerically">But how to sample numerically?</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#multiple-importance-sampling" id="toc-multiple-importance-sampling" class="nav-link" data-scroll-target="#multiple-importance-sampling">Multiple Importance Sampling</a>
+  <ul class="collapse">
+  <li><a href="#why-do-we-do-this" id="toc-why-do-we-do-this" class="nav-link" data-scroll-target="#why-do-we-do-this">Why do we do this?</a></li>
+  <li><a href="#what-would-the-weight-be" id="toc-what-would-the-weight-be" class="nav-link" data-scroll-target="#what-would-the-weight-be">What would the weight be?</a></li>
+  <li><a href="#example-of-mis-in-ray-tracing" id="toc-example-of-mis-in-ray-tracing" class="nav-link" data-scroll-target="#example-of-mis-in-ray-tracing">Example of MIS in Ray Tracing</a>
+  <ul class="collapse">
+  <li><a href="#scenario-setup" id="toc-scenario-setup" class="nav-link" data-scroll-target="#scenario-setup">Scenario Setup</a></li>
+  <li><a href="#strategy-1-with-n_1-2-samples" id="toc-strategy-1-with-n_1-2-samples" class="nav-link" data-scroll-target="#strategy-1-with-n_1-2-samples">Strategy 1 with <span class="math inline">\(n_1 = 2\)</span> samples</a></li>
+  <li><a href="#strategy-2-with-n_2-1-sample" id="toc-strategy-2-with-n_2-1-sample" class="nav-link" data-scroll-target="#strategy-2-with-n_2-1-sample">Strategy 2 with <span class="math inline">\(n_2 = 1\)</span> sample</a></li>
+  <li><a href="#final-mis-estimate" id="toc-final-mis-estimate" class="nav-link" data-scroll-target="#final-mis-estimate">Final MIS Estimate</a></li>
+  </ul></li>
+  <li><a href="#another-confusing-example-of-path-tracing" id="toc-another-confusing-example-of-path-tracing" class="nav-link" data-scroll-target="#another-confusing-example-of-path-tracing">Another confusing Example of Path Tracing</a>
+  <ul class="collapse">
+  <li><a href="#ray-1-direct-light-sampling" id="toc-ray-1-direct-light-sampling" class="nav-link" data-scroll-target="#ray-1-direct-light-sampling">Ray 1: Direct Light Sampling</a></li>
+  <li><a href="#ray-2-brdf-sampling" id="toc-ray-2-brdf-sampling" class="nav-link" data-scroll-target="#ray-2-brdf-sampling">Ray 2: BRDF Sampling</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="basic-sampling-techniques" class="level1">
+<h1>Basic Sampling Techniques</h1>
+<section id="generating-random-sampling" class="level2">
+<h2 class="anchored" data-anchor-id="generating-random-sampling">Generating Random Sampling</h2>
+<ul>
+<li>Simple Grid-Based Sampling: Good, but aliasing is a big problem.
+<ul>
+<li>Regular Grid: each sample is at the center of a grid cell. simple implementation, but aliasing is a big problem.</li>
+<li>Rotated Grid: The entire regular grid is rotated. This helps to break up some horizontal/vertical aliasing patterns.</li>
+</ul></li>
+<li>Uniform Random: Samples are generated independently and uniformly at random across the entire domain. But sometimes can create some clustering</li>
+<li>Stratified Grid: The domain is divided into a regular grid, and one sample is placed randomly within each cell. this is pretty good</li>
+<li>N-Rook Stratified:
+<ul>
+<li>stratified grid sampling in 1D per dimension.</li>
+<li>then combines coordinate samples after a random shuffle.</li>
+<li>Effect: exactly one sample in every row and every column of the high-dimensional space (analogous to placing rooks on a chessboard).</li>
+</ul></li>
+</ul>
+</section>
+<section id="rejection-sampling" class="level2">
+<h2 class="anchored" data-anchor-id="rejection-sampling">Rejection Sampling</h2>
+<p>Goal: generate samples of <strong>any distribution</strong> <span class="math inline">\(p_f(x)\)</span> from just a <strong>uniform distribution</strong>. Often used when <span class="math inline">\(f(x)\)</span> is complex to sample.</p>
+<p>To generate samples <span class="math inline">\(\mathbf{x}\)</span> from a target distribution <span class="math inline">\(p_f(x)\)</span>. <span class="math display">\[p_f(x) = |f(x)| / \int_{\Omega} |f(x)| dx\]</span></p>
+<section id="procedure" class="level3">
+<h3 class="anchored" data-anchor-id="procedure">Procedure</h3>
+<p><strong>Core idea</strong>: The core idea is to sample uniformly from the entire bounding volume (the box defined by <span class="math inline">\(\Omega\)</span> and <span class="math inline">\(f_{\max}\)</span>) and reject any sample that lands above the function <span class="math inline">\(|f(x)|\)</span>.</p>
+<ol type="1">
+<li>Define the Bounding Volume (<span class="math inline">\(V\)</span>): Domain <span class="math inline">\(\Omega\)</span> multiplied by the upper bound <span class="math inline">\(f_{\max}\)</span>.<span class="math display">\[V = \Omega \times [0, f_{\max}]\]</span></li>
+<li>Generate a Sample (<span class="math inline">\(\mathbf{z}_i\)</span>): Uniformly sample a 2D point <span class="math inline">\(\mathbf{z}_i = (x_i, y_i)\)</span> from this volume <span class="math inline">\(V\)</span>.
+<ul>
+<li><span class="math inline">\(x\)</span> is chosen <strong>uniformly</strong> from the domain <span class="math inline">\(\Omega\)</span>.</li>
+<li><span class="math inline">\(y\)</span> is chosen <strong>uniformly</strong> between <span class="math inline">\(0\)</span> and <span class="math inline">\(f_{\max}\)</span>.</li>
+</ul></li>
+<li>The Rejection Test: Compare the height of the sampled point (<span class="math inline">\(y_i\)</span>) with the value of the function (<span class="math inline">\(|f(x_i)|\)</span>).
+<ul>
+<li>If <span class="math inline">\(y_i \le |f(x_i)|\)</span>: Accept the sample <span class="math inline">\(x_i\)</span> (the sample falls under the curve).</li>
+<li>If <span class="math inline">\(y_i &gt; |f(x_i)|\)</span>: Reject the sample <span class="math inline">\(x_i\)</span> (the sample falls over the curve).</li>
+</ul></li>
+</ol>
+</section>
+<section id="discussion" class="level3">
+<h3 class="anchored" data-anchor-id="discussion">Discussion</h3>
+<ul>
+<li>Efficiency: The method is only efficient if the bounding volume <span class="math inline">\(V\)</span> is not significantly larger than the actual area under the curve (<span class="math inline">\(\int_{\Omega} |f(x)| dx\)</span>).</li>
+<li>Waste: If <span class="math inline">\(f_{\max}\)</span> is much larger than the average value of <span class="math inline">\(|f(x)|\)</span>, most samples will fall into the empty space between the curve and <span class="math inline">\(f_{\max}\)</span> and be rejected, wasting too much computation.</li>
+</ul>
+</section>
+</section>
+<section id="inverse-transform-sampling" class="level2">
+<h2 class="anchored" data-anchor-id="inverse-transform-sampling">Inverse Transform Sampling</h2>
+<p>Idea: You can transform samples from a <strong>uniform distribution</strong> into samples from a <strong>complex target distribution</strong> by using the inverse of the target’s Cumulative Probability Function (CPF).</p>
+<section id="procedure-1" class="level3">
+<h3 class="anchored" data-anchor-id="procedure-1">Procedure</h3>
+<ol type="1">
+<li>Generate a Sample (<span class="math inline">\(\mathbf{u}_i\)</span>): Sample a value <span class="math inline">\(u_i\)</span> from a <strong>uniform distribution</strong> <span class="math inline">\(U(0, 1)\)</span>.</li>
+<li>Transform the Sample: Use the inverse of the target’s CPF to transform <span class="math inline">\(u_i\)</span> into a sample <span class="math inline">\(x_i\)</span> from the target distribution <span class="math inline">\(p_f(x)\)</span>.
+<ul>
+<li>Mathematically: <span class="math inline">\(x_i = F^{-1}(u_i)\)</span>, where <span class="math inline">\(F^{-1}\)</span> is the inverse of the CPF.</li>
+<li>But what was F originally: it is the Cumulative Distribution Function (CDF) of the target distribution <span class="math inline">\(p_f(x)\)</span>: <span class="math inline">\(F(x) = \int_{-\infty}^{x} p_f(t) dt\)</span></li>
+</ul></li>
+</ol>
+</section>
+<section id="example" class="level3">
+<h3 class="anchored" data-anchor-id="example">Example</h3>
+<p>Given pdf <span class="math inline">\(p_f(x) = \frac{3x^2}{2}\)</span> on internval <span class="math inline">\([0, 1]\)</span>. <span class="math display">\[F(x) = \int_{0}^{x} \frac{3t^2}{2} dt = \frac{x^3+1}{2}\]</span></p>
+<p>Now as we sample <span class="math inline">\(u_i\)</span> from <span class="math inline">\(U(0, 1)\)</span>, we can transform it to <span class="math inline">\(x_i\)</span> using the inverse of <span class="math inline">\(F\)</span>.</p>
+<p><span class="math display">\[u = F(x) = \frac{x^3+1}{2}\]</span> <span class="math display">\[x = F^{-1}(u) = \sqrt[3]{2u-1}\]</span></p>
+<p>Just that simple!</p>
+</section>
+</section>
+<section id="what-if-we-want-to-do-in-2-or-higher-dimension-marginalization" class="level2">
+<h2 class="anchored" data-anchor-id="what-if-we-want-to-do-in-2-or-higher-dimension-marginalization">What if we want to do in 2 or higher dimension? Marginalization</h2>
+<p><strong>Goal</strong>: Sample a 2D vector <span class="math inline">\(\mathbf{x}_i = (x_i, y_i)\)</span> according to a given 2D distribution <span class="math inline">\(p_x(\mathbf{x}) = p_x(x, y)\)</span> over a rectangular domain <span class="math inline">\([x_{\min}, x_{\max}] \times [y_{\min}, y_{\max}]\)</span>.</p>
+<p><strong>Idea</strong>: Sample a 2D uniform vector <span class="math inline">\(\mathbf{\xi}_i = (\xi_i, \eta_i)\)</span> over <span class="math inline">\([0, 1]^2\)</span> and compute <span class="math inline">\(\mathbf{x}_i = \mathbf{g}(\mathbf{\xi}_i)\)</span> using a vector function <span class="math inline">\(\mathbf{g}\)</span>.</p>
+<p><strong>Method</strong>: The function <span class="math inline">\(\mathbf{g}(\mathbf{\xi})\)</span> is constructed in two sequential steps using marginal and conditional probabilities.</p>
+<section id="procedure-2" class="level3">
+<h3 class="anchored" data-anchor-id="procedure-2">Procedure</h3>
+<section id="step-1-sampling-the-first-coordinate-x" class="level4">
+<h4 class="anchored" data-anchor-id="step-1-sampling-the-first-coordinate-x">Step 1: Sampling the First Coordinate (<span class="math inline">\(x\)</span>)</h4>
+<p>The first coordinate, <span class="math inline">\(x\)</span>, is sampled independently using the 1D method on the marginal distribution of <span class="math inline">\(x\)</span>. Let’s get marginal pdf of <span class="math inline">\(x\)</span> by integrating all <span class="math inline">\(y\)</span>: <span class="math display">\[p_x(x) = \int_{y_{\min}}^{y_{\max}} p_x(x, y) dy \quad \text{}\]</span> Then, the marginal CDF of <span class="math inline">\(x\)</span> dimension is: <span class="math display">\[P_x(x) = \int_{x_{\min}}^{x} p_x(\tilde{x}) d\tilde{x} \quad \text{}\]</span> For any uniform sample <span class="math inline">\(u = P(x)\)</span>. We inverse <span class="math display">\[x = P^{-1}(u)\]</span></p>
+</section>
+<section id="step-2-sampling-the-first-coordinate-y" class="level4">
+<h4 class="anchored" data-anchor-id="step-2-sampling-the-first-coordinate-y">Step 2: Sampling the First Coordinate (<span class="math inline">\(y\)</span>)</h4>
+<p>Once <span class="math inline">\(x\)</span> is known (calculated from Step 1), the second coordinate, <span class="math inline">\(y\)</span>, is sampled using the conditional distribution <span class="math inline">\(p_{y|x}(x, y)\)</span>. <span class="math display">\[p_{y|x}(x, y) = \frac{p_x(x, y)}{p_x(x)} \quad \text{}\]</span> Now we calculate conditional CDF of <span class="math inline">\(y|x\)</span>: <span class="math display">\[P_{y|x}(x, y) = \int_{y_{\min}}^{y} p_{y|x}(x, \tilde{y}) d\tilde{y} \quad \text{}\]</span> And then for each uniformly distributed sample of <span class="math inline">\(\eta = P_{y|x}(x, y)\)</span>: <span class="math display">\[y  = P_{y|x}^{-1}(x, \eta) \quad \text{}\]</span></p>
+<section id="túm-cái-váy-lại" class="level5">
+<h5 class="anchored" data-anchor-id="túm-cái-váy-lại">TÚM CÁI VÁY LẠI</h5>
+<ol type="1">
+<li>Generate two independent uniform random numbers: <span class="math inline">\(\xi = \text{rand}(0, 1)\)</span> and <span class="math inline">\(\eta = \text{rand}(0, 1)\)</span>.</li>
+<li>Inverse to find <span class="math inline">\(x_i\)</span> using the inverse <strong>marginal</strong> CPF <span class="math inline">\(P_x^{-1}(\xi)\)</span>.</li>
+<li>Inverse to find <span class="math inline">\(y_i\)</span> using the inverse <strong>conditional</strong> CPF <span class="math inline">\(P_{y|x}^{-1}(x_i, \eta)\)</span>.</li>
+</ol>
+</section>
+</section>
+</section>
+<section id="example-1" class="level3">
+<h3 class="anchored" data-anchor-id="example-1">Example</h3>
+<p><span class="math display">\[p_x(x, y) = 2(x + y) \quad \text{for } 0 \le x, y \le 1\]</span></p>
+<section id="step-1-sample-the-marginal-coordinate-x" class="level4">
+<h4 class="anchored" data-anchor-id="step-1-sample-the-marginal-coordinate-x">Step 1: Sample the Marginal Coordinate (<span class="math inline">\(x\)</span>)</h4>
+<p>The goal is <span class="math inline">\(x = P_x^{-1}(\xi)\)</span>.</p>
+<p>Firstly, we calcualte marginal CDF: <span class="math display">\[p_x(x) = \int_{0}^{1} p_x(x, y) dy = \int_{0}^{1} 2(x + y) dy = 2x + 1\]</span> <span class="math display">\[P_x(x) = \int_{0}^{x} p_x(\tilde{x}) d\tilde{x} = \int_{0}^{x} (2\tilde{x} + 1) d\tilde{x} = x^2 + x\]</span></p>
+<p>Now we find inverse <span class="math inline">\(x\)</span>: <span class="math display">\[\xi = P(x) = x^2 + x\]</span> <span class="math display">\[x = P^{-1}(\xi) = \frac{-1 + \sqrt{1 + 4\xi}}{2}\]</span></p>
+</section>
+<section id="step-2-sample-the-conditional-coordinate-y" class="level4">
+<h4 class="anchored" data-anchor-id="step-2-sample-the-conditional-coordinate-y">Step 2: Sample the Conditional Coordinate (<span class="math inline">\(y\)</span>)</h4>
+<p>The goal is <span class="math inline">\(y = P_{y|x}^{-1}(x, \eta)\)</span>.</p>
+<p>Firstly we find Conditional CPF (<span class="math inline">\(P_{y|x}(x, y)\)</span>): <span class="math display">\[p_{y|x}(x, y) = \frac{p_x(x, y)}{p_x(x)} = \frac{2(x + y)}{2x + 1} \quad \text{}\]</span> <span class="math display">\[P_{y|x}(x, y) = \int_{0}^{y} p_{y|x}(x, \tilde{y}) d\tilde{y} = \int_{0}^{y} \frac{2(x + \tilde{y})}{2x + 1} d\tilde{y} = \frac{2xy + y^2}{2x + 1}\]</span></p>
+<p>Now we want to inverse to find <span class="math inline">\(y\)</span>: <span class="math display">\[\eta = P_{y|x}(x, y) = \frac{2xy + y^2}{2x + 1}\]</span> <span class="math display">\[y = P^{-1}_{y|x}(x, y) = -x + \sqrt{x^2 + \eta(2x + 1)}\]</span></p>
+<p>So yeah, finally the sampling strategy is: To generate a single sample <span class="math inline">\((x_i, y_i)\)</span> that follows the PDF <span class="math inline">\(p_x(x, y) = 2(x+y)\)</span>:</p>
+<ol type="1">
+<li>Generate uniform numbers: <span class="math inline">\(\xi_i = \text{rand}(0, 1)\)</span> and <span class="math inline">\(\eta_i = \text{rand}(0, 1)\)</span>.</li>
+<li>Calculate <span class="math inline">\(x_i\)</span> (Marginal):<span class="math display">\[x_i = \frac{-1 + \sqrt{1 + 4\xi_i}}{2}\]</span></li>
+<li>Calculate <span class="math inline">\(y_i\)</span> (Conditional):<span class="math display">\[y_i = -x_i + \sqrt{x_i^2 + \eta_i(2x_i + 1)}\]</span></li>
+</ol>
+</section>
+</section>
+<section id="practical-example-transformation-sampling-a-diffuse" class="level3">
+<h3 class="anchored" data-anchor-id="practical-example-transformation-sampling-a-diffuse">Practical Example Transformation Sampling a Diffuse</h3>
+<p><strong>On Diffuse, we cannot sample uniformly <span class="math inline">\((\theta, \phi)\)</span>, because uniform <span class="math inline">\((\theta, \phi)\)</span> does not mean uniform <span class="math inline">\((\theta, \phi)\)</span></strong> If you just pick a uniformly random <span class="math inline">\(\theta\)</span> and uniformly random <span class="math inline">\(\phi\)</span>, you are picking a random grid coordinate. Because the grid is physically crushed together at the top, your random rays will massively clump together pointing straight up at the North Pole, and you will barely shoot any rays out toward the horizon.</p>
+<p>To fix this, we have to multiply our probability by <span class="math inline">\(\sin\theta\)</span>. (At the North Pole, <span class="math inline">\(\theta=0\)</span>, so <span class="math inline">\(\sin(0)=0\)</span>, which tells the computer to stop putting so many points there).</p>
+<p>Basically, we want to sample this: <span class="math display">\[\int \rho \cdot L \cdot \cos\theta\]</span></p>
+<ul>
+<li><span class="math inline">\(\cos\theta\)</span>: Please shoot more rays straight up to satisfy cosin term</li>
+<li><span class="math inline">\(\sin\theta\)</span>: Please stretch the rays out so they don’t incorrectly clump at the North Pole due to spherical geometry. <span class="math display">\[p(\phi, \theta) = \frac{\cos\theta \sin\theta}{\pi} \quad \text{}\]</span></li>
+</ul>
+<p>The angles are defined over <span class="math inline">\(\phi \in [-\pi, \pi]\)</span> and <span class="math inline">\(\theta \in [0, \pi/2]\)</span> (the hemisphere). The combined function <span class="math inline">\(2\cos\theta\sin\theta\)</span> actually peaks at <span class="math inline">\(\mathbf{\theta = 45^\circ}\)</span> (<span class="math inline">\(\pi/4\)</span>) (where the derivative is zero). This means you get the highest concentration of samples at a 45-degree angle,</p>
+<section id="procedure-3" class="level4">
+<h4 class="anchored" data-anchor-id="procedure-3">Procedure</h4>
+<p>Marginal PDF (<span class="math inline">\(p_{\theta}(\theta)\)</span>): Integrate the joint PDF over the azimuthal angle <span class="math inline">\(\phi\)</span> (from <span class="math inline">\(-\pi\)</span> to <span class="math inline">\(\pi\)</span>):<span class="math display">\[p_{\theta}(\theta) = \int_{-\pi}^{\pi} \frac{\cos\theta \sin\theta}{\pi} d\phi = \frac{\cos\theta \sin\theta}{\pi} [\phi]_{-\pi}^{\pi} = \frac{\cos\theta \sin\theta}{\pi} (2\pi) = 2\cos\theta \sin\theta\]</span></p>
+<p>Marginal CPF (<span class="math inline">\(P_{\theta}(\theta)\)</span>): Integrate <span class="math inline">\(p_{\theta}(\theta)\)</span> over <span class="math inline">\(\theta\)</span>:<span class="math display">\[P_{\theta}(\theta) = \int_{0}^{\theta} 2 \cos\tilde{\theta} \sin\tilde{\theta} d\tilde{\theta} = \sin^2\theta\]</span></p>
+<p>Inverse Transform: Equate <span class="math inline">\(P_{\theta}(\theta)\)</span> to the uniform random number <span class="math inline">\(\xi\)</span> and solve for <span class="math inline">\(\theta\)</span>:<span class="math display">\[\xi = \sin^2\theta \implies \theta = \arcsin(\sqrt{\xi}) \quad \text{}\]</span></p>
+<p>Conditional PDF (<span class="math inline">\(p_{\phi|\theta}(\phi, \theta)\)</span>): Divide the joint PDF <span class="math inline">\(p(\phi, \theta)\)</span> by the marginal PDF <span class="math inline">\(p_{\theta}(\theta)\)</span>:<span class="math display">\[p_{\phi|\theta}(\phi, \theta) = \frac{p(\phi, \theta)}{p_{\theta}(\theta)} = \frac{(\cos\theta \sin\theta)/\pi}{2 \cos\theta \sin\theta} = \frac{1}{2\pi} \quad \text{}\]</span></p>
+<p>Conditional CPF (<span class="math inline">\(P_{\phi|\theta}(\phi)\)</span>): Integrate the conditional PDF over <span class="math inline">\(\phi\)</span> (from <span class="math inline">\(-\pi\)</span> to <span class="math inline">\(\phi\)</span>):<span class="math display">\[P_{\phi|\theta}(\phi) = \int_{-\pi}^{\phi} \frac{1}{2\pi} d\tilde{\phi} = \frac{1}{2\pi} [\phi]_{-\pi}^{\phi} = \frac{\phi + \pi}{2\pi}\]</span></p>
+<p>Inverse Transform: Equate <span class="math inline">\(P_{\phi|\theta}(\phi)\)</span> to the uniform random number <span class="math inline">\(\eta\)</span> and solve for <span class="math inline">\(\phi\)</span>:<span class="math display">\[\eta = \frac{\phi + \pi}{2\pi} \implies \phi = \pi(2\eta - 1)\]</span></p>
+<p>The final transformation to generate a pair of Importance Samples <span class="math inline">\((\theta, \phi)\)</span> for a diffuse surface is:<span class="math display">\[\theta = \arcsin(\sqrt{\xi})\]</span><span class="math display">\[\phi = \pi(2\eta - 1)\]</span></p>
+</section>
+</section>
+<section id="practical-example-sampling-phong-lobe" class="level3">
+<h3 class="anchored" data-anchor-id="practical-example-sampling-phong-lobe">Practical Example Sampling Phong Lobe</h3>
+<p>The modified Phong specular function is: <span class="math display">\[f^{\text{spec, mod}} \propto \langle \hat{\omega}_{\text{out}}, \hat{r}_{\text{in}} \rangle_+^m \cdot \langle \hat{\omega}_{\text{in}}, \hat{n} \rangle_+ \quad \text{}\]</span></p>
+<ul>
+<li><span class="math inline">\(m\)</span>: The Phong exponent controlling the lobe sharpness.</li>
+<li><span class="math inline">\(\hat{r}_{\text{in}}\)</span>: The perfect reflection direction of <span class="math inline">\(\hat{\omega}_{\text{in}}\)</span>.</li>
+</ul>
+<p>The function <span class="math inline">\(f^{\text{spec, mod}}\)</span> is too complex to invert for transformation sampling. The solution is to change the coordinate system to simplify the dominant part of the BRDF:</p>
+<ul>
+<li>New Coordinates: Instead of referencing the surface normal (<span class="math inline">\(\hat{n}\)</span>), the sampling is done relative to the outgoing direction (<span class="math inline">\(\hat{\omega}_{\text{out}}\)</span>) as the North Pole and ignoring the cosin term.
+<ul>
+<li><span class="math inline">\(\alpha\)</span> (alpha): Angle between the Incoming Light <span class="math inline">\(\hat{\omega}_{\text{in}}\)</span> and the Normal <span class="math inline">\(\hat{n}\)</span>. (<span class="math inline">\(\langle \hat{\omega}_{\text{in}}, \hat{n} \rangle_+\)</span>)</li>
+<li><span class="math inline">\(\gamma\)</span> (gamma): Angle between the Outgoing View Ray <span class="math inline">\(\hat{\omega}_{\text{out}}\)</span> and the Reflected Incoming Ray <span class="math inline">\(\hat{r}_{\text{in}}\)</span>. (<span class="math inline">\(\langle \hat{\omega}_{\text{out}}, \hat{r}_{\text{in}} \rangle_+^m\)</span>)</li>
+<li><span class="math inline">\(\phi\)</span> (phi): The azimuthal angle (rotation) around the reflection vector <span class="math inline">\(\hat{r}_{\text{in}}\)</span>.</li>
+</ul></li>
+</ul>
+<p>The primary term dictating the lobe shape is <span class="math inline">\(\langle \hat{\omega}_{\text{out}}, \hat{r}_{\text{in}} \rangle_+^m\)</span>. The angle <span class="math inline">\(\gamma\)</span> is what matters most for the lobe.The approximate probability density for sampling the incoming direction is chosen to be proportional to the specular part and the solid angle Jacobian: <span class="math display">\[p(\phi, \gamma) \propto \cos^m\gamma \sin\gamma \quad \text{}\]</span></p>
+<ul>
+<li><span class="math inline">\(\cos^m\gamma\)</span>: The specular intensity.</li>
+<li><span class="math inline">\(\sin\gamma\)</span>: The geometric factor (Jacobian) for spherical coordinates, using <span class="math inline">\(\gamma\)</span> as the polar angle. Like above we are also trying to not make energy clump at the top.</li>
+</ul>
+<p>This approximation ignores the <span class="math inline">\(\langle \hat{\omega}_{\text{in}}, \hat{n} \rangle_+\)</span> factor for sampling purposes, making the transformation invertible and solvable (similar to the diffuse case). The sampled light must then be weighted by the full BRDF when calculating the Monte Carlo estimate.</p>
+</section>
+<section id="but-how-to-sample-numerically" class="level3">
+<h3 class="anchored" data-anchor-id="but-how-to-sample-numerically">But how to sample numerically?</h3>
+<p>First normalize the PDF to a proper PDF: <span class="math display">\[p(\phi, \gamma) = \frac{m + 1}{2\pi} \cos^m\gamma \sin\gamma \quad \text{}\]</span></p>
+<section id="a.-sampling-the-marginal-coordinate-gamma" class="level4">
+<h4 class="anchored" data-anchor-id="a.-sampling-the-marginal-coordinate-gamma">A. Sampling the Marginal Coordinate (<span class="math inline">\(\gamma\)</span>)</h4>
+<p>Inverse Transform (<span class="math inline">\(\xi = P_{\gamma}(\gamma)\)</span>): The integration of the marginal PDF (over <span class="math inline">\(\phi\)</span>) yields the marginal CPF, <span class="math inline">\(P_{\gamma}(\gamma)\)</span>:<span class="math display">\[\xi = P_{\gamma}(\gamma) = \int_{0}^{\gamma} \frac{m + 1}{2\pi} \cos^m\tilde{\gamma} \sin\tilde{\gamma} (2\pi) d\tilde{\gamma} = 1 - \cos^{m+1}\gamma \quad \text{}\]</span> <span class="math display">\[1 - \xi = \cos^{m+1}\gamma \implies \gamma = \arccos(\sqrt[m+1]{1 - \xi}) \quad \text{}\]</span></p>
+</section>
+<section id="b.-sampling-the-conditional-coordinate-phi" class="level4">
+<h4 class="anchored" data-anchor-id="b.-sampling-the-conditional-coordinate-phi">B. Sampling the Conditional Coordinate (<span class="math inline">\(\phi\)</span>)</h4>
+<p>Firstly, conditional PDF of <span class="math inline">\(p_{\phi|\gamma}(\phi) = 1/2\pi\)</span>, naturally, because we are sampling uniformly over a circle.</p>
+<p>Inverse Transform (<span class="math inline">\(\eta = P_{\phi|\gamma}(\phi)\)</span>): The integration and inversion steps are identical to the diffuse case:<span class="math display">\[\eta = P_{\phi|\gamma}(\phi) = \frac{\phi + \pi}{2\pi} \implies \phi = \pi(2\eta - 1) \quad \text{}\]</span></p>
+<p>Final Angles:<span class="math display">\[\gamma = \arccos(\sqrt[m+1]{1 - \xi}) \quad \text{}\]</span><span class="math display">\[\phi = \pi(2\eta - 1) \quad \text{}\]</span></p>
+</section>
+</section>
+</section>
+</section>
+<section id="multiple-importance-sampling" class="level1">
+<h1>Multiple Importance Sampling</h1>
+<p>Monte Carlo weighted average of estimates obtained from <span class="math inline">\(m\)</span> different strategies. <span class="math display">\[\hat{f}^N_{\text{MIS}} = \sum_{i=1}^m \frac{1}{n_i} \sum_{j=1}^{n_i} \omega_i(x_{i,j}) \frac{f(x_{i,j})}{p_i(x_{i,j})} \quad \text{}\]</span></p>
+<ul>
+<li><span class="math inline">\(m\)</span>: The total number of sampling strategies being combined (e.g., <span class="math inline">\(p_1\)</span> for diffuse, <span class="math inline">\(p_2\)</span> for a light source, <span class="math inline">\(p_3\)</span> for a specular lobe).</li>
+<li><span class="math inline">\(n_i\)</span>: The number of samples taken specifically from strategy <span class="math inline">\(i\)</span>. The total number of samples is <span class="math inline">\(N = \sum_{i=1}^m n_i\)</span></li>
+<li><span class="math inline">\(x_{i,j}\)</span>: The <span class="math inline">\(j\)</span>-th sample generated by the <span class="math inline">\(i\)</span>-th strategy.</li>
+<li><span class="math inline">\(\frac{f(x_{i,j})}{p_i(x_{i,j})}\)</span>: This is the standard Monte Carlo estimate for that sample using strategy <span class="math inline">\(i\)</span>.</li>
+<li><span class="math inline">\(\omega_i(x)\)</span> (The Weighting Function): This is the core of MIS. It is a heuristic weight that determines how much influence the sample from strategy <span class="math inline">\(i\)</span> contributes to the final result. The weights <span class="math inline">\(\omega_i\)</span> can depend on the sample itself (<span class="math inline">\(x_{i,j}\)</span>).</li>
+</ul>
+<section id="why-do-we-do-this" class="level2">
+<h2 class="anchored" data-anchor-id="why-do-we-do-this">Why do we do this?</h2>
+<p>Because <span class="math inline">\(f(x) = \prod_{i=1}^m f_i(x)\)</span> or: <span class="math display">\[f(x) = \text{BRDF} \cdot \text{Incoming Radiance} \cdot \text{Cosine Term} \cdot \text{Geometric Terms}\]</span> So we divide the Monte Carlo into different strategies. Once again, the MIS: <span class="math display">\[\hat{f}^N_{\text{MIS}} = \sum_{i=1}^m \frac{1}{n_i} \sum_{j=1}^{n_i} \omega_i(x_{i,j}) \frac{f(x_{i,j})}{p_i(x_{i,j})} \quad \text{}\]</span></p>
+<p>The outer sum <span class="math inline">\(\sum_{i=1}^m\)</span> means: “Calculate the final estimate by summing up the weighted contributions from every strategy <span class="math inline">\(i\)</span>”.</p>
+<p>For each strategy <span class="math inline">\(i\)</span>:</p>
+<ul>
+<li>We generate <span class="math inline">\(n_i\)</span> samples: <span class="math inline">\(\frac{1}{n_i} \sum_{j=1}^{n_i}\)</span></li>
+<li>We calculate the Monte Carlo estimate for each sample: <span class="math inline">\(\frac{f(x_{i,j})}{p_i(x_{i,j})}\)</span>.</li>
+<li>We apply the critical MIS weight, <span class="math inline">\(\omega_i(x_{i,j})\)</span>, to assign reliability to that sample. <span class="math display">\[\hat{f}^N_{\text{MIS}} = \underbrace{\frac{1}{n_1} \sum_{j=1}^{n_1} \omega_1(x_{1,j}) \frac{f(x_{1,j})}{p_1(x_{1,j})}}_{\text{Contribution from Strategy 1 (e.g., Light Sampling)}} + \underbrace{\frac{1}{n_2} \sum_{j=1}^{n_2} \omega_2(x_{2,j}) \frac{f(x_{2,j})}{p_2(x_{2,j})}}_{\text{Contribution from Strategy 2 (e.g., BRDF Sampling)}} + \dots\]</span></li>
+</ul>
+</section>
+<section id="what-would-the-weight-be" class="level2">
+<h2 class="anchored" data-anchor-id="what-would-the-weight-be">What would the weight be?</h2>
+<p>The Balance Heuristic chooses weights that are proportional to the probability density function (PDF) of the strategy <span class="math inline">\(p_i(x)\)</span> and the number of samples <span class="math inline">\(n_i\)</span> taken from that strategy: <span class="math display">\[\omega_i(x) = \frac{n_i p_i(x)}{\sum_{k=1}^m n_k p_k(x)} \quad \text{}\]</span></p>
+<ul>
+<li><span class="math inline">\(p_i(x)\)</span>: The probability density of the <span class="math inline">\(i\)</span>-th strategy at sample point <span class="math inline">\(x\)</span>.</li>
+<li><span class="math inline">\(n_i\)</span>: The number of samples taken by strategy <span class="math inline">\(i\)</span>.</li>
+<li>Denominator <span class="math inline">\(\sum_{k=1}^m n_k p_k(x)\)</span>: This is the sum of the weighted densities of all <span class="math inline">\(m\)</span> strategies at point <span class="math inline">\(x\)</span>. It acts as the normalization factor.</li>
+</ul>
+</section>
+<section id="example-of-mis-in-ray-tracing" class="level2">
+<h2 class="anchored" data-anchor-id="example-of-mis-in-ray-tracing">Example of MIS in Ray Tracing</h2>
+<section id="scenario-setup" class="level3">
+<h3 class="anchored" data-anchor-id="scenario-setup">Scenario Setup</h3>
+<p>We are rendering a pixel on a glossy plastic floor. We will combine <span class="math inline">\(m = 2\)</span> strategies. <span class="math inline">\(f(x)\)</span> represents the full physics evaluation: <span class="math inline">\(\text{BRDF} \cdot \text{Light} \cdot \cos\theta\)</span>.:</p>
+<ul>
+<li>Strategy 1 (<span class="math inline">\(i=1\)</span>): Light Sampling. We will take <span class="math inline">\(n_1 = 2\)</span> samples.</li>
+<li>Strategy 2 (<span class="math inline">\(i=2\)</span>): BRDF Sampling. We will take <span class="math inline">\(n_2 = 1\)</span> sample.</li>
+</ul>
+</section>
+<section id="strategy-1-with-n_1-2-samples" class="level3">
+<h3 class="anchored" data-anchor-id="strategy-1-with-n_1-2-samples">Strategy 1 with <span class="math inline">\(n_1 = 2\)</span> samples</h3>
+<section id="sample-1-x_11" class="level4">
+<h4 class="anchored" data-anchor-id="sample-1-x_11">Sample 1 (<span class="math inline">\(x_{1,1}\)</span>)</h4>
+<ul>
+<li>Physics Result (<span class="math inline">\(f\)</span>): 120</li>
+<li><span class="math inline">\(p_1(x_{1,1})\)</span>: The Light Sampler probability is 0.45.</li>
+<li><span class="math inline">\(p_2(x_{1,1})\)</span>: The BRDF Sampler probability of hitting this exact spot is 0.02 (it’s outside the main shiny glossy lobe). <span class="math display">\[\omega_i(x) = \frac{n_i p_i(x)}{\sum n_k p_k(x)} = \frac{2 \cdot 0.45}{(2 \cdot 0.45) + (1 \cdot 0.02)} = \frac{0.9}{0.9 + 0.02} \approx \mathbf{0.978}\]</span> <span class="math display">\[\text{Estimate}_{1,1} = 0.978 \cdot \frac{120}{0.45} = \mathbf{260.8}\]</span></li>
+</ul>
+</section>
+<section id="sample-2-x_12" class="level4">
+<h4 class="anchored" data-anchor-id="sample-2-x_12">Sample 2 (<span class="math inline">\(x_{1,2}\)</span>)</h4>
+<ul>
+<li>Physics Result (<span class="math inline">\(f\)</span>): 30</li>
+<li><span class="math inline">\(p_1(x_{1,2})\)</span>: The Light Sampler probability is still 0.3.</li>
+<li><span class="math inline">\(p_2(x_{1,2})\)</span>: The BRDF Sampler probability here is tiny, just 0.05. <span class="math display">\[\omega_i(x) = \frac{n_i p_i(x)}{\sum n_k p_k(x)} = \frac{2 \cdot 0.3}{(2 \cdot 0.3) + (1 \cdot 0.05)} = \frac{0.6}{0.6 + 0.05} \approx \mathbf{0.923}\]</span> <span class="math display">\[\text{Estimate}_{1,2} = 0.923 \cdot \frac{30}{0.3} = \mathbf{92.3}\]</span></li>
+</ul>
+</section>
+<section id="total-contribution-from-strategy-1" class="level4">
+<h4 class="anchored" data-anchor-id="total-contribution-from-strategy-1">Total Contribution from Strategy 1</h4>
+<p>Now we apply the outer part of the formula for Strategy 1 (<span class="math inline">\(\frac{1}{n_1} \sum\)</span>):<span class="math display">\[\text{Total}_1 = \frac{1}{2} (260.8 + 92.3) = \frac{1}{2} (353.1) = \mathbf{176.55}\]</span></p>
+</section>
+</section>
+<section id="strategy-2-with-n_2-1-sample" class="level3">
+<h3 class="anchored" data-anchor-id="strategy-2-with-n_2-1-sample">Strategy 2 with <span class="math inline">\(n_2 = 1\)</span> sample</h3>
+<section id="sample-1-x_21" class="level4">
+<h4 class="anchored" data-anchor-id="sample-1-x_21">Sample 1 (<span class="math inline">\(x_{2,1}\)</span>)</h4>
+<ul>
+<li>Physics Result (<span class="math inline">\(f\)</span>): 150</li>
+<li><span class="math inline">\(p_1(x_{2,1})\)</span>: The Light Sampler probability is 0.01 (it missed the light source).</li>
+<li><span class="math inline">\(p_2(x_{2,1})\)</span>: The BRDF Sampler probability is 0.35 (it hit the shiny glossy lobe). <span class="math display">\[\omega_i(x) = \frac{n_i p_i(x)}{\sum n_k p_k(x)} = \frac{1 \cdot 0.35}{(2 \cdot 0.01) + (1 \cdot 0.35)} = \frac{0.35}{0.02 + 0.35} = \frac{0.35}{0.37} \approx \mathbf{0.946}\]</span> <span class="math display">\[\text{Estimate}_{2,1} = 0.946 \cdot \frac{150}{0.35} \approx 0.946 \cdot 428.57 \approx \mathbf{405.7}\]</span></li>
+</ul>
+</section>
+<section id="total-contribution-from-strategy-2" class="level4">
+<h4 class="anchored" data-anchor-id="total-contribution-from-strategy-2">Total Contribution from Strategy 2</h4>
+<p><span class="math display">\[\text{Total}_2 = \frac{1}{1} (405.7) = \mathbf{405.7}\]</span></p>
+</section>
+</section>
+<section id="final-mis-estimate" class="level3">
+<h3 class="anchored" data-anchor-id="final-mis-estimate">Final MIS Estimate</h3>
+<p><span class="math display">\[\hat{f}^N_{\text{MIS}} = \text{Total}_1 + \text{Total}_2 = 176.55 + 405.7 = \mathbf{582.25}\]</span></p>
+</section>
+</section>
+<section id="another-confusing-example-of-path-tracing" class="level2">
+<h2 class="anchored" data-anchor-id="another-confusing-example-of-path-tracing">Another confusing Example of Path Tracing</h2>
+<p>Now we use MIS to combine two strategies (2 rays) at the exact same time: Direct Light Sampling and BRDF Sampling. We add an extra weight before each light. <strong>THIS EXTRA WEIGHT IS ALL ABOUT THE TRUST TO THAT METHOD</strong> <span class="math display">\[\hat{f}^N_{\text{MIS}} = \sum_{i=1}^m \frac{1}{n_i} \sum_{j=1}^{n_i} \omega_i(x_{i,j}) \frac{f(x_{i,j})}{p_i(x_{i,j})} \quad \text{}\]</span> <span class="math display">\[\hat{f}^N_{\text{MIS}} = \underbrace{\frac{1}{n_1} \sum_{j=1}^{n_1} \omega_1(x_{1,j}) \frac{f(x_{1,j})}{p_1(x_{1,j})}}_{\text{Contribution from Strategy 1 (e.g., Light Sampling)}} + \underbrace{\frac{1}{n_2} \sum_{j=1}^{n_2} \omega_2(x_{2,j}) \frac{f(x_{2,j})}{p_2(x_{2,j})}}_{\text{Contribution from Strategy 2 (e.g., BRDF Sampling)}} + \dots\]</span></p>
+<p>For Path Tracing: <span class="math display">\[\text{Final Color} = \left[ w_{\text{light}} \cdot \frac{f(x_1)}{p_{\text{light}}(x_1)} \right] + \left[ w_{\text{brdf}} \cdot \frac{f(x_2)}{p_{\text{brdf}}(x_2)} \right]\]</span> where <span class="math inline">\(f = \rho \cdot L^{\text{in}} \cdot \cos\theta\)</span></p>
+<section id="ray-1-direct-light-sampling" class="level3">
+<h3 class="anchored" data-anchor-id="ray-1-direct-light-sampling">Ray 1: Direct Light Sampling</h3>
+<p>A random point on a light bulb is picked, the light intensity <span class="math inline">\(f = \mathbf{90}\)</span> and:</p>
+<ul>
+<li><span class="math inline">\(p_{\text{light}}\)</span>: The probability that the Light Sampler picked this spot is 0.4 (because aiming at the light is its only job).</li>
+<li><span class="math inline">\(p_{\text{brdf}}\)</span>: The probability that the BRDF Sampler would have randomly fired in this dull direction is very low, just 0.05.</li>
+</ul>
+<p><span class="math display">\[L_{\text{direct}} = \frac{p_{\text{light}}}{p_{\text{light}} + p_{\text{brdf}}} \cdot \frac{f(x_1)}{p_{\text{light}}(x_1)} = \frac{0.4}{0.4 + 0.05} \cdot \frac{90}{0.4} = \frac{0.4}{0.45} \cdot 225 = 0.888 * 225 = \mathbf{200}\]</span></p>
+</section>
+<section id="ray-2-brdf-sampling" class="level3">
+<h3 class="anchored" data-anchor-id="ray-2-brdf-sampling">Ray 2: BRDF Sampling</h3>
+<p>Second ray follows BRDF lobe and accidentally got <span class="math inline">\(f = \mathbf{400}\)</span>:</p>
+<ul>
+<li><span class="math inline">\(p_{\text{light}}\)</span>: The probability that the Light Sampler would have picked this exact sub-pixel coordinate on the lamp is lower, say 0.14.</li>
+<li><span class="math inline">\(p_{\text{brdf}}\)</span>: The probability that the BRDF Sampler fired here is 0.35 (because it heavily favors shiny angles).</li>
+</ul>
+<p><span class="math display">\[L_{\text{brdf}} = \frac{p_{\text{brdf}}}{p_{\text{light}} + p_{\text{brdf}}} \cdot \frac{f(x_2)}{p_{\text{brdf}}(x_2)} = \frac{0.35}{0.14 + 0.35} \cdot \frac{400}{0.35} = \frac{0.35}{0.49} \cdot \frac{400}{0.35} = \frac{400}{0.49} \approx \mathbf{816}\]</span></p>
+<p>To get the final color, we just add the weighted contributions from our two strategies together: <span class="math display">\[\text{Final Color} = L_{\text{direct}} + L_{\text{brdf}} = 200 + 816 = \mathbf{1016}\]</span></p>
+
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tienthangdinh\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/slam-state_estimation2_posegraphoptimization/index.html",
       "/posts/slam-state_estimation/index.html",
       "/posts/slam-visualodometry_opticalflow/index.html",
       "/posts/slam-visualodometry_icp/index.html",
