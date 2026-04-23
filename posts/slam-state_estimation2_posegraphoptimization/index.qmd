@@ -1,0 +1,91 @@
+---
+title: "State Estimation 2: Pose Graph Optimization"
+date: "2026-04-24"
+categories: [State Estimation, SLAM]
+format:
+  html:
+    toc: true
+    code-fold: true
+    math: mathjax
+---
+# Pose Graph Optimization
+The goal here is to define an Error (Residual) that we can minimize. In BA, the error was both poses and landmarks In PGO, the error is only poses. Reconstruction happens after the optimization. Because the poses have been corrected by PGO (especially after a loop closure), the individual scans will now "line up" perfectly.
+#### Defining the Edge (Relative Motion)
+In a Pose Graph, an edge represents a constraint between two camera poses, $\mathbf{T}_i$ and $\mathbf{T}_j$. We "observe" or estimate a relative movement between them, which we call $\Delta \mathbf{T}_{ij}$ (or $\mathbf{T}_{ij}$).In Lie Algebra terms, the relative motion is:$$\Delta\boldsymbol{\xi}_{ij} = \boldsymbol{\xi}_i^{-1} \circ \boldsymbol{\xi}_j = \ln \left( \mathbf{T}_i^{-1} \mathbf{T}_j \right)^\vee$$
+In the standard $SE(3)$ matrix form, we simply say:$$\mathbf{T}_{ij} = \mathbf{T}_i^{-1} \mathbf{T}_j$$
+
+#### The Residual (Error) Function
+In a perfect world, our current guesses for $\mathbf{T}_i$ and $\mathbf{T}_j$ would perfectly match our measurement $\mathbf{T}_{ij}$. In reality, there is noise. We define the error $\mathbf{e}_{ij}$ by moving everything to one side so that a perfect match equals zero (or the Identity matrix):$$\mathbf{e}_{ij} = \ln \left( \mathbf{T}_{ij}^{-1} \mathbf{T}_i^{-1} \mathbf{T}_j \right)^\vee$$
+Intuition: We are comparing the "Measured Relative Pose" from sensor ($\mathbf{T}_{ij}$) with the **variables** "Current Estimated Relative Pose" ($\mathbf{T}_i^{-1} \mathbf{T}_j$). If they are identical, the term inside the $\ln$ becomes the Identity matrix, and the error becomes zero.
+
+#### Adding Disturbances for Optimization
+To optimize this, we need to know how the error changes if we "wiggle" the poses. We apply a left disturbance ($\delta\boldsymbol{\xi}_i$ and $\delta\boldsymbol{\xi}_j$) to our current estimates. The "disturbed" error looks like this:$$\hat{\mathbf{e}}_{ij} = \ln \left( \mathbf{T}_{ij}^{-1} \left( \exp((-\delta\boldsymbol{\xi}_i)^\wedge) \mathbf{T}_i \right)^{-1} \exp(\delta\boldsymbol{\xi}_j^\wedge) \mathbf{T}_j \right)^\vee$$
+Notice that the inverse of the disturbed $\mathbf{T}_i$ term flips the sign of the disturbance and swaps the order: $(\exp(\delta\boldsymbol{\xi}_i^\wedge)\mathbf{T}_i)^{-1} = \mathbf{T}_i^{-1}\exp((-\delta\boldsymbol{\xi}_i)^\wedge)$.
+
+Now, $\exp((-\delta\boldsymbol{\xi}_i)^\wedge)$ is "trapped" in the middle of the equation. To derive a Jacobian, we need to move it to the far left so we can use the BCH approximation. We use the Adjoint Property of Lie Groups to "exchange" the order of a transformation and an exponential:
+
+The Core Property:$$\exp \left( (\text{Ad}(\mathbf{T})\boldsymbol{\xi})^\wedge \right) = \mathbf{T} \exp(\boldsymbol{\xi}^\wedge) \mathbf{T}^{-1}$$
+Rearranged for our use:$$\exp(\boldsymbol{\xi}^\wedge) \mathbf{T} = \mathbf{T} \exp \left( (\text{Ad}(\mathbf{T}^{-1})\boldsymbol{\xi})^\wedge \right)$$
+
+#### The Linearized Error
+Using the Adjoint property ($\exp(\boldsymbol{\xi}^\wedge)\mathbf{T} = \mathbf{T}\exp((\text{Ad}(\mathbf{T}^{-1})\boldsymbol{\xi})^\wedge)$), we "push" the $\mathbf{T}_j$ matrix to the left, past the disturbance terms. This pulls the disturbances out to the right:
+$$
+\begin{aligned}
+\hat{\mathbf{e}}_{ij} &= \ln \left( \mathbf{T}_{ij}^{-1} \mathbf{T}_i^{-1} \exp((-\delta\boldsymbol{\xi}_i)^\wedge) \exp(\delta\boldsymbol{\xi}_j^\wedge) \mathbf{T}_j \right)^\vee \\
+&= \ln \left( \mathbf{T}_{ij}^{-1} \mathbf{T}_i^{-1} \mathbf{T}_j \exp \left( (-\text{Ad}(\mathbf{T}_j^{-1})\delta\boldsymbol{\xi}_i)^\wedge \right) \exp \left( (\text{Ad}(\mathbf{T}_j^{-1})\delta\boldsymbol{\xi}_j)^\wedge \right) \right)^\vee \\
+&\approx \ln \left( \mathbf{T}_{ij}^{-1} \mathbf{T}_i^{-1} \mathbf{T}_j [\mathbf{I} - (\text{Ad}(\mathbf{T}_j^{-1})\delta\boldsymbol{\xi}_i)^\wedge + (\text{Ad}(\mathbf{T}_j^{-1})\delta\boldsymbol{\xi}_j)^\wedge] \right)^\vee \\
+&\approx \mathbf{e}_{ij} + \frac{\partial \mathbf{e}_{ij}}{\partial \delta\boldsymbol{\xi}_i} \delta\boldsymbol{\xi}_i + \frac{\partial \mathbf{e}_{ij}}{\partial \delta\boldsymbol{\xi}_j} \delta\boldsymbol{\xi}_j
+\end{aligned}
+$$
+
+After applying the BCH linear approximation to the log terms, we arrive at the two Jacobian matrices. These tell the optimizer exactly how to change each pose to fix the error.
+
+For Pose $i$:
+$$
+\frac{\partial \mathbf{e}_{ij}}{\partial \delta\boldsymbol{\xi}_i} = -\boldsymbol{\mathcal{J}}_r^{-1}(\mathbf{e}_{ij})\text{Ad}(\mathbf{T}_j^{-1})
+$$
+
+For Pose $j$:
+$$
+\frac{\partial \mathbf{e}_{ij}}{\partial \delta\boldsymbol{\xi}_j} = \boldsymbol{\mathcal{J}}_r^{-1}(\mathbf{e}_{ij})\text{Ad}(\mathbf{T}_j^{-1})
+$$
+
+* $\text{Ad}(\mathbf{T}_j^{-1})$: This "re-centers" the wiggle into the correct coordinate frame.
+* $\boldsymbol{\mathcal{J}}_r^{-1}$: This is the Inverse Right Jacobian of $SE(3)$. It is a correction factor needed because we are doing calculus on a curved manifold ($SE(3)$) rather than flat space.
+
+The true Right Jacobian is a nightmare to calculate. In practice, if the error $\mathbf{e}_{ij}$ is small (meaning your map is already pretty good), we can approximate it as the Identity matrix or a simpler form like this:
+$$
+\boldsymbol{\mathcal{J}}_r^{-1}(\mathbf{e}_{ij}) \approx \mathbf{I} + \frac{1}{2} \begin{bmatrix} \boldsymbol{\phi}_e^\wedge & \boldsymbol{\rho}_e^\wedge \\ \mathbf{0} & \boldsymbol{\phi}_e^\wedge \end{bmatrix}
+$$
+
+#### The Global Objective Function 
+Now that we have the error and the Jacobians for a single edge, we sum them all up for the whole graph. This is a Weighted Least Squares problem:
+$$
+\min \frac{1}{2} \sum_{i,j \in \mathcal{E}} \mathbf{e}_{ij}^T \boldsymbol{\Sigma}_{ij}^{-1} \mathbf{e}_{ij}
+$$
+
+* $\mathcal{E}$: The set of all edges (odometry + loop closures).
+* $\boldsymbol{\Sigma}_{ij}^{-1}$: The Information Matrix. This represents the "stiffness" of the edge. If the sensor that measured $\mathbf{T}_{ij}$ was very accurate, this value is high (a stiff spring). If it was noisy, it's low (a loose spring).
+
+#### Summary
+You now have everything needed to solve the graph:
+
+* Variables: The poses $\mathbf{T}_1 \dots \mathbf{T}_n$.
+* Constraints: The measured edges $\mathbf{T}_{ij}$ and their uncertainties $\boldsymbol{\Sigma}_{ij}$.
+* The Engine: Use the Jacobians to build a giant Hessian matrix ($\mathbf{H}$) and solve $\mathbf{H}\Delta\mathbf{x} = \mathbf{g}$ using Gauss-Newton.
+
+# Answering some questions
+## What is the Vee operator ($^\vee$)?
+This is the "Un-packing" operator. In Lie Theory, we have a back-and-forth relationship between vectors and matrices:
+The Hat ($\wedge$): Takes a 6D vector $\boldsymbol{\xi}$ and turns it into a $4 \times 4$ matrix $\boldsymbol{\xi}^\wedge$. We need this matrix form to do math like $\exp(\boldsymbol{\xi}^\wedge)$.
+The Vee ($^\vee$): Does the exact opposite. When you take the natural log ($\ln$) of an $SE(3)$ matrix, the result is a $4 \times 4$ matrix. The $^\vee$ operator "plucks" the numbers out of that matrix and puts them back into a clean 6D vector.
+$$\boldsymbol{\xi} \text{ (Vector)} \xrightarrow{\wedge} \boldsymbol{\xi}^\wedge \text{ (Matrix)} \xrightarrow{\exp} \mathbf{T} \text{ (Transform)}$$
+$$\mathbf{T} \text{ (Transform)} \xrightarrow{\ln} \boldsymbol{\xi}^\wedge \text{ (Matrix)} \xrightarrow{\vee} \boldsymbol{\xi} \text{ (Vector)}$$
+We use $^\vee$ at the end of the error function because our optimization algorithms (like Gauss-Newton) need a vector of errors to calculate the gradient, not a matrix.
+
+### What the hell is Ad?
+The Adjoint ($\text{Ad}$) is a $6 \times 6$ matrix that translates a wiggle from one coordinate frame to another.The Intuition: If you have a perturbation $\boldsymbol{\xi}$ in Frame B, and you want to know what that same physical wiggle looks like in Frame A (where $\mathbf{T}$ takes you from A to B), you multiply it by the Adjoint: $\boldsymbol{\xi}_A = \text{Ad}(\mathbf{T})\boldsymbol{\xi}_B$.
+
+In Lie Groups ($SO(3)$ or $SE(3)$), there is a fundamental property. If you "sandwich" an exponential between a transformation $\mathbf{T}$ and its inverse $\mathbf{T}^{-1}$, it is the same as just wiggling the vector before turning it into a matrix, using the Adjoint.
+$$\mathbf{T} \exp(\boldsymbol{\xi}^\wedge) \mathbf{T}^{-1} = \exp \left( (\text{Ad}(\mathbf{T})\boldsymbol{\xi})^\wedge \right)$$
+This is essentially saying: Rotating/translating a wiggle is the same as wiggling a rotated/translated object.

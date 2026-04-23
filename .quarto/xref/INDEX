@@ -142,5 +142,8 @@
   },
   "posts/slam-state_estimation/index.qmd": {
     "index.html": "704ef47c"
+  },
+  "posts/slam-state_estimation2_posegraphoptimization/index.qmd": {
+    "index.html": "f41aab0c"
   }
 }
